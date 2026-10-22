@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- =============================================================================
+  index.html — КАРКАС СТОРІНКИ NEXORA AI · ЛАБОРАТОРІЯ NEXI
+  Canvas #world — уся кімната (малює js/core/loop.js).
+  Поверх — HTML-інтерфейс (стилі css/hud.css, логіка js/ui/*).
+  Скрипти підключаються ПО ПОРЯДКУ: ядро -> світ -> персонажі -> об'єкти -> UI -> старт.
+============================================================================== -->
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nexora AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/hud.css">
+</head>
+<body>
+<canvas id="world" aria-label="Кімната Nexi"></canvas>
+
+<!-- Верхнє меню: кнопки запускають сценарії Nexi -->
+<div class="hud top"><div class="logo">NEXORA AI<small>8-BIT AI ASSISTANT</small></div><nav id="nav"></nav><button class="skinbtn" id="skinbtn">СКІНИ</button></div>
+<!-- Чип поточної задачі -->
+<div class="hud task" id="task"><b id="tk-n"></b><span id="tk-t"></span><i id="tk-p"></i></div>
+<!-- Підказка для нового користувача -->
+<div class="hud hint" id="hint">ТАПНИ ПО ЗОНІ КІМНАТИ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.</div>
+<!-- Бабл над Nexi -->
+<div class="bub" id="bub"><b>NEXI</b><span></span></div>
+<!-- Діалог -->
+<div class="hud chat"><div class="panel" id="panel"><div class="log" id="log" aria-live="polite"></div><div class="chips" id="chips"></div><form class="ask" id="ask"><input id="q" placeholder="Напиши Nexi..." autocomplete="off"><button aria-label="Надіслати">&gt;</button></form></div><button class="tg" id="tg">ДІАЛОГ З NEXI</button></div>
+<!-- Лабораторія скінів -->
+<aside class="lab" id="lab" aria-label="Лабораторія скінів">
+ <header><h2>СТВОРИ СВОГО NEXI</h2><button class="x" id="lx" aria-label="Закрити">X</button></header>
+ <div class="stage"><button class="ar l" id="pl" aria-label="Попередній">&lt;</button><canvas id="pv" width="36" height="40"></canvas><button class="ar r" id="pr" aria-label="Наступний">&gt;</button></div>
+ <div class="cats" id="cats"></div><div class="grid" id="grid"></div>
+ <div class="acts"><button id="rnd">ВИПАДКОВИЙ</button><button id="rst">СКИНУТИ</button><button class="save" id="save">ЗБЕРЕГТИ</button></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<!-- ядро -->
+<script src="js/core/namespace.js"></script>
+<script src="js/core/config.js"></script>
+<script src="js/core/pixel.js"></script>
+<script src="js/core/camera.js"></script>
+<script src="js/core/loop.js"></script>
+<!-- світ -->
+<script src="js/world/room.js"></script>
+<script src="js/world/ambient.js"></script>
+<script src="js/fx/particles.js"></script>
+<!-- Nexi: дані скінів, малювання, пози -->
+<script src="js/actors/nexi/skins.js"></script>
+<script src="js/actors/nexi/sprite.js"></script>
+<script src="js/actors/nexi/poses.js"></script>
+<script src="js/actors/cat/cat_sprite.js"></script>
+<!-- об'єкти кімнати (кожен — окремий блок) -->
+<script src="js/objects/taskboard.js"></script>
+<script src="js/objects/ai_pc.js"></script>
+<script src="js/objects/office.js"></script>
+<script src="js/objects/coffee.js"></script>
+<script src="js/objects/sofa.js"></script>
+<script src="js/objects/workshop.js"></script>
+<script src="js/objects/tools.js"></script>
+<script src="js/objects/portal.js"></script>
+<script src="js/objects/cat_corner.js"></script>
+<script src="js/objects/rug_dock.js"></script>
+<script src="js/objects/arcade.js"></script>
+<script src="js/objects/lounge.js"></script>
+<script src="js/objects/plants_front.js"></script>
+<!-- персонажі -->
+<script src="js/actors/nexi/nexi.js"></script>
+<script src="js/actors/nexi/activities.js"></script>
+<script src="js/actors/cat/cat.js"></script>
+<!-- інтерфейс -->
+<script src="js/ui/input.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/skinlab.js"></script>
+<script src="js/ui/chat.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
