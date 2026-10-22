@@ -12,7 +12,7 @@ function poseFor(a,t,moving){
  switch(a){
  case'walk':case'run':{const sp=a==='run'?14:8,ph=Math.floor(t*sp)%4;
   p.ll={dx:ph===1?1:ph===3?-1:0,lift:ph===1?2:0};p.rl={dx:ph===3?1:ph===1?-1:0,lift:ph===3?2:0};
-  p.bob=ph%2?-1:0;const sw=ph<2?1:-1;p.la={x:-2-sw,y:7+(sw>0?-1:0)};p.ra={x:2+sw,y:7+(sw<0?-1:0)};
+  p.bob=ph%2?-1:0;p.hy=ph%2?0:1;const sw=ph<2?1:-1;p.la={x:-2-sw*2,y:6+(sw>0?-2:0)};p.ra={x:2+sw*2,y:6+(sw<0?-2:0)};
   if(a==='run'){p.la={x:-4,y:5-(ph%2)};p.ra={x:4,y:5-((ph+1)%2)};p.hx=1}break}
  case'hammer':{const up=Math.sin(t*7.85398)>0;p.ra=up?{x:2,y:-7}:{x:6,y:2};p.la={x:-3,y:5};p.tool='hammer';p.bob=up?0:1;break}
  case'drink':{const k=Math.floor(t/2)%2;p.ra=k?{x:-3,y:-3}:{x:3,y:4};p.tool='cup';if(k)p.face='happy';break}
@@ -29,6 +29,16 @@ function poseFor(a,t,moving){
  case'press':{const k=Math.floor(t*4)%2;p.ra={x:5,y:k?0:2};p.la={x:-3,y:6};break}
  case'scan':p.la={x:-5,y:-4};p.ra={x:5,y:-4};p.bob=Math.sin(t*4)>0?-1:0;p.face='surprised';break;
  case'hop':p.ll={dx:0,lift:2};p.rl={dx:0,lift:2};p.la={x:-4,y:-1};p.ra={x:4,y:-1};break;
+ case'crouch':p.bob=2;p.la={x:-3,y:5};p.ra={x:3,y:5};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};break;
+ case'spin':p.la={x:-5,y:-3};p.ra={x:5,y:-3};p.face='happy';p.bob=-1;break;
+ case'stretch':{const k=Math.sin(t*2)>0;p.la={x:-3,y:k?-9:-7};p.ra={x:3,y:k?-9:-7};p.bob=k?-1:0;p.face='sleepy';break}
+ case'look':p.look=Math.round(Math.sin(t*1.3)*1.4);p.hx=Math.round(Math.sin(t*1.3));p.ra={x:3,y:6};break;
+ case'jump':p.ll={dx:-1,lift:2};p.rl={dx:1,lift:2};p.la={x:-5,y:-5};p.ra={x:5,y:-5};p.face='happy';break;
+ case'gaze':p.back=1;p.la={x:1,y:6};p.ra={x:-1,y:6};p.hy=Math.round(Math.sin(t*.8));break;
+ case'water':p.ra={x:6,y:1+Math.round(Math.sin(t*4))};p.la={x:-3,y:6};p.tool='can';p.hy=1;break;
+ case'toss':{const k=(t%1.2)<.5;p.ra=k?{x:3,y:-8}:{x:7,y:0};p.tool=k?'coin':null;p.face='happy';break}
+ case'push':{const k=Math.floor(t*5)%2;p.back=1;p.ra={x:3,y:k?-2:0};p.la={x:-3,y:k?0:-2};break}
+ case'carry':p.la={x:-2,y:3};p.ra={x:2,y:3};p.tool='tablet';break;
  case'wave':p.ra={x:4,y:-4+Math.round(s(t*9.42478)*2)};p.hy=0;p.bob=Math.sin(t*4.71239)>0?0:-1;break;
  case'bye':p.ra={x:5,y:-3+Math.round(s(t*12.56637)*2)};p.la={x:-3,y:6};break;
  case'think':p.ra={x:-4,y:-5};p.hx=-1;p.face='think';p.bob=0;break;

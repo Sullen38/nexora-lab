@@ -23,7 +23,7 @@
     P.glow(c, cx, sy - 16, 24, accent === '#d94bff' ? 'rgba(217,75,255,.22)' : 'rgba(59,232,255,.22)', .6);
   }
   NX.addObject({
-    id: 'analytics', name: 'Аналітика', act: 'analytics', active: false, prog: 0,
+    id: 'analytics', name: 'obj.analytics', act: 'analytics', active: false, prog: 0,
     hit: { x: 330, y: 150, w: 140, h: 200 },
     drawBack(c, t) {                                     // анімація на настінних екранах
       if (!this.active) return;
@@ -35,7 +35,7 @@
     layers(t) { return [{ y: 296.5, draw: c => chair(c, 418, 296, 346, t, '#3be8ff') }]; },
   });
   NX.addObject({
-    id: 'marketing', name: 'Маркетинг', act: 'marketing', active: false, prog: 0,
+    id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0,
     hit: { x: 535, y: 165, w: 115, h: 185 },
     drawBack(c, t) {
       if (!this.active) return;

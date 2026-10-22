@@ -5,7 +5,7 @@
  * і плед, яким Nexi вкривається, коли спить (малюється поверх нього).
  * ========================================================================== */
 NX.addObject({
-  id: 'sofa', name: 'Диван', act: 'sofa',
+  id: 'sofa', name: 'obj.sofa', act: 'sofa',
   hit: { x: 680, y: 255, w: 190, h: 95 },
   layers(t) {
     if (NX.nexi.loc !== 'sofaLie') return [];

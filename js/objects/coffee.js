@@ -5,7 +5,7 @@
  * на дисплеї "BREW". Nexi натискає кнопки (поза press), потім п'є (drink).
  * ========================================================================== */
 NX.addObject({
-  id: 'coffee', name: 'Кавомашина', act: 'coffee',
+  id: 'coffee', name: 'obj.coffee', act: 'coffee',
   hit: { x: 486, y: 298, w: 48, h: 56 }, brew: 0, cup: false,
   update(dt, t) { if (this.brew > 0 && this.brew < 1) { this.brew = Math.min(1, this.brew + dt / 3); if (Math.random() < .3) NX.fx.emit('steam', 506 + Math.random() * 4, 334); } },
   layers(t) { return [{ y: 349, draw: c => this.draw(c, t) }]; },

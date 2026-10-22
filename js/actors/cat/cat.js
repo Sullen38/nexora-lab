@@ -6,6 +6,7 @@
  * Голод росте з часом -> кіт іде до миски. Якщо миска порожня — нявкає,
  * і Nexi сам іде насипати корм (activities.js → feedCat).
  * Публічно: NX.cat.purr(сек) — коли Nexi гладить; NX.cat.hitTest(x,y).
+ * Ще кіт п'є з фонтану і ганяє м'ячик, який штовхнув Nexi.
  * ========================================================================== */
 NX.cat = {
   x: 80, y: 349, ground: 349, alt: 0, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
@@ -22,7 +23,8 @@ NX.cat = {
     if (r < .25) { const keys = ['bed', 'platform', 'sofa', 'rug', 'beanbag', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .4) return this.set('groom', 4 + Math.random() * 3);
     if (r < .58) { const b = cc.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { cc.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
-    if (r < .7) return this.goTo(cc.water[0] - 14, cc.water[1] + 1, () => this.set('eat', 3));
+    if (r < .64) return this.goTo(cc.water[0] - 14, cc.water[1] + 1, () => this.set('eat', 3));
+    if (r < .7 && NX.objects.fountain) { const [fx, fy] = NX.objects.fountain.pos, k = NX.px.depthK(fy); return this.goTo(fx - 44 * k, fy + 2, () => this.set('eat', 3.5)); }
     if (r < .82) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
     const [wx, wy] = NX.room.clampWalk(60 + Math.random() * 1400, 362 + Math.random() * NX.cam.front * .7);
     return this.goTo(wx, wy, () => this.set('sit', 3));
@@ -36,7 +38,7 @@ NX.cat = {
     else { this.target = { x, y }; this.afterWalk = null; }
   },
   startJump(x, y, done) { this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0 }; this.then = done; },
-  purr(d) { this.set('sit', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
+  purr(d) { this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.ground, 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
 
   update(dt, t) {
@@ -60,7 +62,7 @@ NX.cat = {
   },
   layer() {
     return { y: this.y + (this.alt > 0 ? 6 : 0), draw: c => {
-      const s = NX.room.scaleAt(this.ground), w = CAT_W * s, h = CAT_H * s;
+      const s = NX.room.scaleAt(this.ground) * .82, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
       drawCat(this.pose, this.frame, NX.time, this.cv);
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();
       c.imageSmoothingEnabled = false; c.translate(this.x, 0); c.scale(this.dir, 1); c.drawImage(this.cv, -w / 2, this.y - h + s, w, h); c.restore();

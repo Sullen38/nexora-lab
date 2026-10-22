@@ -44,6 +44,7 @@ NX.loop = {
     c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
     c.imageSmoothingEnabled = false;
     NX.room.draw(c, t);
+    NX.city.draw(c, t, dt);
     NX.ambient.draw(c, t);
     const objs = Object.values(NX.objects);
     objs.forEach(o => o.drawBack && o.drawBack(c, t));

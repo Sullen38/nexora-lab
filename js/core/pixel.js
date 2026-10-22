@@ -17,7 +17,11 @@ NX.px = (() => {
   const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
   const shade = (h, k) => { if (h[0] !== '#') return h; const c = hx(h); return toHex(k >= 0 ? c.map(v => v + (255 - v) * k) : c.map(v => v * (1 + k))); };
-  const rect = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
+  /** Прямокутник, прив'язаний до реальних пікселів екрана — без розмитих країв. */
+  const rect = (c, x, y, w, h, col) => {
+    const K = NX.cam.k * (NX.loop.dpr || 1), x1 = Math.round(x * K) / K, y1 = Math.round(y * K) / K;
+    c.fillStyle = col; c.fillRect(x1, y1, Math.max(1 / K, Math.round((x + w) * K) / K - x1), Math.max(1 / K, Math.round((y + h) * K) / K - y1));
+  };
   /** Куб з "косою" глибиною 45°: y — нижня лінія передньої грані. U — розмір пікселя. */
   function cube(c, x, y, w, h, d, f, t, s, U = 2) {
     const n = Math.max(1, Math.round(d / U));

@@ -5,12 +5,24 @@
  * Меню: кожна кнопка запускає сценарій з actors/nexi/activities.js.
  * ========================================================================== */
 NX.ui.hud = {
-  NAV: [['home', 'ГОЛОВНА'], ['ai', 'AI-ЦЕНТР'], ['analytics', 'АНАЛІТИКА'], ['marketing', 'МАРКЕТИНГ'], ['workshop', 'МАЙСТЕРНЯ'], ['tools', 'ІНСТРУМЕНТИ'], ['portal', 'ПОРТАЛ']],
+  NAV: ['home', 'ai', 'analytics', 'marketing', 'workshop', 'tools', 'portal'],
   $: id => document.getElementById(id), typed: null,
   init() {
     const nav = this.$('nav');
-    this.NAV.forEach(([id, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.id = id; b.onclick = () => { this.firstTouch(); NX.nexi.do(id); }; nav.appendChild(b); });
+    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); if (id === 'portal') NX.objects.portal.dest = NX.objects.portal.DESTS[Math.random() * 3 | 0]; NX.nexi.do(id); }; nav.appendChild(b); });
     this.$('skinbtn').onclick = () => NX.ui.skinlab.show();
+    this.$('langbtn').onclick = () => { const L = NX.i18n.LANGS, i = L.indexOf(NX.i18n.lang); NX.i18n.set(L[(i + 1) % L.length]); };
+    this.applyLang();
+  },
+  /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
+  applyLang() {
+    const $ = this.$, T = NX.t;
+    document.querySelectorAll('nav button').forEach(b => b.textContent = T('nav.' + b.dataset.id));
+    $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins'); $('langbtn').textContent = NX.i18n.LABEL[NX.i18n.lang]; $('langbtn').title = T('ui.lang');
+    $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
+    $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
+    NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
+    if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },
   setActive(id) { document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === id)); },
   firstTouch() { this.$('hint').style.display = 'none'; },
@@ -27,7 +39,7 @@ NX.ui.hud = {
     }
     // чип поточної задачі
     const k = NX.nexi.task, el = this.$('task');
-    if (k) { el.style.display = 'flex'; el.style.borderColor = k.color; this.$('tk-n').textContent = k.auto ? 'ВІЛЬНИЙ ЧАС' : 'ЗАДАЧА'; const st = k.steps.length ? k.steps[Math.min(k.steps.length - 1, Math.floor(k.prog * k.steps.length))] : ''; this.$('tk-t').textContent = k.title + (st ? ' · ' + st : ''); this.$('tk-p').style.setProperty('--p', (k.prog * 100 | 0) + '%'); }
+    if (k) { el.style.display = 'flex'; el.style.borderColor = k.color; this.$('tk-n').textContent = NX.t(k.auto ? 'ui.free' : 'ui.task'); const st = Array.isArray(k.steps) && k.steps.length ? k.steps[Math.min(k.steps.length - 1, Math.floor(k.prog * k.steps.length))] : ''; this.$('tk-t').textContent = k.title + (st ? ' · ' + st : ''); this.$('tk-p').style.setProperty('--p', (k.prog * 100 | 0) + '%'); }
     else el.style.display = 'none';
   },
 };

@@ -7,7 +7,7 @@
  * Позиції мисок/м'ячика залежать від висоти добудованої підлоги (layout()).
  * ========================================================================== */
 NX.addObject({
-  id: 'catCorner', name: 'Куток кота', act: 'feedCat',
+  id: 'catCorner', name: 'obj.catCorner', act: 'feedCat',
   hit: { x: 40, y: 300, w: 80, h: 60 }, food: .7,
   bowl: [150, 390], water: [176, 390], platform: [82, 313], bed: [80, 349],
   ball: { x: 300, y: 430, vx: 0, vy: 0 },

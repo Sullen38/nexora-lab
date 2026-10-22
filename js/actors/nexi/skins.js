@@ -1,7 +1,7 @@
 /* ============================================================================
  * actors/nexi/skins.js — КАТАЛОГ СКІНІВ NEXI (тільки дані, без логіки)
  * ----------------------------------------------------------------------------
- * Структура бота незмінна (сітка 36×40 пікселів), змінюються лише скіни:
+ * Структура бота незмінна (HD-сітка 48×56 пікселів), змінюються лише скіни:
  *   THEMES  – кольорові теми (весь корпус)      BODIES – тулуб / корпус
  *   ARMS    – руки                              LEGS   – ноги
  *   FACES   – екран обличчя                     ANTS   – антени
@@ -10,7 +10,8 @@
  * Щоб додати скін: додай запис у потрібний словник і, якщо треба, його
  * малювання в actors/nexi/sprite.js. Більше нічого чіпати не треба.
  * ========================================================================== */
-const SW=36,SH=40,OUT='#0a0f2e';
+const SW=48,SH=56,FOOT=52,OUT='#0a0f2e';   // розмір спрайта; FOOT — рядок, де стоять ноги
+const SPRITE_K=0.75;                        // HD-піксель = 0.75 старого: розмір бота в кімнаті не змінився
 const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const toHex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
 const shade=(h,k)=>{const c=hx(h);return toHex(k>=0?c.map(v=>v+(255-v)*k):c.map(v=>v*(1+k)))};
@@ -54,6 +55,6 @@ const ANTS={standard:'Стандарт',techno:'Техно',holo:'Гологра
 const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'back'},wings:{n:'Крила',slot:'back'},hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},shield:{n:'Щит',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
 const FX={none:'Без ефекту',sparks:'Іскри',energy:'Енергія',aura:'Аура',trail:'Слід',rain:'Дощ',snow:'Сніг',fire:'Вогонь',water:'Вода',neon:'Неон'};
 const MOODS={happy:'Радість',love:'Любов',surprise:'Сюрприз',idea:'Ідея',sleepy:'Сон',sad:'Сум',angry:'Злість',cool:'Круто'};
-const ACTIONS={stand:'Стоїть',walk:'Ходить',run:'Біжить',wave:'Привіт',think:'Думає',point:'Вказує',talk:'Розповідає',cheer:'Радіє',work:'Працює',sleep:'Сон',dance:'Танцює',read:'Читає',meditate:'Медитує',bye:'Прощається',drink:'П\'є каву',hammer:'Ремонтує'};
+const ACTIONS={stand:'Стоїть',walk:'Ходить',run:'Біжить',wave:'Привіт',think:'Думає',point:'Вказує',talk:'Розповідає',cheer:'Радіє',spin:'Оберт',stretch:'Потягується',look:'Роззирається',jump:'Стрибає',work:'Працює',sleep:'Сон',dance:'Танцює',read:'Читає',meditate:'Медитує',bye:'Прощається',drink:'П\'є каву',hammer:'Ремонтує'};
 const DEFAULT_LOOK={face:'standard',ant:'standard',body:'standard',arms:'base',theme:'standard',back:null,head:null,hand:null,fx:'none'};
 

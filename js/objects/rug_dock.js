@@ -6,7 +6,7 @@
  * this.home — координати доку (перераховуються під висоту екрана).
  * ========================================================================== */
 NX.addObject({
-  id: 'rug', name: 'Док-станція', act: 'home',
+  id: 'rug', name: 'obj.rug', act: 'home',
   home: [768, 440], rx: 150, ry: 26,
   get hit() { return { x: this.home[0] - 40, y: this.home[1] - 14, w: 80, h: 22 }; },
   layout() { const F = NX.cam.front; this.home = [768, Math.round(368 + Math.max(50, F * .42))]; this.ry = Math.max(16, Math.min(34, F * .1)); },

@@ -7,7 +7,7 @@
  * this.active = false -> заставка NEXORA
  * ========================================================================== */
 NX.addObject({
-  id: 'aiPc', name: "AI-центр · комп'ютер", act: 'ai',
+  id: 'aiPc', name: 'obj.aiPc', act: 'ai',
   hit: { x: 60, y: 40, w: 200, h: 262 }, active: false, prog: 0,
   layers(t) { return [{ y: 296.4, draw: c => this.draw(c, t) }]; },
   draw(c, t) {
