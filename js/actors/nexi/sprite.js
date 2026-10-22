@@ -39,7 +39,9 @@ function renderBot(look, pose, t, cv) {
 
   // ---------- 1. спина: плащ / крила / рюкзак ----------
   if (look.back === 'cape') for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? '#d93a4a' : '#a82a3a'); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, '#ff6a7a'); }
-  if (look.back === 'wings') { const f = Math.round(Math.abs(Math.sin(t * (pose.jet ? 14 : 4.7))) * 4); for (const s of [-1, 1]) for (let i = 0; i < 6; i++) { const L = 14 - i * 2, y0 = by - 8 + i * 3 - (i < 3 ? f : f >> 1), xL = s < 0 ? bx - L + 3 : bx + bw - 3; P(xL, y0, L, 3, i % 2 ? '#9fe8ff' : '#d0b0ff'); P(s < 0 ? xL : xL + L - 1, y0, 1, 2, '#ffffff'); P(xL, y0 + 2, L, 1, i % 2 ? '#5ab8e8' : '#9a7ae8'); } }
+  if (look.back === 'wings') { const f = Math.round(Math.abs(Math.sin(t * (pose.jet ? 14 : 4.7))) * 3);   // крила: 7 рядів пір'я, махають
+    for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const L = 15 - Math.round(i * 1.6), y0 = by - 13 + i * 2 - (i < 4 ? f : f >> 1), xL = s < 0 ? bx + 2 - L : bx + bw - 2;
+      P(xL, y0, L, 2, i % 2 ? '#bff2ff' : '#e4d4ff'); P(xL, y0 + 1, L, 1, i % 2 ? '#6ac8f0' : '#a88af0'); P(s < 0 ? xL : xL + L - 1, y0, 1, 2, '#ffffff'); } }
   if (look.back === 'backpack') { BLK(bx - 4, by - 1, bw + 8, 14, 3, '#c9812e'); P(bx - 3, by + 7, 4, 4, '#8a5a1e'); P(bx + bw - 1, by + 7, 4, 4, '#8a5a1e'); }
 
   // ---------- 2. реактивний ранець (у польоті) ----------
