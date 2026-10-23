@@ -6,8 +6,8 @@
  *      фон: на ній стоять точки взаємодії (core/config.js → POI), і Nexi
  *      ходить по її підлозі, сідає на її диван, злітає на її стіл.
  *   2. Стеля (y < 0) — добудовується кодом під висоту екрана.
- *   3. Передня підлога (y > 368) — продовження тієї ж глянцевої підлоги
- *      з віддзеркаленням кімнати. Це та сама підлога, ближча до глядача.
+ *   3. Передня підлога (y > 368) — продовження тієї ж глянцевої підлоги:
+ *      нижні рядки картинки тягнуться вниз, тому шву між ними не видно.
  * Межі, де можна ходити, повертає walkBounds().
  * ========================================================================== */
 NX.room = {
@@ -30,17 +30,23 @@ NX.room = {
     for (let x = 80; x < W; x += 260) {                                                               // кабелі, що провисають
       c.strokeStyle = '#0f1640'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, top - 6); c.quadraticCurveTo(x + 65, top + 4, x + 130, top - 6); c.stroke();
     }
-    // ---------- передня підлога ----------
+    // ---------- передня підлога: ПРОДОВЖЕННЯ тієї ж підлоги з картинки ----------
+    // 1) останні рядки картинки розтягуємо вниз — кольори й відблиски тягнуться без шву
+    // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) сітка плитки
+    //    з'являється плавно (на шві її не видно)
     this.front = document.createElement('canvas'); this.front.width = W; this.front.height = front + 2;
     c = this.front.getContext('2d');
-    g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, '#1a0e44'); g.addColorStop(1, '#05061a'); c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
-    const ref = Math.min(front, 220);                                                                 // віддзеркалення кімнати в глянцевій підлозі
-    c.save(); c.globalAlpha = .30; c.translate(0, 0); c.scale(1, -1); c.drawImage(this.img, 0, H - ref, W, ref, 0, -ref, W, ref); c.restore();
-    g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(20,10,52,.10)'); g.addColorStop(.7, 'rgba(6,6,26,.92)'); g.addColorStop(1, 'rgba(4,5,20,1)'); c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
-    const vx = W / 2, vy = -340; c.lineWidth = 1;                                                     // перспективна сітка плитки
-    for (let i = -16; i <= 16; i++) { const xb = vx + i * 120, xa = vx + (xb - vx) * (0 - vy) / (front - vy); c.strokeStyle = i % 2 ? 'rgba(217,75,255,.10)' : 'rgba(59,232,255,.10)'; c.beginPath(); c.moveTo(xa, 0); c.lineTo(xb, front); c.stroke(); }
-    for (let k = 1; k < 12; k++) { const tt = k / 12; P.rect(c, 0, front * Math.pow(tt, 1.6), W, 1, `rgba(59,232,255,${.03 + .08 * tt})`); }
-    for (let y = 0; y < front; y += 4) for (let x = (y / 4 % 2) * 4; x < W; x += 8) P.rect(c, x, y, 1, 1, 'rgba(140,120,255,.05)');  // 8-bit дизеринг
+    c.drawImage(this.img, 0, H - 4, W, 4, 0, 0, W, front + 2);
+    const ref = Math.min(front, 240);
+    c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(this.img, 0, H - ref - 14, W, ref, 0, -ref, W, ref); c.restore();
+    g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(10,6,34,0)'); g.addColorStop(.18, 'rgba(10,6,34,.35)'); g.addColorStop(.75, 'rgba(6,6,26,.9)'); g.addColorStop(1, 'rgba(4,5,20,1)');
+    c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
+    const gr = document.createElement('canvas'); gr.width = W; gr.height = front + 2; const gc = gr.getContext('2d');
+    const vx = W / 2, vy = -340; gc.lineWidth = 1;
+    for (let i = -16; i <= 16; i++) { const xb = vx + i * 120, xa = vx + (xb - vx) * (0 - vy) / (front - vy); gc.strokeStyle = i % 2 ? 'rgba(217,75,255,.16)' : 'rgba(59,232,255,.16)'; gc.beginPath(); gc.moveTo(xa, 0); gc.lineTo(xb, front); gc.stroke(); }
+    for (let k = 1; k < 12; k++) { const tt = k / 12; gc.fillStyle = `rgba(59,232,255,${.05 + .08 * tt})`; gc.fillRect(0, Math.round(front * Math.pow(tt, 1.6)), W, 1); }
+    gc.globalCompositeOperation = 'destination-in'; const gm = gc.createLinearGradient(0, 0, 0, Math.min(140, front)); gm.addColorStop(0, 'rgba(0,0,0,0)'); gm.addColorStop(1, 'rgba(0,0,0,1)'); gc.fillStyle = gm; gc.fillRect(0, 0, W, front + 2);
+    c.drawImage(gr, 0, 0);
   },
 
   draw(c, t) {
@@ -49,8 +55,6 @@ NX.room = {
     c.drawImage(this.img, 0, 0);
     const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(0, 0, NX.cfg.ROOM_W, 22);
     c.drawImage(this.front, 0, H);
-    // шов картинки й добудови — м'який неоновий відблиск, що "дихає"
-    NX.px.rect(c, 0, H, NX.cfg.ROOM_W, 1, `rgba(217,75,255,${.25 + .1 * Math.sin(t * 1.5)})`);
   },
 
   /** Де можна ходити (прямокутник підлоги). */

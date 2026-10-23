@@ -11,14 +11,13 @@ NX.ui.hud = {
     const nav = this.$('nav');
     this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); if (id === 'portal') NX.objects.portal.dest = NX.objects.portal.DESTS[Math.random() * 3 | 0]; NX.nexi.do(id); }; nav.appendChild(b); });
     this.$('skinbtn').onclick = () => NX.ui.skinlab.show();
-    this.$('langbtn').onclick = () => { const L = NX.i18n.LANGS, i = L.indexOf(NX.i18n.lang); NX.i18n.set(L[(i + 1) % L.length]); };
     this.applyLang();
   },
   /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
   applyLang() {
     const $ = this.$, T = NX.t;
     document.querySelectorAll('nav button').forEach(b => b.textContent = T('nav.' + b.dataset.id));
-    $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins'); $('langbtn').textContent = NX.i18n.LABEL[NX.i18n.lang]; $('langbtn').title = T('ui.lang');
+    $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins');
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
