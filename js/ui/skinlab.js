@@ -10,7 +10,7 @@ NX.ui.skinlab = {
   init() {
     const $ = id => document.getElementById(id);
     this.CATS = [{ k: 'face', items: FACES }, { k: 'ant', items: ANTS }, { k: 'body', items: BODIES }, { k: 'arms', items: ARMS }, { k: 'legs', items: LEGS },
-      { k: 'acc', items: ACCS }, { k: 'theme', items: THEMES }, { k: 'fx', items: FX }, { k: 'act', items: ACTIONS }, { k: 'mood', items: MOODS }];
+      { k: 'acc', items: ACCS }, { k: 'theme', items: THEMES }];   // емоції, ефекти й дії — випадкові (nexi.js → moodLife), тут лише СТИЛЬ
     this.cat = this.CATS[0];
     this.CATS.forEach(c => { const b = document.createElement('button'); b.onclick = () => { this.cat = c; this.grid(); }; c.btn = b; $('cats').appendChild(b); });
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key === 'Escape') this.hide(); });

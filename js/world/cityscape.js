@@ -45,7 +45,7 @@ NX.city = {
     if (NX.time < this.fwUntil && Math.random() < dt * 2.2) { const fx = W.x + 50 + Math.random() * (W.w - 100), fy = 30 + Math.random() * 70, col = ['#ff4fd8', '#3be8ff', '#ffc94d', '#7aff9a'][Math.random() * 4 | 0]; this.fw.push({ x: fx, y: fy, t: 0, col }); }
     this.fw = this.fw.filter(f => (f.t += dt) < 1.4); this.fw.forEach(f => { const r = 6 + f.t * 26; for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; c.globalAlpha = Math.max(0, 1 - f.t / 1.4); P.rect(c, f.x + Math.cos(a) * r, f.y + Math.sin(a) * r + f.t * f.t * 10, 1.5, 1.5, f.col); } c.globalAlpha = 1; P.glow(c, f.x, f.y, 20, 'rgba(255,255,255,.6)', Math.max(0, .6 - f.t)); });
     c.restore();
-    const [mx, my, mw, mh] = this.MULLION; c.drawImage(NX.room.img, mx, my, mw, mh, mx, my, mw, mh);   // віконна стійка поверх
+    const [mx, my, mw, mh] = this.MULLION; const RS = NX.room.RS; c.drawImage(NX.room.img, mx * RS, my * RS, mw * RS, mh * RS, mx, my, mw, mh);   // віконна стійка поверх
   },
 };
 /** Вікно як об'єкт: тап -> Nexi підходить і милується містом (феєрверк). */

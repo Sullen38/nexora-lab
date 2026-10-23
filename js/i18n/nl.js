@@ -1,11 +1,11 @@
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
-  ui: { tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen' },
+  ui: { photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen' },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   board: { title: 'NEXI-TAKEN', waiting: 'WACHT OP EEN TAAK...' },
   obj: { vacuum: 'Robotstofzuiger', aiPc: 'AI-centrum · computer', taskboard: 'Takenbord', analytics: 'Analyse', marketing: 'Marketing', coffee: 'Koffiemachine', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', fountain: 'Fontein', lounge: 'Zitzak', lamp: 'Staande lamp', plant: 'Plant', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
-  kozak: { oops: 'Oeps! Verkeerd portaal...' },
+  kozak: { oops: 'Oeps! Verkeerd kasteel...' },
   portal: { choose: 'WAARHEEN?', dest: { projects: 'Projecten', team: 'Team', clients: 'Klanten' },
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },
     res: { projects: 'Projecten: 3 actief, één deadline morgen. Alles genoteerd.', team: 'Team: 4 mensen online, twee wachten op je antwoord.', clients: 'Klanten: 3 nieuwe aanvragen, twee heb ik al beantwoord.' } },
@@ -33,6 +33,8 @@ NX.i18n.add('nl', {
     water: { title: 'Plant water geven', steps: ['Gieter pakken', 'Water geven 🌱'], lines: ['Planten hebben ook zorg nodig. Water geven!', 'Groene vrienden houden van water.'] },
     window: { title: 'Naar de stad kijken', steps: ['Naar het raam', 'Genieten van het uitzicht'], lines: ['Kijk eens naar de stad vandaag! Ik steek wat vuurwerk af.', 'Ik hou van dit uitzicht. Zoveel bedrijven aan het werk daar...'] },
     kickBall: { title: 'Spelen met de bal', steps: ['Naar de bal rennen', 'Pass naar Gember!'], lines: ['Gember, vangen!', 'Pass! Wie is sneller?'] },
+    laser: { title: 'Laser voor Gember', steps: ['Laser aan', 'Vang de stip!'], lines: ['Gember, vang de rode stip!', 'Wie is sneller — kat of laser?'] },
+    selfie: { title: 'Selfie met Gember', steps: ['Gember roepen', 'Cheese! 📸'], lines: ['Gember, selfie-tijd!', 'Een foto voor Nexora-socials!'] },
     skinLab: { lines: ['Laten we mijn look veranderen! Kies rechts een skin.'] },
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },
@@ -48,5 +50,5 @@ NX.i18n.add('nl', {
     mood: { happy: 'Blij', love: 'Liefde', surprise: 'Verrassing', idea: 'Idee', sleepy: 'Slaperig', sad: 'Verdrietig', angry: 'Boos', cool: 'Cool' },
     act: { stand: 'Staan', walk: 'Lopen', run: 'Rennen', wave: 'Zwaaien', think: 'Denken', point: 'Wijzen', talk: 'Vertellen', cheer: 'Juichen', spin: 'Draaien', stretch: 'Rekken', look: 'Rondkijken', jump: 'Springen', work: 'Werken', sleep: 'Slapen', dance: 'Dansen', read: 'Lezen', meditate: 'Mediteren', bye: 'Gedag', drink: 'Koffie', hammer: 'Repareren' },
   },
-  kw: { ai: 'ai|chat|mail|tekst|antwoord|klant', analytics: 'analys|rapport|verkoop|data|cijfers', marketing: 'market|advertent|post|campagne|nieuwsbrief', tools: 'tool|integrat|crm|agenda', portal: 'portaal|project|team', coffee: 'koffie', petCat: 'kat|gember|aai', feedCat: 'voer', sofa: 'bank|rust|lees', sleep: 'slaap|dutje', dance: 'dans', home: 'thuis|station|home', fountain: 'fontein|munt|wens', window: 'raam|stad|vuurwerk', water: 'water geven|plant|bloem', lamp: 'licht|lamp', skin: 'skin|uiterlijk|kleur' },
+  kw: { laser: 'laser|stip', selfie: 'selfie|foto', ai: 'ai|chat|mail|tekst|antwoord|klant', analytics: 'analys|rapport|verkoop|data|cijfers', marketing: 'market|advertent|post|campagne|nieuwsbrief', tools: 'tool|integrat|crm|agenda', portal: 'portaal|project|team', coffee: 'koffie', petCat: 'kat|gember|aai', feedCat: 'voer', sofa: 'bank|rust|lees', sleep: 'slaap|dutje', dance: 'dans', home: 'thuis|station|home', fountain: 'fontein|munt|wens', window: 'raam|stad|vuurwerk', water: 'water geven|plant|bloem', lamp: 'licht|lamp', skin: 'skin|uiterlijk|kleur' },
 });

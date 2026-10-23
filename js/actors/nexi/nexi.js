@@ -54,10 +54,11 @@ NX.nexi = {
     if (!this.cur && !this.queue.length && this.task) { this.finishTask(true); }
     if (this.speak) { this.speak.t += dt; this.talking = this.speak.t < this.speak.text.length / 40; if (this.speak.t > this.speak.text.length / 40 + 3.2) { this.speak = null; this.talking = false; NX.ui.hud.bubble(null); } }
     this.autolife(t);
+    this.moodLife(t);
     NX.nexiPhys.update(this, dt);
     if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie') { this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
     if (this.cur && (this.cur.fly || this.pose === 'fly' || (this.cur.work && /hover/.test(this.cur.work.pose))) && Math.random() < .7) NX.fx.emit('flame', this.x + (Math.random() < .5 ? -9 : 9) * NX.room.scaleAt(this.y) / 1.45 * (this.dir), this.y + 2);
-    if (this.look.fx && this.look.fx !== 'none' && this.alpha > .5) NX.fx.skin(this.look.fx, this.x, this.y, NX.room.scaleAt(Math.max(this.y, 352)), !!(this.cur && this.cur.walk), this.dir);
+    if (this.fxNow && this.fxNow !== 'none' && this.alpha > .5) NX.fx.skin(this.fxNow, this.x, this.y, NX.room.scaleAt(Math.max(this.y, 352)), !!(this.cur && this.cur.walk), this.dir);
   },
   begin(a) {
     if (a.walk) { a.from = [this.x, this.y]; a.run = Math.hypot(a.walk[0] - this.x, a.walk[1] - this.y) > 500; }
@@ -99,6 +100,22 @@ NX.nexi = {
   },
   end(a) { if (a.work) { const w = a.work; if (w.obj) { NX.objects[w.obj].active = false; NX.objects[w.obj].done = true; } w.end && w.end(); } },
 
+  /* ---------------- ВИПАДКОВІ ЕМОЦІЇ ТА "ПОГОДА" ----------------
+   * Емоції й ефекти не обираються в скінах — вони трапляються самі:
+   *  - кожні 8–16 с Nexi проявляє випадкову емоцію (частіше радість);
+   *  - кожні 22–40 с над ним "трапляється погода" на 6–9 с: хмаринка з дощем
+   *    (він сумує), сніг (радіє), іскри, аура, вогник, бульбашки, неон...
+   */
+  fxNow: 'none', fxUntil: 0, nextFx: 14, nextMood: 6,
+  moodLife(t) {
+    if (t > this.nextMood && !this.mood) { this.nextMood = t + 8 + Math.random() * 8; const m = ['happy', 'happy', 'love', 'idea', 'cool', 'surprise', 'sleepy', 'happy', 'sad'][Math.random() * 9 | 0]; if (this.loc !== 'sofaLie') this.emote(m, 2.2); }
+    if (this.fxNow !== 'none' && t > this.fxUntil) this.fxNow = 'none';
+    if (t > this.nextFx && this.fxNow === 'none') {
+      this.nextFx = t + 22 + Math.random() * 18; const fx = ['rain', 'snow', 'sparks', 'aura', 'fire', 'water', 'neon', 'energy', 'trail', 'rain'][Math.random() * 10 | 0];
+      this.fxNow = fx; this.fxUntil = t + 6 + Math.random() * 3;
+      const react = { rain: 'sad', snow: 'happy', fire: 'surprise', sparks: 'love', aura: 'cool', water: 'happy', neon: 'cool', energy: 'idea' }[fx]; if (react) setTimeout(() => this.emote(react, 2.5), 400);
+    }
+  },
   /* ---------------- ВІЛЬНИЙ ЧАС ---------------- */
   autolife(t) {
     if (this.cur || this.queue.length || NX.ui.skinlab.open) return;
@@ -107,7 +124,7 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
-      const pool = ['sofa', 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'petCat', 'window', 'water', 'kickBall'];
+      const pool = ['sofa', 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'laser', 'window', 'water', 'kickBall', 'selfie', 'laser'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
   },
@@ -126,12 +143,18 @@ NX.nexi = {
       const X = Math.round(this.x * K) / K, Y = Math.round(this.y * K) / K;
       const shY = p.jet ? this.gy : Y, sr = s / SPRITE_K / 1.45;
       c.save(); c.globalAlpha = .45 * this.alpha * (p.jet ? .6 : 1); c.fillStyle = '#000'; c.beginPath(); c.ellipse(X, shY + 1, 11 * sr * (2 - ph.sq), 2.5 * sr, 0, 0, 7); c.fill(); c.restore();
-      if (this.look.fx === 'aura') NX.px.glow(c, X, Y - top / 2, top * .8, 'rgba(140,100,255,.6)', this.alpha);
+      if (this.fxNow === 'aura') NX.px.glow(c, X, Y - top / 2, top * .8, 'rgba(140,100,255,.6)', this.alpha);
       c.save(); c.globalAlpha = this.alpha; c.imageSmoothingEnabled = false;
       c.translate(X, Y); c.rotate(((this.rot || 0) + (this.rot ? 0 : ph.lean)) * Math.PI / 180);
       c.scale((this.dir < 0 ? -1 : 1) * (1 + (1 - ph.sq) * .55), ph.sq);                 // стискання/розтяг
       c.drawImage(this.scr, -w / 2, -top, w, h); c.restore();
-      if (this.look.fx === 'neon') { c.save(); c.globalAlpha = this.alpha; c.strokeStyle = Math.floor(t * 3) % 2 ? '#ff4fd8' : '#3be8ff'; c.lineWidth = 1.2; c.shadowColor = c.strokeStyle; c.shadowBlur = 8; c.strokeRect(X - w * .42, Y - top - 3, w * .84, top + 5); c.restore(); }
+      if ((this.fxNow === 'rain' || this.fxNow === 'snow') && this.alpha > .5) {   // піксельна хмаринка над головою
+        const cy = Y - top - 22 + Math.sin(t * 2) * 1.5, cx = X; c.save(); c.globalAlpha = .92;
+        [[-11, 2, 22, 5], [-14, 4, 28, 4], [-7, -1, 10, 4], [0, -2, 8, 5]].forEach(([dx, dy, w2, h2]) => NX.px.rect(c, cx + dx, cy + dy, w2, h2, this.fxNow === 'rain' ? '#5a6590' : '#c3cbea'));
+        NX.px.rect(c, cx - 12, cy + 8, 24, 1, this.fxNow === 'rain' ? '#3a4070' : '#8a93b8'); NX.px.rect(c, cx - 6, cy, 6, 1, '#ffffff'); c.restore();
+        if (Math.random() < .5) NX.fx.emit(this.fxNow === 'rain' ? 'rain' : 'snow', cx + (Math.random() - .5) * 22, cy + 9, this.fxNow === 'rain' ? { vy: 120, ttl: (Y - cy - 10) / 120 } : { vy: 16, ttl: (Y - cy - 10) / 16 });
+      }
+      if (this.fxNow === 'neon') { c.save(); c.globalAlpha = this.alpha; c.strokeStyle = Math.floor(t * 3) % 2 ? '#ff4fd8' : '#3be8ff'; c.lineWidth = 1.2; c.shadowColor = c.strokeStyle; c.shadowBlur = 8; c.strokeRect(X - w * .42, Y - top - 3, w * .84, top + 5); c.restore(); }
       if (this.mood && t < this.moodT) NX.px.text(c, { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood], X + w * .3, Y - top - 4, '#ffe27a', 6);
       this.box = this.rot ? [X - top * .6, Y - w * .5, top * 1.2, w * .6] : [X - w * .4, Y - top, w * .8, top];
       this.headScreen = NX.cam.toScreen(X, Y - (this.rot ? w * .4 : top));

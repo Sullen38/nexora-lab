@@ -16,7 +16,7 @@ NX.ambient = {
 
   /** Знаходимо темні пікселі будівель у вікні, щоб "запалювати" в них вікна. */
   init() {
-    const tc = document.createElement('canvas'); tc.width = 1536; tc.height = 368; const x = tc.getContext('2d', { willReadFrequently: true }); x.drawImage(NX.room.img, 0, 0);
+    const tc = document.createElement('canvas'); tc.width = 1536; tc.height = 368; const x = tc.getContext('2d', { willReadFrequently: true }); x.drawImage(NX.room.img, 0, 0, 1536, 368);
     const d = x.getImageData(0, 0, 1536, 368).data, H = NX.px.hash;
     for (let k = 0; k < 8000 && this.windows.length < 180; k++) {
       const px = 470 + Math.floor(H(k) * 470), py = 70 + Math.floor(H(k + 999) * 170), i = (py * 1536 + px) * 4;

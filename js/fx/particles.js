@@ -38,8 +38,6 @@ NX.fx = {
     if (kind === 'sparks' && r() < .4) this.emit('spark', x + (r() - .5) * H * .8, y - r() * H);
     if (kind === 'energy' && r() < .5) this.emit('energy', x + (r() - .5) * H * .7, y - r() * H * .6);
     if (kind === 'trail' && moving && r() < .8) this.emit('trail', x - dir * H * .25, y - r() * H * .7);
-    if (kind === 'rain' && r() < .9) this.emit('rain', x + (r() - .5) * H * 1.4, y - H * 1.3);
-    if (kind === 'snow' && r() < .4) this.emit('snow', x + (r() - .5) * H * 1.4, y - H * 1.3);
     if (kind === 'fire' && r() < .8) this.emit('fire', x + (r() - .5) * H * .5, y - 2);
     if (kind === 'water' && r() < .3) this.emit('bubble', x + (r() - .5) * H * .7, y - r() * H * .3);
   },

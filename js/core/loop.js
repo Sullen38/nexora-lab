@@ -23,7 +23,7 @@ NX.loop = {
     requestAnimationFrame(() => this.frame());
   },
   resize() {
-    this.dpr = Math.min(2, devicePixelRatio || 1);
+    this.dpr = Math.min(3, Math.max(2, (devicePixelRatio || 1) * 2));   // рендер мінімум у 2× роздільності екрана — чіткіші пікселі й текст
     const vw = innerWidth, vh = innerHeight;
     this.canvas.width = Math.round(vw * this.dpr); this.canvas.height = Math.round(vh * this.dpr);
     NX.cam.layout(vw, vh);

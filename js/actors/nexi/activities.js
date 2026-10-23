@@ -50,6 +50,12 @@
 
     dance: { color: '#ff4fd8', route() { const h = NX.objects.rug.home; return [{ walk: [h[0] + 40, h[1]] }, line('dance'), { work: { pose: 'dance', dur: 6, tick: () => Math.random() < .05 && NX.fx.emit('note', NX.nexi.x, NX.nexi.y - 50) } }, { spin: .5 }]; } },
 
+    laser: { color: '#ff3b4a', route() { return [{ walk: NX.room.clampWalk(NX.cat.x + 90, Math.max(NX.cat.ground, 400)) }, { face: -1 }, line('laser'),
+      { work: { pose: 'point', dur: 8, start: () => NX.objects.laser.start(), end: () => NX.objects.laser.stop() } }, { do: () => NX.nexi.emote('happy') }]; } },
+
+    selfie: { color: '#ffc94d', route() { const c = NX.cat, [x, y] = NX.room.clampWalk(c.x + 22, Math.max(c.ground, 380)); return [{ walk: [x, y] }, { face: -1 }, line('selfie'), { do: () => c.set('sit', 4) },
+      { work: { pose: 'carry', dur: 1.4 } }, { do: () => { NX.objects.laser.flash = 1; NX.ui.hud.toast(NX.t('ui.photo')); NX.nexi.emote('love'); } }, { work: { pose: 'cheer', dur: 1.2 } }]; } },
+
     wander: { color: '#3be8ff', route() { const b = NX.room.walkBounds(); return [{ walk: NX.room.clampWalk(80 + Math.random() * 1380, b.minY + Math.random() * (b.maxY - b.minY)) }, { work: { pose: 'look', dur: 3 } }]; } },
 
     beanbag: { color: '#d94bff', route() { const [x, y] = NX.objects.lounge.pos, k = NX.px.depthK(y); return [{ walk: [x + 30 * k, y + 8] }, { hop: [x, y - 22 * k] }, { loc: 'beanbag' }, { face: 1 }, line('beanbag'), { work: { pose: 'sitRead', dur: 11 } }]; } },

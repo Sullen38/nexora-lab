@@ -12,6 +12,8 @@
  * ========================================================================== */
 NX.room = {
   img: new Image(), ceil: null, front: null,
+  /** Скільки пікселів картинки на 1 одиницю кімнати (картинка 3072×736 -> RS = 2: удвічі чіткіше). */
+  get RS() { return (this.img.naturalWidth || NX.cfg.ROOM_W) / NX.cfg.ROOM_W; },
   load(src) { return new Promise(r => { this.img.onload = r; this.img.src = src; }); },
 
   /** Перебудова добудованих шарів (на старті та при зміні розміру вікна). */
@@ -36,9 +38,9 @@ NX.room = {
     //    з'являється плавно (на шві її не видно)
     this.front = document.createElement('canvas'); this.front.width = W; this.front.height = front + 2;
     c = this.front.getContext('2d');
-    c.drawImage(this.img, 0, H - 4, W, 4, 0, 0, W, front + 2);
+    const RS = this.RS; c.drawImage(this.img, 0, (H - 4) * RS, W * RS, 4 * RS, 0, 0, W, front + 2);
     const ref = Math.min(front, 240);
-    c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(this.img, 0, H - ref - 14, W, ref, 0, -ref, W, ref); c.restore();
+    c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(this.img, 0, (H - ref - 14) * RS, W * RS, ref * RS, 0, -ref, W, ref); c.restore();
     g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(10,6,34,0)'); g.addColorStop(.18, 'rgba(10,6,34,.35)'); g.addColorStop(.75, 'rgba(6,6,26,.9)'); g.addColorStop(1, 'rgba(4,5,20,1)');
     c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
     const gr = document.createElement('canvas'); gr.width = W; gr.height = front + 2; const gc = gr.getContext('2d');
@@ -52,7 +54,7 @@ NX.room = {
   draw(c, t) {
     const { ROOM_H: H } = NX.cfg, { top } = NX.cam;
     c.drawImage(this.ceil, 0, -top);
-    c.drawImage(this.img, 0, 0);
+    c.drawImage(this.img, 0, 0, NX.cfg.ROOM_W, NX.cfg.ROOM_H);
     const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(0, 0, NX.cfg.ROOM_W, 22);
     c.drawImage(this.front, 0, H);
   },

@@ -1,11 +1,11 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij' },
+  ui: { photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij' },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   board: { title: 'ZADANIA NEXI', waiting: 'CZEKAM NA ZADANIE...' },
   obj: { vacuum: 'Robot sprzątający', aiPc: 'Centrum AI · komputer', taskboard: 'Tablica zadań', analytics: 'Analityka', marketing: 'Marketing', coffee: 'Ekspres do kawy', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', fountain: 'Fontanna', lounge: 'Pufa', lamp: 'Lampa', plant: 'Roślina', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
-  kozak: { oops: 'Ups! Nie ten portal...' },
+  kozak: { oops: 'Ups! Chyba nie ten zamek...' },
   portal: { choose: 'DOKĄD LECIMY?', dest: { projects: 'Projekty', team: 'Zespół', clients: 'Klienci' },
     go: { projects: 'Lecę do projektów! Sprawdzę terminy.', team: 'Zajrzę do zespołu — kto co robi.', clients: 'Lecę do klientów po nowe wiadomości.' },
     res: { projects: 'Projekty: 3 aktywne, jeden termin jutro. Wszystko zapisałem.', team: 'Zespół: 4 osoby online, dwie czekają na Twoją odpowiedź.', clients: 'Klienci: 3 nowe zgłoszenia, na dwa już odpowiedziałem.' } },
@@ -33,6 +33,8 @@ NX.i18n.add('pl', {
     water: { title: 'Podlać roślinę', steps: ['Biorę konewkę', 'Podlewam 🌱'], lines: ['Rośliny też potrzebują troski. Podleję!', 'Zieloni przyjaciele kochają wodę.'] },
     window: { title: 'Popatrzeć na miasto', steps: ['Idę do okna', 'Podziwiam miasto'], lines: ['Zobacz, jakie dziś miasto! Odpalę mały pokaz fajerwerków.', 'Kocham ten widok. Ile firm tam teraz pracuje...'] },
     kickBall: { title: 'Gra w piłkę', steps: ['Biegnę do piłki', 'Podanie do Rudego!'], lines: ['Rudy, łap!', 'Podanie! Kto szybszy?'] },
+    laser: { title: 'Laser dla Rudego', steps: ['Włączam laser', 'Łap kropkę!'], lines: ['Rudy, łap czerwoną kropkę!', 'Kto szybszy — kot czy laser?'] },
+    selfie: { title: 'Selfie z Rudym', steps: ['Wołam Rudego', 'Cheese! 📸'], lines: ['Rudy, robimy selfie!', 'Zdjęcie na social media Nexora!'] },
     skinLab: { lines: ['Zmieńmy mój wygląd! Wybierz skórki po prawej.'] },
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
@@ -48,5 +50,5 @@ NX.i18n.add('pl', {
     mood: { happy: 'Radość', love: 'Miłość', surprise: 'Zdziwienie', idea: 'Pomysł', sleepy: 'Senność', sad: 'Smutek', angry: 'Złość', cool: 'Luz' },
     act: { stand: 'Stoi', walk: 'Chodzi', run: 'Biegnie', wave: 'Macha', think: 'Myśli', point: 'Wskazuje', talk: 'Opowiada', cheer: 'Cieszy się', spin: 'Obrót', stretch: 'Przeciąga się', look: 'Rozgląda się', jump: 'Skacze', work: 'Pracuje', sleep: 'Śpi', dance: 'Tańczy', read: 'Czyta', meditate: 'Medytuje', bye: 'Żegna się', drink: 'Pije kawę', hammer: 'Naprawia' },
   },
-  kw: { ai: 'ai|czat|mail|tekst|odpowied|klient', analytics: 'analit|raport|sprzeda|metryk|dane|liczb', marketing: 'market|reklam|post|kampani|newsletter', tools: 'narzędz|integrac|crm|kalendarz|poczt', portal: 'portal|projekt|zespół', coffee: 'kaw', petCat: 'kot|rudy|pogłaszcz', feedCat: 'nakarm|karm', sofa: 'kanap|odpocz|czytaj', sleep: 'spać|sen|drzemk', dance: 'tańcz|taniec', home: 'dom|stacj|start', fountain: 'fontann|monet|życzen', window: 'okno|miasto|fajerwer', water: 'podlej|rośli|kwiat', lamp: 'światł|lamp', skin: 'skórk|wygląd|kolor|strój' },
+  kw: { laser: 'laser|kropk', selfie: 'selfie|zdjęc', ai: 'ai|czat|mail|tekst|odpowied|klient', analytics: 'analit|raport|sprzeda|metryk|dane|liczb', marketing: 'market|reklam|post|kampani|newsletter', tools: 'narzędz|integrac|crm|kalendarz|poczt', portal: 'portal|projekt|zespół', coffee: 'kaw', petCat: 'kot|rudy|pogłaszcz', feedCat: 'nakarm|karm', sofa: 'kanap|odpocz|czytaj', sleep: 'spać|sen|drzemk', dance: 'tańcz|taniec', home: 'dom|stacj|start', fountain: 'fontann|monet|życzen', window: 'okno|miasto|fajerwer', water: 'podlej|rośli|kwiat', lamp: 'światł|lamp', skin: 'skórk|wygląd|kolor|strój' },
 });

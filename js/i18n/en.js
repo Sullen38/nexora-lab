@@ -1,11 +1,11 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
+  ui: { photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   board: { title: 'NEXI TASKS', waiting: 'WAITING FOR A TASK...' },
   obj: { vacuum: 'Robot vacuum', aiPc: 'AI center · computer', taskboard: 'Task board', analytics: 'Analytics', marketing: 'Marketing', coffee: 'Coffee machine', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', fountain: 'Fountain', lounge: 'Beanbag', lamp: 'Floor lamp', plant: 'Plant', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
-  kozak: { oops: 'Oops! Wrong portal...' },
+  kozak: { oops: 'Oops! Wrong castle...' },
   portal: { choose: 'WHERE TO?', dest: { projects: 'Projects', team: 'Team', clients: 'Clients' },
     go: { projects: 'Off to the projects! I will check the deadlines.', team: "I'll drop by the team and see who's doing what.", clients: 'Flying to the clients to collect new messages.' },
     res: { projects: 'Projects: 3 active, one deadline tomorrow. Noted everything.', team: 'Team: 4 people online, two are waiting for your reply.', clients: 'Clients: 3 new requests, I already answered two.' } },
@@ -33,6 +33,8 @@ NX.i18n.add('en', {
     water: { title: 'Water the plant', steps: ['Grabbing the can', 'Watering 🌱'], lines: ['Plants need care too. Watering time!', 'Green friends love water.'] },
     window: { title: 'Look at the city', steps: ['Going to the window', 'Enjoying the view'], lines: ['Look at the city today! Let me set off some fireworks.', 'I love this view. So many businesses working out there...'] },
     kickBall: { title: 'Play with the ball', steps: ['Running to the ball', 'Pass to Ginger!'], lines: ['Ginger, catch!', "Pass! Who's faster?"] },
+    laser: { title: 'Laser for Ginger', steps: ['Laser on', 'Catch the dot!'], lines: ['Ginger, catch the red dot!', 'Who is faster — cat or laser?'] },
+    selfie: { title: 'Selfie with Ginger', steps: ['Calling Ginger', 'Cheese! 📸'], lines: ['Ginger, selfie time!', 'A photo for Nexora socials!'] },
     skinLab: { lines: ["Let's change my look! Pick skins on the right."] },
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
@@ -48,5 +50,5 @@ NX.i18n.add('en', {
     mood: { happy: 'Joy', love: 'Love', surprise: 'Surprise', idea: 'Idea', sleepy: 'Sleepy', sad: 'Sad', angry: 'Angry', cool: 'Cool' },
     act: { stand: 'Stand', walk: 'Walk', run: 'Run', wave: 'Wave', think: 'Think', point: 'Point', talk: 'Talk', cheer: 'Cheer', spin: 'Spin', stretch: 'Stretch', look: 'Look around', jump: 'Jump', work: 'Work', sleep: 'Sleep', dance: 'Dance', read: 'Read', meditate: 'Meditate', bye: 'Bye', drink: 'Coffee', hammer: 'Repair' },
   },
-  kw: { ai: 'ai|chat|email|mail|text|answer|reply|client', analytics: 'analyt|report|sales|metric|data|numbers', marketing: 'market|ads|advert|post|campaign|newsletter', tools: 'tool|integrat|crm|calendar', portal: 'portal|project|team', coffee: 'coffee', petCat: 'cat|ginger|pet', feedCat: 'feed|food', sofa: 'sofa|rest|read', sleep: 'sleep|nap', dance: 'dance', home: 'home|dock', fountain: 'fountain|coin|wish', window: 'window|city|firework', water: 'water|plant|flower', lamp: 'light|lamp', skin: 'skin|look|color|outfit' },
+  kw: { laser: 'laser|dot', selfie: 'selfie|photo', ai: 'ai|chat|email|mail|text|answer|reply|client', analytics: 'analyt|report|sales|metric|data|numbers', marketing: 'market|ads|advert|post|campaign|newsletter', tools: 'tool|integrat|crm|calendar', portal: 'portal|project|team', coffee: 'coffee', petCat: 'cat|ginger|pet', feedCat: 'feed|food', sofa: 'sofa|rest|read', sleep: 'sleep|nap', dance: 'dance', home: 'home|dock', fountain: 'fountain|coin|wish', window: 'window|city|firework', water: 'water|plant|flower', lamp: 'light|lamp', skin: 'skin|look|color|outfit' },
 });

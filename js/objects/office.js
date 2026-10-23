@@ -27,8 +27,9 @@
         const X = this.x + this.off, Y = this.y;
         return [{ y: Y + this.seat[1] - .5, draw: c => {
           c.save(); c.imageSmoothingEnabled = false;
-          c.translate(X + this.img.width / 2, Y + this.img.height); c.scale(1 + this.wob * .03, 1); c.translate(-this.img.width / 2, -this.img.height);
-          if (this.img.complete) c.drawImage(this.img, 0, 0); c.restore();
+          const iw = this.img.naturalWidth / 2, ih = this.img.naturalHeight / 2;   // PNG крісла в 2× роздільності
+          c.translate(X + iw / 2, Y + ih); c.scale(1 + this.wob * .03, 1); c.translate(-iw / 2, -ih);
+          if (this.img.complete) c.drawImage(this.img, 0, 0, iw, ih); c.restore();
         } }];
       },
     });

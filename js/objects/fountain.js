@@ -1,13 +1,50 @@
 /* ============================================================================
- * objects/fountain.js — ФОНТАН З ГОЛОГРАФІЧНОЮ СТАТУЄЮ (передня частина кімнати)
+ * objects/fountain.js — ФОНТАН З ГОЛОГРАМОЮ ГЕРБА УКРАЇНИ (передня частина кімнати)
  * ----------------------------------------------------------------------------
  * Кругла чаша з неоновим бортиком, вода з брижами, чотири струмені.
- * Над колоною обертається голографічна статуя Nexi в героїчній позі.
- * Взаємодія (сценарій 'fountain'): Nexi кидає монетку -> сплеск, іскри,
- * статуя спалахує і змінює колір. Кіт іноді п'є з фонтану.
+ * Над колоною по колу обертається голографічний герб України (тризуб).
+ * Взаємодія (сценарій 'fountain'): Nexi кидає монетку -> сплеск, іскри, герб спалахує. Кіт іноді п'є з фонтану.
  * ========================================================================== */
 NX.addObject({
   id: 'fountain', name: 'obj.fountain', act: 'fountain', pos: [1120, 450], hue: 190, flash: 0, cv: document.createElement('canvas'), tc: document.createElement('canvas'),
+  // Герб: S — синій щит, B — світлий кант, Y — золотий тризуб
+  TRYZUB: [
+    'BBBBBBBBBBBBBBBBBBBBBBBBB',
+    'BSSSSSSSSSSSSSSSSSSSSSSSB',
+    'BSSSSSSSSSSSSSSSSSSSSSSSB',
+    'BSSSSSSSSSSSYSSSSSSSSSSSB',
+    'BSSSSSSSSSSYYYSSSSSSSSSSB',
+    'BSSSSSSSSSSYYYSSSSSSSSSSB',
+    'BSSSYSSSSSSYYYSSSSSSYSSSB',
+    'BSSYYSSSSSSYYYSSSSSSYYSSB',
+    'BSSYYSSSSSSYYYSSSSSSYYSSB',
+    'BSSYYSSSSSSYYYSSSSSSYYSSB',
+    'BSSYYSSSSSYYYYYSSSSSYYSSB',
+    'BSSYYSSSSSYYSYYSSSSSYYSSB',
+    'BSSYYSSSSYYSSSYYSSSSYYSSB',
+    'BSSYYSSSSYYSSSYYSSSSYYSSB',
+    'BSSYYSSSSYYSSSYYSSSSYYSSB',
+    'BSSYYSSSSSYYSYYSSSSSYYSSB',
+    'BSSYYSSSSSYYYYYSSSSSYYSSB',
+    'BSSYYSSSSSSYYYSSSSSSYYSSB',
+    'BSSYYSSSSSSYYYSSSSSSYYSSB',
+    'BSSYYYSSSSSYYYSSSSSYYYSSB',
+    'BSSYYYYSSSSYYYSSSSYYYYSSB',
+    'BSSYYYYYSSSYYYSSSYYYYYSSB',
+    'BSSYYSYYYSSYYYSSYYYSYYSSB',
+    'BSSYYSSYYYYYYYYYYYSSYYSSB',
+    'BSSYYYYYYYYYYYYYYYYYYYSSB',
+    'BSSSYYYYYYYYYYYYYYYYYSSSB',
+    'BSSSSSSSSSSYYYSSSSSSSSSSB',
+    'BBSSSSSSSSYYYYYSSSSSSSSBB',
+    '.BBSSSSSSSSYYYSSSSSSSSBB.',
+    '..BBBSSSSSSSYSSSSSSSBBB..',
+    '....BBBSSSSSSSSSSSBBB....',
+    '......BBBSSSSSSSBBB......',
+    '........BBBSSSBBB........',
+    '..........BBBBB..........',
+    '............B............',
+  ],
   get hit() { const [x, y] = this.pos, k = NX.px.depthK(y); return { x: x - 40 * k, y: y - 110 * k, w: 80 * k, h: 114 * k }; },
   layout() { const F = NX.cam.front; this.pos = [1120, Math.round(368 + Math.max(62, F * .44))]; },
   /** Монетка впала у воду. */
@@ -34,16 +71,16 @@ NX.addObject({
       for (let j = 0; j < 4; j++) { const dir = [-1, 1, -.5, .5][j], reach = [24, 24, 14, 14][j];
         for (let i = 0; i < 7; i++) { const ph = (t * 1.2 + i / 7 + j * .13) % 1, dx = dir * reach * ph, dy = -10 * Math.sin(ph * Math.PI) + ph * 26;
           P.rect(c, x + 2 + dx, y - 38 + dy, 1.5, 2, ph > .85 ? '#ffffff' : '#7ad0ff'); } }
-      // --- голографічна статуя Nexi
-      renderBot(NX.nexi.look, poseFor('cheer', .3, false), t, this.cv);
-      const tc = this.tc; tc.width = SW; tc.height = SH; const tx = tc.getContext('2d'); tx.drawImage(this.cv, 0, 0);
-      tx.globalCompositeOperation = 'source-atop'; tx.fillStyle = `hsla(${this.hue},90%,60%,.55)`; tx.fillRect(0, 0, SW, SH);
-      for (let yy = Math.floor(t * 12) % 3; yy < SH; yy += 3) { tx.fillStyle = 'rgba(255,255,255,.25)'; tx.fillRect(0, yy, SW, 1); }
-      const sx = Math.cos(t * .9), s = 1.15, w = SW * s * Math.max(.1, Math.abs(sx)), h = SH * s, by = y - 42 + Math.sin(t * 1.5) * 2;
-      const cone = c.createLinearGradient(0, by - h, 0, y - 38); cone.addColorStop(0, 'rgba(0,0,0,0)'); cone.addColorStop(1, `hsla(${this.hue},90%,60%,.35)`);
-      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = cone; c.beginPath(); c.moveTo(x + 2 - 6, y - 38); c.lineTo(x + 2 + 6, y - 38); c.lineTo(x + 2 + 26, by - h + 8); c.lineTo(x + 2 - 26, by - h + 8); c.fill(); c.restore();
-      c.save(); c.globalAlpha = .75 + this.flash * .25; c.imageSmoothingEnabled = false; c.translate(x + 2, 0); c.scale(sx < 0 ? -1 : 1, 1); c.drawImage(tc, -w / 2, by - FOOT * s, w, h); c.restore();
-      P.glow(c, x + 2, by - 30, 50, `hsla(${this.hue},90%,60%,.8)`, .35 + this.flash * .6);
+      // --- голограма: ГЕРБ УКРАЇНИ (тризуб на щиті) обертається по колу
+      const tc = this.tc, G = this.TRYZUB, gw = G[0].length, gh = G.length; tc.width = gw; tc.height = gh; const tx = tc.getContext('2d');
+      G.forEach((r, j) => [...r].forEach((ch, i) => { if (ch === '.') return; tx.fillStyle = ch === 'S' ? '#2a6aff' : ch === 'B' ? '#9ad0ff' : (i + j + Math.floor(t * 6)) % 9 ? '#ffd02a' : '#fff6c0'; tx.fillRect(i, j, 1, 1); }));
+      tx.globalCompositeOperation = 'source-atop'; for (let yy = Math.floor(t * 12) % 3; yy < gh; yy += 3) { tx.fillStyle = 'rgba(255,255,255,.22)'; tx.fillRect(0, yy, gw, 1); }
+      const sx = Math.cos(t * 1.2), s = 1.05, w = gw * s * Math.max(.06, Math.abs(sx)), h = gh * s, by = y - 44 + Math.sin(t * 1.5) * 2;
+      const cone = c.createLinearGradient(0, by - h, 0, y - 38); cone.addColorStop(0, 'rgba(0,0,0,0)'); cone.addColorStop(1, 'rgba(255,208,42,.32)');
+      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = cone; c.beginPath(); c.moveTo(x - 4, y - 38); c.lineTo(x + 8, y - 38); c.lineTo(x + 2 + 22, by - h + 4); c.lineTo(x + 2 - 22, by - h + 4); c.fill(); c.restore();
+      c.save(); c.globalAlpha = (.72 + this.flash * .28) * (.85 + .15 * Math.sin(t * 17)); c.imageSmoothingEnabled = false; c.translate(x + 2, 0); c.scale(sx < 0 ? -1 : 1, 1); c.drawImage(tc, -w / 2, by - h, w, h); c.restore();
+      if (Math.abs(sx) < .12) for (let k2 = 0; k2 < 3; k2++) NX.px.rect(c, x + 2 + (Math.random() - .5) * 20, by - Math.random() * h, 1.5, 1.5, '#fff6c0');   // відблиск, коли герб "ребром"
+      P.glow(c, x + 2, by - h / 2, 46, 'rgba(255,208,42,.8)', .35 + this.flash * .6);
       if (this.flash > 0) P.glow(c, x, y - 12, 50, 'rgba(255,255,255,.9)', this.flash * .7);
     }) }];
   },
