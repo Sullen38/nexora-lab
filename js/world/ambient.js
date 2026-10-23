@@ -38,10 +38,6 @@ NX.ambient = {
     // екрани: світіння + скан-лінія
     this.screens.forEach(([x, y, w, h, col], i) => { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .08 + .06 * Math.sin(t * 1.3 + i); c.fillStyle = col; c.fillRect(x, y, w, h); c.globalAlpha = .3; c.fillRect(x + 3, y + ((t * .35 + i * .17) % 1) * h, w - 6, 1); c.restore(); });
     P.glow(c, 165, 135, 45, 'rgba(255,120,240,.8)', .2 + .2 * Math.sin(t * 2.4));   // "мозок" AI-центру
-    // табличка над столом (на картинці був нечитабельний напис) — тепер "AI CHAT" з іконкою
-    P.rect(c, 331, 94, 56, 34, '#070b26'); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.strokeRect(331.5, 94.5, 55, 33);
-    P.rect(c, 337, 103, 12, 8, '#3be8ff'); P.rect(c, 339, 111, 3, 2, '#3be8ff'); P.rect(c, 339, 106, 2, 2, '#070b26'); P.rect(c, 343, 106, 2, 2, '#070b26');
-    P.text(c, 'AI', 353, 108, '#ff7af0', 5); P.text(c, 'CHAT', 353, 117, '#3be8ff', 5); if (Math.sin(t * 3) > 0) P.rect(c, 380, 98, 3, 3, '#3bff8a');
     this.lamps.forEach(([x, y], i) => P.glow(c, x, y, 22, 'rgba(255,200,90,.9)', .28 + .18 * Math.sin(t * 3.1 + i * 2) + (P.hash(Math.floor(t * 8) + i) > .97 ? -.2 : 0)));
   },
 };

@@ -37,7 +37,6 @@ NX.nexi = {
       aiDesk: [{ fly: P.aiDesk.floor }], chairA: [up, { hop: P.analytics.floor }], chairM: [up, { hop: P.marketing.floor }],
       sofaSit: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
       hover: [up, { fly: P.tools.floor }], portalStep: [{ walk: P.portal.floor }],
-      beanbag: [{ hop: [NX.objects.lounge.pos[0] + 30 * NX.px.depthK(NX.objects.lounge.pos[1]), NX.objects.lounge.pos[1] + 8] }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) { if (this.task && done && !this.task.auto) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
@@ -104,8 +103,7 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_SLEEP && this.loc !== 'sofaLie') { this.do('sleep', false); return; }
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
-      if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
-      const pool = ['sofa', 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'petCat', 'window', 'water', 'kickBall'];
+      const pool = ['sofa', 'petCat', 'dance', 'home', 'wander', 'window', 'water', 'petCat', 'analytics', 'ai'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
   },
