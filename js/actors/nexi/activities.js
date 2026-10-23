@@ -25,8 +25,8 @@
 
     portal: { nav: 'portal', color: '#d94bff', route() {
       const p = P().portal, o = NX.objects.portal, d = o.dest || 'projects';
-      return [{ walk: p.floor }, { walk: [1384, 356] }, { face: 1 }, { say: NX.t('portal.go.' + d) },
-        { work: { pose: 'push', dur: 1.6, back: true, start: () => o.phase = 'charge' } }, { do: () => { NX.nexi.back = false; } },
+      return [{ walk: p.floor }, { face: 1 }, { say: NX.t('portal.go.' + d) },
+        { work: { pose: 'scan', dur: 1.6, start: () => o.phase = 'charge' } },
         { walk: p.step }, { loc: 'portalStep' }, { face: 1 }, { work: { pose: 'crouch', dur: .3 } },
         { do: () => o.phase = 'travel' }, { fade: { alpha: 0, zoom: .25, y: p.gate[1], dur: 1.1, spin: true } },
         { work: { pose: 'stand', dur: 3.6 } },

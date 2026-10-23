@@ -68,7 +68,7 @@ NX.cat = {
   layer() {
     return { y: this.y + (this.alt > 0 ? 6 : 0), refl: true, draw: c => {
       const s = NX.room.scaleAt(this.ground) * .82, lift = this.riding ? 5 * NX.px.depthK(this.y) : 0, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
-      drawCat(this.pose, this.frame, NX.time, this.cv);
+      if (this._rt !== NX.time) { this._rt = NX.time; drawCat(this.pose, this.frame, NX.time, this.cv); }
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();
       c.imageSmoothingEnabled = false; c.translate(this.x, 0); c.scale(this.dir, 1); c.drawImage(this.cv, -w / 2, this.y - h + s - lift, w, h); c.restore();
     } };

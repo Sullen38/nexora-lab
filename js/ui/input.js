@@ -15,6 +15,7 @@ NX.input = {
   onTap(x, y) {
     NX.ui.hud.firstTouch();
     if (NX.nexi.hitTest(x, y)) { NX.nexi.lastCmd = NX.time; if (NX.nexi.loc === 'sofaLie') { NX.nexi.emote('surprise'); NX.nexi.do('home'); } else { NX.nexi.temp = 'wave'; NX.nexi.tempT = NX.time + 2; NX.ui.skinlab.show(); } return; }
+    const gv = NX.visitors.hit(x, y); if (gv) { NX.visitors.tap(gv); return; }
     if (NX.cat.hitTest(x, y)) { NX.fx.emit('note', NX.cat.x, NX.cat.y - 24); NX.nexi.do('petCat'); return; }
     for (const ob of Object.values(NX.objects)) if (ob.tapFirst && ob.tapFirst(x, y)) return;   // напр. меню порталу
     const o = this.objectAt(x, y); if (o) { if (o.onTap && o.onTap(x, y)) return; NX.nexi.do(o.act); return; }

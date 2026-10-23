@@ -13,6 +13,10 @@
  *   depthK(y) / depth(c,x,y,fn) – ПЕРСПЕКТИВА: предмет ближче до глядача
  *                                малюється більшим (як і Nexi)
  * ========================================================================== */
+// ШВИДКОДІЯ: canvas shadowBlur (розмита тінь) дуже повільний, особливо на телефонах
+// (сцена падала з 45 до 14 кадрів/с). Вимикаємо його глобально — неонове світіння
+// дають швидкі радіальні відблиски NX.px.glow().
+try { Object.defineProperty(CanvasRenderingContext2D.prototype, 'shadowBlur', { set() {}, get() { return 0; } }); } catch (e) {}
 NX.px = (() => {
   const hx = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
