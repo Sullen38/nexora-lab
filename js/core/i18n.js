@@ -5,18 +5,19 @@
  *   NX.t('nav.ai')          -> рядок поточною мовою (або масив, якщо там масив)
  *   NX.t('a.{n}', {n: 5})   -> підставляє змінні у {фігурні дужки}
  *   NX.pick('act.ai.lines') -> випадковий рядок з масиву
- * Мова обирається АВТОМАТИЧНО за мовою телефону/браузера (uk, en, pl, nl),
- * інакше English. Перемикача в інтерфейсі немає. Для тесту: додай до адреси
- * #lang-pl (або -en, -nl, -uk).
+ * Зараз мова за замовчуванням — українська (detect()). Для тесту інших мов
+ * додай до адреси #lang-en, #lang-pl або #lang-nl.
  * ========================================================================== */
 NX.i18n = {
   LANGS: ['uk', 'en', 'pl', 'nl'], LABEL: { uk: 'UA', en: 'EN', pl: 'PL', nl: 'NL' },
   lang: 'uk', dict: {},
   add(lang, obj) { this.dict[lang] = obj; },
+  /** Поки що за замовчуванням УКРАЇНСЬКА. Інша мова — лише через адресу #lang-en / #lang-pl / #lang-nl.
+   *  (Щоб знову брати мову телефону — розкоментуй рядок з navigator.languages.) */
   detect() {
     const h = (location.hash.match(/lang-(\w\w)/) || [])[1]; if (this.LANGS.includes(h)) return h;
-    for (const l of (navigator.languages || [navigator.language || 'en'])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
-    return 'en';
+    // for (const l of (navigator.languages || [])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
+    return 'uk';
   },
   set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); },
   get(obj, key) { return key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); },

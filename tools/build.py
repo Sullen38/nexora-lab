@@ -11,10 +11,12 @@ html = (root / 'index.html').read_text(encoding='utf-8')
 css = (root / 'css/hud.css').read_text(encoding='utf-8')
 html = html.replace('<link rel="stylesheet" href="css/hud.css">', '<style>\n' + css + '\n</style>')
 img = base64.b64encode((root / 'assets/room.webp').read_bytes()).decode()
+assets = {f.name: 'data:image/png;base64,' + base64.b64encode(f.read_bytes()).decode() for f in sorted((root / 'assets').glob('*.png'))}
+import json
 def inline(m):
     src = m.group(1)
     return '<script>\n/* ---- ' + src + ' ---- */\n' + (root / src).read_text(encoding='utf-8') + '\n</script>'
-html = html.replace('<script src="js/core/namespace.js"></script>', '<script>window.NX_ROOM_SRC="data:image/webp;base64,' + img + '";</script>\n<script src="js/core/namespace.js"></script>')
+html = html.replace('<script src="js/core/namespace.js"></script>', '<script>window.NX_ROOM_SRC="data:image/webp;base64,' + img + '";window.NX_ASSETS=' + json.dumps(assets) + ';</script>\n<script src="js/core/namespace.js"></script>')
 html = re.sub(r'<script src="(js/[^"]+)"></script>', inline, html)
 (root / 'dist').mkdir(exist_ok=True)
 (root / 'dist/nexora-lab.html').write_text(html, encoding='utf-8')

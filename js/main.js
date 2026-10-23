@@ -10,7 +10,7 @@
   try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}')); } catch (e) {}
   NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();
   NX.loop.start();
-  [NX.nexi.x, NX.nexi.y] = NX.objects.home.home; NX.nexi.gy = NX.nexi.y;
+  [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y;
   NX.ui.chat.add('b', NX.t('chat.greet'));
   setTimeout(() => NX.nexi.do('home', false), 600);
 })();

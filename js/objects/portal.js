@@ -3,7 +3,7 @@
  * ----------------------------------------------------------------------------
  * Тап по порталу відкриває голо-меню з трьома напрямками (Проєкти / Команда /
  * Клієнти). Обраний напрямок -> сценарій 'portal' (activities.js):
- *   Nexi стає на сходинку порталу -> phase 'charge' (вихор розкручується, частинки
+ *   Nexi натискає пульт -> phase 'charge' (вихор розкручується, частинки
  *   затягує всередину) -> Nexi закручується й зникає -> phase 'travel'
  *   (над порталом голо-вікно з тим, що він там робить) -> phase 'return'
  *   (спалах, Nexi вилітає назад з планшетом і розповідає результат).
@@ -19,7 +19,7 @@ NX.addObject({
     for (let i = 0; i < 3; i++) { const r = this.optRect(i); if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) { this.menu = 0; this.dest = this.DESTS[i]; NX.nexi.do('portal'); return true; } }
     return false;
   },
-  onTap() { if (this.phase !== 'idle') return true; this.menu = 9; NX.fx.emit('portal', 1330, 230); return true; },
+  onTap() { if (this.phase !== 'idle') return true; if (NX.kozak.pop()) { setTimeout(() => { this.menu = 9; }, 3500); return true; } this.menu = 9; return true; },
   update(dt) {
     this.menu = Math.max(0, this.menu - dt); this.flash = Math.max(0, this.flash - dt * 2);
     const target = { idle: 0, charge: .7, travel: 1, return: 1 }[this.phase]; this.flare += (target - this.flare) * Math.min(1, dt * 3);
@@ -53,7 +53,17 @@ NX.addObject({
     c.restore();
   },
   layers(t) {
-    const L = [];
+    const L = [{ y: 338, draw: c => {                                        // пульт керування
+      const P = NX.px, on = this.phase !== 'idle';
+      P.cube(c, 1366, 338, 36, 58, 6, '#1c1440', '#2e2266', '#120c2c');
+      P.rect(c, 1370, 285, 28, 18, '#06061e'); c.strokeStyle = on ? '#ff4fd8' : '#7a3a9a'; c.lineWidth = 1; c.strokeRect(1370.5, 285.5, 27, 17);
+      if (this.phase === 'charge') { P.text(c, '>>', 1373, 296, '#ffe27a', 4); P.rect(c, 1373, 299, 22 * ((t * 1.2) % 1), 2, '#ff4fd8'); }
+      else if (this.phase === 'travel') { P.text(c, NX.t('portal.dest.' + this.dest).slice(0, 5).toUpperCase(), 1372, 296, this.ICON[this.dest], 3.5); }
+      else { c.beginPath(); c.ellipse(1384, 294, 6, 6, 0, t * 3, t * 3 + 4.5); c.stroke(); }
+      [0, 1, 2].forEach(i => P.rect(c, 1372 + i * 9, 308, 6, 4, on && Math.floor(t * 6) % 3 === i ? '#3be8ff' : '#3a2a6a'));
+      P.rect(c, 1372, 316, 24, 2, '#d94bff'); P.rect(c, 1382, 274, 4, 6, '#5a6590'); P.rect(c, 1381, 271, 6, 3, Math.sin(t * 6) > 0 ? '#ff4fd8' : '#7a3a9a');
+      P.glow(c, 1384, 294, 22, 'rgba(217,75,255,.6)', on ? .8 : .35);
+    } }];
     if (this.menu > 0) L.push({ y: 1e5, draw: c => {                          // голо-меню напрямків
       const P = NX.px, a = Math.min(1, this.menu * 2); c.save(); c.globalAlpha = a;
       P.rect(c, 1286, 178, 90, 90, '#06102ee8'); P.holo(c, 1286, 178, 90, 90, '#d94bff', t, 1); P.text(c, NX.t('portal.choose'), 1291, 189, '#ff7af0', 4.2);

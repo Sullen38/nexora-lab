@@ -19,6 +19,7 @@ function poseFor(a,t,moving){
  case'reach':{p.ra={x:4+Math.round(Math.sin(t*1.5708)),y:-8+Math.round(Math.cos(t*3.14159))};p.tool='cable';p.hx=1;break}
  case'shout':{p.ra={x:5,y:-3};p.tool='mega';p.talk=1;p.la={x:-4,y:2+Math.round(Math.sin(t*6.28319)*2)};break}
  case'type':{const k=Math.floor(t*9)%2;p.la={x:-3,y:3+k};p.ra={x:3,y:4-k};p.hy=1;break}
+ case'sitWork':{const k=Math.floor(t*9)%2;p.sit=1;p.bob=3;p.la={x:-5,y:1+k};p.ra={x:-3,y:2-k};p.hx=-1;if(Math.floor(t/3)%3===2){p.face='think';p.la={x:-3,y:5};p.ra={x:3,y:-6}}break}
  case'sitType':{const k=Math.floor(t*9)%2;p.back=1;p.sit=1;p.bob=3;p.la={x:-2,y:-2+k};p.ra={x:2,y:-1-k};break}
  case'sit':p.sit=1;p.bob=3;p.la={x:-3,y:4};p.ra={x:3,y:4};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};break;
  case'sitRead':p.sit=1;p.bob=3;p.la={x:3,y:2};p.ra={x:-1,y:2};p.hy=1;p.book=1;break;

@@ -34,7 +34,7 @@ NX.loop = {
     const now = performance.now() / 1000, dt = Math.min(.05, now - this.last); this.last = now; NX.time += dt;
     const t = NX.time, c = this.c;
     // ---- 1. логіка
-    NX.nexi.update(dt, t); NX.cat.update(dt, t);
+    NX.nexi.update(dt, t); NX.cat.update(dt, t); NX.kozak.update(dt);
     Object.values(NX.objects).forEach(o => o.update && o.update(dt, t));
     NX.fx.update(dt); NX.ui.hud.update(dt, t);
     NX.cam.follow(NX.nexi.x, dt);
@@ -48,8 +48,16 @@ NX.loop = {
     NX.ambient.draw(c, t);
     const objs = Object.values(NX.objects);
     objs.forEach(o => o.drawBack && o.drawBack(c, t));
-    const list = [NX.nexi.layer(), NX.cat.layer()];
+    const list = [NX.nexi.layer(), NX.cat.layer(), NX.kozak.layer()];
     objs.forEach(o => o.layers && list.push(...o.layers(t)));
+    // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true),
+    // малюється ще раз догори дриґом напівпрозоро — предмети "вростають" у стиль картинки
+    // (малюємо в окремий шар, потім кладемо його на підлогу прозоро й з затуханням донизу)
+    const R = this.refl || (this.refl = document.createElement('canvas')); if (R.width !== this.canvas.width || R.height !== this.canvas.height) { R.width = this.canvas.width; R.height = this.canvas.height; }
+    const rc = R.getContext('2d'); rc.setTransform(1, 0, 0, 1, 0, 0); rc.clearRect(0, 0, R.width, R.height); rc.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k); rc.imageSmoothingEnabled = false;
+    list.filter(l => l && l.refl && l.y > NX.cfg.ROOM_H).forEach(l => { rc.save(); rc.translate(0, 2 * l.y + 1); rc.scale(1, .55 * -1 / .55); rc.scale(1, .55); rc.translate(0, 0); l.draw(rc, t); rc.restore(); });
+    rc.setTransform(1, 0, 0, 1, 0, 0); rc.globalCompositeOperation = 'destination-in'; const fy = (NX.cfg.ROOM_H + NX.cam.top) * k, fg = rc.createLinearGradient(0, fy, 0, R.height); fg.addColorStop(0, 'rgba(0,0,0,.9)'); fg.addColorStop(1, 'rgba(0,0,0,0)'); rc.fillStyle = fg; rc.fillRect(0, 0, R.width, R.height); rc.globalCompositeOperation = 'source-over';
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .22; c.drawImage(R, 0, 0); c.restore();
     list.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(c, t));
     NX.fx.draw(c);
     NX.input.drawHover(c, t);

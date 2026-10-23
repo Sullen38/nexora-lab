@@ -1,25 +1,34 @@
 /* ============================================================================
  * actors/cat/cat.js — РУДИЙ КІТ: ВЛАСНЕ ЖИТТЯ (поведінка)
  * ----------------------------------------------------------------------------
- * Кіт живе сам: спить (на лежанці й дивані з картинки або на підлозі),
- * вмивається, полює й стрибає, потягується, нявкає, приходить до Nexi.
+ * Кіт живе сам: спить (лежанка / поличка / диван / килим), їсть і п'є з мисок,
+ * вмивається, ганяє м'ячик, потягується, нявкає, приходить посидіти біля Nexi.
+ * Голод росте з часом -> кіт іде до миски. Якщо миска порожня — нявкає,
+ * і Nexi сам іде насипати корм (activities.js → feedCat).
  * Публічно: NX.cat.purr(сек) — коли Nexi гладить; NX.cat.hitTest(x,y).
+ * Ще кіт п'є з фонтану, ганяє м'ячик і катається на робопилососі.
+ * Ходить лише по підлозі (FLOOR); на лежанку, поличку, диван, пуф — стрибає.
  * ========================================================================== */
 NX.cat = {
-  x: 80, y: 349, ground: 349, alt: 0, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
+  FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
+  x: 80, y: 349, ground: 378, alt: 29, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
-  /** Місця, де кіт любить спати: лежанка й диван з картинки, підлога біля дому Nexi. */
-  spots() { const h = NX.objects.home.home; return {
-    bed: { x: 80, y: 349 }, sofa: { x: 820, y: 320, from: [820, 364] }, floor: { x: h[0] + 70, y: h[1] + 4 } }; },
+  spots() { const cc = NX.objects.catCorner; return {
+    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 820, y: 320, from: [820, 380] },
+    rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
+    beanbag: { x: NX.objects.lounge.pos[0] + 6, y: NX.objects.lounge.pos[1] - 26 * NX.px.depthK(NX.objects.lounge.pos[1]), from: [NX.objects.lounge.pos[0] + 6, NX.objects.lounge.pos[1] + 6] } }; },
 
-  /** Наступна справа — випадково, з різними шансами. */
+  /** Наступна справа: вибір за потребами та випадком. */
   decide() {
-    const r = Math.random();
-    if (r < .3) { const keys = ['bed', 'sofa', 'floor', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
-    if (r < .45) return this.set('groom', 4 + Math.random() * 3);
-    if (r < .6) { const [x, y] = NX.room.clampWalk(80 + Math.random() * 1380, 362 + Math.random() * NX.cam.front * .6); return this.goTo(x, y, () => this.set('pounce', .5, () => this.set('sit', 2)), null, true); }
-    if (r < .72) return this.set('meow', 2, () => NX.fx.emit('note', this.x, this.y - 22));
-    if (r < .86) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
+    const cc = NX.objects.catCorner, r = Math.random();
+    if (this.hunger > .7) { if (cc.food > .05) return this.goTo(cc.bowl[0] - 16, cc.bowl[1] + 1, () => this.set('eat', 5, () => { cc.food = Math.max(0, cc.food - .35); this.hunger = 0; })); return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; }); }
+    if (r < .25) { const keys = ['bed', 'platform', 'sofa', 'rug', 'beanbag', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
+    if (r < .4) return this.set('groom', 4 + Math.random() * 3);
+    if (r < .58) { const b = cc.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { cc.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
+    if (r < .64) return this.goTo(cc.water[0] - 14, cc.water[1] + 1, () => this.set('eat', 3));
+    if (r < .7 && NX.objects.fountain) { const [fx, fy] = NX.objects.fountain.pos, k = NX.px.depthK(fy); return this.goTo(fx - 44 * k, fy + 2, () => this.set('eat', 3.5)); }
+    if (r < .76 && NX.objects.vacuum) { const v = NX.objects.vacuum; return this.goTo(v.x - 14, v.y, () => v.board(), null, true); }
+    if (r < .84) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
     const [wx, wy] = NX.room.clampWalk(60 + Math.random() * 1400, 362 + Math.random() * NX.cam.front * .7);
     return this.goTo(wx, wy, () => this.set('sit', 3));
   },
@@ -27,6 +36,7 @@ NX.cat = {
   /** Іти до точки (якщо ціль на висоті — спершу до точки під нею, потім стрибок). */
   goTo(x, y, done, from, run) {
     if (this.alt > 0) { const g = this.ground; this.alt = 0; return this.startJump(this.x + 8 * this.dir, g, () => this.goTo(x, y, done, from, run)); }   // спершу зістрибнути вниз
+    if (!from) y = Math.max(y, this.FLOOR);
     this.mode = 'walk'; this.run = !!run; this.then = done;
     if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done); }
     else { this.target = { x, y }; this.afterWalk = null; }
@@ -36,6 +46,8 @@ NX.cat = {
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.ground, 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
 
   update(dt, t) {
+    if (this.riding) { const v = NX.objects.vacuum; this.x = v.x; this.y = v.y + .2; this.ground = v.y; this.alt = 0; this.dir = v.vx >= 0 ? 1 : -1; this.pose = 'sit'; if ((this.rideT -= dt) <= 0) { this.riding = false; this.startJump(this.x + 20 * this.dir, NX.room.clampWalk(this.x, v.y + 10)[1], null); } return; }
+    this.hunger = Math.min(1, this.hunger + dt / 120);
     this.ft += dt; const sp = this.mode === 'walk' ? (this.run ? 80 : 34) : 0;
     if (this.ft > (this.run ? .08 : .14)) { this.ft = 0; this.frame++; }
     if (this.mode === 'walk') {
@@ -46,7 +58,7 @@ NX.cat = {
     } else if (this.mode === 'jump') {
       const j = this.jump; j.t += dt / .5; const k = Math.min(1, j.t);
       this.x = NX.px.lerp(j.x0, j.x1, k); this.y = NX.px.lerp(j.y0, j.y1, k) - Math.sin(k * Math.PI) * 26; this.pose = 'pounce'; this.dir = Math.sign(j.x1 - j.x0) || this.dir;
-      if (k >= 1) { this.y = j.y1; if (j.y1 >= 356) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = j.y0 - j.y1; } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
+      if (k >= 1) { this.y = j.y1; if (j.y1 >= this.FLOOR - 4) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = j.y0 - j.y1; } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
     } else {
       this.timer -= dt;
       if (this.pose === 'sleep' && Math.random() < dt * .4) NX.fx.emit('z', this.x + 6 * this.dir, this.y - 14);
@@ -54,11 +66,11 @@ NX.cat = {
     }
   },
   layer() {
-    return { y: this.y + (this.alt > 0 ? 6 : 0), draw: c => {
-      const s = NX.room.scaleAt(this.ground) * .82, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
+    return { y: this.y + (this.alt > 0 ? 6 : 0), refl: true, draw: c => {
+      const s = NX.room.scaleAt(this.ground) * .82, lift = this.riding ? 5 * NX.px.depthK(this.y) : 0, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
       drawCat(this.pose, this.frame, NX.time, this.cv);
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();
-      c.imageSmoothingEnabled = false; c.translate(this.x, 0); c.scale(this.dir, 1); c.drawImage(this.cv, -w / 2, this.y - h + s, w, h); c.restore();
+      c.imageSmoothingEnabled = false; c.translate(this.x, 0); c.scale(this.dir, 1); c.drawImage(this.cv, -w / 2, this.y - h + s - lift, w, h); c.restore();
     } };
   },
 };
