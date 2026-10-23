@@ -20,12 +20,13 @@ NX.nexi = {
 
   /* ---------------- КОМАНДИ ---------------- */
   /** Виконати сценарій з activities.js. byUser=false — це "вільний час". */
-  do(id, byUser = true) {
+  do(id, byUser = true, opt = {}) {
     const A = NX.acts[id]; if (!A) return;
+    this.taskOpt = opt.task || null;   // конкретна задача зони (ui/zones.js)
     if (byUser) this.lastCmd = NX.time;
     this.finishTask(false);
     this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
-    this.task = { id, title: NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
+    this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
     NX.ui.hud.setActive(A.nav || null);
   },
   /** Просто піти в точку підлоги (тап по підлозі). */
@@ -42,7 +43,8 @@ NX.nexi = {
       beanbag: [{ hop: [NX.objects.lounge.pos[0] + 30 * NX.px.depthK(NX.objects.lounge.pos[1]), NX.objects.lounge.pos[1] + 8] }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
-  finishTask(done) { if (this.task && done && !this.task.auto) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
+  finishTask(done) {
+    if (done && this.task && this.taskOpt && NX.ui.zones.has(this.task.id)) { NX.ui.zones.result(this.task.id, this.taskOpt, this.task.auto); this.taskOpt = null; } if (this.task && done && !this.task.auto) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
   say(text) { this.speak = { text, t: 0 }; NX.ui.hud.bubble(text); NX.ui.chat && NX.ui.chat.add('b', text); },
   emote(m, d = 2.5) { this.mood = m; this.moodT = NX.time + d; },
   hitTest(x, y) { const b = this.box; return b && this.alpha > .3 && x > b[0] && x < b[0] + b[2] && y > b[1] && y < b[1] + b[3]; },
@@ -109,6 +111,13 @@ NX.nexi = {
    * buff            — тимчасовий ефект {type, theme?, until}
    */
   buff: null,
+  /** Яблуко Білосніжки: Nexi куштує й засинає на підлозі на кілька секунд. */
+  appleNap() {
+    if (this.cur || this.queue.length || this.loc !== 'floor' && this.loc !== 'dock') { this.emote('love', 2); return; }
+    this.queue = [{ work: { pose: 'drink', dur: 1 } }, { do: () => { this.emote('sleepy', 4); this.rot = -90; } },
+      { work: { pose: 'sleep', dur: 4, tick: () => Math.random() < .05 && NX.fx.emit('z', this.x - 12, this.y - 14) } },
+      { do: () => { this.rot = 0; NX.nexiPhys.kick(2.5); this.emote('surprise', 2); this.say(NX.t('visitors.snowwhite.wake')); } }];
+  },
   react(v) { this.emote('surprise', 1.6); if (!this.cur && !this.queue.length && this.loc !== 'sofaLie') { this.temp = 'wave'; this.tempT = NX.time + 2; } },
   eatMushroom(v) {
     this.lastCmd = NX.time; this.finishTask(false);
@@ -158,6 +167,8 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
+      if (NX.objects.coins.list.length && Math.random() < .7) { this.do('collect', false); return; }
+      if (Math.random() < .35) { const z = ['ai', 'analytics', 'marketing', 'tools'][Math.random() * 4 | 0]; this.do(z, false, { task: NX.ui.zones.pick(z) }); return; }   // сам працює
       const pool = ['sofa', 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'laser', 'window', 'water', 'kickBall', 'selfie', 'laser'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }

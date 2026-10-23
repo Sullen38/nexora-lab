@@ -9,8 +9,9 @@ NX.ui.hud = {
   $: id => document.getElementById(id), typed: null,
   init() {
     const nav = this.$('nav');
-    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); if (id === 'portal') NX.objects.portal.dest = NX.objects.portal.DESTS[Math.random() * 3 | 0]; NX.nexi.do(id); }; nav.appendChild(b); });
+    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); if (id === 'portal') NX.objects.portal.dest = NX.objects.portal.DESTS[Math.random() * 3 | 0]; NX.ui.zones.has(id) ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); }; nav.appendChild(b); });
     this.$('skinbtn').onclick = () => NX.ui.skinlab.show();
+    this.coins(NX.objects.coins.total);
     this.applyLang();
   },
   /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
@@ -23,6 +24,8 @@ NX.ui.hud = {
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
     if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },
+  /** Лічильник монеток у меню (з "підстрибуванням", коли щось зібрали). */
+  coins(n, pop) { const el = this.$('coins'); if (!el.querySelector('em')) { el.innerHTML = '<i></i><em></em>'; } el.querySelector('em').textContent = n; if (pop) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } },
   setActive(id) { document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === id)); },
   firstTouch() { this.$('hint').style.display = 'none'; },
   toast(m) { const t = this.$('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 1800); },

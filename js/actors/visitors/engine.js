@@ -13,14 +13,14 @@
  * Тексти гостей — у js/i18n/*.js -> visitors.<id>.<ключ>.
  * ========================================================================== */
 NX.visitors = {
-  DEFS: {}, list: [], nextWave: 14, MAX: 4,
+  DEFS: {}, list: [], nextWave: 45, MAX: 3,   // перша хвиля ~45 с, далі раз на 1–2 хв
   GATE: [1430, 258], STEP: [1432, 344], OUT: [1418, 380],
   def(id, d) { this.DEFS[id] = Object.assign({ id, W: 28, H: 42, speed: 40, pxs: .75 }, d); },
 
   /** Хвиля гостей: n — скільки (за замовчуванням випадково 1–3). */
   wave(n) {
     const free = this.MAX - this.list.length; if (free <= 0) return false;
-    n = Math.min(free, n || [1, 1, 1, 2, 2, 3][Math.random() * 6 | 0]);
+    n = Math.min(free, n || [1, 1, 1, 1, 1, 2, 2, 3][Math.random() * 8 | 0]);
     const busy = new Set(this.list.map(v => v.def.id)), ids = Object.keys(this.DEFS).filter(i => !busy.has(i)).sort(() => Math.random() - .5).slice(0, n);
     ids.forEach((id, i) => setTimeout(() => this.spawn(id), i * 1300));
     return ids.length > 0;
@@ -37,7 +37,7 @@ NX.visitors = {
   say(v, key, dur = 2.4) { const txt = NX.t('visitors.' + v.def.id + '.' + key); v.say = { text: txt === 'visitors.' + v.def.id + '.' + key ? key : txt, t: dur }; },
 
   update(dt, t) {
-    if (t > this.nextWave) { this.nextWave = t + 22 + Math.random() * 30; this.wave(); }
+    if (t > this.nextWave) { this.nextWave = t + 60 + Math.random() * 60; this.wave(); }
     this.list.forEach(v => this.step(v, dt));
     this.list = this.list.filter(v => !v.gone);
   },

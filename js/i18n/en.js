@@ -1,11 +1,20 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   board: { title: 'NEXI TASKS', waiting: 'WAITING FOR A TASK...' },
-  obj: { vacuum: 'Robot vacuum', aiPc: 'AI center · computer', taskboard: 'Task board', analytics: 'Analytics', marketing: 'Marketing', coffee: 'Coffee machine', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', fountain: 'Fountain', lounge: 'Beanbag', lamp: 'Floor lamp', plant: 'Plant', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
+  obj: { coin: 'Coin', vacuum: 'Robot vacuum', aiPc: 'AI center · computer', taskboard: 'Task board', analytics: 'Analytics', marketing: 'Marketing', coffee: 'Coffee machine', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', fountain: 'Fountain', lounge: 'Beanbag', lamp: 'Floor lamp', plant: 'Plant', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
+  zones: {
+    go: 'Just come here', start: 'On it: {task}!',
+    ai: { reply: { t: 'Reply to a client', r: 'Client reply sent in {n} s. Tone: friendly and clear.' }, mail: { t: 'Write to a partner', r: 'Partner email ready: {n} paragraphs, saved in drafts.' }, summary: { t: 'Meeting summary', r: 'Meeting summary: {n} decisions and tasks with deadlines for the team.' } },
+    analytics: { sales: { t: 'Weekly sales report', r: 'Sales this week: +{n}%. Best day: Friday.' }, traffic: { t: 'Website traffic analysis', r: 'Traffic: {n}k visitors, 38% on phones.' }, forecast: { t: 'Monthly forecast', r: 'Forecast: +{n}% revenue if the current pace holds.' } },
+    marketing: { post: { t: 'Social media post', r: 'Post published. Reach in the first hour: {n}.' }, ads: { t: 'Launch an ad', r: 'Ad launched: {n} clicks on day one.' }, mailing: { t: 'Email newsletter', r: 'Newsletter sent: {n}% open rate.' } },
+    tools: { crm: { t: 'Connect CRM', r: 'CRM connected: {n} contacts synced.' }, calendar: { t: 'Sync calendar', r: 'Calendar synced: {n} meetings this week, reminders on.' }, auto: { t: 'Set up automation', r: 'Website leads now go straight to CRM. Saves {n} h a week.' } },
+  },
   visitors: {
+    snowwhite: { hi: 'Hello! Do dwarfs live here?', apple: 'Try this apple!', bye: 'Sweet dreams!', wake: 'Oh... did I fall asleep?' },
+    leprechaun: { hi: "Where's my pot?..", oops: 'Oh no, my coins!', bye: "Hands off my gold!" },
     dracula: { hi: 'Good evening...', boo: 'Boo!', oops: 'Oops! Wrong castle...' },
     vovkulaka: { hi: 'Grr... Where am I?', howl: 'Aoo-oo-oo!', bye: 'Back to the woods!' },
     mushroom: { hi: "Peep! I'm a mushroom!", eatme: 'Eat me!', bye: 'Bye-bye!' },
@@ -45,6 +54,7 @@ NX.i18n.add('en', {
     laser: { title: 'Laser for Ginger', steps: ['Laser on', 'Catch the dot!'], lines: ['Ginger, catch the red dot!', 'Who is faster — cat or laser?'] },
     selfie: { title: 'Selfie with Ginger', steps: ['Calling Ginger', 'Cheese! 📸'], lines: ['Ginger, selfie time!', 'A photo for Nexora socials!'] },
     mushroom: { title: 'Eat the mushroom', steps: ['Running to it', 'Nom!'], fx: { rainbow: "Whoa, I'm rainbow!", tiny: "I'm tiny now!", dizzy: "I'm so dizzy...", sparkle: "I'm sparkling!", speed: "I'm super fast!" } },
+    collect: { title: 'Collect coins', steps: ['Running for coins', 'Got them!'], lines: ['Ooh, coins! Collecting.', 'Someone spilled gold!'] },
     skinLab: { lines: ["Let's change my look! Pick skins on the right."] },
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },

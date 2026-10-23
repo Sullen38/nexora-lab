@@ -8,6 +8,7 @@
   NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
   NX.ambient.init(); NX.city.init();
   try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}')); } catch (e) {}
+  NX.objects.coins.init(); NX.ui.zones.init();
   NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();
   NX.loop.start();
   [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y;

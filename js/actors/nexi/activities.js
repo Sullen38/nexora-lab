@@ -7,7 +7,7 @@
  * core/config.js -> POI. Решта коду не змінюється.
  * ========================================================================== */
 (() => {
-  const P = () => NX.cfg.POI, line = id => ({ say: NX.pick('act.' + id + '.lines') });
+  const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
   const celebrate = () => [{ spin: .5 }, { do: () => { NX.nexi.emote('happy'); NX.nexi.say(NX.pick('act.done')); } }];
   NX.acts = {
     home: { nav: 'home', route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
@@ -55,6 +55,9 @@
 
     selfie: { color: '#ffc94d', route() { const c = NX.cat, [x, y] = NX.room.clampWalk(c.x + 22, Math.max(c.ground, 380)); return [{ walk: [x, y] }, { face: -1 }, line('selfie'), { do: () => c.set('sit', 4) },
       { work: { pose: 'carry', dur: 1.4 } }, { do: () => { NX.objects.laser.flash = 1; NX.ui.hud.toast(NX.t('ui.photo')); NX.nexi.emote('love'); } }, { work: { pose: 'cheer', dur: 1.2 } }]; } },
+
+    collect: { color: '#ffd02a', route() { const L = NX.objects.coins.list.slice().sort((a, b) => Math.abs(a.x - NX.nexi.x) - Math.abs(b.x - NX.nexi.x)).slice(0, 6);
+      return [line('collect'), ...L.map(c => ({ walk: [c.x, c.y], run: true })), { work: { pose: 'cheer', dur: 1.2 } }]; } },
 
     wander: { color: '#3be8ff', route() { const b = NX.room.walkBounds(); return [{ walk: NX.room.clampWalk(80 + Math.random() * 1380, b.minY + Math.random() * (b.maxY - b.minY)) }, { work: { pose: 'look', dur: 3 } }]; } },
 

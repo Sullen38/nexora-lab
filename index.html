@@ -17,7 +17,7 @@
 <canvas id="world" aria-label="Кімната Nexi"></canvas>
 
 <!-- Верхнє меню: кнопки запускають сценарії Nexi -->
-<div class="hud top"><div class="logo">NEXORA AI<small id="tagline"></small></div><nav id="nav"></nav><button class="skinbtn" id="skinbtn"></button></div>
+<div class="hud top"><div class="logo">NEXORA AI<small id="tagline"></small></div><nav id="nav"></nav><span class="coins" id="coins" title="Nexora coins"><i></i>0</span><button class="skinbtn" id="skinbtn"></button></div>
 <!-- Чип поточної задачі -->
 <div class="hud task" id="task"><b id="tk-n"></b><span id="tk-t"></span><i id="tk-p"></i></div>
 <!-- Підказка для нового користувача -->
@@ -34,6 +34,9 @@
  <div class="acts"><button id="rnd"></button><button id="rst"></button><button class="save" id="save"></button></div>
 </aside>
 <div class="toast" id="toast"></div>
+<!-- Меню робочої зони і картка результату (ui/zones.js) -->
+<div class="zmenu" id="zmenu"></div>
+<div class="result" id="result"><b></b><span></span></div>
 
 <!-- ядро -->
 <script src="js/core/namespace.js"></script>
@@ -74,6 +77,7 @@
 <script src="js/objects/ball.js"></script>
 <script src="js/objects/lounge.js"></script>
 <script src="js/objects/vacuum.js"></script>
+<script src="js/objects/coins.js"></script>
 <script src="js/objects/laser.js"></script>
 <script src="js/objects/plants_front.js"></script>
 <!-- персонажі -->
@@ -89,11 +93,14 @@
 <script src="js/actors/visitors/kolobok.js"></script>
 <script src="js/actors/visitors/merlin.js"></script>
 <script src="js/actors/visitors/cheshire.js"></script>
+<script src="js/actors/visitors/snowwhite.js"></script>
+<script src="js/actors/visitors/leprechaun.js"></script>
 <!-- інтерфейс -->
 <script src="js/ui/input.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/skinlab.js"></script>
 <script src="js/ui/chat.js"></script>
+<script src="js/ui/zones.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

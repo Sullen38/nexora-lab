@@ -18,7 +18,8 @@ NX.input = {
     const gv = NX.visitors.hit(x, y); if (gv) { NX.visitors.tap(gv); return; }
     if (NX.cat.hitTest(x, y)) { NX.fx.emit('note', NX.cat.x, NX.cat.y - 24); NX.nexi.do('petCat'); return; }
     for (const ob of Object.values(NX.objects)) if (ob.tapFirst && ob.tapFirst(x, y)) return;   // напр. меню порталу
-    const o = this.objectAt(x, y); if (o) { if (o.onTap && o.onTap(x, y)) return; NX.nexi.do(o.act); return; }
+    const coin = NX.objects.coins.at(x, y); if (coin) { NX.nexi.do('collect'); return; }
+    const o = this.objectAt(x, y); if (o) { if (o.onTap && o.onTap(x, y)) return; if (NX.ui.zones.has(o.act)) { const [sx, sy] = NX.cam.toScreen(x, y); NX.ui.zones.open(o.act, sx, sy); return; } NX.nexi.do(o.act); return; }
     if (y > NX.cfg.FLOOR_Y - 4) { this.ripples.push({ x, y: NX.room.clampWalk(x, y)[1], t: 0 }); NX.nexi.walkTo(x, y); }
   },
   onHover(x, y) {
