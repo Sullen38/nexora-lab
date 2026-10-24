@@ -14,7 +14,7 @@ NX.cat = {
   x: 80, y: 349, ground: 378, alt: 29, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
   spots() { const cc = NX.objects.catCorner; return {
-    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 820, y: 320, from: [820, 380] }, sofaArm: { x: 854, y: 297, from: [854, 380] },
+    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 830, y: 324, from: [830, 384] }, sofaArm: { x: 871, y: 296, from: [871, 384] },
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
     beanbag: { x: NX.objects.lounge.pos[0] + 6, y: NX.objects.lounge.pos[1] - 26 * NX.px.depthK(NX.objects.lounge.pos[1]), from: [NX.objects.lounge.pos[0] + 6, NX.objects.lounge.pos[1] + 6] } }; },
 

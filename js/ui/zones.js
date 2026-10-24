@@ -12,7 +12,7 @@ NX.ui.zones = {
   TASKS: { ai: { reply: [5, 40], mail: [2, 5], summary: [2, 6] }, analytics: { sales: [8, 34], traffic: [3, 48], forecast: [5, 22] },
            marketing: { post: [800, 5200], ads: [40, 380], mailing: [24, 61] }, tools: { crm: [120, 900], calendar: [4, 15], auto: [2, 9] } },
   /** Меню не-робочих зон: просто список дій (активностей Nexi). */
-  MENUS: { sofa: ['sofa', 'movie', 'sleep', 'cuddle'] },
+  MENUS: {},   // (диван меню не має: Nexi сам вирішує, objects/sofa.js -> pick())
   $: id => document.getElementById(id),
   init() { this.$('zmenu').addEventListener('pointerdown', e => e.stopPropagation()); document.addEventListener('pointerdown', e => { if (!this.$('zmenu').contains(e.target)) this.hide(); }); },
   has(zone) { return !!this.TASKS[zone]; },

@@ -38,7 +38,7 @@ NX.nexi = {
       aiDesk: [{ fly: P.aiDesk.floor }],
       chairA: [{ do: () => { this.seat = null; NX.chairA.roll(NX.chairA.OUT); } }, { hop: [NX.chairA.x + 4, 366] }, { do: () => NX.chairA.roll(0) }],
       chairM: [{ do: () => { this.seat = null; NX.chairM.roll(NX.chairM.OUT); } }, { hop: [NX.chairM.x + 4, 366] }, { do: () => NX.chairM.roll(0) }],
-      sofaSit: [up, { hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
+      sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
       hover: [up, { fly: P.tools.floor }], portalStep: [{ walk: P.portal.floor }],
       beanbag: [{ hop: [NX.objects.lounge.pos[0] + 30 * NX.px.depthK(NX.objects.lounge.pos[1]), NX.objects.lounge.pos[1] + 8] }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
@@ -87,7 +87,7 @@ NX.nexi = {
     if (a.fly || a.hop) {
       const to = a.fly || a.hop, k = Math.min(1, (a._t - (a.hop ? .12 : 0)) / a.dur);
       const e = a.hop ? k : (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);   // плавний розгін/гальмування ранця
-      this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * 14 : 0);
+      this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * (a.hi || 14) : 0);
       this.pose = a.hop ? 'hop' : 'fly'; if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
       if (k >= 1) NX.nexiPhys.land(a.hop ? 3.2 : 2.2);
       return k >= 1;
@@ -169,7 +169,7 @@ NX.nexi = {
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
       if (NX.objects.coins.list.length && Math.random() < .7) { this.do('collect', false); return; }
       if (Math.random() < .35) { const z = ['ai', 'analytics', 'marketing', 'tools'][Math.random() * 4 | 0]; this.do(z, false, { task: NX.ui.zones.pick(z) }); return; }   // сам працює
-      const pool = ['sofa', 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'laser', 'window', 'water', 'kickBall', 'selfie', 'laser'];
+      const pool = [NX.objects.sofa.pick(), 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'laser', 'window', 'water', 'kickBall', 'selfie', 'laser'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
   },

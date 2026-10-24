@@ -21,6 +21,7 @@ function poseFor(a,t,moving){
  case'type':{const k=Math.floor(t*9)%2;p.la={x:-3,y:3+k};p.ra={x:3,y:4-k};p.hy=1;break}
  case'watch':p.back=1;p.sit=1;p.bob=3;p.la={x:-3,y:3};p.ra={x:3,y:3+(Math.floor(t/2.2)%3===0?-6:0)};p.hy=Math.round(Math.sin(t*.7));break;
  case'sitPet':{const k=Math.sin(t*6)>0;p.sit=1;p.bob=3;p.ra={x:6,y:k?2:1};p.la={x:-3,y:4};p.face='happy';break}
+ case'sitTablet':p.sit=1;p.bob=3;p.la={x:1,y:3};p.ra={x:-1,y:3};p.tool='tablet';p.hy=1;if(Math.floor(t/2.5)%3===1)p.face='think';break;
  case'sitWork':{const k=Math.floor(t*9)%2;p.sit=1;p.bob=3;p.la={x:-5,y:1+k};p.ra={x:-3,y:2-k};p.hx=-1;if(Math.floor(t/3)%3===2){p.face='think';p.la={x:-3,y:5};p.ra={x:3,y:-6}}break}
  case'sitType':{const k=Math.floor(t*9)%2;p.back=1;p.sit=1;p.bob=3;p.la={x:-2,y:-2+k};p.ra={x:2,y:-1-k};break}
  case'sit':p.sit=1;p.bob=3;p.la={x:-3,y:4};p.ra={x:3,y:4};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};break;
