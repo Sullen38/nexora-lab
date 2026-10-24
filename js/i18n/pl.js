@@ -4,7 +4,7 @@ NX.i18n.add('pl', {
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   board: { title: 'ZADANIA NEXI', waiting: 'CZEKAM NA ZADANIE...' },
-  obj: { coin: 'Moneta', vacuum: 'Robot sprzątający', aiPc: 'Centrum AI · komputer', taskboard: 'Tablica zadań', analytics: 'Analityka', marketing: 'Marketing', coffee: 'Ekspres do kawy', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', fountain: 'Fontanna', lounge: 'Pufa', lamp: 'Lampa', plant: 'Roślina', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
+  obj: { pillow: 'Poduszka', coin: 'Moneta', vacuum: 'Robot sprzątający', aiPc: 'Centrum AI · komputer', taskboard: 'Tablica zadań', analytics: 'Analityka', marketing: 'Marketing', coffee: 'Ekspres do kawy', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', fountain: 'Fontanna', lounge: 'Pufa', lamp: 'Lampa', plant: 'Roślina', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     go: 'Po prostu podejdź', start: 'Biorę się: {task}!',
     ai: { reply: { t: 'Odpowiedz klientowi', r: 'Odpowiedź do klienta wysłana w {n} s. Ton: przyjazny i jasny.' }, mail: { t: 'Napisz do partnera', r: 'Mail do partnera gotowy: {n} akapity, w wersjach roboczych.' }, summary: { t: 'Podsumowanie spotkania', r: 'Podsumowanie: {n} decyzje i zadania z terminami dla zespołu.' } },
@@ -12,6 +12,7 @@ NX.i18n.add('pl', {
     marketing: { post: { t: 'Post w social media', r: 'Post opublikowany. Zasięg w pierwszej godzinie: {n}.' }, ads: { t: 'Uruchom reklamę', r: 'Reklama uruchomiona: {n} kliknięć pierwszego dnia.' }, mailing: { t: 'Newsletter', r: 'Newsletter wysłany: otwarcia {n}%.' } },
     tools: { crm: { t: 'Podłącz CRM', r: 'CRM podłączony: zsynchronizowano {n} kontaktów.' }, calendar: { t: 'Synchronizuj kalendarz', r: 'Kalendarz zsynchronizowany: {n} spotkań w tym tygodniu, przypomnienia włączone.' }, auto: { t: 'Ustaw automatyzację', r: 'Zgłoszenia ze strony trafiają teraz same do CRM. Oszczędność {n} h tygodniowo.' } },
   },
+  sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
   visitors: {
     snowwhite: { hi: 'Dzień dobry! Czy tu mieszkają krasnoludki?', apple: 'Spróbuj jabłuszka!', bye: 'Słodkich snów!', wake: 'Oj... czy ja zasnąłem?' },
     leprechaun: { hi: 'Gdzie mój garnek?..', oops: 'Oj, moje monety!', bye: 'Ręce precz od mojego złota!' },
@@ -55,6 +56,8 @@ NX.i18n.add('pl', {
     selfie: { title: 'Selfie z Rudym', steps: ['Wołam Rudego', 'Cheese! 📸'], lines: ['Rudy, robimy selfie!', 'Zdjęcie na social media Nexora!'] },
     mushroom: { title: 'Zjeść grzybka', steps: ['Biegnę do grzybka', 'Mniam!'], fx: { rainbow: 'Ojej, jestem tęczowy!', tiny: 'Jestem malutki!', dizzy: 'Kręci mi się w głowie...', sparkle: 'Cały błyszczę!', speed: 'Jestem superszybki!' } },
     collect: { title: 'Zbierz monety', steps: ['Biegnę po monety', 'Mam!'], lines: ['O, monety! Zbieram.', 'Ktoś rozsypał złoto!'] },
+    movie: { title: 'Obejrzeć film', steps: ['Włączam film', 'Oglądam 🍿'], lines: ['Przerwa na film! Kosmiczna akcja.', 'Popcorn jest, film leci!'] },
+    cuddle: { title: 'Przytulasy z Rudym', steps: ['Wołam Rudego', 'Mrr ♥'], lines: ['Rudy, chodź do mnie na kanapę!', 'Czas na kocie przytulasy.'] },
     skinLab: { lines: ['Zmieńmy mój wygląd! Wybierz skórki po prawej.'] },
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },

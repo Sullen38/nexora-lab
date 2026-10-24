@@ -4,7 +4,7 @@ NX.i18n.add('nl', {
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   board: { title: 'NEXI-TAKEN', waiting: 'WACHT OP EEN TAAK...' },
-  obj: { coin: 'Munt', vacuum: 'Robotstofzuiger', aiPc: 'AI-centrum · computer', taskboard: 'Takenbord', analytics: 'Analyse', marketing: 'Marketing', coffee: 'Koffiemachine', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', fountain: 'Fontein', lounge: 'Zitzak', lamp: 'Staande lamp', plant: 'Plant', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
+  obj: { pillow: 'Kussen', coin: 'Munt', vacuum: 'Robotstofzuiger', aiPc: 'AI-centrum · computer', taskboard: 'Takenbord', analytics: 'Analyse', marketing: 'Marketing', coffee: 'Koffiemachine', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', fountain: 'Fontein', lounge: 'Zitzak', lamp: 'Staande lamp', plant: 'Plant', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
   zones: {
     go: 'Kom gewoon hier', start: 'Ik pak het op: {task}!',
     ai: { reply: { t: 'Klant beantwoorden', r: 'Antwoord aan klant verstuurd in {n} s. Toon: vriendelijk en duidelijk.' }, mail: { t: 'Partner mailen', r: 'Mail aan partner klaar: {n} alinea’s, in concepten.' }, summary: { t: 'Samenvatting vergadering', r: 'Samenvatting: {n} besluiten en taken met deadlines voor het team.' } },
@@ -12,6 +12,7 @@ NX.i18n.add('nl', {
     marketing: { post: { t: 'Social-mediapost', r: 'Post geplaatst. Bereik in het eerste uur: {n}.' }, ads: { t: 'Advertentie starten', r: 'Advertentie gestart: {n} klikken op dag één.' }, mailing: { t: 'E-mailnieuwsbrief', r: 'Nieuwsbrief verstuurd: {n}% geopend.' } },
     tools: { crm: { t: 'CRM koppelen', r: 'CRM gekoppeld: {n} contacten gesynchroniseerd.' }, calendar: { t: 'Agenda synchroniseren', r: 'Agenda gesynchroniseerd: {n} afspraken deze week, herinneringen aan.' }, auto: { t: 'Automatisering instellen', r: 'Aanvragen via de site gaan nu vanzelf naar het CRM. Bespaart {n} uur per week.' } },
   },
+  sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
   visitors: {
     snowwhite: { hi: 'Hallo! Wonen hier dwergen?', apple: 'Proef dit appeltje!', bye: 'Slaap lekker!', wake: 'Oh... ben ik in slaap gevallen?' },
     leprechaun: { hi: 'Waar is mijn pot?..', oops: 'Oh nee, mijn munten!', bye: 'Blijf van mijn goud af!' },
@@ -55,6 +56,8 @@ NX.i18n.add('nl', {
     selfie: { title: 'Selfie met Gember', steps: ['Gember roepen', 'Cheese! 📸'], lines: ['Gember, selfie-tijd!', 'Een foto voor Nexora-socials!'] },
     mushroom: { title: 'Paddenstoel eten', steps: ['Ernaartoe rennen', 'Njam!'], fx: { rainbow: 'Wauw, ik ben regenboog!', tiny: 'Ik ben piepklein!', dizzy: 'Ik ben duizelig...', sparkle: 'Ik schitter helemaal!', speed: 'Ik ben supersnel!' } },
     collect: { title: 'Munten verzamelen', steps: ['Naar de munten rennen', 'Hebbes!'], lines: ['Oh, munten! Ik raap ze op.', 'Iemand heeft goud gemorst!'] },
+    movie: { title: 'Film kijken', steps: ['Film aanzetten', 'Kijken 🍿'], lines: ['Filmpauze! Ruimte-actie.', 'Popcorn klaar, film aan!'] },
+    cuddle: { title: 'Knuffelen met Gember', steps: ['Gember roepen', 'Spin ♥'], lines: ['Gember, kom bij me op de bank!', 'Tijd om de kat te knuffelen.'] },
     skinLab: { lines: ['Laten we mijn look veranderen! Kies rechts een skin.'] },
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },

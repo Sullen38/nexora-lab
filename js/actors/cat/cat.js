@@ -14,7 +14,7 @@ NX.cat = {
   x: 80, y: 349, ground: 378, alt: 29, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
   spots() { const cc = NX.objects.catCorner; return {
-    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 820, y: 320, from: [820, 380] },
+    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 820, y: 320, from: [820, 380] }, sofaArm: { x: 854, y: 297, from: [854, 380] },
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
     beanbag: { x: NX.objects.lounge.pos[0] + 6, y: NX.objects.lounge.pos[1] - 26 * NX.px.depthK(NX.objects.lounge.pos[1]), from: [NX.objects.lounge.pos[0] + 6, NX.objects.lounge.pos[1] + 6] } }; },
 
@@ -22,7 +22,7 @@ NX.cat = {
   decide() {
     const cc = NX.objects.catCorner, r = Math.random();
     if (this.hunger > .7) { if (cc.food > .05) return this.goTo(cc.bowl[0] - 16, cc.bowl[1] + 1, () => this.set('eat', 5, () => { cc.food = Math.max(0, cc.food - .35); this.hunger = 0; })); return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; }); }
-    if (r < .25) { const keys = ['bed', 'platform', 'sofa', 'rug', 'beanbag', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
+    if (r < .25) { const keys = ['bed', 'platform', 'sofa', 'sofaArm', 'rug', 'beanbag', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .4) return this.set('groom', 4 + Math.random() * 3);
     if (r < .58) { const b = cc.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { cc.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
     if (r < .64) return this.goTo(cc.water[0] - 14, cc.water[1] + 1, () => this.set('eat', 3));
@@ -41,7 +41,7 @@ NX.cat = {
     if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done); }
     else { this.target = { x, y }; this.afterWalk = null; }
   },
-  startJump(x, y, done) { this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0 }; this.then = done; },
+  startJump(x, y, done) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0 }; this.then = done; },
   purr(d) { this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.ground, 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
 

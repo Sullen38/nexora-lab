@@ -38,7 +38,7 @@ NX.nexi = {
       aiDesk: [{ fly: P.aiDesk.floor }],
       chairA: [{ do: () => { this.seat = null; NX.chairA.roll(NX.chairA.OUT); } }, { hop: [NX.chairA.x + 4, 366] }, { do: () => NX.chairA.roll(0) }],
       chairM: [{ do: () => { this.seat = null; NX.chairM.roll(NX.chairM.OUT); } }, { hop: [NX.chairM.x + 4, 366] }, { do: () => NX.chairM.roll(0) }],
-      sofaSit: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
+      sofaSit: [up, { hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
       hover: [up, { fly: P.tools.floor }], portalStep: [{ walk: P.portal.floor }],
       beanbag: [{ hop: [NX.objects.lounge.pos[0] + 30 * NX.px.depthK(NX.objects.lounge.pos[1]), NX.objects.lounge.pos[1] + 8] }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
