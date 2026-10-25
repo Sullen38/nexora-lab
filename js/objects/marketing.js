@@ -6,7 +6,10 @@
  *   БУДКА — панель з рожевим неоновим кантом, вивіска-мішень і напис (мовою
  *           глядача), два голо-екрани: стрічка постів із лайками і воронка ADS
  *   СТІЛ  — продовжує стіл аналітики (та сама висота), ніша з рожевим LED,
- *           тумба справа (частково за диваном), два рожеві горнятка з парою
+ *           тумба справа (частково за диваном), два рожеві горнятка з парою;
+ *           дрібниці (ITEMS, objects/wing_trinkets.js): телефон зі сповіщеннями-
+ *           сердечками, блок стікерів, ескізи з ручкою, склянка з ручками;
+ *           стікери-ідеї на рамках екранів будки (NOTES)
  * Коли Nexi працює тут (obj 'marketing'), пости летять швидше, спливають
  * сердечка, росте лічильник; зроблене — NX.ui.zones.done.marketing на правому екрані.
  * Крісло — objects/office.js (NX.chairM); кавомашина перед столом — coffee.js;
@@ -18,11 +21,19 @@
   const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 266, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
   const DESK = { l: 485, r: 662, top: 278, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }] };
   const MUGS = [[548, 268], [566, 269]];
+  // дрібниці (objects/wing_trinkets.js): телефон зі сповіщеннями-сердечками, блок стікерів, ескізи з ручкою, склянка з ручками
+  const ITEMS = [
+    { kind: 'phone', x: 576.2, y: 278, icon: 'heart' }, { kind: 'notes', x: 588.2, y: 277.8, w: 5.8, col: 'p' },
+    { kind: 'papers', x: 597, y: 278, w: 10, n: 3, seed: 8, pen: 1 }, { kind: 'pens', x: 610, y: 277.6 },
+  ];
+  // стікери-ідеї на рамках екранів будки
+  const NOTES = [{ x: 550.6, y: 212.4, s: 4.4, col: 'c', rot: .2, seed: 3 }, { x: 642.6, y: 254.2, s: 4.4, col: 'y', rot: -.18, seed: 6 }, { x: 638.8, y: 256.2, s: 4, col: 'g', rot: .12, seed: 9 }];
 
   function buildBooth() { const S = F.Sheet(530, 160, 664, 272); K.booth(S, BOOTH); return S; }
   function buildDesk() {
     const S = F.Sheet(481, 262, 664, 340); K.desk(S, DESK);
     MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, DESK.top, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
+    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
     return S;
   }
   // ---------- живі екрани ----------
@@ -58,6 +69,7 @@
       for (let x = 490; x < 598; x += 2) lit(c, x, DESK.bot - 9.8, 1.4, 1, act ? `hsla(${(t * 120 + x * 4) % 360},95%,62%,.8)` : rgba('255,79,216', .3 + .3 * Math.sin(t * 2 + x * .1)));
       for (let x = 605.5; x < 648.5; x += 2) lit(c, x, DESK.bot - 2.2, 1.3, 1.2, rgba('59,232,255', .3 + .25 * Math.sin(t * 2 + x * .12)));
       c.globalCompositeOperation = 'source-over';
+      K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // екран телефона (сердечка), стилус
       MUGS.forEach(([x, y], k) => { for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3 + k * .4) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(x + 3 + Math.sin(q * 6 + i) * 1.2, y - 1 - q * 10, 1, 1); } });
       c.restore();
     },
@@ -72,6 +84,7 @@
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));
       for (let k = 0; k < 4; k++) lit(c, BOOTH.x0 + 5.2, BOOTH.y0 + 20 + k * 18 + 3, 1.6, 1.6, rgba('255,120,230', .3 + .6 * (Math.floor(t * 4 + k) % 4 === 0)));
       c.globalCompositeOperation = 'source-over';
+      K.stuck(c, NOTES);                                                                          // стікери на рамках екранів
       K.sign(c, sx0, sy0, sx1 - sx0, sy1 - sy0, { acc: ACC, icon: 'target', key: 'nav.marketing', t, glow: '255,79,216', text: '255,200,240' });   // вивіска в єдиному стилі
       c.restore();
       this.drawDesk(c, t);

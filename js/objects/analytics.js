@@ -6,7 +6,9 @@
  *           (мовою глядача), два голо-екрани: USERS (аватари + стовпчики) і
  *           TREND (графік + "пончик"); стоїть на столі
  *   СТІЛ  — рожева плита 280..290, видимий верх 275..280, дві тумби з шухлядами,
- *           ніша з LED; голо-ноутбук, планшет на стійці, горнятко з парою
+ *           ніша з LED; голо-ноутбук, планшет на стійці, горнятко з парою;
+ *           дрібниці (ITEMS, objects/wing_trinkets.js): склянка з ручками,
+ *           роздруківка-звіт звисає з краю плити, папери, телефон на зарядці, мишка
  * Коли Nexi працює тут (obj 'analytics'), екрани прискорюються й показують
  * приріст; зроблене (NX.ui.zones.done.analytics) видно на лівому екрані.
  * Крісло — objects/office.js (NX.chairA). Рослина на даху будки — wing_plants.js.
@@ -17,6 +19,12 @@
   const BOOTH = { x0: 322, y0: 128, x1: 478, y1: 278, acc: ACC, sign: [336, 138, 464, 166], icon: [350, 152], screens: [[336, 178, 398, 264], [406, 178, 466, 264]] };
   const DESK = { l: 326, r: 486, top: 280, slab: 290, bot: 346, back: 275, sec: [{ a: 334, b: 372, kind: 'drawers', rows: 3 }, { a: 372, b: 440, kind: 'niche' }, { a: 440, b: 480, kind: 'drawers', rows: 3 }] };
   const LAPQ = [[336, 263], [358, 264], [358, 277], [336, 278]], LAPB = [333, 361], TAB = [368, 258, 384, 271], MUG = [452, 268, 460, 278];
+  // дрібниці (objects/wing_trinkets.js): склянка з олівцями, роздруківка-звіт звисає з краю, стос паперів, телефон на зарядці, мишка
+  const ITEMS = [
+    { kind: 'pens', x: 386, y: 279.6 }, { kind: 'printout', x: 393.4, w: 9.2, hl: 5.6, seed: 2 }, { kind: 'papers', x: 404.2, y: 279.4, w: 10, n: 4, seed: 5 },
+    { kind: 'phone', x: 416.4, y: 280, icon: 'chart' }, { kind: 'mouse', x: 468, y: 280, w: 14.6 },
+  ];
+  const NOTES = [{ x: 465.4, y: 179.6, s: 4.8, col: 'p', rot: .22, seed: 2 }];             // стікер на рамці правого екрана будки
 
   function buildBooth() { const S = F.Sheet(316, 122, 490, 284); K.booth(S, BOOTH); return S; }
   function buildDesk() {
@@ -28,6 +36,7 @@
     S.rect(MUG[2] - .4, MUG[1] + 2.2, MUG[2] + 2.2, MUG[1] + 6.4, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]);
     S.rr(436, 270, 444, 278, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .25 && u < .75 && v > .3 && v < .7) ? CYAN[4] : ramp(NAVY, .45 - v * .25, i, j));   // світний кубик
     [[361, 278.6, 370, 275.8], [386, 278.4, 394, 275.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });   // кабелі
+    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
     return S;
   }
   // ---------- живі екрани ----------
@@ -78,6 +87,7 @@
       for (const s of DESK.sec) for (let x = s.a + 1.5; x < s.b - 1.5; x += 2) lit(c, x, DESK.bot - 2.2, 1.3, 1.2, rgba('59,232,255', .3 + .25 * Math.sin(t * 2 + x * .12)));
       P.glow(c, 347, 268, 18, 'rgba(59,160,255,.6)', .2 + act * .2);
       c.globalCompositeOperation = 'source-over';
+      K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // роздруківка, екран телефона, RGB мишки, стилус
       for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(MUG[0] + 3.5 + Math.sin(q * 6 + i) * 1.2, MUG[1] - 1 - q * 10, 1, 1); }   // пара
       c.restore();
     },
@@ -93,6 +103,7 @@
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));
       for (let k = 0; k < 6; k++) lit(c, BOOTH.x0 + 5.2, BOOTH.y0 + 20 + k * 18 + 3, 1.6, 1.6, rgba('59,232,255', .3 + .6 * (Math.floor(t * 4 + k) % 4 === 0)));   // вогники планки
       c.globalCompositeOperation = 'source-over';
+      K.stuck(c, NOTES);                                                                          // стікер на рамці екрана
       K.sign(c, sx0, sy0, sx1 - sx0, sy1 - sy0, { acc: ACC, icon: 'chart', key: 'nav.analytics', t, glow: '59,232,255' });   // вивіска в єдиному стилі трьох зон
       c.restore();
       this.drawDesk(c, t);
