@@ -22,7 +22,7 @@
         // кадр крила: столи (drawBack-об'єкти) + шари меблів у зоні (стіл AI, речі, крісла, вазони, кавомашина)
         ['analytics', 'marketing'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(cx, t); });
         const L = [];
-        ['aiDesk', 'aiPc', 'analyticsChair', 'marketingChair', 'coffee'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
+        ['aiDesk', 'aiPc', 'analyticsChair', 'marketingChair', 'coffee', 'catCorner'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
         Object.values(NX.objects).forEach(o => { if (o.id.startsWith('ws_') && o.d.stage === 'layer' && o.d.x < 660) L.push(...o.layers(t)); });
         L.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(cx, t));
         // затухання знизу вгору (в оригіналі — далі від лінії підлоги блідіше) і смуги глянцю
@@ -35,8 +35,7 @@
       // кладемо перевернуте від лінії підлоги: ліворуч (під AI-столом) лінія коса — ріжемо на 2 частини з різними осями
       const put = (xa, xb, line) => { c.save(); c.beginPath(); c.rect(xa, line, xb - xa, 120); c.clip(); c.translate(0, line * 2); c.scale(1, -1); c.globalAlpha = .26; c.imageSmoothingEnabled = true;
         c.drawImage(CV, (xa - X0) * R, 0, (xb - xa) * R, CV.height, xa, Y0, xb - xa, H); c.restore(); };
-      if (NX.aiDesk) for (let x = NX.aiDesk.L; x < NX.aiDesk.R; x += 12) put(x, Math.min(x + 12, NX.aiDesk.R), NX.aiDesk.bot(x + 6) - .5);
-      put(NX.aiDesk ? NX.aiDesk.R : 316, X1, 352);
+      put(X0, 342, 361.5); put(342, X1, 352);
       // світлові "доріжки" від неону столів на підлозі
       c.save(); c.globalCompositeOperation = 'lighter';
       const sw = c.createLinearGradient(0, 352, 0, 420); sw.addColorStop(0, 'rgba(255,79,216,.12)'); sw.addColorStop(1, 'rgba(255,79,216,0)'); c.fillStyle = sw; c.fillRect(316, 352, 364, 68);

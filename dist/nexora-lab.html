@@ -558,7 +558,7 @@ NX.cfg = {
 
   /* Точки взаємодії з картинкою (координати кімнати). */
   POI: {
-    aiDesk:      { floor: [236, 378], top: [217, 289] },   // стіл AI-центру (objects/ai_center.js): злітає ранцем на стільницю
+    aiDesk:      { floor: [236, 378], top: [222, 292] },   // стіл AI-центру (objects/ai_center.js): злітає ранцем на стільницю
     analytics:   { chair: [438, 276], floor: [438, 362] }, // офісне крісло біля екранів аналітики
     marketing:   { chair: [625, 286], floor: [625, 362] }, // офісне крісло біля екрану маркетингу
     coffee:      { x: 508, y: 349, stand: [532, 360] },    // кавомашина
@@ -1854,16 +1854,16 @@ function drawCat(pose, fr, t, cv) {
   // =====================================================================
   // ГЕОМЕТРІЯ СВІТУ (x, y, z) — див. core/persp.js
   // =====================================================================
-  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 300 };   // екран СТОЇТЬ на столі: низ рамки заходить за задній край стільниці   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
+  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 296 };   // екран СТОЇТЬ на столі: низ рамки заходить за задній край стільниці   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
   const UPA = { xw: 3, z0: 40, z1: 108, y0: -30, y1: 12 };       // верхній екран 1 (мережа) — на місці двох маленьких екранів картинки
   const UPB = { xw: 3, z0: 116, z1: 166, y0: -26, y1: 12 };      // верхній екран 2 (журнал)
   const LANT = [{ z0: 174, z1: 195, y0: -36, y1: 22, w: 4 }, { z0: 207, z1: 214, y0: -33, y1: 19, w: 2.5 }];   // теплі ліхтарі на стіні (як на картинці)
-  const MON = { x0: 40, x1: 62, y0: 202, y1: 278, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
-  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 259, y1: 288 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
-  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 263, y1: 288 }, neon: ['#ff4fd8', '#c63aa8'] };
-  const MUG = { x0: 44, x1: 50, y0: 283.5, y1: 291, z0: 117, z1: 123 };
+  const MON = { x0: 40, x1: 62, y0: 206, y1: 282, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
+  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 262, y1: 291 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
+  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 266, y1: 291 }, neon: ['#ff4fd8', '#c63aa8'] };
+  const MUG = { x0: 44, x1: 50, y0: 286.5, y1: 294, z0: 117, z1: 123 };
   const LAMP = { x: 30, z: 200 };
-  const TOPY = 291;                                             // висота стільниці у світі (речі стоять на видимому верху стільниці)
+  const TOPY = 294;                                             // висота стільниці у світі (речі стоять на видимому верху стільниці)
   const WALLR = { w: 248, h: 365 }, FRONTR = { oy: 190, w: 330, h: 100 }, FLOORR = { oy: 290, w: 350, h: 136 };
 
   // =====================================================================
@@ -2033,8 +2033,8 @@ function drawCat(pose, fr, t, cv) {
     B(MUG, { top: (u, v) => (u < .18 || u > .82 || v < .18 || v > .82) ? K[6] : '#2a1408', right: (u, v, i, j) => v > .42 && v < .58 ? CY[4] : ramp(K, .8 - u * .5, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j) });
     B({ x0: LAMP.x - 6, x1: LAMP.x + 6, y0: TOPY - 1.4, y1: TOPY, z0: LAMP.z - 6, z1: LAMP.z + 6 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[0] });
     const g = (x, y, z) => { const q = VD.p(x, y, z); return [q[0] / U, (q[1] - oy) / U]; };
-    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, TOPY - 1.4, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 262, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 258, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
-    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 254, y1: 260, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
+    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, TOPY - 1.4, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 265, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 261, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
+    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 257, y1: 263, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
     outline(r, C.out);
     return r.canvas();
   }
@@ -2233,10 +2233,11 @@ function drawCat(pose, fr, t, cv) {
       // --- глянцева підлога під виступом стільниці й біля стіни (закриває залишки старого стола картинки);
       //     нижче лінії стола — уже передня підлога кімнати (без шва)
       // під столом: продовження цегляної стіни (до плінтуса на 345) і темна глянцева підлога до клину стола — старий стіл картинки повністю закритий
-      c.save(); c.beginPath(); c.moveTo(0, 290); c.lineTo(318, 290); c.lineTo(318, 353); c.lineTo(34, 376); c.lineTo(0, 376); c.closePath(); c.clip();
+      c.save(); c.beginPath(); c.rect(0, 290, 342, 73); c.clip();
+      c.fillStyle = '#0a0620'; c.fillRect(0, 290, 342, 73);
       c.drawImage(fit(WALL, WALLR.w, WALLR.h, R), 0, 0, WALLR.w, WALLR.h);
-      const gf = c.createLinearGradient(0, 346, 0, 376); gf.addColorStop(0, '#0a0620'); gf.addColorStop(1, '#1a1046'); c.fillStyle = gf; c.fillRect(0, 346, 318, 30);
-      for (let x = 0; x < 318; x += 3) { const h = hash(x, 5); if (h > .82) { c.fillStyle = (x / 3 | 0) % 2 ? 'rgba(58,30,110,.5)' : 'rgba(28,58,122,.5)'; c.fillRect(x, 346, 2, 30); } }   // смуги глянцю
+      const gf = c.createLinearGradient(0, 350, 0, 363); gf.addColorStop(0, '#0a0620'); gf.addColorStop(1, '#1a1046'); c.fillStyle = gf; c.fillRect(0, 350, 342, 13);
+      for (let x = 0; x < 342; x += 3) { const h = hash(x, 5); if (h > .82) { c.fillStyle = (x / 3 | 0) % 2 ? 'rgba(58,30,110,.5)' : 'rgba(28,58,122,.5)'; c.fillRect(x, 350, 2, 13); } }   // смуги глянцю
       c.restore();
       // --- теплі ліхтарі на стіні: мерехтять
       LANT.forEach((L, n) => { const [lx, ly] = V.p(L.w, (L.y0 + L.y1) / 2, (L.z0 + L.z1) / 2); P.glow(c, lx, ly, n ? 16 : 30, 'rgba(255,180,80,.9)', .3 + .08 * Math.sin(t * 6.3 + n * 2) + .05 * Math.sin(t * 13.7 + n)); });
@@ -2245,13 +2246,13 @@ function drawCat(pose, fr, t, cv) {
     /** Стіл — окремий шар: він найближчий, тому малюється ПІСЛЯ столу аналітики (перекриває його лівий край),
      *  а Nexi на стільниці (y більший) — уже поверх стола. */
     /** Речі на столі — шар одразу над столом (objects/ai_desk.js малює сам стіл на y = 280). */
-    layers(t) { return [{ y: 281.5, draw: c => this.drawDesk(c, t) }]; },
+    layers(t) { return [{ y: 300.5, draw: c => this.drawDesk(c, t) }]; },
     drawDesk(c, t) {
       if (!WALL) return;
       const act = this.active ? 1 : 0, Kk = NX.cam.k * (NX.loop.dpr || 1), R = this.res(Kk);
       c.save(); c.imageSmoothingEnabled = Kk * U < .95;
       // --- дрібнички з картинки (ноутбук, рамка, колонка, фігурка) стоять на новій стільниці
-      { const pr = NX.objects.ws_deskProps; if (pr) pr.draw(c, t, NX.aiDesk.top(282) - 297.5 - 2); }   // дрібнички з картинки стоять на стільниці
+      { const pr = NX.objects.ws_deskProps; if (pr) pr.draw(c, t, -3.5); }   // дрібнички з картинки стоять на стільниці
       // --- речі на столі: монітор, бази голо-ноутбуків, горнятко, лампа
       c.imageSmoothingEnabled = Kk * U < .95;
       c.drawImage(fit(FRONT, FRONTR.w, FRONTR.h, R), 0, FRONTR.oy, FRONTR.w, FRONTR.h);
@@ -2277,8 +2278,8 @@ function drawCat(pose, fr, t, cv) {
       c.imageSmoothingEnabled = false;
       c.globalCompositeOperation = 'lighter';
       // лампа: тепле світло на стільницю; пара над кавою
-      const [lx, ly] = VD.p(LAMP.x + 9, 260, LAMP.z - 9);
-      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, 290); c.lineTo(lx - 14, 290); c.fill();
+      const [lx, ly] = VD.p(LAMP.x + 9, 263, LAMP.z - 9);
+      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, 294); c.lineTo(lx - 14, 294); c.fill();
       P.glow(c, lx, ly, 10, 'rgba(255,220,140,.9)', .5 + .05 * Math.sin(t * 7));
       const [mx, my] = VD.p((MUG.x0 + MUG.x1) / 2, MUG.y0, (MUG.z0 + MUG.z1) / 2);
       for (let i = 0; i < 5; i++) { const q = (t * .5 + i / 5) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(mx - .5 + Math.sin(q * 6 + i) * 1.5, my - 1 - q * 14, 1, 1); }
@@ -2289,7 +2290,7 @@ function drawCat(pose, fr, t, cv) {
       c.globalCompositeOperation = 'source-over';
       // світло від екранів
       const [mcx, mcy] = VD.p(MON.x1, (MON.y0 + MON.y1) / 2, (MON.z0 + MON.z1) / 2); P.glow(c, mcx + 6, mcy, 40, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4));
-      const [lcx, lcy] = VD.p(LP1.scr.xw, 276, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
+      const [lcx, lcy] = VD.p(LP1.scr.xw, 279, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
       c.restore();
     },
   });
@@ -2302,7 +2303,7 @@ function drawCat(pose, fr, t, cv) {
  * Ліве крило: перемальований фон (assets/wing_back.png, 4 px/од., ділянка BACK_BOX),
  * спрайти (assets/wing_sprites.png): x, y — лівий верх у кімнаті, w, h — пікселі атласу (4 px = 1 од.),
  * вогні (мерехтять) і живі екрани на полицях. */
-NX.WING = {"back": {"box": [240, 0, 467, 292], "parts": [[240, 0, 340, 292], [340, 0, 467, 162]]}, "sprites": [{"id": "shelfVines", "x": 244.75, "y": 0.0, "w": 245, "h": 331, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 0, "ay": 0}, {"id": "shelfOrange", "x": 315.25, "y": 8.0, "w": 91, "h": 173, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 247, "ay": 0}, {"id": "g2Vines", "x": 434.0, "y": 0.0, "w": 144, "h": 360, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 340, "ay": 0}, {"id": "anTop", "x": 382.75, "y": 68.0, "w": 338, "h": 328, "sway": "stand", "stage": "layer", "potTop": 130.75, "floor": 150, "lamp": false, "ax": 486, "ay": 0}, {"id": "deskProps", "x": 240.0, "y": 250.25, "w": 336, "h": 191, "sway": "none", "stage": "desk", "potTop": 0, "floor": 297, "lamp": false, "ax": 826, "ay": 0}, {"id": "g3Plant", "x": 463.25, "y": 156.25, "w": 243, "h": 294, "sway": "stand", "stage": "wall", "potTop": 205, "floor": 226, "lamp": false, "ax": 1164, "ay": 0}, {"id": "g3Bulb", "x": 499.25, "y": 126.25, "w": 147, "h": 207, "sway": "none", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1409, "ay": 0}, {"id": "g3Lantern", "x": 488.25, "y": 227.25, "w": 79, "h": 104, "sway": "none", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1558, "ay": 0}, {"id": "aiVinesTL", "x": 0.0, "y": 0.0, "w": 213, "h": 487, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1639, "ay": 0}, {"id": "aiCorner", "x": 0.0, "y": 144.75, "w": 279, "h": 874, "sway": "stand", "stage": "behindDesk", "potTop": 320, "floor": 362, "lamp": false, "ax": 0, "ay": 489}, {"id": "aiUnderA", "x": 118, "y": 309.81, "w": 196, "h": 192, "sway": "stand", "stage": "layer", "potTop": 337.56, "floor": 357.8, "lamp": false, "ax": 281, "ay": 489}, {"id": "aiLantern", "x": 172, "y": 320.27, "w": 68, "h": 140, "sway": "none", "stage": "layer", "potTop": 0, "floor": 355.3, "lamp": true, "ax": 479, "ay": 489}, {"id": "aiUnderB", "x": 186, "y": 291.01, "w": 202, "h": 236, "sway": "stand", "stage": "hidden", "potTop": 329.76, "floor": 350.0, "lamp": false, "ax": 549, "ay": 489}, {"id": "mkDeskA", "x": 464.25, "y": 236.6, "w": 180, "h": 188, "sway": "stand", "stage": "layer", "potTop": 266.35, "floor": 283.6, "lamp": false, "ax": 753, "ay": 489}, {"id": "mkDeskB", "x": 513.25, "y": 237.6, "w": 152, "h": 184, "sway": "stand", "stage": "layer", "potTop": 268.35, "floor": 283.6, "lamp": false, "ax": 935, "ay": 489}], "lights": [{"x": 302, "y": 62, "r": 11, "c": "255,90,230"}, {"x": 265, "y": 180, "r": 8, "c": "255,170,80"}, {"x": 312, "y": 178, "r": 8, "c": "255,170,80"}, {"x": 286, "y": 150, "r": 7, "c": "255,190,90"}, {"x": 355, "y": 62, "r": 20, "c": "255,150,60"}, {"x": 402, "y": 52, "r": 30, "c": "255,80,230", "pulse": 1}, {"x": 462, "y": 72, "r": 11, "c": "255,90,230"}, {"x": 517, "y": 150, "r": 24, "c": "255,200,90"}, {"x": 497, "y": 240, "r": 13, "c": "255,90,230"}], "screens": [[[266, 87], [321, 92], [320, 121], [266, 117]], [[266, 189], [321, 196], [320, 224], [266, 219]]]};
+NX.WING = {"back": {"box": [240, 0, 467, 292], "parts": [[240, 0, 340, 292], [340, 0, 467, 162]]}, "sprites": [{"id": "shelfVines", "x": 244.75, "y": 0.0, "w": 245, "h": 331, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 0, "ay": 0}, {"id": "shelfOrange", "x": 315.25, "y": 8.0, "w": 91, "h": 173, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 247, "ay": 0}, {"id": "g2Vines", "x": 434.0, "y": 0.0, "w": 144, "h": 360, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 340, "ay": 0}, {"id": "anTop", "x": 382.75, "y": 68.0, "w": 338, "h": 328, "sway": "stand", "stage": "layer", "potTop": 130.75, "floor": 150, "lamp": false, "ax": 486, "ay": 0}, {"id": "deskProps", "x": 240.0, "y": 250.25, "w": 336, "h": 191, "sway": "none", "stage": "desk", "potTop": 0, "floor": 297, "lamp": false, "ax": 826, "ay": 0}, {"id": "g3Plant", "x": 463.25, "y": 156.25, "w": 243, "h": 294, "sway": "stand", "stage": "wall", "potTop": 205, "floor": 226, "lamp": false, "ax": 1164, "ay": 0}, {"id": "g3Bulb", "x": 499.25, "y": 126.25, "w": 147, "h": 207, "sway": "none", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1409, "ay": 0}, {"id": "g3Lantern", "x": 488.25, "y": 227.25, "w": 79, "h": 104, "sway": "none", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1558, "ay": 0}, {"id": "aiVinesTL", "x": 0.0, "y": 0.0, "w": 213, "h": 487, "sway": "hang", "stage": "wall", "potTop": 0, "floor": 0, "lamp": false, "ax": 1639, "ay": 0}, {"id": "aiCorner", "x": 0.0, "y": 144.75, "w": 279, "h": 874, "sway": "stand", "stage": "behindDesk", "potTop": 320, "floor": 362, "lamp": false, "ax": 0, "ay": 489}, {"id": "aiUnderA", "x": 201.25, "y": 313.5, "w": 196, "h": 192, "sway": "stand", "stage": "layer", "potTop": 341.25, "floor": 361.5, "lamp": false, "ax": 281, "ay": 489}, {"id": "aiLantern", "x": 248.25, "y": 326.5, "w": 68, "h": 140, "sway": "none", "stage": "layer", "potTop": 0, "floor": 361.5, "lamp": true, "ax": 479, "ay": 489}, {"id": "aiUnderB", "x": 295.75, "y": 302.5, "w": 202, "h": 236, "sway": "stand", "stage": "layer", "potTop": 341.25, "floor": 361.5, "lamp": false, "ax": 549, "ay": 489}, {"id": "mkDeskA", "x": 464.25, "y": 236.6, "w": 180, "h": 188, "sway": "stand", "stage": "layer", "potTop": 266.35, "floor": 283.6, "lamp": false, "ax": 753, "ay": 489}, {"id": "mkDeskB", "x": 513.25, "y": 237.6, "w": 152, "h": 184, "sway": "stand", "stage": "layer", "potTop": 268.35, "floor": 283.6, "lamp": false, "ax": 935, "ay": 489}], "lights": [{"x": 302, "y": 62, "r": 11, "c": "255,90,230"}, {"x": 265, "y": 180, "r": 8, "c": "255,170,80"}, {"x": 312, "y": 178, "r": 8, "c": "255,170,80"}, {"x": 286, "y": 150, "r": 7, "c": "255,190,90"}, {"x": 355, "y": 62, "r": 20, "c": "255,150,60"}, {"x": 402, "y": 52, "r": 30, "c": "255,80,230", "pulse": 1}, {"x": 462, "y": 72, "r": 11, "c": "255,90,230"}, {"x": 517, "y": 150, "r": 24, "c": "255,200,90"}, {"x": 497, "y": 240, "r": 13, "c": "255,90,230"}], "screens": [[[266, 87], [321, 92], [320, 121], [266, 117]], [[266, 189], [321, 196], [320, 224], [266, 219]]]};
 
 </script>
 <script>
@@ -2390,108 +2391,95 @@ NX.WING = {"back": {"box": [240, 0, 467, 292], "parts": [[240, 0, 340, 292], [34
 <script>
 /* ---- js/objects/ai_desk.js ---- */
 /* ============================================================================
- * objects/ai_desk.js — СТІЛ AI-ЦЕНТРУ: СТІЛЬНИЦЯ В ПЕРСПЕКТИВІ НА ПРОЗОРИХ СИСТЕМНИКАХ
+ * objects/ai_desk.js — СТІЛ AI-ЦЕНТРУ: ОДИН В ОДИН ЯК НА КАРТИНЦІ, ТІЛЬКИ ЧІТКО
  * ----------------------------------------------------------------------------
- * За зауваженнями власника:
- *   - стільниця в перспективі "до іншого стола": передній край іде від (34, 300)
- *     до стику зі столом аналітики (315, 283); задній край — під великим екраном
- *     (екран СТОЇТЬ на столі: низ екрана = задній край стільниці, між ними нічого)
- *   - замість ніжок — два ПРОЗОРІ СИСТЕМНИКИ, що працюють: скляний корпус,
- *     усередині плата, пам'ять, кільце кулера, що крутиться, LED-смужки, що біжать
- *   - Рудик зі своєю базою — окремо, НИЖЧЕ стола (objects/cat_corner.js)
- * Геометрія (одиниці кімнати):
- *   стільниця: 4 кути — лв (34, 300-5), пв (315, 283-4), пн (315, 283), лн (34, 300)
- *   передня плита: товщина 7 (рожевий неон), торець під кутом
- *   системники: лівий x 44..84, правий x 236..286; від низу плити до підлоги (клин 375→352)
- * Малюється NX.furn.Sheet (4 px/од.) один раз; живе — щокадру поверх.
- * API: NX.aiDesk.top(x) — висота заднього краю стільниці в x (туди стає Nexi).
+ * Геометрія знята з оригінальної картинки кімнати (assets/room.webp), нічого не
+ * вигадано: пряма рожева неонова плита x 68..340, y 294..308 (світла кромка
+ * зверху, перелив униз, праворуч тепліша); під нею темно-синій корпус до
+ * підлоги (362): ліва опора 68..100, тумба з 3 шухлядами 152..202, права
+ * частина 256..340 зі шафкою AI-ядра; між ними ніші (там вазони й ліхтарик
+ * з картинки — wing_scene.js). Великий екран стоїть просто на плиті.
+ * Малюється NX.furn.Sheet (4 px/од.); живе — неон кромки, LED, вентилятор.
+ * API: NX.aiDesk.top(x) = 294 (верх плити — туди стає Nexi).
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, { NAVY, PINK, CHROME, CYAN } = F.PAL, ramp = F.ramp, hash = NX.art.hash;
+  const P = NX.px, F = NX.furn, { CHROME } = F.PAL, ramp = F.ramp, hash = NX.art.hash;
   const rgba = (rgb, a) => `rgba(${rgb},${P.clamp(a, 0, 1)})`, lit = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
-  const L = 34, R = 315, DEPTH = 6;                        // ширина стола, видима глибина стільниці
-  const front = x => 300 - (x - L) * 17 / (R - L);         // передній край стільниці (300 -> 283)
-  const back = x => front(x) - DEPTH + (x - L) * 1.5 / (R - L);   // задній край (трохи вужче вдалині)
-  const slab = x => front(x) + 7;                          // низ плити
-  const bot = x => 375 - (x - L) * 23 / (R - L);           // підлога під столом (клин)
-  const PC = [{ x0: 44, x1: 86, hue: '59,232,255' }, { x0: 232, x1: 284, hue: '255,79,216' }];   // прозорі системники
+  const L = 68, R = 340, TOP = 294, SLAB = 308, FLOOR = 362;
+  const SEC = { legL: [L, 100], cab: [152, 202], core: [256, 292], legR: [314, R] };
+  const ROWS = [[314, 329], [331, 346], [348, 360]];
+  const FANC = [274, 330, 7];
   const SL = ['#3a0e5b', '#4d0d6e', '#5b0775', '#6d058a', '#850498', '#ac14b9', '#b317bd', '#cb53cb', '#e07ae0'];
   const SW = ['#5a1440', '#8e286a', '#a52174', '#c32988', '#d73f90', '#e45f8c', '#ee7aa4', '#f6a0c0', '#ffc8dc'];
-  const GL = ['#0a1a3a', '#10264e', '#163466', '#1e4480', '#2a5a9c'];                               // скло корпусу
+  const NV = ['#02010a', '#05041a', '#080a2a', '#0d143c', '#121d50', '#182866', '#20357c', '#2a4494'];
   const mix = (a, b, k) => { if (k <= 0) return a; if (k >= 1) return b; const A = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), B = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16)); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+  const solid = X => Object.values(SEC).find(([a, b]) => X >= a && X < b);
 
   function build() {
-    const S = F.Sheet(L - 2, 270, R + 2, 382), o = '#060313';
-    // --- системники: прозорий корпус з рамкою, усередині плата/пам'ять/кабелі (статична частина)
-    PC.forEach(({ x0, x1 }) => {
-      S.poly([[x0, slab(x0)], [x1, slab(x1)], [x1, bot(x1)], [x0, bot(x0)]], (u, v, i, j, X, Y) => {
-        const yt = slab(X), yb = bot(X), d = (Y - yt) / (yb - yt), du = X - x0, dw = x1 - X;
-        if (du < .6 || dw < .6 || d < .02 || d > .985) return o;
-        if (du < 1.8 || dw < 1.8 || d < .06 || d > .95) return ramp(CHROME, .55 - v * .3, i, j);            // рамка
-        if (Y > yb - 4) return Y > yb - 1.4 ? o : CHROME[2];                                                 // ніжки-планка
-        // скло: напівтемне синє, усередині плата (темно-зелена з доріжками), слоти пам'яті, чіп
-        let col = ramp(GL, .35 - d * .25 + (du < 6 ? .25 : 0), i, j, .12);
-        const inner = du > 5 && dw > 5 && d > .12 && d < .9;
-        if (inner) {
-          const bx = du - 5, by = (Y - yt) - (yb - yt) * .12, bw = (x1 - x0) - 10;
-          if (bx > bw - 7) col = ((by % 6) < 2.4) ? '#0c3a2a' : '#082a1e';                                       // вертикальна плата справа
-          else if (by > 6 && by < 12 && bx > 3 && bx < bw - 10) col = ((bx % 4) < 2) ? '#1a7a5a' : '#0e4a36';   // планки пам'яті
-          else if (by > 22 && by < 34 && bx > 6 && bx < 20) col = '#101624';                                     // чіп-процесор (під кулером)
-          else if (((bx * 2.3 + by * .7) % 9) < .9) col = '#15563f';                                              // доріжки
-          else col = ramp(['#06231a', '#0a3326', '#0e4030'], .4 + Math.sin(by * .4) * .1, i, j, .1);
-          col = mix(col, GL[2], .25);                                                                             // крізь скло
-        }
-        if (Math.abs(du - 3.2) < .5 && d > .1 && d < .9) col = CHROME[4];                                        // блік скла
-        return col;
-      });
+    const S = F.Sheet(L - 2, TOP - 2, R + 2, FLOOR + 1), o = '#060313';
+    // --- корпус під плитою
+    S.rect(L, SLAB, R, FLOOR, (u, v, i, j, X, Y) => {
+      const sec = solid(X), d = (Y - SLAB) / (FLOOR - SLAB);
+      if (!sec) {                                                               // ніша: тінь під плитою, задня стінка з рейками, LED-смужка, підлога
+        if (Y < SLAB + 2) return NV[0];
+        if (Y < 352) return ((X - 100) % 12 + 12) % 12 < .8 ? NV[3] : ramp(['#030112', '#05031c', '#080526', '#0b0730'], .15 + d * .6, i, j, .1);
+        if (Y < 353) return '#123a6a';
+        return ramp(['#04021a', '#0a0628', '#120a36', '#1a0f46'], .2 + (Y - 353) / 9 * .6, i, j, .15);
+      }
+      const [a, b] = sec, du = X - a, dw = b - X;
+      if (du < .5 || dw < .5) return o;
+      if (Y > FLOOR - 4) return Y > FLOOR - .6 ? o : Y < FLOOR - 3.2 ? CHROME[2] : NV[1];                            // цоколь
+      if (a === SEC.cab[0]) {                                                   // тумба з трьома шухлядами (як на картинці)
+        const row = ROWS.find(([p, q]) => Y >= p && Y < q); if (!row) return Y < ROWS[0][0] ? NV[2] : NV[0];
+        const [p, q] = row, dv = Y - p, dh = q - Y, cy = (p + q) / 2;
+        if (dv < .5) return NV[7]; if (dh < .5 || dw < 1.4) return NV[0]; if (du < 1.4) return NV[6];
+        if (Math.abs(Y - cy) < 1 && Math.abs(X - (a + b) / 2) < 8) return Math.abs(Y - cy) < .4 ? '#000006' : NV[1];
+        if (Math.abs(Y - cy + 1.5) < .4 && Math.abs(X - (a + b) / 2) < 8) return NV[6];
+        return ramp(NV, .78 - dv / (q - p) * .35 + (1 - du / (b - a)) * .1, i, j, .12);
+      }
+      if (a === SEC.core[0]) {                                                  // шафка AI-ядра з вентилятором і решіткою
+        const fd = Math.hypot(X - FANC[0], Y - FANC[1]);
+        if (fd < FANC[2] + .9) return fd > FANC[2] + .1 ? o : fd > FANC[2] - .9 ? CHROME[3] : '#03020c';
+        if (Y > 342 && Y < 356 && X > a + 3 && X < b - 3) return ((Y - 342) % 2.4 < .8) ? '#05021a' : NV[4];
+        if (X > b - 6 && X < b - 3 && Y > 312 && Y < 326) return '#020210';
+        return ramp(NV, .6 - d * .3 + (du < 1.5 ? .2 : 0), i, j, .12);
+      }
+      if (Math.abs(X - (a + (b - a) * .45)) < .7) return NV[6];                 // опори зі світлою смужкою
+      return ramp(NV, .45 - d * .25 + (du < 1.2 ? .15 : 0), i, j, .12);
     });
-    // --- низ стільниці між системниками: тінь
-    S.poly([[L, slab(L)], [R, slab(R)], [R, slab(R) + 1.5], [L, slab(L) + 1.5]], o);
-    // --- видимий верх стільниці (паралелограм у перспективі)
-    S.poly([[L + 2, back(L + 2)], [R, back(R)], [R, front(R)], [L, front(L)]], (u, v, i, j, X, Y) => {
-      const glow = Math.max(0, 1 - Math.abs(X - 150) / 95);
-      if (Y < back(X) + .5) return o;
-      if (glow > 0) return ramp(['#0a0a30', '#0e1450', '#122070', '#183090', '#2244b0', '#3060cc'], .15 + glow * .6 * (1 - v * .5) + v * .15, i, j, .12);
-      return ramp(['#0b0730', '#120a36', '#1c0a3c', '#2b0c40', '#43123f', '#612758'], .1 + v * .75, i, j, .12);
-    });
-    // --- плита: світла кромка, рожевий перелив
-    S.poly([[L, front(L)], [R, front(R)], [R, slab(R)], [L, slab(L)]], (u, v, i, j, X, Y) => {
-      const k = P.clamp((X - 228) / 70, 0, 1), dy = Y - front(X);
-      if (X < L + .6 || X > R - .6) return o;
-      if (dy < 1.1) return k > .5 ? '#ffe2ee' : '#ffd4ff';
-      if (dy < 1.8) return k > .5 ? SW[7] : SL[8];
-      const q = 1 - (dy - 1.8) / 5.2, n = SL.length - 1, idx = P.clamp(Math.round(q * .95 * n + NX.art.BAYER[(j & 3) * 4 + (i & 3)] * .9), 0, n);
+    // --- плита: світла кромка, рожевий перелив, праворуч тепліша (ліхтарик)
+    S.rr(L, TOP, R, SLAB, [2, 2, 2, 2], (d, u, v, i, j, X, Y) => {
+      const k = P.clamp((X - 250) / 70, 0, 1), dy = Y - TOP;
+      if (d < .5) return o;
+      if (dy < 1.3) return k > .5 ? '#ffe2ee' : '#ffd4ff';
+      if (dy < 2.2) return k > .5 ? SW[7] : SL[8];
+      if ([152, 202, 256].some(sx => Math.abs(X - sx) < .45)) return SL[2];
+      const q = 1 - (dy - 2.2) / (SLAB - TOP - 2.2), n = SL.length - 1, idx = P.clamp(Math.round(q * .95 * n + NX.art.BAYER[(j & 3) * 4 + (i & 3)] * .9), 0, n);
       return mix(SL[idx], SW[idx], k);
     });
-    // --- правий торець плити (до стола аналітики — тонкий)
-    S.poly([[R - .3, front(R)], [R + 2, front(R) - 1], [R + 2, slab(R) - 1], [R - .3, slab(R)]], (u, v) => v < .15 ? SW[7] : SW[2]);
     return S;
   }
   let SH = null;
   NX.aiDesk = NX.addObject({
-    id: 'aiDesk', L, R, front, back, slab, bot,
-    top(x) { return back(P.clamp(x, L, R)); },
-    layers(t) { return [{ y: 281, draw: c => this.draw(c, t) }]; },
+    id: 'aiDesk', L, R, TOP, SLAB, FLOOR, SEC, FANC, ROWS,
+    top() { return TOP; }, front: () => TOP, back: () => TOP, bot: () => FLOOR,
+    layers(t) { return [{ y: 300, draw: c => this.draw(c, t) }]; },
     draw(c, t) {
       if (!SH) { SH = build(); SH.cv = SH.canvas(); }
       const Rr = F.res(), act = NX.objects.aiPc && NX.objects.aiPc.active ? 1 : 0;
       c.save(); c.imageSmoothingEnabled = Rr < 3.8;
       c.drawImage(F.fit(SH.cv, SH.x1 - SH.x0, SH.y1 - SH.y0, Rr), SH.x0, SH.y0, SH.x1 - SH.x0, SH.y1 - SH.y0);
       c.globalCompositeOperation = 'lighter';
-      // неон кромки + бігуча іскра
-      c.strokeStyle = rgba('255,79,216', .28 + .16 * Math.sin(t * 2.2) + act * .18); c.lineWidth = 1.4; c.beginPath(); c.moveTo(L + 1, front(L) + .9); c.lineTo(R - 1, front(R) + .9); c.stroke();
-      const sx = L + ((t * .22) % 1) * (R - L); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1; c.beginPath(); c.moveTo(sx - 7, front(sx - 7) + 1); c.lineTo(sx + 7, front(sx + 7) + 1); c.stroke();
-      // системники працюють: кулер крутиться, LED-смужка біжить, підсвітка всередині дихає
-      PC.forEach(({ x0, x1, hue }, n) => {
-        const cx = x0 + 18, yt = slab(x0 + 18), yb = bot(x0 + 18), cy = yt + (yb - yt) * .44, rr = 6;
-        c.fillStyle = rgba(hue, .07 + .05 * Math.sin(t * 1.5 + n)); c.fillRect(x0 + 2, yt + 2, x1 - x0 - 4, yb - yt - 6);          // свічення всередині
-        c.strokeStyle = rgba(hue, .9); c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, rr, 0, 7); c.stroke();                       // кільце кулера
-        const fa = t * (5 + act * 10); for (let b = 0; b < 7; b++) { const a = fa + b * Math.PI * 2 / 7; c.strokeStyle = rgba(hue, .75); c.beginPath(); c.moveTo(cx + Math.cos(a) * 1.5, cy + Math.sin(a) * 1.5); c.lineTo(cx + Math.cos(a + .5) * (rr - .8), cy + Math.sin(a + .5) * (rr - .8)); c.stroke(); }
-        lit(c, cx - .8, cy - .8, 1.6, 1.6, '#ffffff');
-        for (let k = 0; k < 10; k++) { const y = yt + 4 + k * ((yb - yt - 10) / 10), on = Math.floor(t * (6 + act * 10) + k) % 10 < 3; lit(c, x1 - 4.2, y, 1.4, 1.6, on ? '#ffffff' : rgba(hue, .5)); }   // LED-стовпчик
-        const q = (t * .6 + n * .5) % 1; lit(c, x0 + 2.2, yt + 3 + q * (yb - yt - 8), x1 - x0 - 4.4, 1, rgba(hue, .35));                                   // скан-смужка
-        P.glow(c, cx, cy, 16, `rgba(${hue},.8)`, .18 + act * .2);
-      });
+      c.fillStyle = rgba('255,79,216', .28 + .16 * Math.sin(t * 2.2) + act * .18); c.fillRect(L + 1, TOP + .6, R - L - 2, 1.4);           // неон кромки
+      const sx = L + ((t * .22) % 1) * (R - L); lit(c, sx - 7, TOP + .7, 14, 1, 'rgba(255,255,255,.85)');                                   // бігуча іскра
+      for (const [a, b] of Object.values(SEC)) for (let x = a + 1.5; x < b - 1.5; x += 2) { const hue = (t * 120 + x * 4) % 360; c.fillStyle = act ? `hsla(${hue},95%,62%,.85)` : rgba('59,232,255', .4 + .3 * Math.sin(t * 2 + x * .12)); c.fillRect(x, FLOOR - 2.2, 1.3, 1.2); }
+      for (let x = 102; x < 150; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('59,232,255', .18 + .14 * Math.sin(t * 1.6 + x * .08)));
+      for (let x = 204; x < 254; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
+      ROWS.forEach(([p, q], k) => lit(c, SEC.cab[1] - 6, (p + q) / 2 - 3, 2.4, 1, rgba('59,232,255', .45 + .5 * Math.sin(t * 2 + k * 1.7))));
+      for (let k = 0; k < 6; k++) lit(c, SEC.core[1] - 5.4, 313.5 + k * 2.4, 1.8, 1.4, hash(k, Math.floor(t * (4 + act * 8))) > .4 ? ['#3bff8a', '#3be8ff', '#ff7af0'][k % 3] : '#0a1a20');
+      P.glow(c, FANC[0], FANC[1], 12, 'rgba(59,232,255,.7)', .22 + act * .3);
+      const fa = t * (4 + act * 14); for (let bl = 0; bl < 5; bl++) { const a = fa + bl * Math.PI * .4; for (let r2 = 1.4; r2 < FANC[2] - 1; r2 += .5) lit(c, FANC[0] + Math.cos(a + r2 * .12) * r2 - .35, FANC[1] + Math.sin(a + r2 * .12) * r2 - .35, .7, .7, '#5ad8ff'); }
+      lit(c, FANC[0] - 1, FANC[1] - 1, 2, 2, '#c3cbea');
       c.restore();
     },
   });
@@ -2524,7 +2512,7 @@ NX.WING = {"back": {"box": [240, 0, 467, 292], "parts": [[240, 0, 340, 292], [34
         // кадр крила: столи (drawBack-об'єкти) + шари меблів у зоні (стіл AI, речі, крісла, вазони, кавомашина)
         ['analytics', 'marketing'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(cx, t); });
         const L = [];
-        ['aiDesk', 'aiPc', 'analyticsChair', 'marketingChair', 'coffee'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
+        ['aiDesk', 'aiPc', 'analyticsChair', 'marketingChair', 'coffee', 'catCorner'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
         Object.values(NX.objects).forEach(o => { if (o.id.startsWith('ws_') && o.d.stage === 'layer' && o.d.x < 660) L.push(...o.layers(t)); });
         L.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(cx, t));
         // затухання знизу вгору (в оригіналі — далі від лінії підлоги блідіше) і смуги глянцю
@@ -2537,8 +2525,7 @@ NX.WING = {"back": {"box": [240, 0, 467, 292], "parts": [[240, 0, 340, 292], [34
       // кладемо перевернуте від лінії підлоги: ліворуч (під AI-столом) лінія коса — ріжемо на 2 частини з різними осями
       const put = (xa, xb, line) => { c.save(); c.beginPath(); c.rect(xa, line, xb - xa, 120); c.clip(); c.translate(0, line * 2); c.scale(1, -1); c.globalAlpha = .26; c.imageSmoothingEnabled = true;
         c.drawImage(CV, (xa - X0) * R, 0, (xb - xa) * R, CV.height, xa, Y0, xb - xa, H); c.restore(); };
-      if (NX.aiDesk) for (let x = NX.aiDesk.L; x < NX.aiDesk.R; x += 12) put(x, Math.min(x + 12, NX.aiDesk.R), NX.aiDesk.bot(x + 6) - .5);
-      put(NX.aiDesk ? NX.aiDesk.R : 316, X1, 352);
+      put(X0, 342, 361.5); put(342, X1, 352);
       // світлові "доріжки" від неону столів на підлозі
       c.save(); c.globalCompositeOperation = 'lighter';
       const sw = c.createLinearGradient(0, 352, 0, 420); sw.addColorStop(0, 'rgba(255,79,216,.12)'); sw.addColorStop(1, 'rgba(255,79,216,0)'); c.fillStyle = sw; c.fillRect(316, 352, 364, 68);
@@ -3517,7 +3504,7 @@ NX.addObject({
       this.CV = S.canvas(); this.CVX = S.x0; this.CVY = S.y0; this.CVW = S.x1 - S.x0; this.CVH = S.y1 - S.y0;
     }
     return [
-      { y: 390, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
+      { y: 395, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
         c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,79,216,${.25 + .15 * Math.sin(t * 2)})`; c.fillRect(41, 401.8, 38, 1); c.restore(); } },
       { y: s.bowl[1], draw: c => P.depth(c, s.bowl[0] + 13, s.bowl[1], () => {     // миски: автоматична годівниця з дисплеєм + миска з водою
         const [bx, by] = s.bowl, [wx, wy] = s.water;

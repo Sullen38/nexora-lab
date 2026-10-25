@@ -37,7 +37,7 @@ NX.addObject({
       this.CV = S.canvas(); this.CVX = S.x0; this.CVY = S.y0; this.CVW = S.x1 - S.x0; this.CVH = S.y1 - S.y0;
     }
     return [
-      { y: 390, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
+      { y: 395, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
         c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,79,216,${.25 + .15 * Math.sin(t * 2)})`; c.fillRect(41, 401.8, 38, 1); c.restore(); } },
       { y: s.bowl[1], draw: c => P.depth(c, s.bowl[0] + 13, s.bowl[1], () => {     // миски: автоматична годівниця з дисплеєм + миска з водою
         const [bx, by] = s.bowl, [wx, wy] = s.water;
