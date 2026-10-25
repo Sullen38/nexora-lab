@@ -1,72 +1,91 @@
 /* ============================================================================
- * objects/office.js — ЖИВІ КРІСЛА + ЕКРАНИ АНАЛІТИКИ Й МАРКЕТИНГУ
+ * objects/office.js — ЖИВІ КРІСЛА АНАЛІТИКИ Й МАРКЕТИНГУ (піксель-арт кодом)
  * ----------------------------------------------------------------------------
- * Крісла ВИРІЗАНІ з самої картинки (assets/chair1.png, chair2.png) і стали
- * окремими об'єктами, а місце за ними на фоні заповнене. Тому крісло "живе":
+ * Раніше крісла були вирізані з картинки — тепер намальовані кодом (стиль
+ * кімнати: темно-синя оббивка, стьобка, неоновий кант), на тих самих місцях.
+ * Крісло стоїть боком і "дивиться" ліворуч, як на картинці:
+ *   спинка з подушкою під голову і значком N, сидіння, підлокітник,
+ *   хромований газліфт, п'ятипроменева основа з коліщатками.
+ * Поведінка (як і раніше):
  *   - коли Nexi підходить, крісло від'їжджає від столу (off -> OUT)
  *   - Nexi застрибує на сидіння, крісло під'їжджає назад РАЗОМ з ним
- *   - поки він працює, крісло трохи крутиться-гойдається
- *   - коли встає, крісло ще мить котиться і зупиняється
- *   - неонова LED-стрічка по краю спинки з бігучим вогником; коли Nexi сидить —
- *     RGB-режим; підсвітка під кріслом на підлозі; оберт навколо осі при відкочуванні
- * Nexi сидить на сидінні і малюється поверх крісла.
+ *   - поки він працює, крісло трохи гойдається; при відкочуванні — оберт
+ *   - LED-стрічка по краю спинки з бігучим вогником; коли Nexi сидить — RGB;
+ *     підсвітка під кріслом на підлозі
+ * API для сценаріїв (activities.js): NX.chairA / NX.chairM — x, y, seat, OUT, roll().
  * ========================================================================== */
 (() => {
-  const P = NX.px;
-  // LED-стрічка по краю спинки (координати всередині вирізаного крісла) і де світить підсвітка на підлозі
-  const LED = { analytics: [[44, 4], [53, 3], [79, 5], [85, 12], [79, 54]], marketing: [[39, 5], [60, 7], [63, 14], [58, 38]] };
-  const GLOW = { analytics: [423, 341], marketing: [618, 333] };
-  function makeChair(id, src, x, y, seat, accent) {
-    const img = new Image(); img.src = (window.NX_ASSETS && NX_ASSETS[src]) || 'assets/' + src;
+  const P = NX.px, F = NX.furn, { NAVY, CHROME } = F.PAL, ramp = F.ramp;
+  const ACC = { analytics: ['#0f4870', '#17709a', '#2aa6c8', '#3be8ff', '#9af6ff'], marketing: ['#58134f', '#7a1c6d', '#c63aa8', '#ff4fd8', '#ffc2ec'] };
+  // LED-стрічка по краю спинки (локальні координати крісла при масштабі 1)
+  const LED = [[45.5, 52], [45.5, 14], [48, 6], [56, 2.6], [70, 2.6], [78, 6], [81.4, 14], [81.4, 62]];
+  const N = ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'];
+
+  /** Крісло в растр (локальні координати, масштаб 1: 0..92 × 0..94). */
+  function build(acc) {
+    const S = F.Sheet(0, 0, 92, 96, .25);
+    // основа: перекладина й коліщатка
+    S.rr(8, 82, 77, 86.6, 2, (d, u, v, i, j) => d < .5 ? F.PAL.OUT : ramp(CHROME, .75 - v * .6 - Math.abs(u - .5) * .3, i, j));
+    for (const cx of [11.5, 42.5, 73.5]) S.rr(cx - 3.4, 86.2, cx + 3.4, 93, 3.4, (d, u, v) => d < .6 ? F.PAL.OUT : d < 1.4 ? CHROME[2] : (u < .45 && v < .45 ? CHROME[3] : NAVY[1]));
+    // газліфт
+    S.rect(38.5, 70, 44.5, 82.5, (u, v, i, j) => Math.abs(v - .35) < .06 ? NAVY[1] : ramp(CHROME, .9 - Math.abs(u - .35) * 1.6, i, j));
+    // спинка: оббивка зі стьобкою, бокові валики, подушка під голову, значок N
+    S.rr(44, 1.5, 83, 66, [12, 12, 5, 5], (d, u, v, i, j, X, Y) => {
+      if (d < .6) return F.PAL.OUT; if (d < 1.4) return (u < .3 || v < .15) ? NAVY[8] : NAVY[5];
+      if (d < 5.5) return ramp(NAVY, .36 - v * .2 + (u < .4 ? .08 : -.04), i, j, .1);                 // валики
+      if (d < 6.3) return NAVY[1];
+      const quilt = ((Y - 6) % 7.5 + 7.5) % 7.5;
+      return quilt < .7 ? NAVY[2] : ramp(NAVY, .58 - v * .26 + (quilt < 2.2 ? .1 : 0) + (u < .45 ? .06 : 0), i, j, .1);
+    });
+    S.rr(52, 6.5, 75, 17.5, 4.5, (d, u, v, i, j) => d < .6 ? F.PAL.OUT : ramp(acc, .85 - v * .6 - u * .1, i, j));   // подушка
+    N.forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && S.rect(59.5 + i * 1.2, 38 + j * 1.2, 60.7 + i * 1.2, 39.2 + j * 1.2, acc[3])));
+    // підлокітник
+    S.rect(30, 51, 35, 59, (u, v, i, j) => ramp(CHROME, .6 - u * .5, i, j));
+    S.rr(13, 45.5, 51, 51.5, 2.6, (d, u, v, i, j) => d < .5 ? F.PAL.OUT : v < .35 ? NAVY[7] : ramp(NAVY, .4 - v * .2, i, j));
+    // сидіння (збоку): світлий верх, темніший бік, заокруглений передній край
+    S.rr(3, 57.5, 76, 71.5, [5.5, 3, 3, 5.5], (d, u, v, i, j) => {
+      if (d < .6) return F.PAL.OUT;
+      if (v < .26) return d < 1.4 ? NAVY[8] : ramp(NAVY, .78 - v * .6, i, j, .08);
+      return ramp(NAVY, .46 - v * .3 + (u < .25 ? .06 : 0), i, j, .1);
+    });
+    S.rect(5, 66.5, 74, 67.4, acc[2]);                                                              // кантик сидіння
+    return S.canvas();
+  }
+
+  function makeChair(id, x, y, seat, scale, glowAt) {
+    const acc = ACC[id]; let CV = null;
     return NX.addObject({
-      id: id + 'Chair', img, x, y, seat, off: 0, target: 0, wob: 0, OUT: -16, spin: 0, accent, led: LED[id], glowAt: GLOW[id],
+      id: id + 'Chair', x, y, seat, scale, off: 0, target: 0, wob: 0, OUT: -16, spin: 0, glowAt,
       /** Відкотити (-16) / підкотити (0) крісло; при відкочуванні — ефектний оберт. */
       roll(to) { if (to !== this.target && to === this.OUT) this.spin = 1; this.target = to; },
       update(dt, t) {
         const v = (this.target - this.off) * Math.min(1, dt * 6); this.off += v;
         const n = NX.nexi, sitting = n.seat === this; this.wob = sitting && n.cur && n.cur.work ? Math.sin(t * 2.2) * .6 : this.wob * .9;
         if (sitting) { n.x = this.x + this.seat[0] + this.off; n.y = this.y + this.seat[1]; n.gy = 362; }
-        if (Math.abs(v) > .05 && Math.random() < .3) NX.fx.emit('dust', this.x + 30 + this.off, this.y + 88);
+        if (Math.abs(v) > .05 && Math.random() < .3) NX.fx.emit('dust', this.x + 40 * scale + this.off, this.y + 92 * scale);
         this.spin = Math.max(0, this.spin - dt * 1.4);
       },
       layers(t) {
-        const X = this.x + this.off, Y = this.y;
+        const X = this.x + this.off, Y = this.y, W = 92 * scale, H = 96 * scale;
         return [{ y: Y + this.seat[1] - .5, draw: c => {
-          c.save(); c.imageSmoothingEnabled = false;
-          const iw = this.img.naturalWidth / 2, ih = this.img.naturalHeight / 2;   // PNG крісла в 2× роздільності
-          const sit = NX.nexi.seat === this, col = sit ? `hsl(${(t * 120) % 360} 95% 62%)` : this.accent;   // з Nexi — RGB-режим
-          const [gx, gy] = this.glowAt; P.glow(c, X - this.x + gx, gy, 30, sit ? 'rgba(255,120,240,.7)' : 'rgba(59,232,255,.5)', .45 + .2 * Math.sin(t * 3));   // підсвітка під кріслом
-          c.restore(); c.save(); c.imageSmoothingEnabled = false;
+          if (!CV) CV = build(acc);
+          const sit = NX.nexi.seat === this, col = sit ? `hsl(${(t * 120) % 360} 95% 62%)` : acc[3];
+          const [gx, gy] = this.glowAt; P.glow(c, gx + this.off, gy, 30, sit ? 'rgba(255,120,240,.7)' : (id === 'analytics' ? 'rgba(59,232,255,.5)' : 'rgba(255,79,216,.45)'), .45 + .2 * Math.sin(t * 3));   // підсвітка під кріслом
+          c.save(); const R = F.res(); c.imageSmoothingEnabled = R * scale < 3.8;
           const sx = this.spin > 0 ? Math.cos(this.spin * Math.PI * 4) : 1;                                                 // оберт навколо осі
-          c.translate(X + iw / 2, Y + ih); c.scale((1 + this.wob * .03) * (Math.abs(sx) < .15 ? .15 * Math.sign(sx || 1) : sx), 1); c.translate(-iw / 2, -ih);
-          if (this.img.complete) c.drawImage(this.img, 0, 0, iw, ih);
-          c.globalCompositeOperation = 'lighter'; c.strokeStyle = col; c.lineWidth = 1.2; c.shadowColor = col; c.shadowBlur = 6; c.beginPath();   // LED-стрічка по краю спинки
-          this.led.forEach(([lx, ly], i) => i ? c.lineTo(lx, ly) : c.moveTo(lx, ly)); c.stroke();
-          const q = (t * .8) % 1, k2 = Math.floor(q * (this.led.length - 1)), f2 = q * (this.led.length - 1) - k2, A = this.led[k2], B = this.led[k2 + 1];
-          c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f2 - 1, A[1] + (B[1] - A[1]) * f2 - 1, 2, 2); c.restore();
+          c.translate(X + W / 2, Y + H); c.scale((1 + this.wob * .03) * (Math.abs(sx) < .15 ? .15 * Math.sign(sx || 1) : sx), 1); c.translate(-W / 2, -H);
+          c.drawImage(F.fit(CV, W, H, R), 0, 0, W, H);
+          c.scale(scale, scale); c.globalCompositeOperation = 'lighter'; c.strokeStyle = col; c.lineWidth = 1.3; c.beginPath();   // LED-стрічка по краю спинки
+          LED.forEach(([lx, ly], i) => i ? c.lineTo(lx, ly) : c.moveTo(lx, ly)); c.stroke();
+          c.globalAlpha = .35; c.lineWidth = 3.5; c.stroke(); c.globalAlpha = 1;
+          const q = (t * .8) % 1, k2 = Math.floor(q * (LED.length - 1)), f2 = q * (LED.length - 1) - k2, A = LED[k2], B = LED[k2 + 1];
+          c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f2 - 1, A[1] + (B[1] - A[1]) * f2 - 1, 2, 2);
+          c.restore();
         } }];
       },
     });
   }
-  // [вирізаний шматок картинки: лівий верх], [сидіння відносно нього]
-  NX.chairA = makeChair('analytics', 'chair1.png', 383, 252, [30, 62], '#3be8ff');
-  NX.chairM = makeChair('marketing', 'chair2.png', 588, 262, [30, 44], '#d94bff');
-
-  NX.addObject({
-    id: 'analytics', name: 'obj.analytics', act: 'analytics', active: false, prog: 0, hit: { x: 330, y: 150, w: 140, h: 200 },
-    drawBack(c, t) {
-      if (!this.active) return; c.save(); c.globalCompositeOperation = 'lighter';
-      [8, 14, 11, 18, 15].forEach((h, i) => { const hh = h * (.6 + .4 * Math.abs(Math.sin(t * 1.6 + i))) + this.prog * 10; P.rect(c, 350 + i * 7, 246 - hh, 5, hh, i === Math.floor(t * 1.5) % 5 ? '#ffc94d' : '#3be8ff'); });
-      for (let i = 0; i < 6; i++) P.stair(c, 398 + i * 7, 230 - Math.sin(i + t) * 8 - i * 2, 405 + i * 7, 230 - Math.sin(i + 1 + t) * 8 - (i + 1) * 2, '#ff7af0', 1.5);
-      P.text(c, '+' + (12 + Math.floor(this.prog * 30)) + '%', 400, 212, '#ffe27a', 5); c.restore();
-    },
-  });
-  NX.addObject({
-    id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0, hit: { x: 535, y: 165, w: 115, h: 185 },
-    drawBack(c, t) {
-      if (!this.active) return; c.save(); c.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < 4; i++) { const ph = (t * .5 + i / 4) % 1, x = 552 + i * 22, y = 252 - ph * 40; c.globalAlpha = 1 - ph; P.rect(c, x, y, 14, 9, '#e9eefc'); P.rect(c, x + 4, y + 2, 2, 2, '#ff4f9a'); P.rect(c, x + 7, y + 2, 2, 2, '#ff4f9a'); P.rect(c, x + 4, y + 4, 5, 2, '#ff4f9a'); }
-      c.globalAlpha = 1; P.text(c, '♥ ' + (1200 + Math.floor(this.prog * 3400)), 560, 212, '#ff7af0', 5); c.restore();
-    },
-  });
+  // лівий верх крісла, точка сидіння (відносно нього), масштаб, де світить підсвітка на підлозі
+  NX.chairA = makeChair('analytics', 383, 252, [30, 62], 1, [423, 344]);
+  NX.chairM = makeChair('marketing', 588, 262, [30, 44], .8, [622, 336]);
 })();

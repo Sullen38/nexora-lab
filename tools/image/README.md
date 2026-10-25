@@ -7,9 +7,10 @@
 | 0 | (однорядник у 01) | вирізати смугу кімнати з концепту → `orig_scene.png` |
 | 1 | `01_clean_room.py` | прибрати ботів, бабл, синього кота (FSR-інпейнтинг) |
 | 2 | `02_shiftmap_fix.py` | якісно заповнити прибрані місця справжніми шматками картинки |
-| 3 | `03_cut_chairs.py` | вирізати крісла в окремі спрайти (`assets/chair*.png`) |
+| 3 | `03_cut_chairs.py` | (застаріло) вирізати крісла в спрайти — крісла тепер малюються кодом (`objects/office.js`) |
 | 4 | `04_upscale_edsr.py` | збільшити ×2 нейромережею EDSR + різкість |
 | 5 | `05_fix_sofa_bg.py` | симетричний диван на фоні → `assets/room.webp` |
+| 6 | `06_trace_plants.py` | вазони лівого крила → чисті спрайти (`assets/plants_wing.png` + `js/objects/wing_plants_data.js`) |
 
 Залежності: `pip install opencv-contrib-python numpy scipy pillow --break-system-packages`.
 Скрипти працюють у робочій папці (не в репозиторії) — імена файлів у шапці кожного.
