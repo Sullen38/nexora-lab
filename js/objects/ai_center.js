@@ -68,16 +68,16 @@
   // =====================================================================
   // ГЕОМЕТРІЯ СВІТУ (x, y, z) — див. core/persp.js
   // =====================================================================
-  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 282 };   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
+  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 300 };   // екран СТОЇТЬ на столі: низ рамки заходить за задній край стільниці   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
   const UPA = { xw: 3, z0: 40, z1: 108, y0: -30, y1: 12 };       // верхній екран 1 (мережа) — на місці двох маленьких екранів картинки
   const UPB = { xw: 3, z0: 116, z1: 166, y0: -26, y1: 12 };      // верхній екран 2 (журнал)
   const LANT = [{ z0: 174, z1: 195, y0: -36, y1: 22, w: 4 }, { z0: 207, z1: 214, y0: -33, y1: 19, w: 2.5 }];   // теплі ліхтарі на стіні (як на картинці)
-  const MON = { x0: 40, x1: 62, y0: 196, y1: 272, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
-  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 254, y1: 283 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
-  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 258, y1: 283 }, neon: ['#ff4fd8', '#c63aa8'] };
-  const MUG = { x0: 44, x1: 50, y0: 278, y1: 285.5, z0: 117, z1: 123 };
+  const MON = { x0: 40, x1: 62, y0: 202, y1: 278, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
+  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 259, y1: 288 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
+  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 263, y1: 288 }, neon: ['#ff4fd8', '#c63aa8'] };
+  const MUG = { x0: 44, x1: 50, y0: 283.5, y1: 291, z0: 117, z1: 123 };
   const LAMP = { x: 30, z: 200 };
-  const TOPY = 285.5;                                             // висота стільниці у світі (речі стоять на видимому верху стільниці)
+  const TOPY = 291;                                             // висота стільниці у світі (речі стоять на видимому верху стільниці)
   const WALLR = { w: 248, h: 365 }, FRONTR = { oy: 190, w: 330, h: 100 }, FLOORR = { oy: 290, w: 350, h: 136 };
 
   // =====================================================================
@@ -247,8 +247,8 @@
     B(MUG, { top: (u, v) => (u < .18 || u > .82 || v < .18 || v > .82) ? K[6] : '#2a1408', right: (u, v, i, j) => v > .42 && v < .58 ? CY[4] : ramp(K, .8 - u * .5, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j) });
     B({ x0: LAMP.x - 6, x1: LAMP.x + 6, y0: TOPY - 1.4, y1: TOPY, z0: LAMP.z - 6, z1: LAMP.z + 6 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[0] });
     const g = (x, y, z) => { const q = VD.p(x, y, z); return [q[0] / U, (q[1] - oy) / U]; };
-    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, TOPY - 1.4, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 257, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 253, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
-    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 249, y1: 255, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
+    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, TOPY - 1.4, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 262, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 258, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
+    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 254, y1: 260, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
     outline(r, C.out);
     return r.canvas();
   }
@@ -446,8 +446,12 @@
       if (!this.comp && this.fr > 4) this.patchRoom();                                   // після кількох кадрів: усі меблі крила вже готові
       // --- глянцева підлога під виступом стільниці й біля стіни (закриває залишки старого стола картинки);
       //     нижче лінії стола — уже передня підлога кімнати (без шва)
-      c.save(); c.beginPath(); c.rect(0, FLOORR.oy, FLOORR.w, 352 - FLOORR.oy); c.clip();
-      c.drawImage(fit(FLOOR, FLOORR.w, FLOORR.h, R), 0, FLOORR.oy, FLOORR.w, FLOORR.h); c.restore();
+      // під столом: продовження цегляної стіни (до плінтуса на 345) і темна глянцева підлога до клину стола — старий стіл картинки повністю закритий
+      c.save(); c.beginPath(); c.moveTo(0, 290); c.lineTo(318, 290); c.lineTo(318, 353); c.lineTo(34, 376); c.lineTo(0, 376); c.closePath(); c.clip();
+      c.drawImage(fit(WALL, WALLR.w, WALLR.h, R), 0, 0, WALLR.w, WALLR.h);
+      const gf = c.createLinearGradient(0, 346, 0, 376); gf.addColorStop(0, '#0a0620'); gf.addColorStop(1, '#1a1046'); c.fillStyle = gf; c.fillRect(0, 346, 318, 30);
+      for (let x = 0; x < 318; x += 3) { const h = hash(x, 5); if (h > .82) { c.fillStyle = (x / 3 | 0) % 2 ? 'rgba(58,30,110,.5)' : 'rgba(28,58,122,.5)'; c.fillRect(x, 346, 2, 30); } }   // смуги глянцю
+      c.restore();
       // --- теплі ліхтарі на стіні: мерехтять
       LANT.forEach((L, n) => { const [lx, ly] = V.p(L.w, (L.y0 + L.y1) / 2, (L.z0 + L.z1) / 2); P.glow(c, lx, ly, n ? 16 : 30, 'rgba(255,180,80,.9)', .3 + .08 * Math.sin(t * 6.3 + n * 2) + .05 * Math.sin(t * 13.7 + n)); });
       c.restore();
@@ -455,13 +459,13 @@
     /** Стіл — окремий шар: він найближчий, тому малюється ПІСЛЯ столу аналітики (перекриває його лівий край),
      *  а Nexi на стільниці (y більший) — уже поверх стола. */
     /** Речі на столі — шар одразу над столом (objects/ai_desk.js малює сам стіл на y = 280). */
-    layers(t) { return [{ y: 280.5, draw: c => this.drawDesk(c, t) }]; },
+    layers(t) { return [{ y: 281.5, draw: c => this.drawDesk(c, t) }]; },
     drawDesk(c, t) {
       if (!WALL) return;
       const act = this.active ? 1 : 0, Kk = NX.cam.k * (NX.loop.dpr || 1), R = this.res(Kk);
       c.save(); c.imageSmoothingEnabled = Kk * U < .95;
       // --- дрібнички з картинки (ноутбук, рамка, колонка, фігурка) стоять на новій стільниці
-      { const pr = NX.objects.ws_deskProps; if (pr) pr.draw(c, t, NX.aiDesk.top(282) - 297.5); }   // дрібнички з картинки стоять на стільниці
+      { const pr = NX.objects.ws_deskProps; if (pr) pr.draw(c, t, NX.aiDesk.top(282) - 297.5 - 2); }   // дрібнички з картинки стоять на стільниці
       // --- речі на столі: монітор, бази голо-ноутбуків, горнятко, лампа
       c.imageSmoothingEnabled = Kk * U < .95;
       c.drawImage(fit(FRONT, FRONTR.w, FRONTR.h, R), 0, FRONTR.oy, FRONTR.w, FRONTR.h);
@@ -487,8 +491,8 @@
       c.imageSmoothingEnabled = false;
       c.globalCompositeOperation = 'lighter';
       // лампа: тепле світло на стільницю; пара над кавою
-      const [lx, ly] = VD.p(LAMP.x + 9, 255, LAMP.z - 9);
-      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, 286); c.lineTo(lx - 14, 286); c.fill();
+      const [lx, ly] = VD.p(LAMP.x + 9, 260, LAMP.z - 9);
+      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, 290); c.lineTo(lx - 14, 290); c.fill();
       P.glow(c, lx, ly, 10, 'rgba(255,220,140,.9)', .5 + .05 * Math.sin(t * 7));
       const [mx, my] = VD.p((MUG.x0 + MUG.x1) / 2, MUG.y0, (MUG.z0 + MUG.z1) / 2);
       for (let i = 0; i < 5; i++) { const q = (t * .5 + i / 5) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(mx - .5 + Math.sin(q * 6 + i) * 1.5, my - 1 - q * 14, 1, 1); }
@@ -499,7 +503,7 @@
       c.globalCompositeOperation = 'source-over';
       // світло від екранів
       const [mcx, mcy] = VD.p(MON.x1, (MON.y0 + MON.y1) / 2, (MON.z0 + MON.z1) / 2); P.glow(c, mcx + 6, mcy, 40, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4));
-      const [lcx, lcy] = VD.p(LP1.scr.xw, 271, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
+      const [lcx, lcy] = VD.p(LP1.scr.xw, 276, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
       c.restore();
     },
   });

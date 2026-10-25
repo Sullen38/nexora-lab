@@ -74,5 +74,5 @@
     if (d.stage === 'behindDesk') NX.wing.behind.push(o);
     return o;
   }
-  D.sprites.forEach(make);
+  D.sprites.filter(d => d.stage !== 'hidden').forEach(make);
 })();

@@ -8,10 +8,10 @@
  * ========================================================================== */
 NX.addObject({
   id: 'catCorner', name: 'obj.catCorner', act: 'feedCat',
-  hit: { x: 36, y: 326, w: 42, h: 38 }, food: .7,
-  bowl: [148, 410], water: [172, 410], platform: [67, 326], bed: [57, 351],
+  hit: { x: 36, y: 366, w: 48, h: 40 }, food: .7,
+  bowl: [130, 400], water: [154, 400], platform: [70, 366], bed: [60, 392],
   ball: { x: 300, y: 430, vx: 0, vy: 0 },
-  layout() { const F = NX.cam.front, y = 368 + Math.min(44, F * .24); this.bowl = [148, y]; this.water = [172, y]; this.ball.y = NX.px.clamp(this.ball.y, 372, 368 + F - 30); },
+  layout() { const F = NX.cam.front, y = 368 + Math.min(34, F * .2); this.bowl = [130, y]; this.water = [154, y]; this.ball.y = NX.px.clamp(this.ball.y, 372, 368 + F - 30); },
   kick(dx, dy) { this.ball.vx += dx; this.ball.vy += dy; },
   update(dt) {
     const b = this.ball, B = NX.room.walkBounds(); b.x += b.vx * dt; b.y += b.vy * dt; b.vx *= Math.pow(.25, dt); b.vy *= Math.pow(.25, dt);
@@ -20,24 +20,25 @@ NX.addObject({
   layers(t) {
     const P = NX.px, s = this, F = NX.furn;
     if (!this.CV) {                                                  // лежанка й дряпка — піксель-арт у стилі кімнати (один раз)
-      const S = F.Sheet(36, 326, 78, 364), { NAVY, PINK, CHROME } = F.PAL, r = F.ramp;
+      const S = F.Sheet(36, 364, 84, 406), { NAVY, PINK, CHROME } = F.PAL, r = F.ramp;
       // дряпка-стовпчик з рожевою поличкою зверху (за лежанкою, у ніші тумби)
-      S.rect(66, 328, 73, 352, (u, v, i, j) => (v * 24 % 3 < 1) ? '#8a6038' : r(['#8a6038', '#b88a5a', '#d8a870'], .6 - u * .5, i, j));
-      S.rr(60, 326, 78, 329.5, 1.2, (d, u, v) => d < .4 ? '#2a0f3a' : v < .4 ? PINK[6] : PINK[4]);
+      S.rect(74, 368, 81, 386, (u, v, i, j) => (v * 24 % 3 < 1) ? '#8a6038' : r(['#8a6038', '#b88a5a', '#d8a870'], .6 - u * .5, i, j));
+      S.rr(70, 366, 86, 369.5, 1.2, (d, u, v) => d < .4 ? '#2a0f3a' : v < .4 ? PINK[6] : PINK[4]);
       // кругла лежанка: борт-бублик, м'яка подушка всередині, неоновий кант, ніжки
-      S.poly([[40, 342], [74, 342], [77, 356], [74, 361], [40, 361], [37, 356]], (u, v, i, j, X, Y) => {
-        const ex = (X - 57) / 20, ey = (Y - 351) / 10, d = Math.hypot(ex, ey);
+      S.poly([[42, 382], [78, 382], [82, 396], [78, 402], [42, 402], [38, 396]], (u, v, i, j, X, Y) => {
+        const ex = (X - 60) / 21, ey = (Y - 392) / 10.5, d = Math.hypot(ex, ey);
         if (d > 1) return null; if (d > .93) return '#2a0f3a';
         if (d > .62) return r(['#3a1a5a', '#5a2a7a', '#7a4aa8', '#9a6ac8'], .75 - ey * .4 - d * .2, i, j, .12);          // борт
         if (d > .55) return '#2a1040';
         return r(['#2a1a4a', '#3d2a66', '#55408a', '#6e58aa', '#8a74c4'], .55 - ey * .35 + (Math.sin(X * 1.3) * Math.sin(Y * 1.6) > .3 ? .15 : 0), i, j, .14);   // подушка з ворсом
       });
-      S.rect(38, 360.5, 76, 362.5, (u, v) => v < .4 ? PINK[3] : '#2a0f3a');
+      S.rect(40, 401.5, 80, 403.5, (u, v) => v < .4 ? PINK[3] : '#2a0f3a');
+      S.rr(36, 403, 84, 406, 1, (d, u, v, i, j) => d < .4 ? '#1a0a2a' : r(['#2a1a4a', '#3d2a66', '#55408a'], .6 - v * .3, i, j));   // база-платформа
       this.CV = S.canvas(); this.CVX = S.x0; this.CVY = S.y0; this.CVW = S.x1 - S.x0; this.CVH = S.y1 - S.y0;
     }
     return [
-      { y: 340, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
-        c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,79,216,${.25 + .15 * Math.sin(t * 2)})`; c.fillRect(39, 360.8, 36, 1); c.restore(); } },
+      { y: 390, draw: c => { const R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(this.CV, this.CVW, this.CVH, R), this.CVX, this.CVY, this.CVW, this.CVH);
+        c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,79,216,${.25 + .15 * Math.sin(t * 2)})`; c.fillRect(41, 401.8, 38, 1); c.restore(); } },
       { y: s.bowl[1], draw: c => P.depth(c, s.bowl[0] + 13, s.bowl[1], () => {     // миски: автоматична годівниця з дисплеєм + миска з водою
         const [bx, by] = s.bowl, [wx, wy] = s.water;
         P.rect(c, bx - 11, by - 7, 22, 7, '#1a1040'); P.rect(c, bx - 11, by - 7, 22, 1, '#5a4a9a'); P.rect(c, bx - 10, by - 1, 20, 1, '#0a0620');
