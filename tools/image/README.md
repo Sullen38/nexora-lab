@@ -11,6 +11,7 @@
 | 4 | `04_upscale_edsr.py` | збільшити ×2 нейромережею EDSR + різкість |
 | 5 | `05_fix_sofa_bg.py` | симетричний диван на фоні → `assets/room.webp` |
 | 6 | `06_trace_plants.py` | вазони лівого крила → чисті спрайти (`assets/plants_wing.png` + `js/objects/wing_plants_data.js`) |
+| 7 | `07_desk_props.py` | дрібнички на краю стола AI-центру (ноутбук, рамка, колонка, фігурка) → `assets/ai_desk_props.png` |
 
 Залежності: `pip install opencv-contrib-python numpy scipy pillow --break-system-packages`.
 Скрипти працюють у робочій папці (не в репозиторії) — імена файлів у шапці кожного.
