@@ -289,11 +289,12 @@
     pens(c, it, t) { const B = [it.x + 6.4, it.y - 10]; c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, B[0], B[1], 2.6, 'rgba(122,240,255,.9)', .35 + .2 * Math.sin(t * 2.4 + it.x)); lit(c, B[0] - .25, B[1] - .25, .5, .5, rgba('223,248,255', .7 + .3 * Math.sin(t * 2.4 + it.x))); c.restore(); },   // кінчик стилуса
     printout(c, it, t, act, D) { if (!it.sp) it.sp = printoutSprite(D, it); const s = it.sp, R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(s.cv, s.w, s.h, R), s.x0, s.y0, s.w, s.h); c.restore(); },
   };
-  /** Тіні контакту + статичні частини всіх дрібниць стола (дальні — першими). */
-  function trinkets(S, D, items) {
+  /** Тіні контакту + статичні частини всіх дрібниць стола (дальні — першими). part: 'shadow' — лише тіні, 'items' — лише речі
+   *  (так стіл може зробити знімок верху з тінями ДО речей — для віддзеркалення в глянці, NX.kit.gloss). */
+  function trinkets(S, D, items, part) {
     const list = items.slice().sort((a, b) => (a.y || D.top) - (b.y || D.top));
-    list.forEach(it => { if (it.kind !== 'printout') K.contact(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });   // тінь контакту (NX.kit.contact)
-    list.forEach(it => STATIC[it.kind](S, D, it));
+    if (part !== 'items') list.forEach(it => { if (it.kind !== 'printout') K.contact(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });   // тінь контакту (NX.kit.contact)
+    if (part !== 'shadow') list.forEach(it => STATIC[it.kind](S, D, it));
   }
   /** Живе поверх стола: екран телефона, RGB, LED, звисання роздруківки. Викликати ПІСЛЯ неону плити. */
   function trinketsLive(c, D, items, t, act) { c.save(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; items.forEach(it => LIVE[it.kind] && LIVE[it.kind](c, it, t, act, D)); c.restore(); }

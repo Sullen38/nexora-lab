@@ -19,7 +19,9 @@
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#58134f', '#a0288d', '#e656c0', '#ff84d4'];
   const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 275, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
-  const DESK = { l: 485, r: 662, top: 278, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }] };
+  // №3: ширший верх (передній край 278 -> 281), віддзеркалення будки, кабелі за столом (лоток, пучки, подовжувач у ніші)
+  const DESK = { l: 485, r: 662, top: 281, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }],
+    refl: [[536, 652, '#e05ac0', .28]], under: [{ tray: [491, 597], drops: [498, 556, 584], strip: [538, 566] }] };
   const MUGS = [[548, 268], [566, 269]];
   // дрібниці (objects/wing_trinkets.js): телефон зі сповіщеннями-сердечками, блок стікерів, ескізи з ручкою, склянка з ручками
   const ITEMS = [
@@ -32,9 +34,13 @@
   function buildBooth() { const S = F.Sheet(530, 160, 664, 280); K.booth(S, BOOTH); return S; }   // будка стоїть на столі (низ — за стільницею, без просвіту)
   function buildDesk() {
     const S = F.Sheet(481, 262, 664, 340); K.desk(S, DESK);
+    K.trinkets(S, DESK, ITEMS, 'shadow');
     K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], ...MUGS.map(([x]) => [x, x + 8.8, 278]), [536, 544, 278], [503.5, 518.5, 278]]);   // тіні контакту (№1): будка, горнята, колонка, вазон
-    MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, DESK.top, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
-    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
+    const base = K.snap(S);                                                                       // верх з тінями (для глянцю)
+    MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, 278, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
+    K.trinkets(S, DESK, ITEMS, 'items');                                                          // дрібниці
+    K.gloss(S, DESK, base, .4);                                                                   // віддзеркалення речей у глянці (№3)
+    K.wire(S, [[544.2, 277.2], [546.8, 275.8], [546.4, 273.8]]);                                  // №3: кабель колонки за край
     return S;
   }
   // ---------- живі екрани ----------
@@ -71,6 +77,8 @@
       for (let x = 605.5; x < 648.5; x += 2) lit(c, x, DESK.bot - 2.2, 1.3, 1.2, rgba('59,232,255', .3 + .25 * Math.sin(t * 2 + x * .12)));
       c.globalCompositeOperation = 'source-over';
       K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // екран телефона (сердечка), стилус
+      K.underLive(c, DESK, t, act);                                                               // вимикач подовжувача під столом
+      K.deskShine(c, DESK, t, [[594, 40, '255,90,210'], [540, 6, '255,150,230'], [579, 5, '120,140,255']], [[574, 584, '120,140,255', .07, 278.2]]);   // глянець верху
       MUGS.forEach(([x, y], k) => { for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3 + k * .4) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(x + 3 + Math.sin(q * 6 + i) * 1.2, y - 1 - q * 10, 1, 1); } });
       c.restore();
     },

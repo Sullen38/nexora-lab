@@ -17,7 +17,9 @@
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, HOLO, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'];
   const BOOTH = { x0: 322, y0: 128, x1: 478, y1: 278, acc: ACC, sign: [336, 138, 464, 166], icon: [350, 152], screens: [[336, 178, 398, 264], [406, 178, 466, 264]] };
-  const DESK = { l: 326, r: 486, top: 280, slab: 290, bot: 346, back: 275, sec: [{ a: 334, b: 372, kind: 'drawers', rows: 3 }, { a: 372, b: 440, kind: 'niche' }, { a: 440, b: 480, kind: 'drawers', rows: 3 }] };
+  // №3: ширший верх (передній край 280 -> 283), віддзеркалення будки, кабелі за столом (лоток, пучки, роутер у ніші)
+  const DESK = { l: 326, r: 486, top: 283, slab: 291, bot: 346, back: 275, sec: [{ a: 334, b: 372, kind: 'drawers', rows: 3 }, { a: 372, b: 440, kind: 'niche' }, { a: 440, b: 480, kind: 'drawers', rows: 3 }],
+    refl: [[322, 478, '#2a9ad0', .3]], under: [{ tray: [375, 437], drops: [382, 424], router: [378, 394] }] };
   const LAPQ = [[336, 263], [358, 264], [358, 277], [336, 278]], LAPB = [333, 361], TAB = [368, 258, 384, 271], MUG = [452, 268, 460, 278];
   // дрібниці (objects/wing_trinkets.js): склянка з олівцями, роздруківка-звіт звисає з краю, стос паперів, телефон на зарядці, мишка
   const ITEMS = [
@@ -30,7 +32,9 @@
   function buildBooth() { const S = F.Sheet(316, 122, 490, 284); K.booth(S, BOOTH); return S; }
   function buildDesk() {
     const S = F.Sheet(322, 248, 490, 348); K.desk(S, DESK);
+    K.trinkets(S, DESK, ITEMS, 'shadow');
     K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], [LAPB[0], LAPB[1], 280, .6], [TAB[0] + 2, TAB[2] - 2, 277, .7], [436, 444, 278], [MUG[0], MUG[2] + 2, 278]]);   // тіні контакту (№1): будка, ноутбук, планшет, кубик, горнятко
+    const base = K.snap(S);                                                                       // верх з тінями (для глянцю)
     S.rect(LAPB[0], 275, LAPB[1], 280, (u, v, i, j) => u > .985 || u < .015 || v > .96 ? OUT : v < .14 ? ACC[3] : (v < .5 && u > .1 && u < .9 && ((u * 14) % 1 < .18 || (v * 6) % 1 < .3)) ? ACC[1] : ramp(CHROME, .55 + u * .2 - v * .3, i, j));   // база голо-ноутбука
     S.rr(TAB[0] - 1.4, TAB[1] - 1.4, TAB[2] + 1.4, TAB[3] + 1.4, 1.4, (d) => d < .6 ? NAVY[0] : NAVY[4]);                                          // планшет на стійці
     S.rect(TAB[0] + 6.6, TAB[3] + 1.4, TAB[0] + 9.4, 276, CHROME[3]); S.rect(TAB[0] + 2, 275.5, TAB[2] - 2, 277, CHROME[4]);
@@ -38,7 +42,9 @@
     S.rect(MUG[2] - .4, MUG[1] + 2.2, MUG[2] + 2.2, MUG[1] + 6.4, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]);
     S.rr(436, 270, 444, 278, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .25 && u < .75 && v > .3 && v < .7) ? CYAN[4] : ramp(NAVY, .45 - v * .25, i, j));   // світний кубик
     [[361, 278.6, 370, 275.8], [386, 278.4, 394, 275.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });   // кабелі
-    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
+    K.trinkets(S, DESK, ITEMS, 'items');                                                          // дрібниці
+    K.gloss(S, DESK, base, .4);                                                                   // віддзеркалення речей у глянці (№3)
+    K.wire(S, [[444.2, 277.2], [447, 276.4], [447.6, 275.6]]);                                    // №3: кабель кубика за край
     return S;
   }
   // ---------- живі екрани ----------
@@ -90,6 +96,8 @@
       P.glow(c, 347, 268, 18, 'rgba(59,160,255,.6)', .2 + act * .2);
       c.globalCompositeOperation = 'source-over';
       K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // роздруківка, екран телефона, RGB мишки, стилус
+      K.underLive(c, DESK, t, act);                                                               // вогники роутера під столом
+      K.deskShine(c, DESK, t, [[347, 10, '90,200,255'], [400, 30, '90,200,255'], [440, 10, '90,232,255'], [376, 8, '255,200,120']], [[334, 360, '90,200,255', .1 + act * .06, 280.2], [366, 386, '120,180,255', .08, 277.2]]);   // глянець верху
       for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(MUG[0] + 3.5 + Math.sin(q * 6 + i) * 1.2, MUG[1] - 1 - q * 10, 1, 1); }   // пара
       c.restore();
     },

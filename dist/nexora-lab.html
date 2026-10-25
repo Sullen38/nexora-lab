@@ -1801,6 +1801,8 @@ function drawCat(pose, fr, t, cv) {
  *   brick(S, box, lights, fx)  — цегляна стіна з теплими/холодними відсвітами; fx — фактура, запечена в растр:
  *                                м'які тіні від будки/полиць/гаджетів, патьоки, плями, кіптява, тріщини
  *   contact / contacts         — тінь контакту на видимому верху стільниці (під усім, що стоїть на столі)
+ *   snap / gloss / deskShine   — глянець верху: віддзеркалення речей (запікається), живі відблиски на губі скла
+ *   wire / underLive           — кабелі на столі й за столом (лоток, пучки, подовжувач, роутер з вогниками)
  *   sticker(S, o)              — наліпка-висічка (логотип N, Nexi, кіт, серце, зірка, блискавка, AI, QR, «!»)
  *   booth(S, spec)             — будка зони: панель з неоновим кантом, вивіска
  *                                з іконкою, ніша з рамками голо-екранів, бічна грань
@@ -1947,8 +1949,10 @@ NX.kit = (() => {
     S.rect(nx0 + 3, ny1 + 2, nx1 - 3, ny1 + 4, (u, v) => v < .5 ? NAVY[0] : NAVY[3]);                         // планка під екранами
   }
 
-  /** Стіл. spec: {l, r, top (верх плити), slab (низ плити), bot (підлога), back (задній край видимого верху),
-   *  sec: [{a,b,kind:'drawers'|'core'|'leg'|'niche'}], warm: x від якого плита тепліша, end: 'none'|'right'} */
+  /** Стіл. spec: {l, r, top (передній край верху = верх плити), slab (низ плити), bot (підлога), back (задній край верху),
+   *  sec: [{a,b,kind:'drawers'|'core'|'leg'|'niche'}], warm: x від якого плита тепліша, end: 'none'|'right',
+   *  refl: [[x0, x1, колір, сила]] — віддзеркалення яскравого позаду (екранів, будки) на глянцевому верху,
+   *  under: [{tray:[x0,x1], drops:[x...], strip:[x0,x1], router:[x0,x1]}] — кабелі за столом у нішах (лоток, пучки, подовжувач)} */
   function desk(S, sp) {
     const { l, r, top, slab, bot, back } = sp, o = OUT, NV = ['#02010a', '#05041a', '#080a2a', '#0d143c', '#121d50', '#182866', '#20357c', '#2a4494'];
     const secAt = X => sp.sec.find(s => X >= s.a && X < s.b);
@@ -1982,6 +1986,7 @@ NX.kit = (() => {
       return null;
     });
     sp.sec.filter(s => s.kind === 'core').forEach(s => corePC(S, coreGeom(s.a, s.b, slab, bot)));
+    (sp.under || []).forEach(u => underCables(S, sp, u));                                                      // кабелі за столом (№3)
     // плита: світла кромка, рожевий перелив; видимий верх — темне скло з відблиском
     S.rr(l, top, r, slab, [2, 2, 2, 2], (d, u, v, i, j, X, Y) => {
       const k = sp.warm ? P.clamp((X - sp.warm) / 70, 0, 1) : 0, dy = Y - top;
@@ -1992,8 +1997,86 @@ NX.kit = (() => {
       const q = 1 - (dy - 2.2) / (slab - top - 2.2), n = SLAB.length - 1, idx = P.clamp(Math.round(q * .95 * n + NX.art.BAYER[(j & 3) * 4 + (i & 3)] * .9), 0, n);
       return mix(SLAB[idx], ['#5a1440', '#8e286a', '#a52174', '#c32988', '#d73f90', '#e45f8c', '#ee7aa4', '#f6a0c0', '#ffc8dc'][idx], k);
     });
-    S.rect(l, back, r, top, (u, v, i, j, X) => v < .12 ? '#060313' : (((X * .7 + v * 9) | 0) % 23 === 0 ? '#3a1858' : ramp(['#0b0730', '#120a36', '#1c0a3c', '#2b0c40', '#43123f', '#612758'], .1 + v * .8, i, j, .12)));
+    // видимий верх (№3 — ширший): темне скло — найтемніше біля стіни, глибший перелив до краю, м'які діагональні відблиски,
+    // віддзеркалення яскравого позаду (sp.refl); біля переднього краю — «губа» скла з відблиском і тоненька тінь за нею
+    const dep = top - back;
+    S.rect(l, back, r, top, (u, v, i, j, X, Y) => {
+      const dy = top - Y, db = Y - back;
+      if (db < .55) return '#060313';                                                                            // стик зі стіною
+      if (dy < .45) return '#9a70c8';                                                                            // губа скла ловить світло
+      if (dy < .8) return '#140820';
+      let q = .06 + Math.min(1, db / (dep - .8)) * .8; if (((X * .7 + db * 1.8) | 0) % 23 === 0) q += .16;      // перелив до краю, діагональні відблиски
+      let col = ramp(TOPC, q, i, j, .1);
+      for (const R of sp.refl || []) if (X >= R[0] && X < R[1]) { const a = R[3] * Math.max(0, 1 - Math.abs(db / dep - .5) * 1.9) * (1 - Math.abs((X - (R[0] + R[1]) / 2) / ((R[1] - R[0]) / 2)) ** 6); if (a > .02) col = mix(col, R[2], a); }
+      return col;
+    });
     if (sp.end === 'right') { const a = F.toVP(r, top, .03), b = F.toVP(r, bot - 4, .03); S.poly([[r - .4, top], a, b, [r - .4, bot - 4]], (u, v, i, j, X, Y) => Y < top + 5 ? PINK[3] : ramp(DESK, .3 - v * .2, i, j)); }
+  }
+
+  const TOPC = ['#060318', '#0b0730', '#120a36', '#1c0a3c', '#2b0c40', '#3e1048', '#541a56', '#6a2462'];       // глянцевий верх стола
+  /** Кабель: темна оболонка + тонкий блік (як усі кабелі крила). pts — ламана в одиницях кімнати. */
+  function wire(S, pts, hi = '#2a2454', w = 1.1) {
+    for (let k = 1; k < pts.length; k++) S.line(pts[k - 1][0], pts[k - 1][1], pts[k][0], pts[k][1], OUT, w);
+    for (let k = 1; k < pts.length; k++) S.line(pts[k - 1][0], pts[k - 1][1] - .25, pts[k][0], pts[k][1] - .25, hi, w * .42);
+  }
+  /** Кабелі за столом у ніші (№3): сітчастий лоток під плитою з кабелями, пучки донизу, подовжувач і роутер на задній стінці. */
+  function underCables(S, sp, u) {
+    const { slab, bot } = sp, ty = slab + 1.4, sy = bot - 16.5, ry = bot - 20;
+    if (u.tray) {
+      const [a, b] = u.tray;
+      ['#1a1a3a', '#2a1a4a', '#3be8ff', '#22224a', '#ff4fd8'].forEach((col, k) => S.line(a + 1, ty + 1.2 + k * .62, b - 1, ty + 1.3 + k * .62, k === 2 || k === 4 ? col : OUT, k === 2 || k === 4 ? .32 : .55));   // кабелі в лотку
+      S.rect(a, ty, b, ty + 4.4, (uu, vv, i, j, X, Y) => (vv < .14 || vv > .86) ? CHROME[(vv < .5) ? 3 : 1] : (((X - a) % 1.8) < .3 ? CHROME[2] : null));   // дротяний лоток
+    }
+    const tgt = u.strip ? [(u.strip[0] + u.strip[1]) / 2, sy] : u.router ? [(u.router[0] + u.router[1]) / 2, ry + 3] : null;
+    (u.drops || []).forEach((x, n) => {                                                                          // пучки донизу: провисають до подовжувача / роутера
+      for (let k = 0; k < 3; k++) {
+        const x0 = x + k * .9, y0 = u.tray ? ty + 4.4 : slab + .5, ex = tgt ? tgt[0] - 4 + ((n * 3 + k) % 6) * 1.5 : x0 + 2, ey = tgt ? tgt[1] + .8 : bot - 10, mx = (x0 + ex) / 2 + (k - 1) * 1.6, my = (y0 + ey) / 2 + 4, pts = [];
+        for (let q = 0; q <= 10; q++) { const tt = q / 10, a1 = 1 - tt; pts.push([a1 * a1 * x0 + 2 * a1 * tt * mx + tt * tt * ex, a1 * a1 * y0 + 2 * a1 * tt * my + tt * tt * ey]); }
+        wire(S, pts, k === 1 ? (n % 2 ? '#7a2a6a' : '#1a5a7a') : '#2a2454', .9);
+      }
+    });
+    if (u.strip) { const [a, b] = u.strip;                                                                       // подовжувач: розетки з вилками, вимикач (світить живим)
+      S.rr(a, sy, b, sy + 3.4, .8, (d, uu, vv, i, j, X) => d < .35 ? OUT : vv < .22 ? NAVY[6] : (X > b - 3.4 && X < b - 1.2 && vv > .3 && vv < .75) ? '#3a0a14' : ((((X - a) % 4) > 1.2 && ((X - a) % 4) < 2.8) && vv > .35 && vv < .8 && X < b - 4) ? (((X - a) / 4 | 0) % 2 ? NAVY[0] : CHROME[3]) : ramp(NAVY, .55 - vv * .3, i, j)); }
+    if (u.router) { const [a, b] = u.router;                                                                     // роутер з антенами (вогники — живим)
+      [a + 2, b - 2].forEach(x => S.line(x, ry, x + (x < (a + b) / 2 ? -1.2 : 1.2), ry - 6, OUT, .8));
+      S.rr(a, ry, b, ry + 4.2, 1, (d, uu, vv, i, j) => d < .35 ? OUT : vv > .62 && vv < .82 ? NAVY[0] : ramp(['#0e1236', '#161c4c', '#202a66'], .7 - vv * .4, i, j)); }
+  }
+  /** Живе під столом: вимикач подовжувача дихає червоним, вогники роутера блимають (швидше, коли Nexi працює). */
+  function underLive(c, sp, t, act) {
+    const sy = sp.bot - 16.5, ry = sp.bot - 20; c.save(); c.globalCompositeOperation = 'lighter';
+    (sp.under || []).forEach((u, n) => {
+      if (u.strip) { const x = u.strip[1] - 2.3; lit(c, x - 1, sy + 1.1, 2.2, 1.4, rgba('255,59,90', .55 + .3 * Math.sin(t * 2 + n))); P.glow(c, x, sy + 1.8, 3, 'rgba(255,59,90,.8)', .18); }
+      if (u.router) { const [a, b] = u.router; for (let k = 0; k < 4; k++) lit(c, a + 2.2 + k * (b - a - 4.4) / 3 - .4, ry + 2.9, .8, .6, hash(k, Math.floor(t * (3 + act * 8)) + n) > .45 ? ['#3bff8a', '#3be8ff', '#3bff8a', '#ffe27a'][k] : '#0a1a2a'); }
+    });
+    c.restore();
+  }
+  /** Віддзеркалення речей на глянцевому верху (№3): кожен стовпчик растра шукає найнижчий піксель речі на верху
+   *  (base — копія растра ДО речей: стіл + тіні) і віддзеркалює її донизу до губи скла, згасаючи; через піксель — трохи
+   *  слабше (8-bit глянець). Працює для будь-чого, що стоїть на столі, — без окремого коду для кожної речі. */
+  const snap = S => S.r.d.slice();
+  function gloss(S, D, base, k = .4) {
+    const { r, U, x0, y0 } = S, { w, d } = r, jb0 = Math.max(0, Math.ceil((D.back + .6 - y0) / U)), jt = Math.floor((D.top - .8 - y0) / U) - 1;
+    const i0 = Math.max(0, Math.floor((D.l - x0) / U)), i1 = Math.min(w, Math.ceil((D.r - x0) / U)), item = n => d[n + 3] && (d[n] !== base[n] || d[n + 1] !== base[n + 1] || d[n + 2] !== base[n + 2] || d[n + 3] !== base[n + 3]);
+    for (let i = i0; i < i1; i++) {
+      let jb = -1; for (let j = jt; j >= jb0; j--) if (item((j * w + i) * 4)) { jb = j; break; }
+      if (jb < 0 || jb >= jt) continue;
+      let h = 0; while (h < 6 && jb - h >= jb0 && item(((jb - h) * w + i) * 4)) h++; if (h < 6) continue;   // пласкі речі (кабелі) не віддзеркалюємо
+      for (let j = jb + 1, span = jt - jb + 1; j <= jt; j++) {
+        const dist = j - jb, sj = jb - dist + 1; if (sj < 0) break;
+        const s = (sj * w + i) * 4; if (!item(s)) continue;
+        const a = k * (1 - dist / span) ** 1.3 * (((i + j) & 1) ? 1 : .75), n = (j * w + i) * 4;
+        d[n] += (d[s] - d[n]) * a; d[n + 1] += (d[s + 1] - d[n + 1]) * a; d[n + 2] += (d[s + 2] - d[n + 2]) * a;
+      }
+    }
+  }
+  /** Живий глянець верху (№3): відблиски на губі скла (дихають; один повільно пробігає) і світло живих екранів,
+   *  що лягає на верх перед ними. glints: [[x, півширина, rgb]], shine: [[x0, x1, rgb, сила, y — лінія бази]]. */
+  function deskShine(c, D, t, glints, shine = []) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    shine.forEach(([a, b, rgb, k, y], n) => { const f = k * (.85 + .15 * Math.sin(t * 2.3 + n)); for (let s = 0; s < 3; s++) lit(c, a + s * .8, y + s * (D.top - .8 - y) / 3, b - a - s * 1.6, (D.top - .8 - y) / 3, rgba(rgb, f * (1 - s * .3))); });
+    glints.forEach(([x, hw, rgb], n) => { const a = .32 + .22 * Math.sin(t * .9 + n * 1.7); [[1, .35], [.6, .7], [.25, 1]].forEach(([wk, ak]) => lit(c, x - hw * wk, D.top - .5, hw * wk * 2, .45, rgba(rgb, a * ak))); });
+    const gx = D.l + (1 - (t * .06) % 1) * (D.r - D.l); lit(c, gx - 4, D.top - .5, 8, .45, 'rgba(235,220,255,.55)'); lit(c, gx - 1.5, D.top - .5, 3, .45, 'rgba(255,255,255,.7)');   // відблиск біжить губою
+    c.restore();
   }
 
   // ---------- рослини v2: кожен листок окремо (контур, жилки, блік, дірки монстери, листочки папороті) ----------
@@ -2287,7 +2370,7 @@ NX.kit = (() => {
   }
 
   const draw = (c, S, R) => { const w = S.x1 - S.x0, h = S.y1 - S.y0; c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
-  return { BRK, SLAB, GREEN, POT, brick, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, reflectors: [] };
+  return { BRK, SLAB, GREEN, POT, brick, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, wire, snap, gloss, deskShine, underLive, reflectors: [] };
 })();
 
 </script>
@@ -2584,11 +2667,12 @@ NX.kit = (() => {
     pens(c, it, t) { const B = [it.x + 6.4, it.y - 10]; c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, B[0], B[1], 2.6, 'rgba(122,240,255,.9)', .35 + .2 * Math.sin(t * 2.4 + it.x)); lit(c, B[0] - .25, B[1] - .25, .5, .5, rgba('223,248,255', .7 + .3 * Math.sin(t * 2.4 + it.x))); c.restore(); },   // кінчик стилуса
     printout(c, it, t, act, D) { if (!it.sp) it.sp = printoutSprite(D, it); const s = it.sp, R = F.res(); c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(s.cv, s.w, s.h, R), s.x0, s.y0, s.w, s.h); c.restore(); },
   };
-  /** Тіні контакту + статичні частини всіх дрібниць стола (дальні — першими). */
-  function trinkets(S, D, items) {
+  /** Тіні контакту + статичні частини всіх дрібниць стола (дальні — першими). part: 'shadow' — лише тіні, 'items' — лише речі
+   *  (так стіл може зробити знімок верху з тінями ДО речей — для віддзеркалення в глянці, NX.kit.gloss). */
+  function trinkets(S, D, items, part) {
     const list = items.slice().sort((a, b) => (a.y || D.top) - (b.y || D.top));
-    list.forEach(it => { if (it.kind !== 'printout') K.contact(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });   // тінь контакту (NX.kit.contact)
-    list.forEach(it => STATIC[it.kind](S, D, it));
+    if (part !== 'items') list.forEach(it => { if (it.kind !== 'printout') K.contact(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });   // тінь контакту (NX.kit.contact)
+    if (part !== 'shadow') list.forEach(it => STATIC[it.kind](S, D, it));
   }
   /** Живе поверх стола: екран телефона, RGB, LED, звисання роздруківки. Викликати ПІСЛЯ неону плити. */
   function trinketsLive(c, D, items, t, act) { c.save(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; items.forEach(it => LIVE[it.kind] && LIVE[it.kind](c, it, t, act, D)); c.restore(); }
@@ -3063,7 +3147,11 @@ NX.kit = (() => {
   const C = { panel: '#0c2a78', pb: '#4a9af0' };
 
   // ---------- геометрія (одиниці кімнати) ----------
-  const DESK = { l: 22, r: 326, top: 294, slab: 308, bot: 362, back: 289, end: 'none',
+  // №3: верх стільниці ширший — передній край опущено (294 -> 298), речі стоять на 294, тож перед ними видно глянець;
+  // refl — віддзеркалення рожевої рамки й синього скла великого екрана та голо-монітора; under — кабелі за столом у нішах
+  const DESK = { l: 22, r: 326, top: 298, slab: 308, bot: 362, back: 289, end: 'none',
+    refl: [[64, 236, '#c63aa8', .34], [26, 60, '#3a78e0', .3], [262, 318, '#5a2a9a', .2]],
+    under: [{ tray: [55, 93], drops: [60, 84], strip: [64, 90] }, { tray: [153, 233], drops: [166, 214] }],
     sec: [{ a: 26, b: 52, kind: 'leg' }, { a: 96, b: 150, kind: 'drawers', rows: 3 }, { a: 236, b: 292, kind: 'core' }, { a: 304, b: 324, kind: 'leg' }] };
   const tilt = x => (x - 64) * .105;                                                   // нахил стіни: усе на ній іде вниз праворуч
   const BIGQ = [[64, 44], [236, 44 + tilt(236)], [236, 276], [64, 288]];
@@ -3085,8 +3173,10 @@ NX.kit = (() => {
   function buildDesk() {
     const S = F.Sheet(DESK.l - 2, 250, DESK.r + 2, DESK.bot + 1);
     K.desk(S, DESK);
+    K.trinkets(S, DESK, ITEMS, 'shadow');                                             // тіні дрібниць — до знімка верху (глянець їх не віддзеркалює)
     // тіні контакту під усім, що стоїть на столі (№1): голо-монітор, рамка, бази ноутбуків, підставка екрана, горнятко, кубик, лампа, вазон
     K.contacts(S, DESK, [[30, 56, 294], [84, 96, 293.2], [108, 146, 294, .6], [178, 218, 294, .6], [STAND[0], STAND[1], 290.6, .7], [MUG[0], MUG[2] + 2, 294], [258, 267, 294], [LAMP.base[0], LAMP.base[0] + 12, 294], [303, 313, 294]]);
+    const base = K.snap(S);                                                           // верх з тінями — далі все, що відрізняється, віддзеркалиться в глянці
     // голо-монітор: хромована основа + стійка-проектор
     S.rr(30, 290, 56, 294, 1.2, (d, u, v, i, j) => d < .4 ? OUT : ramp(CHROME, .85 - v * .5, i, j));
     S.rect(41, 286, 45, 290, (u, v, i, j) => ramp(CHROME, .8 - Math.abs(u - .4), i, j));
@@ -3104,7 +3194,9 @@ NX.kit = (() => {
     S.rr(258, 285, 267, 294, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .2 && u < .8 && v > .25 && v < .75 && ((u * 12) | 0) % 2 === 0 && ((v * 8) | 0) % 2 === 0) ? CYAN[3] : ramp(NAVY, .45 - v * .25, i, j));
     S.rr(84, 283, 96, 293, .8, (d, u, v, i, j) => d < .5 ? OUT : d < 1.2 ? CHROME[3] : ramp(['#2a1860', '#5a3aa0', '#ff84d4', '#ffe27a'], .3 + .7 * Math.abs(Math.sin(u * 7) * Math.cos(v * 5)), i, j));
     [[56, 292.6, 70, 289.8], [218, 292.6, 230, 289.8], [96, 292.4, 104, 289.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1.1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });
-    K.trinkets(S, DESK, ITEMS);                                                       // папери, ручки, стікери, мишка, навушники (з тінями контакту)
+    K.trinkets(S, DESK, ITEMS, 'items');                                              // папери, ручки, стікери, мишка, навушники
+    K.gloss(S, DESK, base, .42);                                                      // віддзеркалення речей у глянцевому верху (№3)
+    [[[267.2, 292.8], [270, 291], [272, 289.6]], [[174.2, 293], [176.8, 291.6], [176.2, 289.6]]].forEach(p => K.wire(S, p));   // №3: кабелі кубика й навушників за задній край
     return S;
   }
 
@@ -3314,6 +3406,9 @@ NX.kit = (() => {
       for (let x = 152; x < 234; x += 2) lit(c, x, DESK.bot - 9.8, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
       const core = DESK.sec[2]; K.coreLive(c, K.coreGeom(core.a, core.b, DESK.slab, DESK.bot), t, act);   // системний блок: вентилятори, логотип, LED, рідина
       K.trinketsLive(c, DESK, ITEMS, t, act);                                         // живе в дрібницях: RGB мишки, LED навушників, стилус
+      K.underLive(c, DESK, t, act);                                                   // вимикач подовжувача під столом
+      K.deskShine(c, DESK, t, [[43, 12, '90,200,255'], [127, 11, '255,120,230'], [198, 12, '90,232,255'], [150, 50, '255,90,210'], [301, 8, '255,220,150']],   // відблиски на губі скла
+        [[30, 56, '90,180,255', .1, 294.2], [110, 144, '255,120,230', .1, 294.2], [180, 216, '90,232,255', .12 + act * .08, 294.2], [286, 316, '255,214,140', .1, 294.2]]);   // світло екранів і лампи на верху
       c.globalCompositeOperation = 'lighter';
       [DESK.sec[0], DESK.sec[3]].forEach((s, n) => { const cx = (s.a + s.b) / 2; P.glow(c, cx, 335, 14, 'rgba(59,232,255,.8)', .18 + .08 * Math.sin(t * 3 + n)); const q = (t * .7 + n * .5) % 1; lit(c, cx - 1, DESK.slab + 3 + q * (DESK.bot - DESK.slab - 8), 2, 3, 'rgba(255,255,255,.8)'); });
       // лампа: тепле світло на плиту; пара над кавою; світло екранів
@@ -3370,7 +3465,9 @@ NX.kit = (() => {
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, HOLO, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'];
   const BOOTH = { x0: 322, y0: 128, x1: 478, y1: 278, acc: ACC, sign: [336, 138, 464, 166], icon: [350, 152], screens: [[336, 178, 398, 264], [406, 178, 466, 264]] };
-  const DESK = { l: 326, r: 486, top: 280, slab: 290, bot: 346, back: 275, sec: [{ a: 334, b: 372, kind: 'drawers', rows: 3 }, { a: 372, b: 440, kind: 'niche' }, { a: 440, b: 480, kind: 'drawers', rows: 3 }] };
+  // №3: ширший верх (передній край 280 -> 283), віддзеркалення будки, кабелі за столом (лоток, пучки, роутер у ніші)
+  const DESK = { l: 326, r: 486, top: 283, slab: 291, bot: 346, back: 275, sec: [{ a: 334, b: 372, kind: 'drawers', rows: 3 }, { a: 372, b: 440, kind: 'niche' }, { a: 440, b: 480, kind: 'drawers', rows: 3 }],
+    refl: [[322, 478, '#2a9ad0', .3]], under: [{ tray: [375, 437], drops: [382, 424], router: [378, 394] }] };
   const LAPQ = [[336, 263], [358, 264], [358, 277], [336, 278]], LAPB = [333, 361], TAB = [368, 258, 384, 271], MUG = [452, 268, 460, 278];
   // дрібниці (objects/wing_trinkets.js): склянка з олівцями, роздруківка-звіт звисає з краю, стос паперів, телефон на зарядці, мишка
   const ITEMS = [
@@ -3383,7 +3480,9 @@ NX.kit = (() => {
   function buildBooth() { const S = F.Sheet(316, 122, 490, 284); K.booth(S, BOOTH); return S; }
   function buildDesk() {
     const S = F.Sheet(322, 248, 490, 348); K.desk(S, DESK);
+    K.trinkets(S, DESK, ITEMS, 'shadow');
     K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], [LAPB[0], LAPB[1], 280, .6], [TAB[0] + 2, TAB[2] - 2, 277, .7], [436, 444, 278], [MUG[0], MUG[2] + 2, 278]]);   // тіні контакту (№1): будка, ноутбук, планшет, кубик, горнятко
+    const base = K.snap(S);                                                                       // верх з тінями (для глянцю)
     S.rect(LAPB[0], 275, LAPB[1], 280, (u, v, i, j) => u > .985 || u < .015 || v > .96 ? OUT : v < .14 ? ACC[3] : (v < .5 && u > .1 && u < .9 && ((u * 14) % 1 < .18 || (v * 6) % 1 < .3)) ? ACC[1] : ramp(CHROME, .55 + u * .2 - v * .3, i, j));   // база голо-ноутбука
     S.rr(TAB[0] - 1.4, TAB[1] - 1.4, TAB[2] + 1.4, TAB[3] + 1.4, 1.4, (d) => d < .6 ? NAVY[0] : NAVY[4]);                                          // планшет на стійці
     S.rect(TAB[0] + 6.6, TAB[3] + 1.4, TAB[0] + 9.4, 276, CHROME[3]); S.rect(TAB[0] + 2, 275.5, TAB[2] - 2, 277, CHROME[4]);
@@ -3391,7 +3490,9 @@ NX.kit = (() => {
     S.rect(MUG[2] - .4, MUG[1] + 2.2, MUG[2] + 2.2, MUG[1] + 6.4, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]);
     S.rr(436, 270, 444, 278, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .25 && u < .75 && v > .3 && v < .7) ? CYAN[4] : ramp(NAVY, .45 - v * .25, i, j));   // світний кубик
     [[361, 278.6, 370, 275.8], [386, 278.4, 394, 275.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });   // кабелі
-    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
+    K.trinkets(S, DESK, ITEMS, 'items');                                                          // дрібниці
+    K.gloss(S, DESK, base, .4);                                                                   // віддзеркалення речей у глянці (№3)
+    K.wire(S, [[444.2, 277.2], [447, 276.4], [447.6, 275.6]]);                                    // №3: кабель кубика за край
     return S;
   }
   // ---------- живі екрани ----------
@@ -3443,6 +3544,8 @@ NX.kit = (() => {
       P.glow(c, 347, 268, 18, 'rgba(59,160,255,.6)', .2 + act * .2);
       c.globalCompositeOperation = 'source-over';
       K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // роздруківка, екран телефона, RGB мишки, стилус
+      K.underLive(c, DESK, t, act);                                                               // вогники роутера під столом
+      K.deskShine(c, DESK, t, [[347, 10, '90,200,255'], [400, 30, '90,200,255'], [440, 10, '90,232,255'], [376, 8, '255,200,120']], [[334, 360, '90,200,255', .1 + act * .06, 280.2], [366, 386, '120,180,255', .08, 277.2]]);   // глянець верху
       for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(MUG[0] + 3.5 + Math.sin(q * 6 + i) * 1.2, MUG[1] - 1 - q * 10, 1, 1); }   // пара
       c.restore();
     },
@@ -3492,7 +3595,9 @@ NX.kit = (() => {
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#58134f', '#a0288d', '#e656c0', '#ff84d4'];
   const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 275, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
-  const DESK = { l: 485, r: 662, top: 278, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }] };
+  // №3: ширший верх (передній край 278 -> 281), віддзеркалення будки, кабелі за столом (лоток, пучки, подовжувач у ніші)
+  const DESK = { l: 485, r: 662, top: 281, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }],
+    refl: [[536, 652, '#e05ac0', .28]], under: [{ tray: [491, 597], drops: [498, 556, 584], strip: [538, 566] }] };
   const MUGS = [[548, 268], [566, 269]];
   // дрібниці (objects/wing_trinkets.js): телефон зі сповіщеннями-сердечками, блок стікерів, ескізи з ручкою, склянка з ручками
   const ITEMS = [
@@ -3505,9 +3610,13 @@ NX.kit = (() => {
   function buildBooth() { const S = F.Sheet(530, 160, 664, 280); K.booth(S, BOOTH); return S; }   // будка стоїть на столі (низ — за стільницею, без просвіту)
   function buildDesk() {
     const S = F.Sheet(481, 262, 664, 340); K.desk(S, DESK);
+    K.trinkets(S, DESK, ITEMS, 'shadow');
     K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], ...MUGS.map(([x]) => [x, x + 8.8, 278]), [536, 544, 278], [503.5, 518.5, 278]]);   // тіні контакту (№1): будка, горнята, колонка, вазон
-    MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, DESK.top, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
-    K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
+    const base = K.snap(S);                                                                       // верх з тінями (для глянцю)
+    MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, 278, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
+    K.trinkets(S, DESK, ITEMS, 'items');                                                          // дрібниці
+    K.gloss(S, DESK, base, .4);                                                                   // віддзеркалення речей у глянці (№3)
+    K.wire(S, [[544.2, 277.2], [546.8, 275.8], [546.4, 273.8]]);                                  // №3: кабель колонки за край
     return S;
   }
   // ---------- живі екрани ----------
@@ -3544,6 +3653,8 @@ NX.kit = (() => {
       for (let x = 605.5; x < 648.5; x += 2) lit(c, x, DESK.bot - 2.2, 1.3, 1.2, rgba('59,232,255', .3 + .25 * Math.sin(t * 2 + x * .12)));
       c.globalCompositeOperation = 'source-over';
       K.trinketsLive(c, DESK, ITEMS, t, act);                                                     // екран телефона (сердечка), стилус
+      K.underLive(c, DESK, t, act);                                                               // вимикач подовжувача під столом
+      K.deskShine(c, DESK, t, [[594, 40, '255,90,210'], [540, 6, '255,150,230'], [579, 5, '120,140,255']], [[574, 584, '120,140,255', .07, 278.2]]);   // глянець верху
       MUGS.forEach(([x, y], k) => { for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3 + k * .4) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(x + 3 + Math.sin(q * 6 + i) * 1.2, y - 1 - q * 10, 1, 1); } });
       c.restore();
     },
@@ -3736,6 +3847,134 @@ NX.kit = (() => {
       const { ROOM_W: W, ROOM_H: H } = NX.cfg, br = .9 + .1 * Math.sin(t * .9);
       c.save(); c.beginPath(); c.rect(0, -40, 664, H + 60); c.clip(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
       [[B[0], .1], [B[1], .2], [B[2], .3]].forEach(([b, a]) => { c.globalAlpha = a * br; c.drawImage(b, 0, 0, W, H); });
+      c.restore();
+    },
+  });
+})();
+
+</script>
+<script>
+/* ---- js/objects/wing_air.js ---- */
+/* ============================================================================
+ * objects/wing_air.js — ПОВІТРЯ ЛІВОГО КРИЛА: серпанок з пилом у світлі ламп, тонкі промені від ліхтарів
+ * ----------------------------------------------------------------------------
+ * Пункт №5 списку «до рівня картинки». Світло стає видимим у повітрі:
+ *   СЕРПАНОК — під кожним джерелом конус світла в повітрі: піксельний (смуги рівнів з
+ *     дизерингом Байєра, як 8-bit), нерівний (шум — «клапті» серпанку), м'яко дихає разом
+ *     з мерехтінням джерела. Растр 2 px/од. будується один раз; щокадру — лише прозорість.
+ *   ПРОМЕНІ — від ліхтарів (2 настінні ліхтарі й китайський) віялом тонкі промені з чіткими
+ *     краями: ядро яскравіше, край тьмяніший, згасають від джерела. Дві групи (парні/непарні)
+ *     по черзі повільно «переливаються»; промені китайського ліхтаря гойдаються разом з ним.
+ *   ПИЛ — порошинки (1 од.) зринають у світлі, повільно пливуть і гаснуть, мерехтять;
+ *     яскраві біля джерела, тьмяні на краю конуса. Без стану: усе — функція часу.
+ * Джерела: настінні ліхтарі (wing_wall.js NX.wing.LANT), лампи Едісона й китайський ліхтар
+ * (wing_props.js), настільна лампа AI-центру (ai_center.js). Малюється після всього крила
+ * (і після сяйва wingGlow), перед Nexi, котом і кріслами — тобто «у повітрі» перед стіною.
+ * ========================================================================== */
+(() => {
+  const P = NX.px, F = NX.furn, K = NX.kit, hash = NX.art.hash, BAYER = NX.art.BAYER, rgba = K.rgba;
+  const TAU = Math.PI * 2, bay = (i, j) => BAYER[(j & 3) * 4 + (i & 3)];
+  const WARM = [255, 172, 92], BULB = [255, 206, 132], RED = [255, 86, 54];
+  // джерела: (ax, ay) — центр; hx, hy — піврозміри корпусу (промені й серпанок починаються з його краю);
+  // dir — напрям конуса (вниз = π/2), spread — піввідкриття, len — довжина; rays — скільки тонких променів;
+  // haze/ray — сила серпанку й променів; dust — порошинок; fl(t) — мерехтіння як у самого джерела
+  const LIGHTS = [
+    { id: 'lantA', ax: 218, ay: 31, hx: 13, hy: 18, dir: Math.PI / 2, spread: 1.05, len: 118, col: WARM, rays: 9, haze: .5, ray: .62, dust: 18, seed: 1, fl: t => .85 + .1 * Math.sin(t * 6.3) + .05 * Math.sin(t * 13.7) },
+    { id: 'lantB', ax: 510, ay: 171, hx: 13, hy: 25, dir: Math.PI / 2, spread: .95, len: 108, col: WARM, rays: 8, haze: .5, ray: .62, dust: 16, seed: 2, fl: t => .85 + .1 * Math.sin(t * 6.3 + 2) + .05 * Math.sin(t * 13.7 + 1) },
+    { id: 'bulbA', ax: 332, ay: 38.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 84, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 14, seed: 3, fl: t => .78 + .14 * Math.sin(t * 7 + 327) + .08 * Math.sin(t * 13.7) },
+    { id: 'bulbB', ax: 640, ay: 108.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 76, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 12, seed: 4, fl: t => .78 + .14 * Math.sin(t * 7 + 635) + .08 * Math.sin(t * 13.7) },
+    { id: 'chinese', ax: 466, ay: 19.5, hx: 11, hy: 14, dir: Math.PI / 2, spread: 1.6, len: 58, col: RED, rays: 11, haze: .42, ray: .55, dust: 10, seed: 5, sway: { x: 466, y: -40, k: .05, ph: 454 }, fl: t => .86 + .14 * Math.sin(t * 5 + 454) },
+    { id: 'deskLamp', ax: 301, ay: 282.6, hx: 0, hy: 0, dir: Math.PI / 2, spread: .62, len: 15, beam: 1, col: [255, 222, 152], rays: 0, haze: .3, ray: 0, dust: 8, seed: 6, fl: t => .95 + .05 * Math.sin(t * 7) },
+  ];
+  /** Кутова відстань від напрямку конуса. */
+  const angOff = (a, dir) => Math.abs(((a - dir) % TAU + TAU * 1.5) % TAU - Math.PI);
+  /** Чи точка в корпусі джерела (туди не світимо — він і так яскравий). */
+  const inBody = (L, dx, dy) => Math.abs(dx) < L.hx && Math.abs(dy) < L.hy;
+  /** Сила серпанку в точці: кругле сяйво біля джерела + конус, нерівний (шум), 0..1. */
+  function hazeAt(L, X, Y) {
+    const dx = X - L.ax, dy = Y - L.ay, d = Math.hypot(dx, dy); if (d > L.len || inBody(L, dx, dy)) return 0;
+    const da = angOff(Math.atan2(dy, dx), L.dir), round = Math.max(0, 1 - d / (L.len * .4)) ** 2 * .55;
+    const cone = da >= L.spread ? 0 : L.beam ? (1 - d / L.len) ** .85 * (da < L.spread * .5 ? 1 : .55)   // лампа: чіткий промінь-конус з двох смуг (8-bit)
+      : (1 - d / L.len) ** 1.15 * (1 - (da / L.spread) ** 2);                                             // ліхтар: м'який конус (поверх — тонкі промені)
+    return Math.max(round, cone) * (.66 + .34 * K.vn(X / 10 + L.seed * 7, Y / 7 + L.seed));
+  }
+  /** Тонкі промені: віяло з корпусу; ширина від ~1 од. біля джерела до 2..4.5 на кінці; ядро яскравіше. */
+  function makeRays(L) {
+    const out = [];
+    for (let k = 0; k < L.rays; k++) {
+      const a = L.dir + L.spread * .92 * ((k + .5) / L.rays * 2 - 1) + (hash(k, L.seed) - .5) * .12, c = Math.cos(a), s = Math.sin(a);
+      const s0 = Math.min(L.hx / Math.max(1e-3, Math.abs(c)), L.hy / Math.max(1e-3, Math.abs(s))) + 1.2;   // старт — край корпусу
+      out.push({ c, s, s0, len: L.len * (.6 + .4 * hash(k, L.seed + 9)), w0: 1.2, w1: 3 + 3.2 * hash(k, L.seed + 4), k: .6 + .4 * hash(k, L.seed + 7), g: k % 2 });
+    }
+    return out;
+  }
+  function rayAt(L, rays, g, X, Y) {
+    const dx = X - L.ax, dy = Y - L.ay; let best = 0;
+    for (const r of rays) {
+      if (r.g !== g) continue; const s = dx * r.c + dy * r.s; if (s < r.s0 || s > r.len) continue;
+      const q = Math.abs(dy * r.c - dx * r.s), w = r.w0 + (r.w1 - r.w0) * (s / r.len); if (q > w / 2) continue;
+      const v = (1 - (s - r.s0) / (r.len - r.s0)) ** .9 * (q < w / 4 ? 1 : .55) * r.k; if (v > best) best = v;
+    }
+    return best;
+  }
+  /** Межі растра джерела (одиниці кімнати). */
+  function bounds(L) {
+    let x0 = L.ax - L.len * .45, x1 = L.ax + L.len * .45, y0 = L.ay - L.len * .45, y1 = L.ay + L.len * .45;
+    for (let k = 0; k <= 16; k++) { const a = L.dir - L.spread + 2 * L.spread * k / 16, x = L.ax + Math.cos(a) * L.len, y = L.ay + Math.sin(a) * L.len; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    return [Math.floor(x0), Math.floor(y0), Math.ceil(x1), Math.ceil(y1)];
+  }
+  /** Растр світла: сила 0..1 -> рівні (n) з дизерингом Байєра -> колір джерела, помножений на рівень (для 'lighter').
+   *  fns — кілька шарів [fn, рівнів, підсвітлення кольору]; беремо найсильніший. Порожні краї обрізаються (менше малювати). */
+  function bake(L, fns) {
+    const [x0, y0, x1, y1] = bounds(L), S = F.Sheet(x0, y0, x1, y1, .5);
+    S.rect(x0, y0, x1, y1, (u, v, i, j, X, Y) => {
+      let best = 0, col = L.col;
+      for (const [fn, n, lift] of fns) { const I = fn(X, Y); if (I <= 0) continue; const k = Math.floor(I * n + bay(i, j) + .5); if (k <= 0) continue; const m = Math.min(1, k / n); if (m > best) { best = m; col = L.col.map(v => Math.min(255, v + lift)); } }
+      return best ? '#' + col.map(c => Math.round(c * best).toString(16).padStart(2, '0')).join('') : null;
+    });
+    const { w, h, d } = S.r; let i0 = w, i1 = -1, j0 = h, j1 = -1;                                        // обрізати порожнє
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (d[(j * w + i) * 4 + 3]) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
+    if (i1 < 0) return null;
+    const cv = document.createElement('canvas'); cv.width = i1 - i0 + 1; cv.height = j1 - j0 + 1; cv.getContext('2d').drawImage(S.r.canvas(), -i0, -j0);
+    return { cv, x0: x0 + i0 * .5, y0: y0 + j0 * .5, x1: x0 + (i1 + 1) * .5, y1: y0 + (j1 + 1) * .5 };
+  }
+  /** Серпанок і половина променів — в одному растрі (один drawImage), друга половина — окремо: вона «переливається». */
+  function build(L) {
+    const haze = (X, Y) => hazeAt(L, X, Y);
+    if (!L.rays) { L.hz = bake(L, [[haze, 6, 0]]); return; }
+    const rays = makeRays(L); L.hz = bake(L, [[haze, 6, 0], [(X, Y) => rayAt(L, rays, 0, X, Y) * L.ray / L.haze, 5, 30]]); L.rB = bake(L, [[(X, Y) => rayAt(L, rays, 1, X, Y), 5, 30]]);
+  }
+  /** Порошинки: кожна живе 6..12 с у випадковому місці конуса (ближче до джерела — частіше), повільно пливе, мерехтить. */
+  function dust(c, L, t, f) {
+    const [r, g, b] = L.col, rgb = `${Math.min(255, r + 40)},${Math.min(255, g + 50)},${Math.min(255, b + 70)}`;
+    for (let k = 0; k < L.dust; k++) {
+      const per = 6 + 6 * hash(k, L.seed + 11), cyc = t / per + hash(k, L.seed + 12), ci = Math.floor(cyc), u = cyc - ci;
+      const pu = hash(ci * 3 + k, L.seed + 13), pv = hash(ci * 5 + k, L.seed + 14) * 2 - 1, a = L.dir + pv * L.spread * .82;
+      const s0 = L.hx || L.hy ? Math.min(L.hx / Math.max(.1, Math.abs(Math.cos(a))), L.hy / Math.max(.1, Math.abs(Math.sin(a)))) + 2 : 1, dist = s0 + pu ** 1.3 * (L.len * .78 - s0);
+      let x = L.ax + Math.cos(a) * dist + (hash(ci, k + 31) - .5) * 6 * u + Math.sin(t * .9 + k) * .8, y = L.ay + Math.sin(a) * dist + (hash(ci, k + 37) - .3) * 5 * u;
+      const life = Math.sin(Math.PI * u) ** 1.5, tw = .6 + .4 * Math.sin(t * 3.1 + k * 2.3), A = Math.min(1, life * tw * f * (1 - dist / L.len) ** .5 * 1.5); if (A < .05) continue;
+      const sz = hash(k, L.seed + 15) > .7 ? 1.5 : 1; x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2;
+      c.fillStyle = rgba(rgb, A); c.fillRect(x, y, sz, sz);
+      if (sz > 1 && A > .45) { c.fillStyle = rgba(rgb, A * .35); c.fillRect(x - .5, y + .5, sz + 1, .5); }   // «зірочка» на найяскравіших
+    }
+  }
+  /** Растр -> екран: один раз зменшений під роздільність (F.fit), без згладжування (дешевше; дизеринг уже усереднено). */
+  const draw = (c, S, R, a) => { if (!S || a <= .003) return; const w = S.x1 - S.x0, h = S.y1 - S.y0; c.globalAlpha = a; c.imageSmoothingEnabled = false; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
+  NX.addObject({
+    id: 'wingAir', LIGHTS,
+    drawBack(c, t) {
+      if (c.isRefl) return;
+      const R = Math.min(2, F.res());
+      c.save(); c.globalCompositeOperation = 'lighter';
+      for (const L of LIGHTS) {
+        if (!L.hz) build(L);
+        const f = L.fl(t); c.save();
+        if (L.sway) { const { x, y, k, ph } = L.sway, a = Math.sin(t * .8 + ph) * k; c.translate(x, y); c.rotate(a); c.translate(-x, -y); }   // китайський ліхтар гойдається — і світло з ним
+        draw(c, L.hz, R, L.haze * f);
+        if (L.rB) draw(c, L.rB, R, L.ray * f * (.35 + .65 * Math.sin(t * .6 + L.seed) ** 2));                   // друга група променів повільно спалахує й гасне
+        c.globalAlpha = 1; dust(c, L, t, f);
+        c.restore();
+      }
       c.restore();
     },
   });
