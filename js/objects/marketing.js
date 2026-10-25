@@ -69,11 +69,10 @@
       c.imageSmoothingEnabled = true; const [L, Rr] = BOOTH.screens; c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]);
       const [sx0, sy0, sx1, sy1] = BOOTH.sign; c.globalCompositeOperation = 'lighter';
       c.strokeStyle = rgba('255,79,216', .16 + .1 * Math.sin(t * 1.8) + act * .12); c.lineWidth = 3; c.beginPath(); c.roundRect ? c.roundRect(BOOTH.x0 - 1, BOOTH.y0 - 1, BOOTH.x1 - BOOTH.x0 + 2, BOOTH.y1 - BOOTH.y0 + 2, 7) : c.rect(BOOTH.x0, BOOTH.y0, BOOTH.x1 - BOOTH.x0, BOOTH.y1 - BOOTH.y0); c.stroke();
-      P.glow(c, BOOTH.icon[0], BOOTH.icon[1], 14, 'rgba(255,79,216,.8)', .25 + .15 * Math.sin(t * 3)); P.glow(c, (sx0 + sx1) / 2 + 8, (sy0 + sy1) / 2, 40, 'rgba(255,120,230,.5)', .12 + act * .1);
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));
       for (let k = 0; k < 4; k++) lit(c, BOOTH.x0 + 5.2, BOOTH.y0 + 20 + k * 18 + 3, 1.6, 1.6, rgba('255,120,230', .3 + .6 * (Math.floor(t * 4 + k) % 4 === 0)));
       c.globalCompositeOperation = 'source-over';
-      K.signText(c, 'nav.marketing', (sx0 + sx1) / 2 + 9, (sy0 + sy1) / 2, sx1 - sx0 - 34, t, '255,200,240');
+      K.sign(c, sx0, sy0, sx1 - sx0, sy1 - sy0, { acc: ACC, icon: 'target', key: 'nav.marketing', t, glow: '255,79,216', text: '255,200,240' });   // вивіска в єдиному стилі
       c.restore();
       this.drawDesk(c, t);
     },

@@ -28,7 +28,7 @@
 
   // ---------- геометрія (одиниці кімнати) ----------
   const DESK = { l: 22, r: 326, top: 294, slab: 308, bot: 362, back: 289, end: 'none',
-    sec: [{ a: 26, b: 52, kind: 'leg' }, { a: 96, b: 150, kind: 'drawers', rows: 3 }, { a: 236, b: 292, kind: 'core', fan: [264, 330, 7] }, { a: 304, b: 324, kind: 'leg' }] };
+    sec: [{ a: 26, b: 52, kind: 'leg' }, { a: 96, b: 150, kind: 'drawers', rows: 3 }, { a: 236, b: 292, kind: 'core' }, { a: 304, b: 324, kind: 'leg' }] };
   const tilt = x => (x - 64) * .105;                                                   // нахил стіни: усе на ній іде вниз праворуч
   const BIGQ = [[64, 44], [236, 44 + tilt(236)], [236, 276], [64, 288]];
   const UPQ = { net: [[60, 7.6], [124, 7.6 + tilt(124) - tilt(60)], [124, 42.3], [60, 35.6]], log: [[132, 15.1], [196, 15.1 + tilt(196) - tilt(132)], [196, 49.9], [132, 43.1]] };
@@ -64,9 +64,9 @@
 
   // ---------- великий екран (пласкі координати 640×960) ----------
   const BW = 640, BH = 960;
-  const HD = { x: 64, y: 62, w: 512, h: 66 }, C1 = { x: 64, y: 144, w: 118, h: 236 }, C2 = { x: 64, y: 392, w: 118, h: 214 };
-  const BR = { x: 192, y: 144, w: 298, h: 462 }, BC = [341, 375];
-  const IC = { x: 500, y: 144, w: 76, h: 462 }, TK = { x: 192, y: 622, w: 384, h: 190 }, EQ = { x: 64, y: 826, w: 512, h: 66 };
+  const HD = { x: 64, y: 58, w: 512, h: 96 }, C1 = { x: 64, y: 170, w: 118, h: 222 }, C2 = { x: 64, y: 404, w: 118, h: 202 };   // шапка — вивіска K.sign (як у будок)
+  const BR = { x: 192, y: 170, w: 298, h: 436 }, BC = [341, 392];
+  const IC = { x: 500, y: 170, w: 76, h: 436 }, TK = { x: 192, y: 622, w: 384, h: 190 }, EQ = { x: 64, y: 826, w: 512, h: 66 };
   const ICONS = [
     ['.XXXXXXX.', 'X.......X', 'X.X.X.X.X', 'X.......X', '.XXXXXXX.', '..XX.....', '..X......'],
     ['XXXXXXXXX', 'XX.....XX', 'X.X...X.X', 'X..X.X..X', 'X...X...X', 'X.......X', 'XXXXXXXXX'],
@@ -83,12 +83,11 @@
     }
   }
   const glass = (r, x, y, w, h, q0 = .6) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) r.set(x + i, y + j, j % 3 === 2 ? G[0] : rampR(G, q0 - j / h * .35, x + i, y + j)); };
-  function panel(r, p, t = 12) {
+  /** Панель на склі: трохи світліше скло без яскравих рамок (власник: прибрати "білі рамки"), лише тонка темна межа. */
+  function panel(r, p) {
     r.rect(p.x, p.y, p.w, p.h, C.panel); for (let j = 1; j < p.h; j += 3) r.rect(p.x + 1, p.y + j, p.w - 2, 1, G[1]);
-    r.rect(p.x, p.y, p.w, 1, C.pb); r.rect(p.x, p.y + p.h - 1, p.w, 1, C.pb); r.rect(p.x, p.y, 1, p.h, C.pb); r.rect(p.x + p.w - 1, p.y, 1, p.h, C.pb);
-    for (const [x, y, dx, dy] of [[p.x, p.y, 1, 1], [p.x + p.w - 1, p.y, -1, 1], [p.x, p.y + p.h - 1, 1, -1], [p.x + p.w - 1, p.y + p.h - 1, -1, -1]])
-      for (let k = 0; k < t; k++) { r.set(x + k * dx, y, CY[4]); r.set(x, y + k * dy, CY[4]); r.set(x + k * dx, y + dy, CY[2]); r.set(x + dx, y + k * dy, CY[2]); }
-    r.rect(p.x + 2, p.y + 2, p.w - 4, 1, CY[1]);
+    r.rect(p.x, p.y, p.w, 1, '#0a1d58'); r.rect(p.x, p.y + p.h - 1, p.w, 1, '#0a1d58'); r.rect(p.x, p.y, 1, p.h, '#0a1d58'); r.rect(p.x + p.w - 1, p.y, 1, p.h, '#0a1d58');
+    r.rect(p.x + 1, p.y + 1, p.w - 2, 1, '#1a4aa8');
   }
   const bitmap = (r, rows, x, y, s, col, hi) => rows.forEach((row, j) => [...row].forEach((ch, i) => { if (ch !== 'X') return; r.rect(x + i * s, y + j * s, s, s, col); if (hi) r.rect(x + i * s, y + j * s, s, 1, hi); }));
   const NEURONS = [], SYN = [];
@@ -96,15 +95,12 @@
     const r = Raster(BW, BH);
     rr(r, 0, 0, BW, BH, 48, (d, u, v, i, j) => d < 4 ? '#1a0630' : d < 28 ? rampR(KP, bump((d - 4) / 24) * (.8 + .2 * (1 - v)) + (v < .1 ? .06 : 0), i, j) : d < 31 ? '#1a0a36' : d < 44 ? rampR(D, .42 - v * .3 + (d < 33 ? .12 : 0), i, j) : d < 46 ? '#1d4f86' : null);   // товста рожева рамка, як на картинці
     glass(r, 46, 46, BW - 92, BH - 92, .55);
-    r.rect(HD.x, HD.y, HD.w, HD.h, '#0e3488'); r.rect(HD.x, HD.y + HD.h, HD.w, 2, CY[2]); r.rect(HD.x, HD.y + HD.h + 2, HD.w, 2, CY[0]);
-    rr(r, HD.x + 10, HD.y + 11, 48, 48, 10, (d, u, v, i, j) => d < 2.5 ? CY[4] : d < 4.5 ? CY[1] : rampR(['#0e3488', '#1444a8', '#1a56c4'], .7 - v * .5, i, j));
-    for (let k = 0; k < 5; k++) { r.rect(HD.x + 17 + k * 8, HD.y + 3, 3, 8, CY[2]); r.rect(HD.x + 17 + k * 8, HD.y + 59, 3, 8, CY[2]); r.rect(HD.x + 2, HD.y + 18 + k * 8, 8, 3, CY[2]); }
     [C1, C2, BR, TK].forEach(p => panel(r, p));
     for (const p of [C1, C2]) { r.rect(p.x + 10, p.y + p.h - 24, p.w - 20, 2, CY[2]); for (let x = p.x + 10; x < p.x + p.w - 10; x += 12) r.rect(x, p.y + p.h - 22, 2, 4, CY[3]); for (let y = p.y + 50; y < p.y + p.h - 24; y += 30) for (let x = p.x + 10; x < p.x + p.w - 10; x += 4) r.set(x, y, '#2a5cc0'); }
-    for (let k = 0; k < 5; k++) { const t = { x: IC.x, y: IC.y + k * 94.5 | 0, w: IC.w, h: 84 }; panel(r, t, 8); bitmap(r, ICONS[k], t.x + 11, t.y + 21, 6, CY[1], CY[2]); }
+    for (let k = 0; k < 5; k++) { const t = { x: IC.x, y: IC.y + k * 87.5 | 0, w: IC.w, h: 78 }; panel(r, t); bitmap(r, ICONS[k], t.x + 11, t.y + 18, 6, CY[1], CY[2]); }
     buildBrain(r);
-    r.rect(TK.x + 2, TK.y + 2, TK.w - 4, 34, '#1240a0'); r.rect(TK.x + 2, TK.y + 36, TK.w - 4, 2, CY[2]);
-    r.rect(EQ.x, EQ.y, EQ.w, EQ.h, '#0a2468'); r.rect(EQ.x, EQ.y, EQ.w, 2, C.pb);
+    r.rect(TK.x + 2, TK.y + 2, TK.w - 4, 34, '#1240a0'); r.rect(TK.x + 2, TK.y + 36, TK.w - 4, 1, '#1a4aa8');
+    r.rect(EQ.x, EQ.y, EQ.w, EQ.h, '#0a2468');
     return r.canvas();
   }
   /** Піксельний мозок (вигляд збоку): звивини, борозни, мозочок, стовбур; нейрони — для анімації. */
@@ -172,12 +168,9 @@
     // ===================== живий великий екран =====================
     big(c, t, act) {
       c.globalCompositeOperation = 'source-over'; c.drawImage(BIGS, 0, 0);
-      const title = NX.t('nav.ai'), sz = Math.min(36, 400 / title.length), on = .8 + .2 * Math.sin(t * 2);
-      P.text(c, title, HD.x + 74, HD.y + 35 + sz / 2, rgba('122,240,255', on), sz);
-      lit(c, HD.x + 24, HD.y + 25, 20, 20, rgba('59,232,255', .45 + .5 * Math.abs(Math.sin(t * 1.6)))); lit(c, HD.x + 30, HD.y + 31, 8, 8, '#ffffff');
+      K.sign(c, HD.x, HD.y, HD.w, HD.h, { acc: ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'], icon: 'ai', key: 'nav.ai', t, glow: '59,232,255' });   // вивіска в єдиному стилі з будками
       const d = new Date(), hm = String(d.getHours()).padStart(2, '0') + (d.getSeconds() % 2 ? ':' : ' ') + String(d.getMinutes()).padStart(2, '0');
-      P.text(c, hm, HD.x + HD.w - 12, HD.y + 32, '#3be8ff', 16, 'right');
-      lit(c, HD.x + HD.w - 84, HD.y + 44, 10, 10, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, 'LIVE', HD.x + HD.w - 12, HD.y + 56, '#a8c4ff', 12, 'right');
+      P.text(c, hm, EQ.x + EQ.w - 4, EQ.y - 4, '#3be8ff', 11, 'right'); lit(c, EQ.x + 2, EQ.y - 12, 8, 8, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, 'LIVE', EQ.x + 14, EQ.y - 4, '#a8c4ff', 10);
       c.globalCompositeOperation = 'lighter';
       const k1 = 1 + act * 1.5, base = C1.y + C1.h - 28, top = C1.y + 44;
       for (let i = 0; i < 11; i++) { const v = P.clamp(noise(t * k1, i) * (.8 + .3 * this.burst), .08, 1), segs = Math.round(v * (base - top) / 7); for (let s = 0; s < segs; s++) lit(c, C1.x + 11 + i * 9.4, base - 6 - s * 7, 7, 5, s === segs - 1 ? '#ffffff' : CY[2 + Math.min(3, (s / segs * 4) | 0)]); }
@@ -195,13 +188,13 @@
       lit(c, bx, by, bw, 8, '#0a1d40'); lit(c, bx, by, bw * lvl, 8, this.active ? '#3bff8a' : '#3be8ff'); lit(c, bx + bw * lvl - 3, by - 3, 5, 14, '#ffffff');
       P.text(c, 'NEURO ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
       const hl = act ? Math.floor(t * 3) % 2 : Math.floor(t * .7) % 5;
-      for (let k = 0; k < 5; k++) { const y = IC.y + k * 94.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.13)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 80); c.strokeStyle = '#3be8ff'; c.lineWidth = 2; c.strokeRect(IC.x + 1, y + 1, IC.w - 2, 82); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 21 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
+      for (let k = 0; k < 5; k++) { const y = IC.y + k * 87.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.16)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 74); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 18 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
       for (let i = 0; i < 64; i++) { const v = P.clamp(noise(t * (1 + act * 2), i * .35), .1, 1), h = Math.round(v * (EQ.h - 10)); lit(c, EQ.x + 6 + i * 8, EQ.y + EQ.h - 3 - h, 5, h, i % 8 === 0 ? '#ff7af0' : '#2aa6c8'); }
       c.strokeStyle = rgba('255,120,230', .2 + .14 * Math.sin(t * 1.8) + act * .14 + this.burst * .3); c.lineWidth = 18; c.beginPath(); c.roundRect ? c.roundRect(16, 16, BW - 32, BH - 32, 38) : c.rect(16, 16, BW - 32, BH - 32); c.stroke();
       const per = 2 * (BW + BH - 80), dd = (t * 240) % per, W = BW - 40, H = BH - 40; let sx, sy2;
       if (dd < W) { sx = 20 + dd; sy2 = 10; } else if (dd < W + H) { sx = BW - 10; sy2 = 20 + dd - W; } else if (dd < 2 * W + H) { sx = BW - 20 - (dd - W - H); sy2 = BH - 10; } else { sx = 10; sy2 = BH - 20 - (dd - 2 * W - H); }
-      P.glow(c, sx, sy2, 26, 'rgba(255,200,250,.9)', .8); lit(c, sx - 4, sy2 - 4, 8, 8, '#ffffff');
-      if (this.sweep !== null) { const p = 32 - 160 + this.sweep * (BW + 320); c.save(); c.beginPath(); c.rect(46, 46, BW - 92, BH - 92); c.clip(); c.fillStyle = 'rgba(160,230,255,.09)'; c.beginPath(); c.moveTo(p, 32); c.lineTo(p + 80, 32); c.lineTo(p - 60, BH - 32); c.lineTo(p - 140, BH - 32); c.fill(); c.fillStyle = 'rgba(255,255,255,.13)'; c.beginPath(); c.moveTo(p + 100, 32); c.lineTo(p + 112, 32); c.lineTo(p - 28, BH - 32); c.lineTo(p - 40, BH - 32); c.fill(); c.restore(); }
+      P.glow(c, sx, sy2, 26, 'rgba(255,200,250,.9)', .8); lit(c, sx - 3, sy2 - 3, 6, 6, '#ffd4ff');
+      if (this.sweep !== null) { const p = 46 - 160 + this.sweep * (BW + 320); c.save(); c.beginPath(); c.rect(46, 46, BW - 92, BH - 92); c.clip(); c.fillStyle = 'rgba(160,230,255,.05)'; c.beginPath(); c.moveTo(p, 46); c.lineTo(p + 80, 46); c.lineTo(p - 60, BH - 46); c.lineTo(p - 140, BH - 46); c.fill(); c.restore(); }   // легкий відблиск по склу
       c.globalCompositeOperation = 'source-over';
       // ЗАДАЧІ NEXI: останні зроблені + поточна (NX.nexi.history / NX.nexi.task)
       P.text(c, NX.t('board.title'), TK.x + 14, TK.y + 26, '#3be8ff', 15); lit(c, TK.x + TK.w - 26, TK.y + 12, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
@@ -225,7 +218,7 @@
     holo(c, w, h, rgb, a = .5) {
       c.clearRect(0, 0, w, h); c.fillStyle = rgba('22,80,210', a); c.fillRect(0, 0, w, h); c.fillStyle = rgba('8,30,110', a * .6); for (let y = 0; y < h; y += 4) c.fillRect(0, y, w, 1);
       c.fillStyle = rgba(rgb, .95); c.fillRect(0, 0, w, 3); c.fillRect(0, h - 3, w, 3); c.fillRect(0, 0, 3, h); c.fillRect(w - 3, 0, 3, h);
-      c.fillStyle = '#ffffff'; [[0, 0], [w - 10, 0], [0, h - 3], [w - 10, h - 3]].forEach(([x, y]) => c.fillRect(x, y, 10, 3));
+      c.fillStyle = rgba(rgb, .55); [[0, 0], [w - 14, 0], [0, h - 2], [w - 14, h - 2]].forEach(([x, y]) => c.fillRect(x, y, 14, 2));
     },
     monitor(c, t) {
       this.holo(c, MW, MH, '90,216,255', .9);
@@ -273,9 +266,8 @@
       for (const s of DESK.sec) for (let x = s.a + 1.5; x < s.b - 1.5; x += 2) { c.fillStyle = act ? `hsla(${(t * 120 + x * 4) % 360},95%,62%,.85)` : rgba('59,232,255', .4 + .3 * Math.sin(t * 2 + x * .12)); c.fillRect(x, DESK.bot - 2.2, 1.3, 1.2); }
       for (let x = 54; x < 94; x += 2) lit(c, x, DESK.bot - 9.8, 1.3, .9, rgba('59,232,255', .18 + .14 * Math.sin(t * 1.6 + x * .08)));
       for (let x = 152; x < 234; x += 2) lit(c, x, DESK.bot - 9.8, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
-      const core = DESK.sec[2], [fx, fy, fr] = core.fan; P.glow(c, fx, fy, 12, 'rgba(59,232,255,.7)', .22 + act * .3);
-      const fa = t * (4 + act * 14); for (let bl = 0; bl < 5; bl++) { const a = fa + bl * Math.PI * .4; for (let r2 = 1.4; r2 < fr - 1; r2 += .5) lit(c, fx + Math.cos(a + r2 * .12) * r2 - .35, fy + Math.sin(a + r2 * .12) * r2 - .35, .7, .7, '#5ad8ff'); } lit(c, fx - 1, fy - 1, 2, 2, '#c3cbea');
-      for (let k = 0; k < 6; k++) lit(c, core.b - 5.4, DESK.slab + 6.5 + k * 2.4, 1.8, 1.4, hash(k, Math.floor(t * (4 + act * 8))) > .4 ? ['#3bff8a', '#3be8ff', '#ff7af0'][k % 3] : '#0a1a20');
+      const core = DESK.sec[2]; K.coreLive(c, K.coreGeom(core.a, core.b, DESK.slab, DESK.bot), t, act);   // системний блок: вентилятори, логотип, LED, рідина
+      c.globalCompositeOperation = 'lighter';
       [DESK.sec[0], DESK.sec[3]].forEach((s, n) => { const cx = (s.a + s.b) / 2; P.glow(c, cx, 335, 14, 'rgba(59,232,255,.8)', .18 + .08 * Math.sin(t * 3 + n)); const q = (t * .7 + n * .5) % 1; lit(c, cx - 1, DESK.slab + 3 + q * (DESK.bot - DESK.slab - 8), 2, 3, 'rgba(255,255,255,.8)'); });
       // лампа: тепле світло на плиту; пара над кавою; світло екранів
       const lx = LAMP.head[0] + 7, ly = LAMP.head[3]; c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 3, ly); c.lineTo(lx + 3, ly); c.lineTo(lx + 16, 294); c.lineTo(lx - 16, 294); c.fill(); P.glow(c, lx, ly, 10, 'rgba(255,220,140,.9)', .5 + .05 * Math.sin(t * 7));

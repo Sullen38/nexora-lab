@@ -26,6 +26,7 @@
   const SIGN = { x: 330, y: 86, w: 58, h: 34 };
   const TANKS = [{ box: [256, 94, 312, 150], kind: 'reef' }, { box: [256, 160, 312, 216], kind: 'deep' }, { box: [256, 226, 312, 282], kind: 'nano' }];
   const DISP = { box: [256, 34, 312, 82] };                                       // синій дисплей у верхній ніші стелажа
+  const SHELVES = [[348, 404, 50], [486, 530, 104], [4, 56, 160]];              // додаткові полички [x0, x1, y верху] — на них гаджети й рослини (wing_props.js, wing_plants.js)
   const floorTop = X => X < 326 ? 352 : X < 486 ? 346 : 338;
 
   // ---------- стіна (2 px/од.) ----------
@@ -81,6 +82,9 @@
     S.rect(l + 4.2, planks[0] + 4, l + 5.6, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8'); S.rect(r - 5.6, planks[0] + 4, r - 4.2, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8');   // рожеві неонові смуги
     planks.forEach((y, n) => S.rect(l, y, r, y + 4, (u, v, i, j) => v < .2 ? NAVY[7] : v > .78 ? (n % 2 ? '#3be8ff' : '#ff4fd8') : ramp(NAVY, .5 - v * .3, i, j)));
     [DISP, ...TANKS].forEach(T => { const [a, b, c2, d] = T.box; S.rr(a - 2.4, b - 2.4, c2 + 2.4, d + 2.4, 1.5, (dd, u, v, i, j) => dd < .6 ? OUT : dd < 1.5 ? ramp(CHROME, .6 - v * .3, i, j) : dd < 2.2 ? '#17709a' : '#061a3a'); });   // рамки
+    // додаткові полички: планка з неоновою кромкою знизу, 2 хромовані кронштейни
+    SHELVES.forEach(([x0, x1, y], n) => { S.rect(x0, y, x1, y + 4, (u, v, i, j) => v < .2 ? NAVY[7] : v > .78 ? (n % 2 ? '#3be8ff' : '#ff4fd8') : ramp(NAVY, .5 - v * .3, i, j));
+      for (const bx of [x0 + 7, x1 - 7]) S.poly([[bx - 2.5, y + 4], [bx + 2.5, y + 4], [bx + 1, y + 12], [bx - 1, y + 12]], (u, v, i, j) => ramp(CHROME, .6 - v * .3, i, j)); });
     // табличка "AI CHAT": темна пластина з блакитним кантом, іконка-бабл
     S.rr(SIGN.x, SIGN.y, SIGN.x + SIGN.w, SIGN.y + SIGN.h, 2.5, (d, u, v, i, j) => d < .6 ? CYAN[1] : d < 1.4 ? CYAN[4] : d < 2 ? '#06102e' : ramp(['#070b26', '#0a1236', '#0e1a48'], .8 - v * .5, i, j));
     S.rr(SIGN.x + 6, SIGN.y + 10, SIGN.x + 19, SIGN.y + 19, 2, CYAN[4]); S.poly([[SIGN.x + 9, SIGN.y + 19], [SIGN.x + 12, SIGN.y + 19], [SIGN.x + 9, SIGN.y + 22]], CYAN[4]);
@@ -118,12 +122,12 @@
   }
 
   let WALL = null, FLOOR = null, FURN = null;
-  NX.wing = { WIN, SHELF, LANT, SIGN, TANKS, DISP, floorTop, bloom: null,
+  NX.wing = { WIN, SHELF, SHELVES, LANT, SIGN, TANKS, DISP, floorTop, bloom: null,
     /** Нерухома копія крила (стіна, столи, будки, крісла, рослини): з неї кімната будує передню підлогу й віддзеркалення. */
     patch() {
       this.patched = true; const img = NX.room.img, RS = NX.room.RS, cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d'), t = NX.time;
       x.imageSmoothingEnabled = true; x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS);
-      ['wingBack', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
+      ['wingBack', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall', 'wingProps'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
       const L = []; ['analyticsChair', 'marketingChair', 'coffee', 'catCorner'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
       Object.values(NX.objects).forEach(o => { if (o.id.startsWith('wp_') && o.layers) L.push(...o.layers(t)); });
       L.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(x, t));
@@ -155,6 +159,7 @@
       LANT.forEach((L, n) => P.glow(c, L.x + L.w / 2, L.y + L.h / 2 + 2, n ? 34 : 30, 'rgba(255,180,80,.9)', .3 + .08 * Math.sin(t * 6.3 + n * 2) + .05 * Math.sin(t * 13.7 + n)));
       P.glow(c, 244.7, 150, 10, 'rgba(59,232,255,.8)', .25 + .1 * Math.sin(t * 1.5)); c.fillStyle = rgba('59,232,255', .25 + .15 * Math.sin(t * 1.5)); c.fillRect(242, 10, 5.4, 280);
       c.fillStyle = rgba('255,79,216', .22 + .12 * Math.sin(t * 1.3 + 1)); c.fillRect(WIN - 6, 0, 6, 278);
+      SHELVES.forEach(([x0, x1, y], n) => { c.fillStyle = rgba(n % 2 ? '59,232,255' : '255,79,216', .18 + .08 * Math.sin(t * 1.5 + n)); c.fillRect(x0, y + 2.6, x1 - x0, 2.4); });
       [DISP, ...TANKS].forEach(T => { const [a, b, c2, d] = T.box; P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .8, 'rgba(60,160,255,.6)', .12 + .04 * Math.sin(t + a)); });
       c.fillStyle = rgba('255,79,216', .2 + .1 * Math.sin(t * 1.7)); c.fillRect(SHELF.l + 3.6, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4); c.fillRect(SHELF.r - 6.2, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4);   // рожеві смуги стелажа дихають
       c.globalCompositeOperation = 'source-over';

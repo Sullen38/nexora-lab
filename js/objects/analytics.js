@@ -89,12 +89,11 @@
       c.imageSmoothingEnabled = true;
       const [L, Rr] = BOOTH.screens; c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]);
       const [sx0, sy0, sx1, sy1] = BOOTH.sign; c.globalCompositeOperation = 'lighter';
-      P.glow(c, (sx0 + sx1) / 2 + 8, (sy0 + sy1) / 2, 46, 'rgba(59,232,255,.6)', .16 + .06 * Math.sin(t * 2) + act * .1); P.glow(c, BOOTH.icon[0], BOOTH.icon[1], 12, 'rgba(59,232,255,.8)', .25 + .1 * Math.sin(t * 3));
       c.strokeStyle = rgba('59,232,255', .14 + .08 * Math.sin(t * 1.8) + act * .12); c.lineWidth = 3; c.beginPath(); c.roundRect ? c.roundRect(BOOTH.x0 - 1, BOOTH.y0 - 1, BOOTH.x1 - BOOTH.x0 + 2, BOOTH.y1 - BOOTH.y0 + 2, 7) : c.rect(BOOTH.x0, BOOTH.y0, BOOTH.x1 - BOOTH.x0, BOOTH.y1 - BOOTH.y0); c.stroke();   // ореол канта
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));
       for (let k = 0; k < 6; k++) lit(c, BOOTH.x0 + 5.2, BOOTH.y0 + 20 + k * 18 + 3, 1.6, 1.6, rgba('59,232,255', .3 + .6 * (Math.floor(t * 4 + k) % 4 === 0)));   // вогники планки
       c.globalCompositeOperation = 'source-over';
-      K.signText(c, 'nav.analytics', (sx0 + sx1) / 2 + 9, (sy0 + sy1) / 2, sx1 - sx0 - 36, t);
+      K.sign(c, sx0, sy0, sx1 - sx0, sy1 - sy0, { acc: ACC, icon: 'chart', key: 'nav.analytics', t, glow: '59,232,255' });   // вивіска в єдиному стилі трьох зон
       c.restore();
       this.drawDesk(c, t);
     },

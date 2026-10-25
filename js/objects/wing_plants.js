@@ -11,6 +11,8 @@
  *   boothTop — пальма на даху будки аналітики
  *   winVine  — ліана над ліхтарем біля вікна
  *   mkDesk   — папороть на столі маркетингу (ліворуч, над кавомашиною)
+ *   shelfBonsai / shelfNeon — бонсай у хромі й неонова рослина у склі на нових поличках
+ *   deskGlass — сансев'єра у скляному кубі на столі AI-центру (праворуч)
  * Усі гойдаються (верх хитається, горщик стоїть; ліани — навпаки), тап — шелест.
  * stage 'wall' — малюються в drawBack (за столами), 'layer' — за глибиною y.
  * ========================================================================== */
@@ -20,11 +22,14 @@
     { id: 'bigLeft', kind: 'monstera', x: 0, y: 270, w: 42, h: 104, potW: 22, potH: 18, leaves: 12, seed: 3, stage: 'layer', depth: 374, s: 1 },
     { id: 'floorA', kind: 'fern', x: 146, y: 306, w: 50, h: 72, potW: 18, potH: 13, leaves: 15, seed: 5, stage: 'layer', depth: 378, s: .8, pal: 'light' },
     { id: 'floorB', kind: 'sansevieria', x: 198, y: 307, w: 36, h: 74, potW: 18, potH: 14, leaves: 9, seed: 8, stage: 'layer', depth: 381, s: .5 },
-    { id: 'topVine', kind: 'vine', x: 4, y: 5, w: 46, h: 130, hang: 1, pot: 'none', leaves: 7, seed: 2, stage: 'wall', s: 1 },
+    { id: 'topVine', kind: 'vine', x: 4, y: 5, w: 46, h: 116, hang: 1, pot: 'none', leaves: 7, seed: 2, stage: 'wall', s: 1 },
     { id: 'shelfVine', kind: 'vine', x: 253, y: 29, w: 30, h: 52, hang: 1, pot: 'none', leaves: 4, seed: 6, stage: 'wall', s: .8, pal: 'sage' },
     { id: 'boothTop', kind: 'palm', x: 408, y: 50, w: 66, h: 80, potW: 20, potH: 14, leaves: 13, seed: 4, stage: 'wall', s: 1, neon: '#3be8ff' },
-    { id: 'winVine', kind: 'vine', x: 484, y: 0, w: 46, h: 96, hang: 1, pot: 'none', leaves: 6, seed: 9, stage: 'wall', s: .9, pal: 'light' },
+    { id: 'winVine', kind: 'vine', x: 484, y: 0, w: 46, h: 72, hang: 1, pot: 'none', leaves: 6, seed: 9, stage: 'wall', s: .9, pal: 'light' },
     { id: 'mkDesk', kind: 'fern', x: 492, y: 232, w: 38, h: 47, potW: 15, potH: 10, leaves: 12, seed: 7, stage: 'layer', depth: 279, s: .7, pal: 'sage' },
+    { id: 'shelfBonsai', kind: 'bonsai', x: 504, y: 76, w: 24, h: 28, potW: 16, potH: 6, seed: 12, stage: 'wall', s: .3, pot: 'chrome' },
+    { id: 'shelfNeon', kind: 'neon', x: 30, y: 128, w: 24, h: 32, potW: 12, potH: 9, leaves: 7, seed: 13, stage: 'wall', s: .6, pot: 'glass' },
+    { id: 'deskGlass', kind: 'sansevieria', x: 300, y: 262, w: 16, h: 32, potW: 10, potH: 8, leaves: 5, seed: 14, stage: 'layer', depth: 294.5, s: .4, pot: 'glass' },
   ];
   const wall = [];
   LIST.forEach(d => {
