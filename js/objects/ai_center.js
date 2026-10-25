@@ -36,7 +36,7 @@
   const HOLOQ = [[26, 236], [60, 239], [60, 288], [26, 290]];
   const LP1 = { q: [[182, 258], [214, 259.5], [214, 288], [182, 289]], base: [178, 218], neon: ['#3be8ff', '#2aa6c8'], rgb: '90,232,255' };
   const LP2 = { q: [[112, 262], [142, 263.5], [142, 288], [112, 289]], base: [108, 146], neon: ['#ff4fd8', '#c63aa8'], rgb: '255,120,230' };
-  const MUG = [246, 283, 254, 294], LAMP = { base: [282, 294], head: [296, 258, 310, 266] };
+  const MUG = [246, 283, 254, 294], LAMP = { base: [282, 294], head: [294, 274, 308, 282] };   // лампа низенька — не лізе на стелаж позаду
 
   // ---------- стіл + речі на ньому (растр 4 px/од.) ----------
   function buildDesk() {
@@ -52,17 +52,21 @@
     S.rr(MUG[0], MUG[1], MUG[2], MUG[3], [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? KP[1] : v > .4 && v < .56 ? CY[4] : (u > .7 ? KP[3] : KP[5]));
     S.rect(MUG[2] - .4, MUG[1] + 2.5, MUG[2] + 2.2, MUG[1] + 7, (u, v) => (u > .4 && v > .25 && v < .75) ? null : KP[3]);
     S.rr(LAMP.base[0], LAMP.base[1] - 3, LAMP.base[0] + 12, LAMP.base[1], 1.2, (d, u, v, i, j) => d < .4 ? OUT : ramp(CHROME, .85 - v * .5, i, j));
-    S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 10, 272, OUT, 2.4); S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 10, 272, CHROME[3], 1.2);
-    S.line(LAMP.base[0] + 10, 272, LAMP.head[0] + 6, LAMP.head[3] - 2, OUT, 2.4); S.line(LAMP.base[0] + 10, 272, LAMP.head[0] + 6, LAMP.head[3] - 2, CHROME[4], 1.2);
+    S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 9, 284, OUT, 2.4); S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 9, 284, CHROME[3], 1.2);
+    S.line(LAMP.base[0] + 9, 284, LAMP.head[0] + 6, LAMP.head[3] - 2, OUT, 2.4); S.line(LAMP.base[0] + 9, 284, LAMP.head[0] + 6, LAMP.head[3] - 2, CHROME[4], 1.2);
     S.rr(LAMP.head[0], LAMP.head[1], LAMP.head[2], LAMP.head[3], [3, 3, 1, 1], (d, u, v, i, j) => d < .5 ? OUT : v > .8 ? '#fff2c0' : ramp(KP, .85 - v * .5 - u * .2, i, j));
+    // дрібнички (як на картинці): кубик-колонка з решіткою, рамка з фото, кабелі до задньої кромки
+    S.rr(258, 285, 267, 294, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .2 && u < .8 && v > .25 && v < .75 && ((u * 12) | 0) % 2 === 0 && ((v * 8) | 0) % 2 === 0) ? CYAN[3] : ramp(NAVY, .45 - v * .25, i, j));
+    S.rr(84, 283, 96, 293, .8, (d, u, v, i, j) => d < .5 ? OUT : d < 1.2 ? CHROME[3] : ramp(['#2a1860', '#5a3aa0', '#ff84d4', '#ffe27a'], .3 + .7 * Math.abs(Math.sin(u * 7) * Math.cos(v * 5)), i, j));
+    [[56, 292.6, 70, 289.8], [218, 292.6, 230, 289.8], [96, 292.4, 104, 289.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1.1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });
     return S;
   }
 
   // ---------- великий екран (пласкі координати 640×960) ----------
   const BW = 640, BH = 960;
-  const HD = { x: 56, y: 52, w: 528, h: 70 }, C1 = { x: 56, y: 138, w: 150, h: 250 }, C2 = { x: 56, y: 400, w: 150, h: 226 };
-  const BR = { x: 218, y: 138, w: 262, h: 488 }, BC = [349, 376];
-  const IC = { x: 492, y: 138, w: 92, h: 488 }, TK = { x: 170, y: 640, w: 414, h: 200 }, EQ = { x: 56, y: 854, w: 528, h: 54 };
+  const HD = { x: 64, y: 62, w: 512, h: 66 }, C1 = { x: 64, y: 144, w: 118, h: 236 }, C2 = { x: 64, y: 392, w: 118, h: 214 };
+  const BR = { x: 192, y: 144, w: 298, h: 462 }, BC = [341, 375];
+  const IC = { x: 500, y: 144, w: 76, h: 462 }, TK = { x: 192, y: 622, w: 384, h: 190 }, EQ = { x: 64, y: 826, w: 512, h: 66 };
   const ICONS = [
     ['.XXXXXXX.', 'X.......X', 'X.X.X.X.X', 'X.......X', '.XXXXXXX.', '..XX.....', '..X......'],
     ['XXXXXXXXX', 'XX.....XX', 'X.X...X.X', 'X..X.X..X', 'X...X...X', 'X.......X', 'XXXXXXXXX'],
@@ -90,14 +94,14 @@
   const NEURONS = [], SYN = [];
   function buildBig() {
     const r = Raster(BW, BH);
-    rr(r, 0, 0, BW, BH, 40, (d, u, v, i, j) => d < 3 ? '#1a0630' : d < 17 ? rampR(KP, bump((d - 3) / 14) * (.74 + .26 * (1 - v)) + (v < .1 ? .06 : 0), i, j) : d < 19 ? '#1a0a36' : d < 30 ? rampR(D, .42 - v * .3 + (d < 21 ? .12 : 0), i, j) : d < 32 ? '#1d4f86' : null);
-    glass(r, 32, 32, BW - 64, BH - 64, .55);
+    rr(r, 0, 0, BW, BH, 48, (d, u, v, i, j) => d < 4 ? '#1a0630' : d < 28 ? rampR(KP, bump((d - 4) / 24) * (.8 + .2 * (1 - v)) + (v < .1 ? .06 : 0), i, j) : d < 31 ? '#1a0a36' : d < 44 ? rampR(D, .42 - v * .3 + (d < 33 ? .12 : 0), i, j) : d < 46 ? '#1d4f86' : null);   // товста рожева рамка, як на картинці
+    glass(r, 46, 46, BW - 92, BH - 92, .55);
     r.rect(HD.x, HD.y, HD.w, HD.h, '#0e3488'); r.rect(HD.x, HD.y + HD.h, HD.w, 2, CY[2]); r.rect(HD.x, HD.y + HD.h + 2, HD.w, 2, CY[0]);
     rr(r, HD.x + 10, HD.y + 11, 48, 48, 10, (d, u, v, i, j) => d < 2.5 ? CY[4] : d < 4.5 ? CY[1] : rampR(['#0e3488', '#1444a8', '#1a56c4'], .7 - v * .5, i, j));
     for (let k = 0; k < 5; k++) { r.rect(HD.x + 17 + k * 8, HD.y + 3, 3, 8, CY[2]); r.rect(HD.x + 17 + k * 8, HD.y + 59, 3, 8, CY[2]); r.rect(HD.x + 2, HD.y + 18 + k * 8, 8, 3, CY[2]); }
     [C1, C2, BR, TK].forEach(p => panel(r, p));
     for (const p of [C1, C2]) { r.rect(p.x + 10, p.y + p.h - 24, p.w - 20, 2, CY[2]); for (let x = p.x + 10; x < p.x + p.w - 10; x += 12) r.rect(x, p.y + p.h - 22, 2, 4, CY[3]); for (let y = p.y + 50; y < p.y + p.h - 24; y += 30) for (let x = p.x + 10; x < p.x + p.w - 10; x += 4) r.set(x, y, '#2a5cc0'); }
-    for (let k = 0; k < 5; k++) { const t = { x: IC.x, y: IC.y + k * 99.5 | 0, w: IC.w, h: 90 }; panel(r, t, 8); bitmap(r, ICONS[k], t.x + 19, t.y + 24, 6, CY[1], CY[2]); }
+    for (let k = 0; k < 5; k++) { const t = { x: IC.x, y: IC.y + k * 94.5 | 0, w: IC.w, h: 84 }; panel(r, t, 8); bitmap(r, ICONS[k], t.x + 11, t.y + 21, 6, CY[1], CY[2]); }
     buildBrain(r);
     r.rect(TK.x + 2, TK.y + 2, TK.w - 4, 34, '#1240a0'); r.rect(TK.x + 2, TK.y + 36, TK.w - 4, 2, CY[2]);
     r.rect(EQ.x, EQ.y, EQ.w, EQ.h, '#0a2468'); r.rect(EQ.x, EQ.y, EQ.w, 2, C.pb);
@@ -105,16 +109,16 @@
   }
   /** Піксельний мозок (вигляд збоку): звивини, борозни, мозочок, стовбур; нейрони — для анімації. */
   function buildBrain(r) {
-    const S = 1.8, W = 260, H = 236, ox = BC[0] - 130, oy = BC[1] - 110, kind = new Uint8Array(W * H);
+    const S = 2.25, W = 300, H = 280, ox = BC[0] - 150, oy = BC[1] - 130, kind = new Uint8Array(W * H);   // мозок більший і по центру (як на картинці)
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
-      const x = (i - 130) / S, y = (j - 108) / S;
+      const x = (i - 150) / S, y = (j - 130) / S;
       const cer = (x / 66) ** 2 + ((y + 8) / 48) ** 2 <= 1 && y < 30 - Math.max(0, x) * .3 + Math.max(0, -x - 30) * .4, cbl = ((x - 34) / 26) ** 2 + ((y - 34) / 15) ** 2 <= 1, stem = y > 22 && y < 64 && x > 4 - (y - 22) * .2 && x < 20 - (y - 22) * .2;
       kind[j * W + i] = cer ? 1 : cbl ? 2 : stem ? 3 : 0;
     }
     const inside = (i, j) => i >= 0 && j >= 0 && i < W && j < H && kind[j * W + i];
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
       const k = kind[j * W + i]; if (!k) continue;
-      const X = ox + i, Y = oy + j, x = (i - 130) / S, y = (j - 108) / S;
+      const X = ox + i, Y = oy + j, x = (i - 150) / S, y = (j - 130) / S;
       const e1 = !inside(i - 1, j) || !inside(i + 1, j) || !inside(i, j - 1) || !inside(i, j + 1), e2 = !inside(i - 2, j) || !inside(i + 2, j) || !inside(i, j - 2) || !inside(i, j + 2);
       if (e1) { r.set(X, Y, y < 0 && x < 20 ? CY[5] : CY[4]); continue; } if (e2) { r.set(X, Y, CY[2]); continue; }
       const dist = Math.hypot(x / 70, (y + 10) / 54);
@@ -176,28 +180,28 @@
       lit(c, HD.x + HD.w - 84, HD.y + 44, 10, 10, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, 'LIVE', HD.x + HD.w - 12, HD.y + 56, '#a8c4ff', 12, 'right');
       c.globalCompositeOperation = 'lighter';
       const k1 = 1 + act * 1.5, base = C1.y + C1.h - 28, top = C1.y + 44;
-      for (let i = 0; i < 14; i++) { const v = P.clamp(noise(t * k1, i) * (.8 + .3 * this.burst), .08, 1), segs = Math.round(v * (base - top) / 7); for (let s = 0; s < segs; s++) lit(c, C1.x + 11 + i * 9.4, base - 6 - s * 7, 7, 5, s === segs - 1 ? '#ffffff' : CY[2 + Math.min(3, (s / segs * 4) | 0)]); }
+      for (let i = 0; i < 11; i++) { const v = P.clamp(noise(t * k1, i) * (.8 + .3 * this.burst), .08, 1), segs = Math.round(v * (base - top) / 7); for (let s = 0; s < segs; s++) lit(c, C1.x + 11 + i * 9.4, base - 6 - s * 7, 7, 5, s === segs - 1 ? '#ffffff' : CY[2 + Math.min(3, (s / segs * 4) | 0)]); }
       P.text(c, Math.round(60 + 30 * noise(t * k1, 3)) + '%', C1.x + 12, C1.y + 30, '#9af6ff', 14);
       const b2 = C2.y + C2.h - 28, h2 = C2.h - 66;
       for (let x = 0; x < C2.w - 22; x += 2) { const v = P.clamp(.45 + .25 * Math.sin((x + t * 80 * k1) * .045) + .15 * Math.sin((x + t * 50 * k1) * .11) + .1 * this.burst, 0, 1), y = b2 - v * h2; c.fillStyle = 'rgba(217,75,255,.2)'; c.fillRect(C2.x + 11 + x, y, 2, b2 - y); lit(c, C2.x + 11 + x, y, 2, 3, '#ff84d4'); }
       P.text(c, '+' + Math.round(12 + 20 * noise(t * .3, 7)) + '%', C2.x + 12, C2.y + 30, '#ff9ae0', 14);
-      const [cx, cy] = BC; P.glow(c, cx, cy - 6, 150, 'rgba(59,200,255,.75)', .2 + act * .25 + this.burst * .5 + .06 * Math.sin(t * 2));
+      const [cx, cy] = BC; P.glow(c, cx, cy - 6, 190, 'rgba(59,200,255,.75)', .2 + act * .25 + this.burst * .5 + .06 * Math.sin(t * 2));
       const n = 14 + Math.round(act * 26 + this.burst * 40);
       for (let i = 0; i < n; i++) { const q = NEURONS[(hash(i, Math.floor(t * (1.5 + act * 3) + i * .37)) * NEURONS.length) | 0]; if (!q) continue; lit(c, q[0] - 2, q[1] - 2, 4, 4, '#ffffff'); c.fillStyle = 'rgba(122,240,255,.55)'; c.fillRect(q[0] - 6, q[1] - .5, 12, 1.5); c.fillRect(q[0] - .5, q[1] - 6, 1.5, 12); }
       SYN.forEach(([a, b, h], i) => { const ph = (t * (.45 + h * .5 + act * .8) + h * 3) % 1.6; if (ph > 1) return; for (let k = 0; k < 5; k++) { const q = Math.max(0, ph - k * .03); c.fillStyle = k ? `rgba(154,246,255,${.55 - k * .1})` : (i % 3 ? '#9af6ff' : '#ff9ae0'); const s = k ? 3 : 5; c.fillRect(a[0] + (b[0] - a[0]) * q - s / 2, a[1] + (b[1] - a[1]) * q - s / 2, s, s); } });
-      for (let k = 0; k < 3; k++) { const a = t * (.8 + act) + k * 2.094, x = cx + Math.cos(a) * 124, y = cy + 10 + Math.sin(a) * 22; if (Math.sin(a) < 0 && Math.abs(x - cx) < 100) continue; lit(c, x - 4, y - 4, 8, 8, k === 1 ? '#ff7af0' : '#7af0ff'); lit(c, x - 2, y - 2, 4, 4, '#ffffff'); }
+      for (let k = 0; k < 3; k++) { const a = t * (.8 + act) + k * 2.094, x = cx + Math.cos(a) * 154, y = cy + 12 + Math.sin(a) * 26; if (Math.sin(a) < 0 && Math.abs(x - cx) < 124) continue; lit(c, x - 4, y - 4, 8, 8, k === 1 ? '#ff7af0' : '#7af0ff'); lit(c, x - 2, y - 2, 4, 4, '#ffffff'); }
       const sy = BR.y + 40 + ((t * .35) % 1) * (BR.h - 80); c.fillStyle = 'rgba(122,240,255,.14)'; c.fillRect(BR.x + 4, sy, BR.w - 8, 3);
       const lvl = this.active ? this.prog : .55 + .35 * noise(t * .4, 2), bx = BR.x + 24, by = BR.y + BR.h - 34, bw = BR.w - 48;
       lit(c, bx, by, bw, 8, '#0a1d40'); lit(c, bx, by, bw * lvl, 8, this.active ? '#3bff8a' : '#3be8ff'); lit(c, bx + bw * lvl - 3, by - 3, 5, 14, '#ffffff');
       P.text(c, 'NEURO ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
       const hl = act ? Math.floor(t * 3) % 2 : Math.floor(t * .7) % 5;
-      for (let k = 0; k < 5; k++) { const y = IC.y + k * 99.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.13)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 86); c.strokeStyle = '#3be8ff'; c.lineWidth = 2; c.strokeRect(IC.x + 1, y + 1, IC.w - 2, 88); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 19 + i * 6, y + 24 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
-      for (let i = 0; i < 66; i++) { const v = P.clamp(noise(t * (1 + act * 2), i * .35), .1, 1), h = Math.round(v * (EQ.h - 10)); lit(c, EQ.x + 6 + i * 8, EQ.y + EQ.h - 3 - h, 5, h, i % 8 === 0 ? '#ff7af0' : '#2aa6c8'); }
-      c.strokeStyle = rgba('255,120,230', .2 + .14 * Math.sin(t * 1.8) + act * .14 + this.burst * .3); c.lineWidth = 6; c.beginPath(); c.roundRect ? c.roundRect(10, 10, BW - 20, BH - 20, 30) : c.rect(10, 10, BW - 20, BH - 20); c.stroke();
+      for (let k = 0; k < 5; k++) { const y = IC.y + k * 94.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.13)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 80); c.strokeStyle = '#3be8ff'; c.lineWidth = 2; c.strokeRect(IC.x + 1, y + 1, IC.w - 2, 82); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 21 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
+      for (let i = 0; i < 64; i++) { const v = P.clamp(noise(t * (1 + act * 2), i * .35), .1, 1), h = Math.round(v * (EQ.h - 10)); lit(c, EQ.x + 6 + i * 8, EQ.y + EQ.h - 3 - h, 5, h, i % 8 === 0 ? '#ff7af0' : '#2aa6c8'); }
+      c.strokeStyle = rgba('255,120,230', .2 + .14 * Math.sin(t * 1.8) + act * .14 + this.burst * .3); c.lineWidth = 18; c.beginPath(); c.roundRect ? c.roundRect(16, 16, BW - 32, BH - 32, 38) : c.rect(16, 16, BW - 32, BH - 32); c.stroke();
       const per = 2 * (BW + BH - 80), dd = (t * 240) % per, W = BW - 40, H = BH - 40; let sx, sy2;
       if (dd < W) { sx = 20 + dd; sy2 = 10; } else if (dd < W + H) { sx = BW - 10; sy2 = 20 + dd - W; } else if (dd < 2 * W + H) { sx = BW - 20 - (dd - W - H); sy2 = BH - 10; } else { sx = 10; sy2 = BH - 20 - (dd - 2 * W - H); }
       P.glow(c, sx, sy2, 26, 'rgba(255,200,250,.9)', .8); lit(c, sx - 4, sy2 - 4, 8, 8, '#ffffff');
-      if (this.sweep !== null) { const p = 32 - 160 + this.sweep * (BW + 320); c.save(); c.beginPath(); c.rect(32, 32, BW - 64, BH - 64); c.clip(); c.fillStyle = 'rgba(160,230,255,.09)'; c.beginPath(); c.moveTo(p, 32); c.lineTo(p + 80, 32); c.lineTo(p - 60, BH - 32); c.lineTo(p - 140, BH - 32); c.fill(); c.fillStyle = 'rgba(255,255,255,.13)'; c.beginPath(); c.moveTo(p + 100, 32); c.lineTo(p + 112, 32); c.lineTo(p - 28, BH - 32); c.lineTo(p - 40, BH - 32); c.fill(); c.restore(); }
+      if (this.sweep !== null) { const p = 32 - 160 + this.sweep * (BW + 320); c.save(); c.beginPath(); c.rect(46, 46, BW - 92, BH - 92); c.clip(); c.fillStyle = 'rgba(160,230,255,.09)'; c.beginPath(); c.moveTo(p, 32); c.lineTo(p + 80, 32); c.lineTo(p - 60, BH - 32); c.lineTo(p - 140, BH - 32); c.fill(); c.fillStyle = 'rgba(255,255,255,.13)'; c.beginPath(); c.moveTo(p + 100, 32); c.lineTo(p + 112, 32); c.lineTo(p - 28, BH - 32); c.lineTo(p - 40, BH - 32); c.fill(); c.restore(); }
       c.globalCompositeOperation = 'source-over';
       // ЗАДАЧІ NEXI: останні зроблені + поточна (NX.nexi.history / NX.nexi.task)
       P.text(c, NX.t('board.title'), TK.x + 14, TK.y + 26, '#3be8ff', 15); lit(c, TK.x + TK.w - 26, TK.y + 12, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
@@ -290,7 +294,7 @@
       if (this.fr % 3 === 0 || this.wfr !== R) {
         this.wfr = R; const w = this.wc; w.setTransform(1, 0, 0, 1, 0, 0); w.clearRect(0, 0, this.WARP.width, this.WARP.height); w.setTransform(R, 0, 0, R, -WX[0] * R, -WX[1] * R); w.imageSmoothingEnabled = true;
         w.globalCompositeOperation = 'lighter';
-        for (const [e, a] of [[5, .07], [11, .035]]) { const q = BIGQ.map(([x, y], i) => [x + (i === 0 || i === 3 ? -e : e), y + (i < 2 ? -e : e)]); w.fillStyle = rgba('255,79,216', a + .03 * Math.sin(t * 1.8) + act * .03 + this.burst * .05); w.beginPath(); q.forEach(([x, y], i) => i ? w.lineTo(x, y) : w.moveTo(x, y)); w.fill(); }   // ореол на стіні
+        for (const [e, a] of [[7, .1], [16, .06], [30, .035]]) { const q = BIGQ.map(([x, y], i) => [x + (i === 0 || i === 3 ? -e : e), y + (i < 2 ? -e : e)]); w.fillStyle = rgba('255,79,216', a + .03 * Math.sin(t * 1.8) + act * .03 + this.burst * .05); w.beginPath(); q.forEach(([x, y], i) => i ? w.lineTo(x, y) : w.moveTo(x, y)); w.fill(); }   // ореол на стіні
         w.globalCompositeOperation = 'source-over';
         this.big(bf, t, act); this.upper(uaf, t, 'net', act); this.upper(ubf, t, 'log', act);
         const ws = Math.max(1, 2.4 / R); F.warp(w, UAF, UPQ.net, ws); F.warp(w, UBF, UPQ.log, ws); F.warp(w, BIGF, BIGQ, ws);

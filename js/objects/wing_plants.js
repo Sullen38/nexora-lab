@@ -17,14 +17,14 @@
 (() => {
   const P = NX.px, K = NX.kit;
   const LIST = [
-    { id: 'bigLeft', kind: 'monstera', x: 0, y: 278, w: 38, h: 96, potW: 22, potH: 18, leaves: 8, seed: 3, stage: 'layer', depth: 374, s: 1 },
-    { id: 'floorA', kind: 'fern', x: 148, y: 312, w: 46, h: 66, potW: 18, potH: 13, leaves: 11, seed: 5, stage: 'layer', depth: 378, s: .8, pal: 'light' },
-    { id: 'floorB', kind: 'sansevieria', x: 198, y: 311, w: 34, h: 70, potW: 18, potH: 14, leaves: 7, seed: 8, stage: 'layer', depth: 381, s: .5 },
-    { id: 'topVine', kind: 'vine', x: 6, y: 5, w: 40, h: 120, hang: 1, pot: 'none', leaves: 5, seed: 2, stage: 'wall', s: 1 },
-    { id: 'shelfVine', kind: 'vine', x: 258, y: 29, w: 44, h: 56, hang: 1, pot: 'none', leaves: 4, seed: 6, stage: 'wall', s: .8, pal: 'sage' },
-    { id: 'boothTop', kind: 'palm', x: 416, y: 58, w: 58, h: 72, potW: 20, potH: 14, leaves: 9, seed: 4, stage: 'wall', s: 1, neon: '#3be8ff' },
-    { id: 'winVine', kind: 'vine', x: 486, y: 0, w: 44, h: 84, hang: 1, pot: 'none', leaves: 4, seed: 9, stage: 'wall', s: .9, pal: 'light' },
-    { id: 'mkDesk', kind: 'fern', x: 494, y: 236, w: 34, h: 43, potW: 15, potH: 10, leaves: 9, seed: 7, stage: 'layer', depth: 279, s: .7, pal: 'sage' },
+    { id: 'bigLeft', kind: 'monstera', x: 0, y: 270, w: 42, h: 104, potW: 22, potH: 18, leaves: 12, seed: 3, stage: 'layer', depth: 374, s: 1 },
+    { id: 'floorA', kind: 'fern', x: 146, y: 306, w: 50, h: 72, potW: 18, potH: 13, leaves: 15, seed: 5, stage: 'layer', depth: 378, s: .8, pal: 'light' },
+    { id: 'floorB', kind: 'sansevieria', x: 198, y: 307, w: 36, h: 74, potW: 18, potH: 14, leaves: 9, seed: 8, stage: 'layer', depth: 381, s: .5 },
+    { id: 'topVine', kind: 'vine', x: 4, y: 5, w: 46, h: 130, hang: 1, pot: 'none', leaves: 7, seed: 2, stage: 'wall', s: 1 },
+    { id: 'shelfVine', kind: 'vine', x: 253, y: 29, w: 30, h: 52, hang: 1, pot: 'none', leaves: 4, seed: 6, stage: 'wall', s: .8, pal: 'sage' },
+    { id: 'boothTop', kind: 'palm', x: 408, y: 50, w: 66, h: 80, potW: 20, potH: 14, leaves: 13, seed: 4, stage: 'wall', s: 1, neon: '#3be8ff' },
+    { id: 'winVine', kind: 'vine', x: 484, y: 0, w: 46, h: 96, hang: 1, pot: 'none', leaves: 6, seed: 9, stage: 'wall', s: .9, pal: 'light' },
+    { id: 'mkDesk', kind: 'fern', x: 492, y: 232, w: 38, h: 47, potW: 15, potH: 10, leaves: 12, seed: 7, stage: 'layer', depth: 279, s: .7, pal: 'sage' },
   ];
   const wall = [];
   LIST.forEach(d => {

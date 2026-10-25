@@ -6,13 +6,17 @@
  *   цегла з теплими відсвітами ліхтарів і холодним — від екранів; неоновий
  *   плінтус; глянцева підлога під столами (до x 664, далі — підлога картинки)
  *   верхня полиця над AI-центром (з неї звисає ліана), тепла лампа-ліхтар
- *   стелаж між AI-центром і аналітикою: 2 акваріуми з технорибами, нано-куб,
- *   книжки, неонова трубка-роздільник
+ *   стелаж між AI-центром і аналітикою (як на картинці — стійка з синіми
+ *   екранами): дисплей з даними, 2 акваріуми з технорибами, нано-куб з медузами,
+ *   рожеві неонові смуги на стійках, фіолетове підсвічування; трубка-роздільник
  *   неонова табличка "AI CHAT" над аналітикою, ліхтар між аналітикою і вікном,
  *   рожева трубка на краю вікна
- * Живе: риби пливуть, бульбашки, лампи мерехтять, табличка блимає.
+ * Живе: риби пливуть, бульбашки, дисплей біжить, лампи мерехтять, табличка блимає.
  * NX.wing.patch() — після кількох кадрів складає нерухому копію крила, з якої
- * кімната тягне передню підлогу й глянцеве віддзеркалення (NX.room.patchFront).
+ * кімната тягне передню підлогу й глянцеве віддзеркалення (NX.room.patchFront),
+ * і з неї ж рахує СЯЙВО (bloom): яскраві пікселі копії розмиваються в 3 масштабах
+ * і щокадру кладуться світлом поверх крила (objects/wing_floor.js, 'wingGlow') —
+ * так кожна неонова лінія, екран і ліхтар отримують м'який ореол, як на картинці.
  * ========================================================================== */
 (() => {
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, hash = NX.art.hash, rgba = K.rgba, lit = K.lit;
@@ -20,15 +24,20 @@
   const SHELF = { l: 250, r: 318, top: 26, planks: [26, 86, 152, 218, 284] };
   const LANT = [{ x: 206, y: 14, w: 24, h: 32 }, { x: 498, y: 148, w: 24, h: 46 }];   // теплі ліхтарі на стіні
   const SIGN = { x: 330, y: 86, w: 58, h: 34 };
-  const TANKS = [{ box: [256, 94, 312, 150], kind: 'reef' }, { box: [256, 160, 312, 216], kind: 'deep' }, { box: [284, 236, 312, 282], kind: 'nano' }];
+  const TANKS = [{ box: [256, 94, 312, 150], kind: 'reef' }, { box: [256, 160, 312, 216], kind: 'deep' }, { box: [256, 226, 312, 282], kind: 'nano' }];
+  const DISP = { box: [256, 34, 312, 82] };                                       // синій дисплей у верхній ніші стелажа
   const floorTop = X => X < 326 ? 352 : X < 486 ? 346 : 338;
 
   // ---------- стіна (2 px/од.) ----------
   function buildWall() {
     const S = F.Sheet(0, 0, WIN, 368, .5), FL = ['#07041a', '#0c0726', '#120b34', '#1a1046', '#231658', '#2e1c6c'];
     K.brick(S, [0, 0, WIN, 352], [
-      { x: 218, y: 32, r: 90, k: .55, warm: 1 }, { x: 510, y: 172, r: 80, k: .5, warm: 1 },
-      { x: 150, y: 170, r: 190, k: .14 }, { x: 358, y: 104, r: 60, k: .28 }, { x: 400, y: 200, r: 120, k: .1 }, { x: 594, y: 215, r: 100, k: .12 },
+      { x: 218, y: 32, r: 110, k: .62, col: '#c0602a' }, { x: 510, y: 172, r: 96, k: .58, col: '#c0602a' },                 // теплі ліхтарі
+      { box: [64, 44, 236, 288], r: 48, k: .34, col: '#c838a8' }, { box: [64, 44, 236, 288], r: 12, k: .12, col: '#3a70d0' },   // рожева рамка + синє скло великого екрана
+      { band: 1, x0: 22, x1: 534, y: 291, r: 75, k: .34, col: '#b0348a' },                                                   // рожева плита стола світить на стіну
+      { box: [322, 128, 478, 278], r: 34, k: .24, col: '#1a7ab0' }, { box: [536, 166, 652, 266], r: 26, k: .2, col: '#c838a8' },   // канти будок
+      { x: 358, y: 104, r: 54, k: .22, col: '#1a8ab0' }, { box: [250, 26, 318, 288], r: 30, k: .3, col: '#9030c0' },         // табличка, стелаж
+      { x: 244, y: 150, r: 44, k: .14, col: '#1a8ab0' }, { box: [60, 6, 196, 46], r: 18, k: .16, col: '#2a60c0' },           // трубка, верхні екрани
     ]);
     S.rect(0, 340, WIN, 352, (u, v, i, j, X, Y) => { const k = Y - 340; return k < 1 ? PINK[7] : k < 2 ? PINK[5] : k < 2.6 ? PINK[2] : ramp(['#07041a', '#0d0828', '#140c36'], .3 - k / 24, i, j); });   // плінтус з неоном
     return S;
@@ -64,15 +73,14 @@
       S.rect(L.x - 1, L.y + L.h, L.x + L.w + 1, L.y + L.h + 2.5, (u, v, i, j) => ramp(['#2a0a04', '#5c2410', '#823a18'], .7 - v * .6, i, j));
       S.rect(L.x + L.w / 2 - 1, L.y - 6, L.x + L.w / 2 + 1, L.y, CHROME[2]);                                    // підвіс
     }
-    // стелаж: стійки, планки з неоновою кромкою, задня панель
+    // стелаж (як на картинці: висока стійка з синіми екранами): задня панель з фіолетовим підсвічуванням,
+    // хромовані стійки з рожевими неоновими смугами, планки з неоновою кромкою, рамки дисплея й акваріумів
     const { l, r, planks } = SHELF;
-    S.rect(l + 4, planks[0], r - 4, planks[4] + 4, (u, v, i, j, X, Y) => ((X - l) % 10 < .7) ? BK[0] : ramp(BK, .45 - v * .25, i, j, .1));   // задня панель з рейками
+    S.rect(l + 4, planks[0], r - 4, planks[4] + 4, (u, v, i, j, X, Y) => { const e = Math.min(X - l - 4, r - 4 - X); return ((X - l) % 10 < .7) ? BK[0] : ramp(['#120a2e', '#1e1048', '#2e1868', '#44228a', '#5c2ea8'], .25 + Math.max(0, 1 - e / 14) * .6 - v * .15, i, j, .1); });
     for (const x of [l, r - 4]) S.rect(x, SHELF.top - 2, x + 4, planks[4] + 6, (u, v, i, j) => u < .2 || u > .8 ? OUT : ramp(CHROME, .55 - Math.abs(u - .4) * .8 - v * .2, i, j));
+    S.rect(l + 4.2, planks[0] + 4, l + 5.6, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8'); S.rect(r - 5.6, planks[0] + 4, r - 4.2, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8');   // рожеві неонові смуги
     planks.forEach((y, n) => S.rect(l, y, r, y + 4, (u, v, i, j) => v < .2 ? NAVY[7] : v > .78 ? (n % 2 ? '#3be8ff' : '#ff4fd8') : ramp(NAVY, .5 - v * .3, i, j)));
-    // ніша 4: книжки + нано-куб (скло кладеться живим)
-    const books = [['#3a6ad8', 6], ['#d84a9a', 4], ['#ffd27a', 5], ['#3bd8a8', 4], ['#9a7aff', 6], ['#ff7a4a', 3]]; let bx = l + 6;
-    books.forEach(([col, w], k) => { const h = 30 + 10 * hash(k, 2); S.rect(bx, planks[4] - h, bx + w, planks[4], (u, v, i, j) => u < .15 || u > .85 ? OUT : v < .06 ? '#ffffff' : (Math.abs(v - .5) < .04 ? '#ffffff' : K.mix(col, '#000000', .25 + u * .3))); bx += w + .8; });
-    TANKS.forEach(T => { const [a, b, c2, d] = T.box; S.rr(a - 2, b - 2, c2 + 2, d + 2, 1.5, (dd, u, v, i, j) => dd < .6 ? OUT : dd < 1.6 ? ramp(CHROME, .6 - v * .3, i, j) : '#061a3a'); });   // рамки акваріумів
+    [DISP, ...TANKS].forEach(T => { const [a, b, c2, d] = T.box; S.rr(a - 2.4, b - 2.4, c2 + 2.4, d + 2.4, 1.5, (dd, u, v, i, j) => dd < .6 ? OUT : dd < 1.5 ? ramp(CHROME, .6 - v * .3, i, j) : dd < 2.2 ? '#17709a' : '#061a3a'); });   // рамки
     // табличка "AI CHAT": темна пластина з блакитним кантом, іконка-бабл
     S.rr(SIGN.x, SIGN.y, SIGN.x + SIGN.w, SIGN.y + SIGN.h, 2.5, (d, u, v, i, j) => d < .6 ? CYAN[1] : d < 1.4 ? CYAN[4] : d < 2 ? '#06102e' : ramp(['#070b26', '#0a1236', '#0e1a48'], .8 - v * .5, i, j));
     S.rr(SIGN.x + 6, SIGN.y + 10, SIGN.x + 19, SIGN.y + 19, 2, CYAN[4]); S.poly([[SIGN.x + 9, SIGN.y + 19], [SIGN.x + 12, SIGN.y + 19], [SIGN.x + 9, SIGN.y + 22]], CYAN[4]);
@@ -99,8 +107,18 @@
     c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(4, 4, W - 8, 10);
   }
 
+  // ---------- синій дисплей на стелажі: стовпчики, що біжать, сітка, скан-лінія ----------
+  const [DCV, dcx] = F.canvas(224, 192);
+  function drawDisplay(t) {
+    const c = dcx, W = 224, H = 192; c.clearRect(0, 0, W, H); const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a4ab8'); g.addColorStop(1, '#0a2270'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(120,190,255,.18)'; for (let x = 16; x < W; x += 32) c.fillRect(x, 10, 1, H - 20); for (let y = 30; y < H; y += 32) c.fillRect(8, y, W - 16, 1);
+    for (let i = 0; i < 12; i++) { const h = 14 + 120 * (.5 + .4 * Math.sin(t * 1.4 + i * 1.3) * Math.sin(t * .7 + i)); c.fillStyle = i % 3 ? 'rgba(122,240,255,.85)' : 'rgba(255,255,255,.9)'; c.fillRect(10 + i * 18, H - 14 - h, 11, h); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(10 + i * 18, H - 14 - h, 11, 3); }
+    c.fillStyle = '#9af6ff'; c.fillRect(8, 8, 60, 4); c.fillRect(W - 30, 8, 22, 4); c.fillStyle = Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(W - 40, 7, 6, 6);
+    c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(0, (t * 40) % H, W, 2); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(4, 4, W - 8, 8);
+  }
+
   let WALL = null, FLOOR = null, FURN = null;
-  NX.wing = { WIN, SHELF, LANT, SIGN, TANKS, floorTop,
+  NX.wing = { WIN, SHELF, LANT, SIGN, TANKS, DISP, floorTop, bloom: null,
     /** Нерухома копія крила (стіна, столи, будки, крісла, рослини): з неї кімната будує передню підлогу й віддзеркалення. */
     patch() {
       this.patched = true; const img = NX.room.img, RS = NX.room.RS, cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d'), t = NX.time;
@@ -110,6 +128,16 @@
       Object.values(NX.objects).forEach(o => { if (o.id.startsWith('wp_') && o.layers) L.push(...o.layers(t)); });
       L.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(x, t));
       x.restore(); NX.room.patchFront(cv, 0, 664);
+      // СЯЙВО: яскраві пікселі копії (неон, екрани, ліхтарі) -> 3 масштаби розмиття (1/8, 1/16, 1/32 картинки)
+      try {
+        const bw = Math.round(cv.width / 8), bh = Math.round(cv.height / 8), b1 = document.createElement('canvas'); b1.width = bw; b1.height = bh;
+        const bx = b1.getContext('2d', { willReadFrequently: true }); bx.imageSmoothingEnabled = true; bx.drawImage(cv, 0, 0, bw, bh);
+        const im = bx.getImageData(0, 0, bw, bh), d = im.data;
+        for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }
+        bx.putImageData(im, 0, 0); const lim = Math.round(664 * RS / 8); bx.clearRect(lim, 0, bw - lim, bh);
+        const down = (src, f) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / f)); o.height = Math.max(1, Math.round(src.height / f)); const ox = o.getContext('2d'); ox.imageSmoothingEnabled = true; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
+        const b2 = down(b1, 2), b3 = down(b2, 2); this.bloom = [b1, b2, b3];
+      } catch (e) { this.bloom = null; }
     },
   };
   NX.addObject({
@@ -119,14 +147,16 @@
       const R = F.res();
       c.save();
       K.draw(c, WALL, Math.min(2, R)); K.draw(c, FLOOR, Math.min(2, R)); K.draw(c, FURN, R);
-      // акваріуми (кожен оновлюється раз на 3 кадри)
+      // акваріуми й дисплей (кожен оновлюється раз на 3 кадри)
       this.fr++; TANKS.forEach((T, n) => { if (this.fr % 3 === n || !T.cv) drawTank(T, t); const [a, b, c2, d] = T.box; c.imageSmoothingEnabled = true; c.globalAlpha = .95; c.drawImage(T.cv, a, b, c2 - a, d - b); c.globalAlpha = 1; });
+      if (this.fr % 3 === 1 || this.fr < 3) drawDisplay(t); { const [a, b, c2, d] = DISP.box; c.imageSmoothingEnabled = true; c.drawImage(DCV, a, b, c2 - a, d - b); }
       // живе: ліхтарі мерехтять, табличка "AI CHAT", неонові трубки дихають, екрани на полицях відсвічують
       c.globalCompositeOperation = 'lighter';
       LANT.forEach((L, n) => P.glow(c, L.x + L.w / 2, L.y + L.h / 2 + 2, n ? 34 : 30, 'rgba(255,180,80,.9)', .3 + .08 * Math.sin(t * 6.3 + n * 2) + .05 * Math.sin(t * 13.7 + n)));
       P.glow(c, 244.7, 150, 10, 'rgba(59,232,255,.8)', .25 + .1 * Math.sin(t * 1.5)); c.fillStyle = rgba('59,232,255', .25 + .15 * Math.sin(t * 1.5)); c.fillRect(242, 10, 5.4, 280);
       c.fillStyle = rgba('255,79,216', .22 + .12 * Math.sin(t * 1.3 + 1)); c.fillRect(WIN - 6, 0, 6, 278);
-      TANKS.forEach(T => { const [a, b, c2, d] = T.box; P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .8, 'rgba(60,160,255,.6)', .12 + .04 * Math.sin(t + a)); });
+      [DISP, ...TANKS].forEach(T => { const [a, b, c2, d] = T.box; P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .8, 'rgba(60,160,255,.6)', .12 + .04 * Math.sin(t + a)); });
+      c.fillStyle = rgba('255,79,216', .2 + .1 * Math.sin(t * 1.7)); c.fillRect(SHELF.l + 3.6, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4); c.fillRect(SHELF.r - 6.2, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4);   // рожеві смуги стелажа дихають
       c.globalCompositeOperation = 'source-over';
       P.text(c, 'AI', SIGN.x + 24, SIGN.y + 14, '#ff7af0', 5); P.text(c, 'CHAT', SIGN.x + 24, SIGN.y + 23, '#3be8ff', 5);
       if (Math.sin(t * 3) > 0) lit(c, SIGN.x + SIGN.w - 8, SIGN.y + 4, 3, 3, '#3bff8a');

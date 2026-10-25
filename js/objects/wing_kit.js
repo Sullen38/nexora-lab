@@ -18,8 +18,8 @@ NX.kit = (() => {
   const P = NX.px, F = NX.furn, { NAVY, PINK, CYAN, HOLO, DESK, LIL, CHROME, OUT } = F.PAL, ramp = F.ramp, hash = NX.art.hash;
   const BRK = ['#0c0719', '#150b28', '#1e1138', '#28174a', '#341d5c', '#42256e', '#542f86', '#6a3c9a'];
   const SLAB = ['#3a0e5b', '#4d0d6e', '#5b0775', '#6d058a', '#850498', '#ac14b9', '#b317bd', '#cb53cb', '#e07ae0'];
-  const GREEN = ['#07201a', '#0b3026', '#124634', '#1a6044', '#237c54', '#2f9a64', '#45bc7a', '#7fe09a'];
-  const GREEN2 = ['#0a2a1e', '#12402c', '#1c5a3a', '#2a7a4a', '#3c9c5a', '#5cc070', '#9ae08a'];
+  const GREEN = ['#04140f', '#07241a', '#0c3626', '#124a34', '#1a6244', '#237e56', '#2f9c66', '#48bc7a'];
+  const GREEN2 = ['#06201a', '#0c3224', '#164a34', '#1f6644', '#2c8656', '#3fa868', '#66c884'];
   const SAGE = ['#13332c', '#1e4a3e', '#2b6652', '#3d8a66', '#58ac7e', '#86cc9a'];
   const POT = ['#0d0828', '#1a1046', '#2a1860', '#3b2480', '#4f31a0', '#6a48c0'];
   const TERRA = ['#2a1208', '#4a2010', '#6e3418', '#8e4a22', '#b06430', '#d08a4a'];
@@ -27,15 +27,23 @@ NX.kit = (() => {
   const noise = (t, i) => .5 + .26 * Math.sin(t * 1.3 + i * 1.7) + .16 * Math.sin(t * 2.9 + i * 3.1) + .08 * Math.sin(t * 5.3 + i * .7);
   const mix = (a, b, k) => { if (k <= 0) return a; if (k >= 1) return b; const A = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), B = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16)); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
 
-  /** Цегла: box = [x0,y0,x1,y1]; lights = [{x,y,r,k,warm}] — відсвіти (теплі — помаранчеві, холодні — сині). */
+  /** Цегла (темна, залита неоном — як на картинці): box = [x0,y0,x1,y1]; lights — відсвіти:
+   *    {x,y,r,k,col}            — точкове джерело (ліхтар — теплий col, екран — синій)
+   *    {band:1,x0,x1,y,r,k,col} — смуга (рожева плита стола світить на стіну над собою)
+   *    {box:[x0,y0,x1,y1],r,k,col} — сяйво навколо прямокутника (великий екран, будка) */
   function brick(S, [x0, y0, x1, y1], lights = []) {
     S.rect(x0, y0, x1, y1, (u, v, i, j, X, Y) => {
       const row = Math.floor(Y / 7), bx = (((X + (row & 1) * 7) % 14) + 14) % 14, by = ((Y % 7) + 7) % 7;
-      if (bx < .8 || by < .6) return '#08041a';
-      const id = Math.floor((X + (row & 1) * 7) / 14) * 31 + row;
-      let q = .24 + hash(id, 7) * .22 + (by < 1.4 ? .12 : by > 6.2 ? -.08 : 0) + (bx < 1.6 ? .05 : 0), warm = 0;
-      for (const L of lights) { const d = Math.max(0, 1 - Math.hypot(X - L.x, Y - L.y) / L.r); q += d * d * L.k; if (L.warm) warm += d * d * L.k; }
-      const col = ramp(BRK, q, i, j, .25); return warm > .08 ? mix(col, '#8a4a2a', Math.min(.55, warm)) : col;
+      const id = Math.floor((X + (row & 1) * 7) / 14) * 31 + row, mortar = bx < .8 || by < .6;
+      let q = (mortar ? .02 : .11 + hash(id, 7) * .13 + (by < 1.4 ? .07 : by > 6.2 ? -.05 : 0) + (bx < 1.6 ? .03 : 0)), col = null, ck = 0;
+      for (const L of lights) {
+        let d;
+        if (L.band) d = (X >= L.x0 && X <= L.x1) ? Math.max(0, 1 - Math.abs(Y - L.y) / L.r) : 0;
+        else if (L.box) { const [a, b, c2, e] = L.box; d = Math.max(0, 1 - Math.hypot(Math.max(a - X, 0, X - c2), Math.max(b - Y, 0, Y - e)) / L.r); }
+        else d = Math.max(0, 1 - Math.hypot(X - L.x, Y - L.y) / L.r);
+        d = d * d * L.k; q += d * (mortar ? .4 : 1); if (L.col && d > ck) { ck = d; col = L.col; }
+      }
+      const base = ramp(BRK, q, i, j, mortar ? 0 : .22); return col ? mix(base, col, Math.min(.6, ck * 1.1)) : base;
     });
   }
 
@@ -57,7 +65,7 @@ NX.kit = (() => {
     else { S.poly([[ix, iy - 4.4], [ix + 2.6, iy + .4], [ix - 2.6, iy + .4]], acc[3]); S.rr(ix - 2.8, iy - 1, ix + 2.8, iy + 4.2, 2.8, acc[3]); S.rr(ix - 1.2, iy + .4, ix + .4, iy + 2.2, .9, '#0a0520'); }   // крапля
     const scr = sp.screens, nx0 = Math.min(...scr.map(s => s[0])) - 4, ny0 = Math.min(...scr.map(s => s[1])) - 4, nx1 = Math.max(...scr.map(s => s[2])) + 4, ny1 = Math.max(...scr.map(s => s[3])) + 4;
     S.rr(nx0, ny0, nx1, ny1, 2, (d, u, v, i, j) => d < .7 ? NAVY[0] : ramp(NAVY, .14, i, j));                // ніша
-    for (const [a, b, c2, e] of scr) S.rr(a - 1.5, b - 1.5, c2 + 1.5, e + 1.5, 2, (d, u, v, i, j) => d < .7 ? acc[1] : d < 1.5 ? acc[3] : ramp(HOLO, .55 - v * .3, i, j));   // рамки екранів
+    for (const [a, b, c2, e] of scr) S.rr(a - 2.4, b - 2.4, c2 + 2.4, e + 2.4, 2.4, (d, u, v, i, j) => d < .6 ? '#06102e' : d < 1.4 ? acc[1] : d < 2.4 ? acc[3] : d < 3 ? acc[2] : ramp(HOLO, .6 - v * .3, i, j));   // рамки екранів (товсті, як на картинці)
     S.rect(nx0 + 3, ny1 + 2, nx1 - 3, ny1 + 4, (u, v) => v < .5 ? NAVY[0] : NAVY[3]);                         // планка під екранами
   }
 
@@ -82,6 +90,7 @@ NX.kit = (() => {
         if (Y < slab + 6) return NV[2]; if (k < 0 || k >= n || Y >= q) return NV[0];
         const dv = Y - p, cy = (p + q) / 2;
         if (dv < .5) return NV[7]; if (dw < 1.4) return NV[0]; if (du < 1.4) return NV[6];
+        if (dv > .9 && dv < 1.6 && du > 3 && dw > 3) return k % 2 ? '#ff4fd8' : '#3be8ff';                                          // LED-смужка шухляди (як на картинці)
         if (Math.abs(Y - cy) < 1 && Math.abs(X - (a + b) / 2) < (b - a) * .3) return Math.abs(Y - cy) < .4 ? '#000006' : NV[1];     // ручка-паз
         if (Math.abs(Y - cy + 1.5) < .4 && Math.abs(X - (a + b) / 2) < (b - a) * .3) return NV[6];
         return ramp(NV, .78 - dv / (q - p) * .35 + (1 - du / (b - a)) * .1, i, j, .12);
@@ -163,7 +172,9 @@ NX.kit = (() => {
         if (lf.kind === 'blade' && sp.kind === 'palm' && Math.abs(side) < .06) q += .25;                                                   // жилка
         if (lf.kind === 'broad' && Math.abs(side) < .05) q += .2;
         const col = ramp(pal, q, i, j, .14);
-        return (lf.hi && t < .3 && side < -.2 && hash(i, j) > .6) ? '#6ad0ff' : col;                                                       // холодний блік зверху
+        if (lf.hi && t < .35 && side < -.15 && hash(i, j) > .55) return hash(j, i) > .5 ? '#5ac8ff' : '#8ae0ff';                              // холодні блакитні бліки зверху (як на картинці)
+        if (!lf.hi && t < .2 && hash(i, j) > .85) return '#3a9ad8';
+        return col;
       });
     });
     if (pot !== 'none') {                                                                                      // горщик кімнати: тьмяний корпус, неоновий обідок, ґрунт
@@ -190,7 +201,7 @@ NX.kit = (() => {
     c.restore();
   }
   /** Тло голо-екрана (скло, скан-лінії). */
-  function screenBg(c, w, h, t, a = .18) { c.clearRect(0, 0, w, h); c.fillStyle = rgba('40,110,255', a); c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(160,220,255,.07)'; for (let y = (t * 12 | 0) % 4; y < h; y += 4) c.fillRect(0, y, w, 1); }
+  function screenBg(c, w, h, t, a = .42) { c.clearRect(0, 0, w, h); const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, rgba('70,150,255', a)); g.addColorStop(1, rgba('30,90,230', a)); c.fillStyle = g; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(180,230,255,.08)'; for (let y = (t * 12 | 0) % 4; y < h; y += 4) c.fillRect(0, y, w, 1); c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(0, 0, w, Math.round(h * .08)); }
   /** Напис вивіски: світиться, "дихає", вміщається в ширину. */
   function signText(c, key, cx, cy, maxW, t, col = '154,246,255') { const s = NX.t(key), sz = Math.min(8.2, maxW / s.length * 1.05), tc = rgba(col, .88 + .12 * Math.sin(t * 2.2)); P.text(c, s, cx + .4, cy + sz / 2 - .5, tc, sz, 'center'); P.text(c, s, cx, cy + sz / 2 - .5, tc, sz, 'center'); }
   const draw = (c, S, R) => { const w = S.x1 - S.x0, h = S.y1 - S.y0; c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
