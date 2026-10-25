@@ -21,20 +21,20 @@
   const noise = (t, i) => .5 + .26 * Math.sin(t * 1.3 + i * 1.7) + .16 * Math.sin(t * 2.9 + i * 3.1) + .08 * Math.sin(t * 5.3 + i * .7);
 
   // ---------- розкладка (одиниці кімнати, як на картинці) ----------
-  const BOOTH = { l: 328, r: 471, tl: 147, tr: 158, b: 276, bl: 275.5, br: 278 };   // за жовтою лінією власника: верх 147→158, низ 275.5→278 (будка в перспективі, тікає до вікна)
+  const BOOTH = { l: 318, r: 476, tl: 132, tr: 146, b: 276, bl: 275.5, br: 278 };   // жовта рамка власника: більша, верх 132→146 (сходиться до вікна)   // за жовтою лінією власника: верх 147→158, низ 275.5→278 (будка в перспективі, тікає до вікна)
   const topAt = X => BOOTH.tl + (X - BOOTH.l) * (BOOTH.tr - BOOTH.tl) / (BOOTH.r - BOOTH.l), botAt = X => BOOTH.bl + (X - BOOTH.l) * (BOOTH.br - BOOTH.bl) / (BOOTH.r - BOOTH.l);
   /** Точка на будці за частками (u — уздовж, v — згори вниз): усе на будці лягає в її перспективу. */
   const bp = (u, v) => { const X = BOOTH.l + u * (BOOTH.r - BOOTH.l); return [X, topAt(X) + v * (botAt(X) - topAt(X))]; };
   const Q = (u0, v0, u1, v1) => [bp(u0, v0), bp(u1, v0), bp(u1, v1), bp(u0, v1)];
   const SIGNQ = Q(.17, .12, .91, .35), ICON = bp(.27, .235);
   const SCRQ = { L: Q(.155, .4, .455, .86), R: Q(.49, .4, .885, .86) };     // екрани — чотирикутники в перспективі будки
-  const DSK = { l: 317, r: 486, top: 280, bot: 346, back: 275.5 };
+  const DSK = { l: 326, r: 486, top: 280, bot: 346, back: 275.5 };
   const DRW = [[318, 350], [454, 484]];
   const LAP = [331, 259, 355, 272], TAB = [363, 255, 380, 269];
 
   // ---------- будка ----------
   function buildBooth() {
-    const S = F.Sheet(322, 140, 482, 282), sideTop = F.toVP(BOOTH.r, BOOTH.tr, .03), sideBot = F.toVP(BOOTH.r, BOOTH.br, .03);
+    const S = F.Sheet(312, 126, 488, 282), sideTop = F.toVP(BOOTH.r, BOOTH.tr, .03), sideBot = F.toVP(BOOTH.r, BOOTH.br, .03);
     // бічна грань (товща будки) — тікає до вікна
     S.poly([[BOOTH.r - .5, BOOTH.tr + .5], sideTop, sideBot, [BOOTH.r - .5, BOOTH.br]], (u, v, i, j) => u > .85 ? CYAN[2] : ramp(NAVY, .3 - v * .2, i, j));
     // тіло будки: чотирикутник за лініями власника
@@ -67,7 +67,7 @@
   }
   // ---------- стіл ----------
   function buildDesk() {
-    const S = F.Sheet(312, 250, 500, 350), st = F.toVP(DSK.r, DSK.top, .033), sb = F.toVP(DSK.r, DSK.bot, .033);
+    const S = F.Sheet(322, 250, 500, 350), st = F.toVP(DSK.r, DSK.top, .033), sb = F.toVP(DSK.r, DSK.bot, .033);
     // бічна грань стільниці й корпусу (до вікна)
     S.poly([[DSK.r - .4, DSK.top], st, sb, [DSK.r - .4, DSK.bot]], (u, v, i, j, X, Y) => Y < DSK.top + 5 ? (Y < DSK.top + 1.2 ? PINK[6] : PINK[3]) : ramp(DESK, .3 - v * .2, i, j));
     // фасад
@@ -162,7 +162,7 @@
   let BOOTHS = null, DESKS = null;
   const an = NX.addObject({
     id: 'analytics', name: 'obj.analytics', act: 'analytics', active: false, prog: 0, fr: 0,
-    hit: { x: 328, y: 147, w: 158, h: 200 },
+    hit: { x: 318, y: 132, w: 168, h: 214 },
     drawBack(c, t) {
       if (!BOOTHS) { BOOTHS = buildBooth(); BOOTHS.cv = BOOTHS.canvas(); DESKS = buildDesk(); DESKS.cv = DESKS.canvas(); }
       const act = this.active ? 1 : 0, R = F.res(), sm = R < 3.8;

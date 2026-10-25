@@ -13,10 +13,10 @@
 (() => {
   const P = NX.px, F = NX.furn, { CHROME } = F.PAL, ramp = F.ramp, hash = NX.art.hash;
   const rgba = (rgb, a) => `rgba(${rgb},${P.clamp(a, 0, 1)})`, lit = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
-  const L = 68, R = 340, TOP = 294, SLAB = 308, FLOOR = 362;
-  const SEC = { legL: [L, 100], cab: [152, 202], core: [256, 292], legR: [314, R] };
+  const L = 30, R = 326, TOP = 294, SLAB = 308, FLOOR = 362;        // жовта рамка власника: від лівого краю до стика з аналітикою
+  const SEC = { legL: [38, 66], cab: [140, 192], core: [246, 282], legR: [300, 322] };
   const ROWS = [[314, 329], [331, 346], [348, 360]];
-  const FANC = [274, 330, 7];
+  const FANC = [264, 330, 7];
   const SL = ['#3a0e5b', '#4d0d6e', '#5b0775', '#6d058a', '#850498', '#ac14b9', '#b317bd', '#cb53cb', '#e07ae0'];
   const SW = ['#5a1440', '#8e286a', '#a52174', '#c32988', '#d73f90', '#e45f8c', '#ee7aa4', '#f6a0c0', '#ffc8dc'];
   const NV = ['#02010a', '#05041a', '#080a2a', '#0d143c', '#121d50', '#182866', '#20357c', '#2a4494'];
@@ -36,7 +36,7 @@
       }
       const [a, b] = sec, du = X - a, dw = b - X;
       if (du < .5 || dw < .5) return o;
-      if (Y > FLOOR - 4) return Y > FLOOR - .6 ? o : Y < FLOOR - 3.2 ? CHROME[2] : NV[1];                            // цоколь
+      if (Y > FLOOR - 4) return (a === SEC.cab[0] || a === SEC.core[0]) ? (Y > FLOOR - .6 ? o : Y < FLOOR - 3.2 ? CHROME[2] : NV[1]) : (Y > FLOOR - .8 ? o : ramp(CHROME, .75 - (Y - FLOOR + 4) * .15, i, j));   // цоколь / п'ята опори
       if (a === SEC.cab[0]) {                                                   // тумба з трьома шухлядами (як на картинці)
         const row = ROWS.find(([p, q]) => Y >= p && Y < q); if (!row) return Y < ROWS[0][0] ? NV[2] : NV[0];
         const [p, q] = row, dv = Y - p, dh = q - Y, cy = (p + q) / 2;
@@ -52,8 +52,12 @@
         if (X > b - 6 && X < b - 3 && Y > 312 && Y < 326) return '#020210';
         return ramp(NV, .6 - d * .3 + (du < 1.5 ? .2 : 0), i, j, .12);
       }
-      if (Math.abs(X - (a + (b - a) * .45)) < .7) return NV[6];                 // опори зі світлою смужкою
-      return ramp(NV, .45 - d * .25 + (du < 1.2 ? .15 : 0), i, j, .12);
+      // опори: хромована рама (дві стійки + перекладина), всередині неонова трубка, знизу широка п'ята
+      const cx = (a + b) / 2, hw = (b - a) / 2, st = Math.abs(X - cx) > hw - 4.5, tube = Math.abs(X - cx) < 1.6, bar = (Y > 330 && Y < 333.5) || (Y > 346 && Y < 349.5);
+      if (st) return ramp(CHROME, .8 - Math.abs(Math.abs(X - cx) - (hw - 2.2)) * .35 - d * .3, i, j);
+      if (bar) return ramp(CHROME, .7 - d * .2, i, j);
+      if (tube) return Math.abs(X - cx) < .7 ? '#dff8ff' : '#3be8ff';
+      return null;                                                              // між стійками видно ніша/стіна
     });
     // --- плита: світла кромка, рожевий перелив, праворуч тепліша (ліхтарик)
     S.rr(L, TOP, R, SLAB, [2, 2, 2, 2], (d, u, v, i, j, X, Y) => {
@@ -61,7 +65,7 @@
       if (d < .5) return o;
       if (dy < 1.3) return k > .5 ? '#ffe2ee' : '#ffd4ff';
       if (dy < 2.2) return k > .5 ? SW[7] : SL[8];
-      if ([152, 202, 256].some(sx => Math.abs(X - sx) < .45)) return SL[2];
+      if ([140, 192, 246].some(sx => Math.abs(X - sx) < .45)) return SL[2];
       const q = 1 - (dy - 2.2) / (SLAB - TOP - 2.2), n = SL.length - 1, idx = P.clamp(Math.round(q * .95 * n + NX.art.BAYER[(j & 3) * 4 + (i & 3)] * .9), 0, n);
       return mix(SL[idx], SW[idx], k);
     });
@@ -81,13 +85,14 @@
       c.fillStyle = rgba('255,79,216', .28 + .16 * Math.sin(t * 2.2) + act * .18); c.fillRect(L + 1, TOP + .6, R - L - 2, 1.4);           // неон кромки
       const sx = L + ((t * .22) % 1) * (R - L); lit(c, sx - 7, TOP + .7, 14, 1, 'rgba(255,255,255,.85)');                                   // бігуча іскра
       for (const [a, b] of Object.values(SEC)) for (let x = a + 1.5; x < b - 1.5; x += 2) { const hue = (t * 120 + x * 4) % 360; c.fillStyle = act ? `hsla(${hue},95%,62%,.85)` : rgba('59,232,255', .4 + .3 * Math.sin(t * 2 + x * .12)); c.fillRect(x, FLOOR - 2.2, 1.3, 1.2); }
-      for (let x = 102; x < 150; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('59,232,255', .18 + .14 * Math.sin(t * 1.6 + x * .08)));
-      for (let x = 204; x < 254; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
+      for (let x = 68; x < 138; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('59,232,255', .18 + .14 * Math.sin(t * 1.6 + x * .08)));
+      for (let x = 194; x < 244; x += 2) lit(c, x, 352.2, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
       ROWS.forEach(([p, q], k) => lit(c, SEC.cab[1] - 6, (p + q) / 2 - 3, 2.4, 1, rgba('59,232,255', .45 + .5 * Math.sin(t * 2 + k * 1.7))));
       for (let k = 0; k < 6; k++) lit(c, SEC.core[1] - 5.4, 313.5 + k * 2.4, 1.8, 1.4, hash(k, Math.floor(t * (4 + act * 8))) > .4 ? ['#3bff8a', '#3be8ff', '#ff7af0'][k % 3] : '#0a1a20');
       P.glow(c, FANC[0], FANC[1], 12, 'rgba(59,232,255,.7)', .22 + act * .3);
       const fa = t * (4 + act * 14); for (let bl = 0; bl < 5; bl++) { const a = fa + bl * Math.PI * .4; for (let r2 = 1.4; r2 < FANC[2] - 1; r2 += .5) lit(c, FANC[0] + Math.cos(a + r2 * .12) * r2 - .35, FANC[1] + Math.sin(a + r2 * .12) * r2 - .35, .7, .7, '#5ad8ff'); }
       lit(c, FANC[0] - 1, FANC[1] - 1, 2, 2, '#c3cbea');
+      [SEC.legL, SEC.legR].forEach(([a, b], n) => { const cx = (a + b) / 2; P.glow(c, cx, 335, 14, 'rgba(59,232,255,.8)', .18 + .08 * Math.sin(t * 3 + n)); const q = (t * .7 + n * .5) % 1; lit(c, cx - 1, SLAB + 3 + q * (FLOOR - SLAB - 8), 2, 3, 'rgba(255,255,255,.8)'); });
       c.restore();
     },
   });

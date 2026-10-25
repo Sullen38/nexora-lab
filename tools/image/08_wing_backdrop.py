@@ -66,11 +66,11 @@ SPRITES = [
     dict(id='aiCorner', kind='leaf', box=(0, 134, 84, 364), sway='stand', stage='behindDesk', potTop=320, floor=362,
          keep=[[(0, 134), (30, 134), (60, 150), (84, 176), (84, 206), (52, 206), (30, 212), (30, 264), (52, 278), (52, 322), (46, 326), (46, 364), (0, 364)]],
          pot=[[(0, 319), (43, 319), (44, 326), (42, 362), (0, 362)]], drop=[[(0, 132), (16, 132), (16, 153), (0, 153)]]),
-    dict(id='aiUnderA', kind='leaf', box=(196, 304, 252, 364), sway='stand', stage='layer', potTop=343, floor=362, standOn=361.5,
+    dict(id='aiUnderA', kind='leaf', box=(196, 304, 252, 364), sway='stand', stage='layer', potTop=343, floor=362, standOn=361.5, placeX=80,
          keep=[[(198, 306), (250, 306), (250, 364), (198, 364)]], pot=[[(211, 342), (242, 342), (241, 362), (212, 362)]]),
-    dict(id='aiLantern', kind='poly', box=(244, 324, 268, 364), sway='none', stage='layer', floor=362, lamp=True, standOn=361.5,
+    dict(id='aiLantern', kind='poly', box=(244, 324, 268, 364), sway='none', stage='layer', floor=362, lamp=True, standOn=361.5, placeX=118,
          keep=[[(249, 328), (263, 328), (264, 362), (248, 362)]]),
-    dict(id='aiUnderB', kind='leaf', box=(284, 302, 350, 364), sway='stand', stage='layer', potTop=343, floor=362, standOn=361.5,
+    dict(id='aiUnderB', kind='leaf', box=(284, 302, 350, 364), sway='stand', stage='layer', potTop=343, floor=362, standOn=361.5, placeX=196,
          keep=[[(286, 304), (350, 304), (350, 346), (334, 346), (334, 364), (296, 364), (296, 340), (286, 340)]],
          pot=[[(299, 342), (331, 342), (330, 362), (300, 362)], [(304, 330), (326, 330), (330, 343), (300, 343)]]),
     dict(id='mkDeskA', kind='leaf', box=(460, 234, 512, 290), sway='stand', stage='layer', potTop=270, floor=286, standOn=283.6,
@@ -93,10 +93,8 @@ LIGHTS = [
     dict(x=517, y=150, r=24, c='255,200,90'),    # золота лампа-лампочка між кабінками
     dict(x=497, y=240, r=13, c='255,90,230'),    # рожевий ліхтарик між кабінками
 ]
-SCREENS = [                                       # сині екрани на полицях (кути: лв, пв, пн, лн)
-    [[266, 87], [321, 92], [320, 121], [266, 117]],
-    [[266, 189], [321, 196], [320, 224], [266, 219]],
-]
+SCREENS = []                                     # (колишні сині екрани на полицях — тепер акваріуми, TANKS)
+TANKS = [dict(q=[[266, 87], [321, 92], [320, 121], [266, 117]], kind='reef'), dict(q=[[266, 189], [321, 196], [320, 224], [266, 219]], kind='deep'), dict(q=[[240, 150], [266, 152], [266, 182], [240, 181]], kind='nano')]
 
 # ------------------------------------------------------------------ піксель-арт фільтр
 def up2(img):
@@ -251,7 +249,7 @@ def main():
           ' * Ліве крило: перемальований фон (assets/wing_back.png, 4 px/од., ділянка BACK_BOX),\n'
           ' * спрайти (assets/wing_sprites.png): x, y — лівий верх у кімнаті, w, h — пікселі атласу (4 px = 1 од.),\n'
           ' * вогні (мерехтять) і живі екрани на полицях. */\n'
-          'NX.WING = ' + json.dumps(dict(back=dict(box=BACK_BOX, parts=BACK), sprites=meta, lights=LIGHTS, screens=SCREENS), ensure_ascii=False) + ';\n')
+          'NX.WING = ' + json.dumps(dict(back=dict(box=BACK_BOX, parts=BACK), sprites=meta, lights=LIGHTS, screens=SCREENS, tanks=TANKS), ensure_ascii=False) + ';\n')
     (ROOT / 'js/objects/wing_data.js').write_text(js, encoding='utf-8')
     print('back', bq.shape, 'atlas', atlas.shape, [m['id'] for m in meta])
 

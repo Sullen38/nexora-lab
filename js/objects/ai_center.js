@@ -68,11 +68,13 @@
   // =====================================================================
   // ГЕОМЕТРІЯ СВІТУ (x, y, z) — див. core/persp.js
   // =====================================================================
-  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 296 };   // екран СТОЇТЬ на столі: низ рамки заходить за задній край стільниці   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
+  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 296 };
+  const BIGQ = [[20, 38], [232, 62], [232, 283], [20, 290]];   // екран як панель у кімнаті (червона рамка власника): лівий край вищий, правий сходиться до аналітики; низ стоїть на столі   // екран СТОЇТЬ на столі: низ рамки заходить за задній край стільниці   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
   const UPA = { xw: 3, z0: 40, z1: 108, y0: -30, y1: 12 };       // верхній екран 1 (мережа) — на місці двох маленьких екранів картинки
   const UPB = { xw: 3, z0: 116, z1: 166, y0: -26, y1: 12 };      // верхній екран 2 (журнал)
   const LANT = [{ z0: 174, z1: 195, y0: -36, y1: 22, w: 4 }, { z0: 207, z1: 214, y0: -33, y1: 19, w: 2.5 }];   // теплі ліхтарі на стіні (як на картинці)
-  const MON = { x0: 40, x1: 62, y0: 206, y1: 282, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
+  const MON = { x0: 40, x1: 62, y0: 206, y1: 282, z0: -8, z1: 44 };
+  const HOLOQ = [[22, 232], [62, 236], [62, 290], [22, 292]];   // плоский голо-монітор на столі зліва (червона рамка власника)   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
   const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 262, y1: 291 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
   const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 266, y1: 291 }, neon: ['#ff4fd8', '#c63aa8'] };
   const MUG = { x0: 44, x1: 50, y0: 286.5, y1: 294, z0: 117, z1: 123 };
@@ -98,10 +100,12 @@
       return ramp(BRK, q, i, j, .25);
     } });
     // торці екранів (товщина корпусу, видно з боку глядача) + тінь під ними
-    for (const S of [BIG, UPA, UPB]) {
+    for (const S of [UPA, UPB]) {
       V.box(r, 0, 0, U, { x0: 0, x1: S.xw, y0: S.y0, y1: S.y1, z0: S.z0 - .01, z1: S.z1 }, { front: (u, v, i, j) => u < .2 ? C.out : ramp(S === BIG ? K : MB, (S === BIG ? .55 : .5) - v * .3 + (u > .6 ? .1 : 0), i, j) });
       V.box(r, 0, 0, U, { x0: -1, x1: 0, y0: S.y1, y1: S.y1 + 5, z0: S.z0 + 2, z1: S.z1 }, { right: (u, v) => v < .5 ? '#05020f' : null });
     }
+    // торець великого екрана (товща панелі зліва, як у картинки)
+    for (let j = 0; j < (290 - 38) / U; j++) { const Y = 38 + j * U, k = (Y - 38) / 252; for (let i = 0; i < 14; i++) { const X = 20 - 3.5 + i * U; r.set(Math.round(X / U), Math.round(Y / U), i < 2 ? C.out : ramp(K, .6 - k * .3 + (i > 10 ? .15 : 0), i, j)); } }
     // теплі ліхтарі на стіні над екраном (як на картинці): дах-козирок, золоте скло з рамкою, слім-лампа
     LANT.forEach((L, n) => {
       V.box(r, 0, 0, U, { x0: 0, x1: L.w, y0: L.y0, y1: L.y1, z0: L.z0, z1: L.z1 }, {
@@ -227,15 +231,9 @@
     const r = Raster(FRONTR.w / U, FRONTR.h / U), oy = FRONTR.oy, B = (b, F) => VD.box(r, 0, oy, U, b, F);
     const y0 = TOPY;
     // --- монітор (як на картинці): товстий корпус дивиться на глядача, екран — у кімнату (екран кладеться щокадру)
-    B({ x0: 44, x1: 52, y0: MON.y1 - 2, y1: y0, z0: 12, z1: 22 }, { right: (u, v, i, j) => ramp(CH, .8 - Math.abs(u - .4) - v * .25, i, j), front: (u, v, i, j) => ramp(CH, .5 - v * .3, i, j) });
-    B({ x0: 36, x1: 58, y0: y0 - 1.2, y1: y0, z0: 4, z1: 30 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[2] });
-    B(MON, {
-      front: (u, v, i, j) => { const w = (MON.x1 - MON.x0) * u, h = (MON.y1 - MON.y0) * v, e = Math.min(w, h, MON.x1 - MON.x0 - w, MON.y1 - MON.y0 - h);
-        if (e < .5) return C.out; if (e < 1.4) return K[4];                                                  // рожевий кант корпусу (як на картинці)
-        if (e < 2.2) return MB[5]; return ramp(['#07041a', '#0d0828', '#160c38', '#201248'], .55 - v * .35 + u * .1, i, j, .15); },
-      right: (u, v, i, j) => { const w = (MON.z1 - MON.z0) * u, h = (MON.y1 - MON.y0) * v, e = Math.min(w, h, MON.z1 - MON.z0 - w, MON.y1 - MON.y0 - h);
-        if (e < .5) return C.out; if (e < 1.3) return MB[6]; if (e < 3.2) return ramp(MB, .6 - v * .35, i, j); if (e < 3.8) return C.out; return '#020510'; },
-    });
+    // --- плоский голо-монітор зліва: тонка хромова основа на столі + світний стовпчик-проектор; сам екран кладеться щокадру (HOLOQ)
+    B({ x0: 30, x1: 54, y0: y0 - 1.4, y1: y0, z0: 2, z1: 16 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[2] });
+    B({ x0: 40, x1: 44, y0: 292, y1: y0 - 1.4, z0: 8, z1: 10 }, { front: (u, v, i, j) => ramp(CH, .8 - Math.abs(u - .4), i, j), right: () => CH[1] });
     // --- голо-ноутбуки: тонка база з неоновим краєм і світною проекцією клавіатури
     for (const L of [LP2, LP1]) B({ x0: L.x0, x1: L.x1, y0: TOPY - 1.4, y1: TOPY, z0: L.z0, z1: L.z1 }, {
       top: (u, v, i, j) => { if (u > .96 || v < .02 || v > .98) return C.out; const kx = (v * 12) % 1, ky = (u * 6) % 1;
@@ -277,7 +275,7 @@
     burst: 0, sweep: null, nextSweep: 4,
     /** Тап по мозку — спалах думки (меню задач однаково відкривається). */
     onTap(x, y) {
-      const z = V.zAtX(x, BIG.xw), u = (z - BIG.z0) / (BIG.z1 - BIG.z0), Yw = V.VP[1] + (y - V.VP[1]) / V.s(z), fx = u * BW, fy = (Yw - BIG.y0) / (BIG.y1 - BIG.y0) * BH;
+      const [u, v] = NX.furn.homo(BIGQ).inv(x, y), fx = u * BW, fy = v * BH;
       if (fx > BR.x && fx < BR.x + BR.w && fy > BR.y && fy < BR.y + BR.h) {
         this.burst = 1;
         for (let i = 0; i < 14; i++) NX.fx.emit('spark', x + (Math.random() - .5) * 40, y + (Math.random() - .5) * 30, { col: Math.random() < .5 ? '#7af0ff' : '#ff7af0', vy: -20 - Math.random() * 30, g: 20, ttl: 1, s: 1.2 });
@@ -435,20 +433,20 @@
       if ((this.fr = (this.fr || 0) + 1) % 3 === 0 || this.dirty !== Kk) {
         this.dirty = Kk; const w = this.wc; w.setTransform(1, 0, 0, 1, 0, 0); w.clearRect(0, 0, this.WARP.width, this.WARP.height); w.setTransform(R, 0, 0, R, 0, 12 * R); w.imageSmoothingEnabled = R * U < .95;
         w.globalCompositeOperation = 'lighter';                                                           // неоновий ореол екрана на стіні
-        for (const [e, a] of [[5, .07], [11, .035]]) { const q = V.wallQuad(1, BIG.z0 - e, BIG.z1 + e, BIG.y0 - e, BIG.y1 + e); w.fillStyle = rgba('255,79,216', a + .03 * Math.sin(t * 1.8) + act * .03 + this.burst * .05); w.beginPath(); q.forEach(([x, y], i) => i ? w.lineTo(x, y) : w.moveTo(x, y)); w.fill(); }
+        for (const [e, a] of [[5, .07], [11, .035]]) { const q = BIGQ.map(([x, y], i) => [x + (i === 0 || i === 3 ? -e : e), y + (i < 2 ? -e : e)]); w.fillStyle = rgba('255,79,216', a + .03 * Math.sin(t * 1.8) + act * .03 + this.burst * .05); w.beginPath(); q.forEach(([x, y], i) => i ? w.lineTo(x, y) : w.moveTo(x, y)); w.fill(); }
         w.globalCompositeOperation = 'source-over';
         this.big(bf, t, act); this.upper(uaf, t, 'net', act); this.upper(ubf, t, 'log', act);
         const ws = Math.max(1, 2.4 / R);                                                          // ширина смужки: на дрібних екранах — ширша (оку не видно)
         V.wall(w, UAF, UPA.xw, UPA.z0, UPA.z1, UPA.y0, UPA.y1, ws); V.wall(w, UBF, UPB.xw, UPB.z0, UPB.z1, UPB.y0, UPB.y1, ws);
-        V.wall(w, BIGF, BIG.xw, BIG.z0, BIG.z1, BIG.y0, BIG.y1, ws);
+        NX.furn.warp(w, BIGF, BIGQ, ws);
       }
       c.drawImage(this.WARP, 0, -12, WALLR.w, 312);
       if (!this.comp && this.fr > 4) this.patchRoom();                                   // після кількох кадрів: усі меблі крила вже готові
       // --- глянцева підлога під виступом стільниці й біля стіни (закриває залишки старого стола картинки);
       //     нижче лінії стола — уже передня підлога кімнати (без шва)
       // під столом: продовження цегляної стіни (до плінтуса на 345) і темна глянцева підлога до клину стола — старий стіл картинки повністю закритий
-      c.save(); c.beginPath(); c.rect(0, 290, 342, 73); c.clip();
-      c.fillStyle = '#0a0620'; c.fillRect(0, 290, 342, 73);
+      c.save(); c.beginPath(); c.rect(0, 290, 326, 73); c.clip();
+      c.fillStyle = '#0a0620'; c.fillRect(0, 290, 326, 73);
       c.drawImage(fit(WALL, WALLR.w, WALLR.h, R), 0, 0, WALLR.w, WALLR.h);
       const gf = c.createLinearGradient(0, 350, 0, 363); gf.addColorStop(0, '#0a0620'); gf.addColorStop(1, '#1a1046'); c.fillStyle = gf; c.fillRect(0, 350, 342, 13);
       for (let x = 0; x < 342; x += 3) { const h = hash(x, 5); if (h > .82) { c.fillStyle = (x / 3 | 0) % 2 ? 'rgba(58,30,110,.5)' : 'rgba(28,58,122,.5)'; c.fillRect(x, 350, 2, 13); } }   // смуги глянцю
@@ -471,13 +469,14 @@
       c.imageSmoothingEnabled = Kk * U < .95;
       c.drawImage(fit(FRONT, FRONTR.w, FRONTR.h, R), 0, FRONTR.oy, FRONTR.w, FRONTR.h);
       // --- екрани на столі (у перспективі): натягуються раз на 3 кадри у два кеші (монітор — звичайно, ноутбуки — світлом)
-      const DX = [40, 200, 212, 300];
+      const DX = [18, 200, 212, 300];
       if (!this.DM || this.DM.width !== Math.round((DX[2] - DX[0]) * R)) { [this.DM, this.dm] = canvas(Math.round((DX[2] - DX[0]) * R), Math.round((DX[3] - DX[1]) * R)); [this.DL, this.dl] = canvas(this.DM.width, this.DM.height); this.dfr = -1; }
       if (this.fr % 3 === 2 || this.dfr !== R) {
         this.dfr = R; this.monitor(mf, t); this.laptop1(l1, t); this.laptop2(l2, t);
         for (const [x, cv] of [[this.dm, this.DM], [this.dl, this.DL]]) { x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height); x.setTransform(R, 0, 0, R, -DX[0] * R, -DX[1] * R); x.imageSmoothingEnabled = R * U * 1.2 < .95; }
         const st = Math.max(1, 1.5 / R);
-        VD.wall(this.dm, MONF, MON.x1, MON.z0 + 4, MON.z1 - 4, MON.y0 + 4, MON.y1 - 4, st);
+        this.dm.globalAlpha = .88; NX.furn.warp(this.dm, MONF, HOLOQ, st); this.dm.globalAlpha = 1;
+        this.dm.strokeStyle = 'rgba(122,240,255,.9)'; this.dm.lineWidth = .8; this.dm.beginPath(); HOLOQ.forEach(([x, y], i) => i ? this.dm.lineTo(x, y) : this.dm.moveTo(x, y)); this.dm.closePath(); this.dm.stroke();
         const d = this.dl; d.globalCompositeOperation = 'lighter';
         for (const [L, F2] of [[LP2, L2F], [LP1, L1F]]) {
           const S = L.scr; d.globalAlpha = .9; VD.wall(d, F2, S.xw, S.z0, S.z1, S.y0, S.y1, Math.max(.75, st));
@@ -498,12 +497,12 @@
       const [mx, my] = VD.p((MUG.x0 + MUG.x1) / 2, MUG.y0, (MUG.z0 + MUG.z1) / 2);
       for (let i = 0; i < 5; i++) { const q = (t * .5 + i / 5) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(mx - .5 + Math.sin(q * 6 + i) * 1.5, my - 1 - q * 14, 1, 1); }
       // потік даних: ноутбук -> мозок, коли Nexi працює
-      if (act) { const S = LP1.scr, [ax, ay] = VD.p(S.xw, S.y0, (S.z0 + S.z1) / 2), zb = BIG.z0 + BC[0] / BW * (BIG.z1 - BIG.z0), [bx, by] = V.p(BIG.xw, BIG.y0 + BC[1] / BH * (BIG.y1 - BIG.y0), zb), mx2 = (ax + bx) / 2 + 14, my2 = Math.min(ay, by) - 20;
+      if (act) { const S = LP1.scr, [ax, ay] = VD.p(S.xw, S.y0, (S.z0 + S.z1) / 2), [bx, by] = NX.furn.homo(BIGQ).fwd(BC[0] / BW, BC[1] / BH), mx2 = (ax + bx) / 2 + 14, my2 = Math.min(ay, by) - 20;
         for (let i = 0; i < 12; i++) { const q = (t * .8 + i / 12) % 1, u = 1 - q, x = u * u * ax + 2 * u * q * mx2 + q * q * bx, y = u * u * ay + 2 * u * q * my2 + q * q * by;
           lit(c, x - .6, y - .6, 1.2, 1.2, i % 3 ? '#7af0ff' : '#ff7af0'); c.fillStyle = 'rgba(122,240,255,.22)'; c.fillRect(x - 1.5, y - 1.5, 3, 3); } }
       c.globalCompositeOperation = 'source-over';
       // світло від екранів
-      const [mcx, mcy] = VD.p(MON.x1, (MON.y0 + MON.y1) / 2, (MON.z0 + MON.z1) / 2); P.glow(c, mcx + 6, mcy, 40, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4));
+      const [mcx, mcy] = [42, 262]; P.glow(c, mcx, mcy, 36, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4));
       const [lcx, lcy] = VD.p(LP1.scr.xw, 279, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
       c.restore();
     },
