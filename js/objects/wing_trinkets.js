@@ -25,8 +25,7 @@
  * ai_center.js, analytics.js, marketing.js. Нові дрібниці — лише через ці функції.
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, CHROME, OUT } = F.PAL, ramp = F.ramp, hash = NX.art.hash, BAYER = NX.art.BAYER, rgba = K.rgba, lit = K.lit;
-  const dz = (i, j) => BAYER[(j & 3) * 4 + (i & 3)] + .5;                                          // поріг Байєра 0..1 (розсип на краях)
+  const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, CHROME, OUT } = F.PAL, ramp = F.ramp, hash = NX.art.hash, rgba = K.rgba, lit = K.lit;
   // папір у неоновому присмерку — лавандові тони (не білий: інакше «світиться» сяйвом крила)
   const PAPER = ['#141036', '#211b4e', '#312a68', '#453c84', '#5d53a0', '#796fba', '#958cd0', '#b1a9e2', '#ccc6f0'];
   const NOTE = {
@@ -38,16 +37,6 @@
   const WALLP = ['#0c0828', '#140c3c', '#1c1252', '#261868', '#341f7e', '#4a2a94', '#6a36a8', '#8a44b8'];    // шпалери екрана телефона
   const INK = ['#2a7ad0', '#c83aa8', '#3a9a8a', '#5a4ac8'];                                         // «друк» на папері
 
-  /** Тінь контакту: темніє видимий верх стільниці під предметом і трохи довкола (розсипом по краю). */
-  function shadow(S, D, x0, x1, y, k = .85) {
-    const cx = (x0 + x1) / 2, rx = (x1 - x0) / 2 + 2, ry = 2.3;
-    S.rect(x0 - 2.1, y - 2.6, x1 + 2.1, y, (u, v, i, j, X, Y) => {
-      if (Y < D.back + .25) return null;
-      const q = ((X - cx) / rx) ** 2 + ((Y - y + .25) / ry) ** 2; if (q >= 1) return null;
-      const a = k * (1 - q * q); if (a < dz(i, j) * .3) return null;
-      S.r.set(i, j, '#020008', Math.min(.82, a)); return null;
-    });
-  }
   /** Кабель від предмета за задній край стільниці (як інші кабелі крила). */
   function cable(S, pts) {
     for (let k = 1; k < pts.length; k++) S.line(pts[k - 1][0], pts[k - 1][1], pts[k][0], pts[k][1], OUT, 1.1);
@@ -303,7 +292,7 @@
   /** Тіні контакту + статичні частини всіх дрібниць стола (дальні — першими). */
   function trinkets(S, D, items) {
     const list = items.slice().sort((a, b) => (a.y || D.top) - (b.y || D.top));
-    list.forEach(it => { if (it.kind !== 'printout') shadow(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });
+    list.forEach(it => { if (it.kind !== 'printout') K.contact(S, D, it.x - .2, it.x + WIDTH[it.kind](it) + .2, it.y, it.kind === 'mouse' ? .55 : .85); });   // тінь контакту (NX.kit.contact)
     list.forEach(it => STATIC[it.kind](S, D, it));
   }
   /** Живе поверх стола: екран телефона, RGB, LED, звисання роздруківки. Викликати ПІСЛЯ неону плити. */

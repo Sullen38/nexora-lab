@@ -25,6 +25,9 @@
     { id: 'bulbA', kind: 'edison', x: 327, top: -40, y: 26 }, { id: 'bulbB', kind: 'edison', x: 635, top: -40, y: 96 },
     { id: 'lantern', kind: 'chinese', x: 454, top: -40, y: 2, sway: 1 },
   ];
+  // м'яка тінь кожної штучки на цеглі за нею (№1; запікається в стіну — wing_wall.js). Розміри — як у NX.kit.gadget
+  const SIZE = { holoCube: [14, 17], orb: [12, 16], drone: [20, 13], terrarium: [18, 20], botToy: [10, 14], speaker: [8, 12] };
+  GADGETS.filter(d => d.stage === 'wall').forEach(d => { const [w, h] = SIZE[d.kind]; NX.wing.shades.push({ ell: [d.x + w / 2 - .9, d.y - h * .42 + 1.8, w * .58, h * .52], k: .5 }); });
   const wall = [];
   GADGETS.forEach(d => {
     const o = NX.addObject({

@@ -31,6 +31,8 @@
     { id: 'shelfNeon', kind: 'neon', x: 30, y: 128, w: 24, h: 32, potW: 12, potH: 9, leaves: 7, seed: 13, stage: 'wall', s: .6, pot: 'glass' },
     { id: 'deskGlass', kind: 'sansevieria', x: 300, y: 262, w: 16, h: 32, potW: 10, potH: 8, leaves: 5, seed: 14, stage: 'layer', depth: 294.5, s: .4, pot: 'glass' },
   ];
+  // м'яка тінь рослин біля стіни (на поличках, на будці, ліани) — на цеглі за листям (№1; запікається в стіну)
+  LIST.filter(d => d.stage === 'wall').forEach(d => NX.wing.shades.push({ ell: [d.x + d.w / 2 - .9, d.y + d.h * .45 + 2, d.w * (d.hang ? .4 : .48), d.h * (d.hang ? .44 : .5)], k: d.hang ? .3 : .45 }));
   const wall = [];
   LIST.forEach(d => {
     const o = NX.addObject({

@@ -26,9 +26,11 @@
   ];
   const NOTES = [{ x: 465.4, y: 179.6, s: 4.8, col: 'p', rot: .22, seed: 2 }];             // стікер на рамці правого екрана будки
 
+  NX.wing.shades.push({ box: [BOOTH.x0, BOOTH.y0, BOOTH.x1 + 9, BOOTH.y1], dx: -3, dy: 2.5, r: 16, k: .5 });   // м'яка тінь будки на цеглі (№1; разом з бічною гранню до вікна)
   function buildBooth() { const S = F.Sheet(316, 122, 490, 284); K.booth(S, BOOTH); return S; }
   function buildDesk() {
     const S = F.Sheet(322, 248, 490, 348); K.desk(S, DESK);
+    K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], [LAPB[0], LAPB[1], 280, .6], [TAB[0] + 2, TAB[2] - 2, 277, .7], [436, 444, 278], [MUG[0], MUG[2] + 2, 278]]);   // тіні контакту (№1): будка, ноутбук, планшет, кубик, горнятко
     S.rect(LAPB[0], 275, LAPB[1], 280, (u, v, i, j) => u > .985 || u < .015 || v > .96 ? OUT : v < .14 ? ACC[3] : (v < .5 && u > .1 && u < .9 && ((u * 14) % 1 < .18 || (v * 6) % 1 < .3)) ? ACC[1] : ramp(CHROME, .55 + u * .2 - v * .3, i, j));   // база голо-ноутбука
     S.rr(TAB[0] - 1.4, TAB[1] - 1.4, TAB[2] + 1.4, TAB[3] + 1.4, 1.4, (d) => d < .6 ? NAVY[0] : NAVY[4]);                                          // планшет на стійці
     S.rect(TAB[0] + 6.6, TAB[3] + 1.4, TAB[0] + 9.4, 276, CHROME[3]); S.rect(TAB[0] + 2, 275.5, TAB[2] - 2, 277, CHROME[4]);

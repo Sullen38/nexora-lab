@@ -53,10 +53,25 @@ NX.furn = (() => {
           if (d < 0) return null; return typeof fn === 'string' ? fn : fn(d, u, v, i, j, X, Y);
         });
       },
+      /** Многокутник (правило парності). Швидко: для кожного рядка пікселів один раз рахуємо перетини з ребрами
+       *  і заливаємо проміжки [c0, c1), [c2, c3)… — результат той самий піксель-у-піксель, що й перевірка
+       *  «точка в многокутнику» для кожного пікселя, але в десятки разів швидше (рослини, листя, постери). */
       poly(pts, fn) {
-        const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), ax = Math.min(...xs), bx = Math.max(...xs), ay = Math.min(...ys), by = Math.max(...ys);
-        const inside = (X, Y) => { let c = false; for (let a = 0, b = pts.length - 1; a < pts.length; b = a++) { const [xa, ya] = pts[a], [xb, yb] = pts[b]; if ((ya > Y) !== (yb > Y) && X < (xb - xa) * (Y - ya) / (yb - ya) + xa) c = !c; } return c; };
-        S.rect(ax, ay, bx + U, by + U, (u, v, i, j, X, Y) => inside(X, Y) ? (typeof fn === 'string' ? fn : fn((X - ax) / (bx - ax), (Y - ay) / (by - ay), i, j, X, Y)) : null);
+        const n = pts.length, xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), ax = Math.min(...xs), bx = Math.max(...xs), ay = Math.min(...ys), by = Math.max(...ys), BX = bx + U, BY = by + U;
+        const i0 = Math.max(0, Math.floor(px(ax))), i1 = Math.min(W, Math.ceil(px(BX))), j0 = Math.max(0, Math.floor(py(ay))), j1 = Math.min(H, Math.ceil(py(BY))), cs = [];
+        for (let j = j0; j < j1; j++) {
+          const Y = y0 + (j + .5) * U; if (Y < ay || Y >= BY) continue;
+          cs.length = 0;
+          for (let a = 0, b = n - 1; a < n; b = a++) { const xa = pts[a][0], ya = pts[a][1], xb = pts[b][0], yb = pts[b][1]; if ((ya > Y) !== (yb > Y)) cs.push((xb - xa) * (Y - ya) / (yb - ya) + xa); }
+          if (cs.length < 2) continue; cs.sort((p, q) => p - q);
+          for (let k = 0; k + 1 < cs.length; k += 2) {
+            const lo = cs[k], hi = cs[k + 1], ia = Math.max(i0, Math.floor((lo - x0) / U - .5)), ib = Math.min(i1, Math.ceil((hi - x0) / U));
+            for (let i = ia; i < ib; i++) {
+              const X = x0 + (i + .5) * U; if (X < lo || X >= hi || X < ax || X >= BX) continue;
+              const col = typeof fn === 'string' ? fn : fn((X - ax) / (bx - ax), (Y - ay) / (by - ay), i, j, X, Y); if (col) r.set(i, j, col);
+            }
+          }
+        }
       },
       line(ax, ay, bx, by, col, w = U) {
         const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / U * 1.5));

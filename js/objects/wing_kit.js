@@ -3,7 +3,10 @@
  * ----------------------------------------------------------------------------
  * Усе ліве крило (AI-центр, аналітика, маркетинг, полиці, рослини) намальоване
  * кодом з одного набору деталей, тому виглядає як одна кімната:
- *   brick(S, box, lights)      — цегляна стіна з теплими/холодними відсвітами
+ *   brick(S, box, lights, fx)  — цегляна стіна з теплими/холодними відсвітами; fx — фактура, запечена в растр:
+ *                                м'які тіні від будки/полиць/гаджетів, патьоки, плями, кіптява, тріщини
+ *   contact / contacts         — тінь контакту на видимому верху стільниці (під усім, що стоїть на столі)
+ *   sticker(S, o)              — наліпка-висічка (логотип N, Nexi, кіт, серце, зірка, блискавка, AI, QR, «!»)
  *   booth(S, spec)             — будка зони: панель з неоновим кантом, вивіска
  *                                з іконкою, ніша з рамками голо-екранів, бічна грань
  *   desk(S, spec)              — стіл: видимий верх, рожева неонова плита, корпус
@@ -33,27 +36,103 @@ NX.kit = (() => {
   const TERRA = ['#2a1208', '#4a2010', '#6e3418', '#8e4a22', '#b06430', '#d08a4a'];
   const rgba = (rgb, a) => `rgba(${rgb},${P.clamp(a, 0, 1)})`, lit = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
   const noise = (t, i) => .5 + .26 * Math.sin(t * 1.3 + i * 1.7) + .16 * Math.sin(t * 2.9 + i * 3.1) + .08 * Math.sin(t * 5.3 + i * .7);
-  const mix = (a, b, k) => { if (k <= 0) return a; if (k >= 1) return b; const A = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), B = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16)); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+  // змішування кольорів (той самий результат, але без розбору рядків щоразу: кольори кешуються — цегла будується швидше)
+  const RGBC = new Map(), HEX2 = Array.from({ length: 256 }, (_, v) => v.toString(16).padStart(2, '0'));
+  const rgbOf = h => { let c = RGBC.get(h); if (!c) { c = [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; RGBC.set(h, c); } return c; };
+  const mix = (a, b, k) => { if (k <= 0) return a; if (k >= 1) return b; const A = rgbOf(a), B = rgbOf(b); return '#' + HEX2[Math.round(A[0] + (B[0] - A[0]) * k)] + HEX2[Math.round(A[1] + (B[1] - A[1]) * k)] + HEX2[Math.round(A[2] + (B[2] - A[2]) * k)]; };
 
+  // ---------- фактура стіни: шум, м'які тіні, патьоки ----------
+  const LAT = Float32Array.from({ length: 4096 }, (_, n) => hash(n & 63, n >> 6));                       // решітка шуму 64×64 (рахується раз)
+  const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), L = (a, b) => LAT[(a & 63) + ((b & 63) << 6)];
+    const a = L(xi, yi), b = L(xi + 1, yi), c = L(xi, yi + 1), d = L(xi + 1, yi + 1); return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy; };
+  /** Межі впливу відсвіту / тіні — щоб далекі пікселі пропускати одразу. */
+  const bbOf = h => { if (h.box) { const r = h.r || 0, dx = h.dx || 0, dy = h.dy || 0; return [h.box[0] + dx - r, h.box[1] + dy - r, h.box[2] + dx + r, h.box[3] + dy + r]; }
+    if (h.ell) return [h.ell[0] - h.ell[2], h.ell[1] - h.ell[3], h.ell[0] + h.ell[2], h.ell[1] + h.ell[3]];
+    if (h.band) return [h.x0, h.y - h.r, h.x1, h.y + h.r]; return [h.x - h.r, h.y - h.r, h.x + h.r, h.y + h.r]; };
+  /** М'яка тінь на стіні в точці (X, Y) — найсильніша з переліку:
+   *    {box:[x0,y0,x1,y1], dx, dy, r, k} — від прямокутника (будка, полиця, стелаж, труба, постер): зсунута на (dx, dy), розмита на r
+   *    {ell:[cx,cy,rx,ry], k}            — від предмета неправильної форми (гаджет, рослина) */
+  function shadeAt(X, Y, list) {
+    let s = 0;
+    for (const h of list) {
+      const b = h.bb; if (X < b[0] || X > b[2] || Y < b[1] || Y > b[3]) continue;
+      let v;
+      if (h.box) { const [a, c0, c1, e] = h.box, dx = h.dx || 0, dy = h.dy || 0, d = Math.hypot(Math.max(a + dx - X, 0, X - c1 - dx), Math.max(c0 + dy - Y, 0, Y - e - dy)); v = d >= h.r ? 0 : (1 - d / h.r) ** 2; }
+      else { const [cx, cy, rx, ry] = h.ell, q = ((X - cx) / rx) ** 2 + ((Y - cy) / ry) ** 2; v = q >= 1 ? 0 : (1 - q) ** 1.5; }
+      if (v * h.k > s) s = v * h.k;
+    }
+    return s;
+  }
+  /** Патьоки {x, y, len, w, k, rust}: тонка смуга донизу від труби / полиці / ліхтаря — звужується, згасає, трохи петляє.
+   *  Повертає силу; іржаву частку кладе в DRIP.rust (без нових масивів на кожен піксель). */
+  const DRIP = { rust: 0 };
+  function dripAt(X, Y, list) {
+    let s = 0; DRIP.rust = 0;
+    for (const d of list) {
+      if (Y < d.y || Y > d.y + d.len || X < d.x - d.w - 1.5 || X > d.x + d.w + 1.5) continue;
+      const t = (Y - d.y) / d.len, cx = d.x + .5 * Math.sin(Y * .23 + d.x) * t, q = Math.abs(X - cx) / (d.w * (1 - t * .55)); if (q >= 1) continue;
+      const v = (1 - q * q) * (1 - t) ** .9 * d.k; if (v > s) { s = v; DRIP.rust = d.rust ? v : 0; }
+    }
+    return s;
+  }
   /** Цегла (темна, залита неоном — як на картинці): box = [x0,y0,x1,y1]; lights — відсвіти:
    *    {x,y,r,k,col}            — точкове джерело (ліхтар — теплий col, екран — синій)
    *    {band:1,x0,x1,y,r,k,col} — смуга (рожева плита стола світить на стіну над собою)
-   *    {box:[x0,y0,x1,y1],r,k,col} — сяйво навколо прямокутника (великий екран, будка) */
-  function brick(S, [x0, y0, x1, y1], lights = []) {
+   *    {box:[x0,y0,x1,y1],r,k,col} — сяйво навколо прямокутника (великий екран, будка)
+   *  fx — фактура (усе запікається в растр один раз, кадр не дорожчає):
+   *    shades — м'які тіні від предметів (shadeAt), drips — патьоки (dripAt),
+   *    stains 0..1 — старі плями з темнішим «берегом» і сольові розводи внизу,
+   *    grime — кіптява під стелею й у лівому куті, cracks — частка цеглин з тріщиною / вибитим кутом. */
+  function brick(S, [x0, y0, x1, y1], lights = [], fx = {}) {
+    lights.forEach(L => { L.bb = bbOf(L); });
+    const shades0 = (fx.shades || []).map(h => ({ ...h, bb: bbOf(h) })), drips0 = (fx.drips || []).map(d => ({ ...d, bb: [d.x - d.w - 1.5, d.y, d.x + d.w + 1.5, d.y + d.len] })), st = fx.stains || 0, cr = fx.cracks || 0;
+    // сітка 16×16 од.: для кожної клітинки — лише ті відсвіти / тіні / патьоки, що її торкаються (швидше в рази)
+    const G = 16, nx = Math.ceil((x1 - x0) / G) + 1, ny = Math.ceil((y1 - y0) / G) + 1, cells = k => Array.from({ length: nx * ny }, () => []);
+    const fill = (grid, list) => { list.forEach(h => { const b = h.bb; for (let cy = Math.max(0, Math.floor((b[1] - y0) / G)); cy <= Math.min(ny - 1, Math.floor((b[3] - y0) / G)); cy++) for (let cx = Math.max(0, Math.floor((b[0] - x0) / G)); cx <= Math.min(nx - 1, Math.floor((b[2] - x0) / G)); cx++) grid[cx + cy * nx].push(h); }); return grid; };
+    const LG = fill(cells(), lights), SG = fill(cells(), shades0), DG = fill(cells(), drips0);
     S.rect(x0, y0, x1, y1, (u, v, i, j, X, Y) => {
+      const cell = Math.min(nx - 1, Math.floor((X - x0) / G)) + Math.min(ny - 1, Math.floor((Y - y0) / G)) * nx, lights = LG[cell], shades = SG[cell], drips = DG[cell];
       const row = Math.floor(Y / 7), bx = (((X + (row & 1) * 7) % 14) + 14) % 14, by = ((Y % 7) + 7) % 7;
       const id = Math.floor((X + (row & 1) * 7) / 14) * 31 + row, mortar = bx < .8 || by < .6;
       let q = (mortar ? .02 : .11 + hash(id, 7) * .13 + (by < 1.4 ? .07 : by > 6.2 ? -.05 : 0) + (bx < 1.6 ? .03 : 0)), col = null, ck = 0;
       for (const L of lights) {
+        const b = L.bb; if (X < b[0] || X > b[2] || Y < b[1] || Y > b[3]) continue;
         let d;
         if (L.band) d = (X >= L.x0 && X <= L.x1) ? Math.max(0, 1 - Math.abs(Y - L.y) / L.r) : 0;
-        else if (L.box) { const [a, b, c2, e] = L.box; d = Math.max(0, 1 - Math.hypot(Math.max(a - X, 0, X - c2), Math.max(b - Y, 0, Y - e)) / L.r); }
+        else if (L.box) { const [a, b2, c2, e] = L.box; d = Math.max(0, 1 - Math.hypot(Math.max(a - X, 0, X - c2), Math.max(b2 - Y, 0, Y - e)) / L.r); }
         else d = Math.max(0, 1 - Math.hypot(X - L.x, Y - L.y) / L.r);
         d = d * d * L.k; q += d * (mortar ? .4 : 1); if (L.col && d > ck) { ck = d; col = L.col; }
       }
-      const base = ramp(BRK, q, i, j, mortar ? 0 : .22); return col ? mix(base, col, Math.min(.6, ck * 1.1)) : base;
+      // фактура — ПІСЛЯ відсвітів і множенням, щоб читалась і там, де цеглу заливає неон
+      if (st) {                                                                                             // старі плями з темнішим «берегом», сольові розводи внизу
+        const n = vn(X / 34, Y / 24) * .65 + vn(X / 11 + 7.3, Y / 8 + 3.1) * .35;
+        if (n > .58) q *= 1 - (Math.min(.32, (n - .58) * 1.4) + (n < .605 ? .14 : 0)) * st;
+        if (Y > 200 && vn(X / 9 + 31, Y / 5 + 17) > .78) q += (mortar ? .1 : .05) * st;
+      }
+      if (fx.grime) { if (Y < 16) q *= 1 - (1 - Y / 16) ** 2 * .45; if (X < 9) q *= 1 - (1 - X / 9) ** 2 * .35; }   // кіптява під стелею і в куті
+      if (cr && !mortar) {                                                                                  // пошкоджені цеглини: тріщина навскіс або вибитий кут
+        if (hash(id, 13) < cr && bx > 1.6 && bx < 12.4 && Math.abs(by - (1.4 + (bx - 1.6) * .42 + .55 * Math.sin(bx * 2.1 + id))) < .5) q *= .2;
+        else if (hash(id, 17) < cr && bx + by < 3.8) q = bx + by > 3.1 ? q + .12 : q * .35;
+      }
+      const sh = shades.length ? shadeAt(X, Y, shades) : 0, dr = drips.length ? dripAt(X, Y, drips) * 1.25 : 0, dk = Math.min(.88, Math.max(sh, dr)), rust = dr ? DRIP.rust * 1.25 : 0;
+      if (dk > 0) { q = q * (1 - dk * .72) - dk * .04; ck *= 1 - dk * .4; }                               // тінь / патьок: темніше, але колір відсвіту лишається
+      let out = ramp(BRK, q, i, j, mortar ? 0 : .22); if (col) out = mix(out, col, Math.min(.6, ck * 1.1));
+      return rust > .03 ? mix(out, '#3a1a14', Math.min(.55, rust)) : out;                                  // іржаві патьоки під трубою
     });
   }
+  /** Тінь контакту на видимому верху стільниці D (піксель-арт, по краю — розсипом): предмет x0..x1 стоїть на лінії y. */
+  const dz = (i, j) => NX.art.BAYER[(j & 3) * 4 + (i & 3)] + .5;
+  function contact(S, D, x0, x1, y, k = .85) {
+    const cx = (x0 + x1) / 2, rx = (x1 - x0) / 2 + 2, ry = 2.3;
+    S.rect(x0 - 2.1, y - 2.6, x1 + 2.1, y, (u, v, i, j, X, Y) => {
+      if (Y < D.back + .25) return null;
+      const q = ((X - cx) / rx) ** 2 + ((Y - y + .25) / ry) ** 2; if (q >= 1) return null;
+      const a = k * (1 - q * q); if (a < dz(i, j) * .3) return null;
+      S.r.set(i, j, '#020008', Math.min(.82, a)); return null;
+    });
+  }
+  /** Тіні контакту списком [[x0, x1, y, k?], ...] — для речей, що вже стоять на столі (горнята, лампа, бази ноутбуків...). */
+  const contacts = (S, D, list) => list.forEach(([a, b, y, k]) => contact(S, D, a, b, y, k));
 
   /** Будка зони. spec: {x0,y0,x1,y1, acc:[dark,mid,bright,hi], sign:[x0,y0,x1,y1], icon:[cx,cy], screens:[[x0,y0,x1,y1],...], side:f}
    *  Повертає нічого — малює в аркуш S. Вивіска порожня (напис — живий, мовою глядача). */
@@ -376,6 +455,42 @@ NX.kit = (() => {
     c.restore();
   }
 
+  // ---------- наліпки: висічка зі світлою облямівкою, іконка, тонка тінь по краю (усе власне: логотип N, Nexi, кіт Рудик) ----------
+  const STK = {
+    n:     { shape: 'round', bg: '#0b1434', fg: '#3be8ff', px: ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'] },
+    bolt:  { shape: 'round', bg: '#1a1046', fg: '#ffe27a', px: ['..XX', '.XX.', 'XXXX', '.XX.', 'XX..'] },
+    heart: { shape: 'cut', fg: '#ff4fd8', px: ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'] },
+    star:  { shape: 'cut', fg: '#7af0ff', px: ['...X...', '..XXX..', 'XXXXXXX', '.XXXXX.', '.XX.XX.', 'X.....X'] },
+    robot: { shape: 'cut', px: ['...C...', '.WWWWW.', 'WDDDDDW', 'WDCDCDW', 'WDDDDDW', '.WWWWW.'], cols: { W: '#e8ecff', D: '#0a1236', C: '#3be8ff' } },
+    cat:   { shape: 'cut', px: ['O.....O', 'OO...OO', 'OOOOOOO', 'OEOOOEO', 'OOOPOOO', '.OOOOO.'], cols: { O: '#f08a2a', E: '#2a1408', P: '#ff7aa8' } },
+    ai:    { shape: 'tag', bg: '#1a1046', fg: '#ff6ec8', px: ['.X..XXX', 'X.X..X.', 'XXX..X.', 'X.X..X.', 'X.X.XXX'] },
+    warn:  { shape: 'tri', bg: '#ffd23a', fg: '#1a1020', px: ['X', 'X', 'X', '.', 'X'] },
+    qr:    { shape: 'square', bg: '#e6e2fa', fg: '#0a0618', px: ['XXX.XXX', 'X.X.X.X', 'XXX.XXX', '....X..', 'XXX.X.X', 'X.X..XX', 'XXX.X.X'] },
+  };
+  /** Наліпка в растр S: o = {kind, x, y — центр, s — розмір, rot}. Форми: round (кругла), tag (заокруглена), square,
+   *  tri (трикутник-попередження), cut (висічка по контуру іконки). Наклеюється на будь-що: стіну, трубу, канал, будку. */
+  function sticker(S, o) {
+    const T = STK[o.kind] || STK.n, s = o.s || 4.4, a = o.rot || 0, ca = Math.cos(a), sa = Math.sin(a), px = T.px || [], gh = px.length, gw = gh ? px[0].length : 0, cut = T.shape === 'cut';
+    const B = s * .11, cell = (s - 2 * B) / Math.max(gw, gh, 1) * (T.shape === 'round' ? .72 : T.shape === 'tri' ? .42 : T.shape === 'tag' ? .82 : cut ? 1 : .9), ox = -gw * cell / 2, oy = -gh * cell / 2 + (T.shape === 'tri' ? s * .12 : 0), R = s * .8;
+    const at = (lx, ly) => { const ci = Math.floor((lx - ox) / cell), cj = Math.floor((ly - oy) / cell); return ci >= 0 && cj >= 0 && ci < gw && cj < gh ? px[cj][ci] : '.'; };
+    const near = (lx, ly, d) => { for (let cj = 0; cj < gh; cj++) for (let ci = 0; ci < gw; ci++) { if (px[cj][ci] === '.') continue; const x0 = ox + ci * cell, y0 = oy + cj * cell, dx = Math.max(x0 - lx, 0, lx - x0 - cell), dy = Math.max(y0 - ly, 0, ly - y0 - cell); if (dx * dx + dy * dy <= d * d) return true; } return false; };
+    const inShape = (lx, ly, g) => {                                                                       // g > 0 — розширити (тінь), g < 0 — звузити (поле під облямівкою)
+      if (T.shape === 'round') return Math.hypot(lx, ly) <= s / 2 + g;
+      if (T.shape === 'tri') { const top = -s * .45 - g, bot = s * .45 + g; return ly >= top && ly <= bot && Math.abs(lx) <= (ly - top) / (bot - top) * (s / 2 + g); }
+      if (cut) return near(lx, ly, B + g);
+      const hw = s / 2 + g, hh = (T.shape === 'tag' ? s * .36 : s / 2) + g, rr = Math.max(.1, s * .14 + g), qx = Math.abs(lx) - (hw - rr), qy = Math.abs(ly) - (hh - rr);
+      return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) <= rr;
+    };
+    S.rect(o.x - R, o.y - R, o.x + R, o.y + R, (u, v, i, j, X, Y) => {
+      const lx = (X - o.x) * ca + (Y - o.y) * sa, ly = -(X - o.x) * sa + (Y - o.y) * ca;                   // координати на наліпці (з поворотом)
+      if (!inShape(lx, ly, 0)) return inShape(lx - .28, ly - .32, .18) ? '#0e0820' : null;                  // тонка тінь висічки праворуч-знизу
+      const rim = lx + ly > s * .28 ? '#c4bee6' : '#e6e2fa';                                                 // світла облямівка (знизу-справа — у півтіні)
+      if (cut) { const ch = at(lx, ly); return ch === '.' ? rim : T.cols ? T.cols[ch] : T.fg; }
+      if (!inShape(lx, ly, -B)) return rim;
+      const ch = at(lx, ly); return ch === '.' ? T.bg : T.fg;
+    });
+  }
+
   const draw = (c, S, R) => { const w = S.x1 - S.x0, h = S.y1 - S.y0; c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
-  return { BRK, SLAB, GREEN, POT, brick, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, reflectors: [] };
+  return { BRK, SLAB, GREEN, POT, brick, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, reflectors: [] };
 })();

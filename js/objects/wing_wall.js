@@ -12,6 +12,12 @@
  *   неонова табличка "AI CHAT" над аналітикою, ліхтар між аналітикою і вікном,
  *   рожева трубка на краю вікна
  * Живе: риби пливуть, бульбашки, дисплей біжить, лампи мерехтять, табличка блимає.
+ * ФАКТУРА (пункт №2): цегла з плямами, сольовими розводами, кіптявою, тріщинами й патьоками;
+ * М'ЯКІ ТІНІ (пункт №1) на цеглі — від будки аналітики, стелажа, полиць і кронштейнів, таблички,
+ * гаджетів і рослин на поличках, труб і постерів. Усе запікається в растр стіни один раз
+ * (NX.kit.brick fx) — кадр від цього не дорожчає. Інші файли додають свої тіні й патьоки в
+ * NX.wing.shades / NX.wing.drips (будка — analytics.js, гаджети — wing_props.js, рослини —
+ * wing_plants.js, труби/канали/постери — wing_decor.js).
  * NX.wing.patch() — після кількох кадрів складає нерухому копію крила, з якої
  * кімната тягне передню підлогу й глянцеве віддзеркалення (NX.room.patchFront),
  * і з неї ж рахує СЯЙВО (bloom): яскраві пікселі копії розмиваються в 3 масштабах
@@ -28,6 +34,20 @@
   const DISP = { box: [256, 34, 312, 82] };                                       // синій дисплей у верхній ніші стелажа
   const SHELVES = [[348, 404, 50], [486, 530, 104], [4, 56, 160]];              // додаткові полички [x0, x1, y верху] — на них гаджети й рослини (wing_props.js, wing_plants.js)
   const floorTop = X => X < 326 ? 352 : X < 486 ? 346 : 338;
+  // м'які тіні на цеглі (№1): світло переважно згори й від вікна праворуч, тож тінь трохи вниз і ліворуч
+  const OWN_SHADES = [
+    { box: [0, 0, 240, 6], dy: 2.6, r: 7, k: .55 }, ...[40, 120, 200].map(x => ({ box: [x - 3, 6, x + 3, 16], dx: -.6, dy: 1.6, r: 2.6, k: .4 })),   // верхня полиця і кронштейни
+    ...SHELVES.flatMap(([x0, x1, y]) => [{ box: [x0, y, x1, y + 4], dy: 2.6, r: 6, k: .55 }, ...[x0 + 7, x1 - 7].map(bx => ({ box: [bx - 2.5, y + 4, bx + 2.5, y + 12], dx: -.5, dy: 1.6, r: 2.6, k: .4 }))]),
+    { box: [SHELF.l, SHELF.top - 2, SHELF.r, SHELF.planks[4] + 6], dx: -.6, dy: 2, r: 9, k: .5 },                // стелаж
+    { box: [SIGN.x, SIGN.y, SIGN.x + SIGN.w, SIGN.y + SIGN.h], dx: -.6, dy: 2.2, r: 5, k: .42 },                  // табличка AI CHAT
+  ];
+  // патьоки (№2): з-під кронштейнів, ліхтарів і таблички (іржаві — від металу), довгі сліди від стелі
+  const OWN_DRIPS = [
+    { x: 355, y: 62, len: 22, w: .9, k: .55 }, { x: 397, y: 62, len: 9, w: 1, k: .5 }, { x: 523, y: 116, len: 28, w: .9, k: .5, rust: 1 },
+    { x: 503, y: 197, len: 30, w: 1.1, k: .55, rust: 1 }, { x: 517, y: 197, len: 22, w: .9, k: .45, rust: 1 }, { x: 211, y: 49, len: 11, w: .9, k: .5, rust: 1 },
+    { x: 334, y: 121, len: 7, w: .8, k: .45 }, { x: 386, y: 121, len: 6, w: .8, k: .4 }, { x: 323, y: 9, len: 52, w: 1.5, k: .35 }, { x: 18, y: 6, len: 70, w: 1.8, k: .3 },
+    { x: 528, y: 104, len: 40, w: 1.2, k: .4 }, { x: 237.5, y: 62, len: 60, w: 1.2, k: .35 },   // уздовж трубок і рамки екрана
+  ];
 
   // ---------- стіна (2 px/од.) ----------
   function buildWall() {
@@ -39,7 +59,7 @@
       { box: [322, 128, 478, 278], r: 34, k: .24, col: '#1a7ab0' }, { box: [536, 166, 652, 266], r: 26, k: .2, col: '#c838a8' },   // канти будок
       { x: 358, y: 104, r: 54, k: .22, col: '#1a8ab0' }, { box: [250, 26, 318, 288], r: 30, k: .3, col: '#9030c0' },         // табличка, стелаж
       { x: 244, y: 150, r: 44, k: .14, col: '#1a8ab0' }, { box: [60, 6, 196, 46], r: 18, k: .16, col: '#2a60c0' },           // трубка, верхні екрани
-    ]);
+    ], { shades: [...OWN_SHADES, ...NX.wing.shades], drips: [...OWN_DRIPS, ...NX.wing.drips], stains: 1, grime: 1, cracks: .03 });   // тіні, патьоки, плями, кіптява, тріщини
     S.rect(0, 340, WIN, 352, (u, v, i, j, X, Y) => { const k = Y - 340; return k < 1 ? PINK[7] : k < 2 ? PINK[5] : k < 2.6 ? PINK[2] : ramp(['#07041a', '#0d0828', '#140c36'], .3 - k / 24, i, j); });   // плінтус з неоном
     return S;
   }
@@ -77,7 +97,9 @@
     // стелаж (як на картинці: висока стійка з синіми екранами): задня панель з фіолетовим підсвічуванням,
     // хромовані стійки з рожевими неоновими смугами, планки з неоновою кромкою, рамки дисплея й акваріумів
     const { l, r, planks } = SHELF;
-    S.rect(l + 4, planks[0], r - 4, planks[4] + 4, (u, v, i, j, X, Y) => { const e = Math.min(X - l - 4, r - 4 - X); return ((X - l) % 10 < .7) ? BK[0] : ramp(['#120a2e', '#1e1048', '#2e1868', '#44228a', '#5c2ea8'], .25 + Math.max(0, 1 - e / 14) * .6 - v * .15, i, j, .1); });
+    S.rect(l + 4, planks[0], r - 4, planks[4] + 4, (u, v, i, j, X, Y) => {
+      const e = Math.min(X - l - 4, r - 4 - X), sh = planks.reduce((m, py) => { const d = Y - py - 4; return d >= 0 && d < 7 ? Math.max(m, 1 - d / 7) : m; }, 0);   // тінь під кожною планкою (№1)
+      return ((X - l) % 10 < .7) ? BK[0] : ramp(['#120a2e', '#1e1048', '#2e1868', '#44228a', '#5c2ea8'], (.25 + Math.max(0, 1 - e / 14) * .6 - v * .15) * (1 - sh * .6), i, j, .1); });
     for (const x of [l, r - 4]) S.rect(x, SHELF.top - 2, x + 4, planks[4] + 6, (u, v, i, j) => u < .2 || u > .8 ? OUT : ramp(CHROME, .55 - Math.abs(u - .4) * .8 - v * .2, i, j));
     S.rect(l + 4.2, planks[0] + 4, l + 5.6, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8'); S.rect(r - 5.6, planks[0] + 4, r - 4.2, planks[4], (u) => u > .3 && u < .7 ? '#ffd4ff' : '#ff4fd8');   // рожеві неонові смуги
     planks.forEach((y, n) => S.rect(l, y, r, y + 4, (u, v, i, j) => v < .2 ? NAVY[7] : v > .78 ? (n % 2 ? '#3be8ff' : '#ff4fd8') : ramp(NAVY, .5 - v * .3, i, j)));
@@ -123,6 +145,7 @@
 
   let WALL = null, FLOOR = null, FURN = null;
   NX.wing = { WIN, SHELF, SHELVES, LANT, SIGN, TANKS, DISP, floorTop, bloom: null,
+    shades: [], drips: [],                                                        // тіні й патьоки від інших файлів (запікаються в цеглу при першій побудові)
     /** Нерухома копія крила (стіна, столи, будки, крісла, рослини): з неї кімната будує передню підлогу й віддзеркалення. */
     patch() {
       this.patched = true; const img = NX.room.img, RS = NX.room.RS, cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d'), t = NX.time;
@@ -150,7 +173,9 @@
       if (!WALL) { WALL = buildWall(); WALL.cv = WALL.canvas(null); FLOOR = buildFloor(); FLOOR.cv = FLOOR.canvas(null); FURN = buildFurn(); FURN.cv = FURN.canvas(); }
       const R = F.res();
       c.save();
-      K.draw(c, WALL, Math.min(2, R)); K.draw(c, FLOOR, Math.min(2, R)); K.draw(c, FURN, R);
+      K.draw(c, WALL, Math.min(2, R)); K.draw(c, FLOOR, Math.min(2, R));
+      if (NX.wing.decor) NX.wing.decor.under(c, t, R);                            // труби, кабель-канали, постери, наліпки (wing_decor.js) — під полицями
+      K.draw(c, FURN, R);
       // акваріуми й дисплей (кожен оновлюється раз на 3 кадри)
       this.fr++; TANKS.forEach((T, n) => { if (this.fr % 3 === n || !T.cv) drawTank(T, t); const [a, b, c2, d] = T.box; c.imageSmoothingEnabled = true; c.globalAlpha = .95; c.drawImage(T.cv, a, b, c2 - a, d - b); c.globalAlpha = 1; });
       if (this.fr % 3 === 1 || this.fr < 3) drawDisplay(t); { const [a, b, c2, d] = DISP.box; c.imageSmoothingEnabled = true; c.drawImage(DCV, a, b, c2 - a, d - b); }
@@ -163,6 +188,7 @@
       [DISP, ...TANKS].forEach(T => { const [a, b, c2, d] = T.box; P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .8, 'rgba(60,160,255,.6)', .12 + .04 * Math.sin(t + a)); });
       c.fillStyle = rgba('255,79,216', .2 + .1 * Math.sin(t * 1.7)); c.fillRect(SHELF.l + 3.6, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4); c.fillRect(SHELF.r - 6.2, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4);   // рожеві смуги стелажа дихають
       c.globalCompositeOperation = 'source-over';
+      if (NX.wing.decor) NX.wing.decor.over(c, t, R);                             // живе: рідина в трубі, неон, LED каналів, манометр
       P.text(c, 'AI', SIGN.x + 24, SIGN.y + 14, '#ff7af0', 5); P.text(c, 'CHAT', SIGN.x + 24, SIGN.y + 23, '#3be8ff', 5);
       if (Math.sin(t * 3) > 0) lit(c, SIGN.x + SIGN.w - 8, SIGN.y + 4, 3, 3, '#3bff8a');
       c.restore();

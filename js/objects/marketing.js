@@ -18,7 +18,7 @@
 (() => {
   const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#58134f', '#a0288d', '#e656c0', '#ff84d4'];
-  const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 266, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
+  const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 275, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
   const DESK = { l: 485, r: 662, top: 278, slab: 288, bot: 338, back: 273, sec: [{ a: 488, b: 600, kind: 'niche' }, { a: 604, b: 650, kind: 'drawers', rows: 3 }] };
   const MUGS = [[548, 268], [566, 269]];
   // дрібниці (objects/wing_trinkets.js): телефон зі сповіщеннями-сердечками, блок стікерів, ескізи з ручкою, склянка з ручками
@@ -29,9 +29,10 @@
   // стікери-ідеї на рамках екранів будки
   const NOTES = [{ x: 550.6, y: 212.4, s: 4.4, col: 'c', rot: .2, seed: 3 }, { x: 642.6, y: 254.2, s: 4.4, col: 'y', rot: -.18, seed: 6 }, { x: 638.8, y: 256.2, s: 4, col: 'g', rot: .12, seed: 9 }];
 
-  function buildBooth() { const S = F.Sheet(530, 160, 664, 272); K.booth(S, BOOTH); return S; }
+  function buildBooth() { const S = F.Sheet(530, 160, 664, 280); K.booth(S, BOOTH); return S; }   // будка стоїть на столі (низ — за стільницею, без просвіту)
   function buildDesk() {
     const S = F.Sheet(481, 262, 664, 340); K.desk(S, DESK);
+    K.contacts(S, DESK, [[BOOTH.x0, BOOTH.x1, DESK.back + 1.4, .55], ...MUGS.map(([x]) => [x, x + 8.8, 278]), [536, 544, 278], [503.5, 518.5, 278]]);   // тіні контакту (№1): будка, горнята, колонка, вазон
     MUGS.forEach(([x, y]) => { S.rr(x, y, x + 7, DESK.top, [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .38 && v < .56 ? '#ffffff' : (u > .7 ? PINK[3] : PINK[5])); S.rect(x + 6.6, y + 2, x + 8.8, y + 6.2, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]); });
     K.trinkets(S, DESK, ITEMS);                                                                   // дрібниці з тінями контакту
     return S;
