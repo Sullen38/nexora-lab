@@ -4,6 +4,7 @@ NX.i18n.add('en', {
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   board: { title: 'NEXI TASKS', waiting: 'WAITING FOR A TASK...' },
+  desk: { cat: ['Ginger came to help ♥', 'Purr-assistant reporting!', 'Ginger, not on the keyboard…', 'Working together is more fun!'] },
   obj: { pillow: 'Pillow', coin: 'Coin', vacuum: 'Robot vacuum', aiPc: 'AI center · computer', taskboard: 'Task board', analytics: 'Analytics', marketing: 'Marketing', coffee: 'Coffee machine', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', fountain: 'Fountain', lounge: 'Beanbag', lamp: 'Floor lamp', plant: 'Plant', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
   zones: {
     go: 'Just come here', start: 'On it: {task}!',

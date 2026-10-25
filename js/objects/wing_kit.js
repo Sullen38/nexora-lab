@@ -20,7 +20,9 @@
  *   sway(c, sp, x, y, t, ph, shake) — малює спрайт рослини: верх гойдається, горщик стоїть
  *   sign(c, x, y, w, h, o)     — вивіска зони в ЄДИНОМУ стилі (AI-центр, аналітика, маркетинг)
  *   gadget(kind) / lamp(kind)  — штучки на полички (голо-куб, куля, дрон, тераріум, робот,
- *                                колонка) і лампи (Едісона, китайський ліхтар): растр + live()
+ *                                колонка) і лампи (Едісона, китайський ліхтар): растр + live();
+ *                                live(c, x, y, t, lvl) — колонка грає / лампа Едісона спалахує, коли Nexi
+ *                                працює в зоні (№8, objects/wing_react.js; там же K.soundFx — звук колонок)
  *   coreGeom / corePC / coreLive — системний блок AI-ядра зі скляною панеллю і живою начинкою
  *   screenBg / noise / rgba / lit    — дрібниці для живих екранів
  *   trinkets / trinketsLive / stuck  — ДРІБНИЦІ НА СТОЛАХ (папери, стікери, ручки, навушники,
@@ -569,7 +571,14 @@ NX.kit = (() => {
     } else if (kind === 'speaker') {                                                                           // розумна колонка: циліндр з сіткою, LED-кільце міняє колір
       W = 8; H = 12; S = F.Sheet(0, 0, W, H);
       S.rr(.5, 0, W - .5, H, [2, 2, 1, 1], (d, u, v, i, j) => d < .4 ? OUT : v < .14 ? ramp(CHROME, .7 - u * .4, i, j) : (((i + j) & 1) && v > .25 && v < .9 && u > .12 && u < .88) ? NAVY[0] : ramp(NAVY, .5 - u * .3, i, j));
-      live = (c, x, y, t) => { c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = `hsla(${(t * 60 + x) % 360},95%,65%,.9)`; c.lineWidth = .8; c.beginPath(); c.ellipse(x + W / 2, y + 1.4, W / 2 - .9, .9, 0, 0, 7); c.stroke(); P.glow(c, x + W / 2, y + 1.4, 5, `hsla(${(t * 60 + x) % 360},95%,65%,.8)`, .3); c.restore(); };
+      // lvl 0..1 — колонка грає (№8, Nexi працює в її зоні — objects/wing_react.js): кільце б'є в такт і пускає світлу хвилю, решітка — еквалайзер, ноти
+      live = (c, x, y, t, lvl = 0) => {
+        const hue = (t * 60 + x) % 360, b = lvl > .02 ? NX.wing.react.beat(t) : null, k = b ? b.kick * lvl : 0;
+        c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = `hsla(${hue},95%,${65 + k * 25}%,.9)`; c.lineWidth = .8 + k * .7; c.beginPath(); c.ellipse(x + W / 2, y + 1.4, W / 2 - .9, .9, 0, 0, 7); c.stroke(); P.glow(c, x + W / 2, y + 1.4, 5 + k * 5, `hsla(${hue},95%,65%,.8)`, .3 + k * .4);
+        if (b) { c.strokeStyle = `hsla(${hue},95%,72%,${(1 - b.f) ** 2 * .7 * lvl})`; c.lineWidth = .5; c.beginPath(); c.ellipse(x + W / 2, y + 1.4, W / 2 - .9 + b.f * 7, .9 + b.f * 1.6, 0, 0, 7); c.stroke(); }   // світла хвиля від кільця
+        c.restore();
+        if (b) NX.kit.soundFx(c, { x0: x + .5, y0: y, x1: x + W - .5, y1: y + H, eq: [x + 1.3, y + 3.2, x + W - 1.3, y + H - 1.2], cols: 3, rows: 4, col: `hsl(${hue},95%,72%)`, waves: 1, notes: 1, seed: 3, wave: '255,140,230', drift: 1 }, t, lvl);
+      };
     }
     if (!cv) cv = S.canvas();
     return { w: W, h: H, cv, live };
@@ -596,7 +605,10 @@ NX.kit = (() => {
     S.poly(bulb, (u, v, i, j, X, Y) => { const dx = (X - 5) / 4.6, dy = (Y - 12.5) / 6.5, rr = Math.hypot(dx, dy); if (rr > .95 && Y > 6) return '#ffe8b0'; if (dx < -.5 && dy < -.2 && rr > .72) return '#fff4d8';
       return ramp(['#c86a1e', '#f0a03a', '#ffd06a', '#ffe9a6', '#fff8dc'], .9 - rr * .5 - Math.abs(dx) * .2, i, j); });
     for (let k = 0; k < 4; k++) S.line(3.6 + k * .9, 15 - (k % 2) * 4, 4.5 + k * .9, 11 + (k % 2) * 4, '#fffbe8', .5);                             // нитка
-    return { w: W, h: H, cv: S.canvas(), live: (c, x, y, t) => { const f = .75 + .15 * Math.sin(t * 7 + x) + .08 * Math.sin(t * 13.7); c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, x + 5, y + 12, 26, 'rgba(255,190,90,.9)', .3 * f); P.glow(c, x + 5, y + 12, 8, 'rgba(255,230,160,1)', .45 * f); c.restore(); } };
+    // boost 0..1 — Nexi працює під лампою (№8, objects/wing_react.js): спалахує яскравіше, нитка розжарюється добіла
+    return { w: W, h: H, cv: S.canvas(), live: (c, x, y, t, boost = 0) => { const f = (.75 + .15 * Math.sin(t * 7 + x) + .08 * Math.sin(t * 13.7)) * (1 + .5 * boost); c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, x + 5, y + 12, 26 + boost * 10, 'rgba(255,190,90,.9)', .3 * f); P.glow(c, x + 5, y + 12, 8, 'rgba(255,230,160,1)', .45 * f);
+      if (boost > .02) { P.glow(c, x + 5, y + 13, 5, 'rgba(255,250,225,1)', .55 * boost); c.strokeStyle = rgba('255,255,235', .9 * boost); c.lineWidth = .45; c.beginPath(); for (let k = 0; k <= 4; k++) { const px = x + 3.6 + k * .9, py = y + (k % 2 ? 11 : 15); k ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke(); }
+      c.restore(); } };
   }
 
   // ---------- системний блок AI-ядра: скляна панель, за нею начинка ----------

@@ -12,9 +12,12 @@
  * Коли Nexi працює тут (obj 'analytics'), екрани прискорюються й показують
  * приріст; зроблене (NX.ui.zones.done.analytics) видно на лівому екрані.
  * Крісло — objects/office.js (NX.chairA). Рослина на даху будки — wing_plants.js.
+ * РЕАКЦІЯ НА NEXI (пункт №8, objects/wing_react.js): поки Nexi сидить у кріслі, кубик-колонка грає
+ *       (світле віконце стає еквалайзером, хвилі, ноти), лампа Едісона над зоною (bulbA) спалахує,
+ *       Рудик застрибує на стіл ліворуч від крісла.
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, HOLO, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
+  const P = NX.px, F = NX.furn, K = NX.kit, RE = NX.wing.react, { NAVY, PINK, CYAN, HOLO, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'];
   const BOOTH = { x0: 322, y0: 128, x1: 478, y1: 278, acc: ACC, sign: [336, 138, 464, 166], icon: [350, 152], screens: [[336, 178, 398, 264], [406, 178, 466, 264]] };
   // №3: ширший верх (передній край 280 -> 283), віддзеркалення будки, кабелі за столом (лоток, пучки, роутер у ніші)
@@ -27,6 +30,10 @@
     { kind: 'phone', x: 416.4, y: 280, icon: 'chart' }, { kind: 'mouse', x: 468, y: 280, w: 14.6 },
   ];
   const NOTES = [{ x: 465.4, y: 179.6, s: 4.8, col: 'p', rot: .22, seed: 2 }];             // стікер на рамці правого екрана будки
+  const SPK = { x0: 436, y0: 270, x1: 444, y1: 278, eq: [437.8, 272.2, 442.2, 275.8], bg: '#06142e', cols: 3, rows: 3, col: '#7af0ff', waves: 1, notes: 1, seed: 2 };   // кубик-колонка (№8)
+  // №8: стіл реагує на Nexi (objects/wing_react.js) — Nexi в кріслі (loc 'chairA'); Рудик сідає на стіл ліворуч від нього (перед планшетом і
+  // склянкою з олівцями), стрибає з підлоги біля лівого краю крісла
+  RE.add('analytics', { loc: 'chairA', cat: { x: 388, y: 280.4, from: [379, 382], face: 1, sy: 352 } });
 
   NX.wing.shades.push({ box: [BOOTH.x0, BOOTH.y0, BOOTH.x1 + 9, BOOTH.y1], dx: -3, dy: 2.5, r: 16, k: .5 });   // м'яка тінь будки на цеглі (№1; разом з бічною гранню до вікна)
   function buildBooth() { const S = F.Sheet(316, 122, 490, 284); K.booth(S, BOOTH); return S; }
@@ -40,7 +47,7 @@
     S.rect(TAB[0] + 6.6, TAB[3] + 1.4, TAB[0] + 9.4, 276, CHROME[3]); S.rect(TAB[0] + 2, 275.5, TAB[2] - 2, 277, CHROME[4]);
     S.rr(MUG[0], MUG[1], MUG[2], MUG[3], [1, 1, 1.6, 1.6], (d, u, v) => d < .5 ? PINK[1] : v > .4 && v < .58 ? CYAN[4] : (u > .7 ? PINK[3] : PINK[5]));      // горнятко
     S.rect(MUG[2] - .4, MUG[1] + 2.2, MUG[2] + 2.2, MUG[1] + 6.4, (u, v) => (u > .4 && v > .25 && v < .75) ? null : PINK[3]);
-    S.rr(436, 270, 444, 278, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .25 && u < .75 && v > .3 && v < .7) ? CYAN[4] : ramp(NAVY, .45 - v * .25, i, j));   // світний кубик
+    S.rr(436, 270, 444, 278, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .25 && u < .75 && v > .3 && v < .7) ? CYAN[4] : ramp(NAVY, .45 - v * .25, i, j));   // світний кубик-колонка (грає — SPK, №8)
     [[361, 278.6, 370, 275.8], [386, 278.4, 394, 275.8]].forEach(([a, b, c2, d]) => { S.line(a, b, c2, d, OUT, 1); S.line(a, b - .3, c2, d - .3, '#2a2454', .5); });   // кабелі
     K.trinkets(S, DESK, ITEMS, 'items');                                                          // дрібниці
     K.gloss(S, DESK, base, .4);                                                                   // віддзеркалення речей у глянці (№3)
@@ -99,6 +106,7 @@
       K.underLive(c, DESK, t, act);                                                               // вогники роутера під столом
       K.deskShine(c, DESK, t, [[347, 10, '90,200,255'], [400, 30, '90,200,255'], [440, 10, '90,232,255'], [376, 8, '255,200,120']], [[334, 360, '90,200,255', .1 + act * .06, 280.2], [366, 386, '120,180,255', .08, 277.2]]);   // глянець верху
       for (let i = 0; i < 3; i++) { const q = (t * .5 + i / 3) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(MUG[0] + 3.5 + Math.sin(q * 6 + i) * 1.2, MUG[1] - 1 - q * 10, 1, 1); }   // пара
+      K.soundFx(c, SPK, t, RE.snd('analytics'));                                                  // №8: кубик-колонка грає, коли Nexi в кріслі
       c.restore();
     },
     drawBack(c, t) {

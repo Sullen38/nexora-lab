@@ -10,19 +10,21 @@
  *   лампи (NX.kit.lamp): 2 лампи Едісона на шнурах зі стелі (над аналітикою і
  *     перед вікном) і червоний китайський ліхтар з китицею над пальмою —
  *     мерехтять, ліхтар злегка гойдається.
- * Статична частина — растр 4 px/од., живе — live(c, x, y, t).
+ * Статична частина — растр 4 px/од., живе — live(c, x, y, t, lvl).
+ * №8 (реакція на Nexi, objects/wing_react.js): zone — зона, за столом якої працює Nexi: колонка
+ *   маркетингу тоді грає (NX.wing.react.snd), лампи Едісона над аналітикою й маркетингом спалахують (bulb).
  * ========================================================================== */
 (() => {
-  const P = NX.px, K = NX.kit, F = NX.furn;
+  const P = NX.px, K = NX.kit, F = NX.furn, RE = NX.wing.react;
   // гаджети: x — лівий край, y — лінія, на якій стоїть (верх планки або стільниці); stage 'wall' — за столами, 'layer' — за глибиною
   const GADGETS = [
     { id: 'holoCube', kind: 'holoCube', x: 352, y: 50, stage: 'wall' }, { id: 'terrarium', kind: 'terrarium', x: 370, y: 50, stage: 'wall' }, { id: 'botToy', kind: 'botToy', x: 392, y: 50, stage: 'wall' },
     { id: 'orb', kind: 'orb', x: 489, y: 104, stage: 'wall' }, { id: 'drone', kind: 'drone', x: 6, y: 160, stage: 'wall' },
-    { id: 'speaker', kind: 'speaker', x: 536, y: 278, stage: 'layer', depth: 279 },
+    { id: 'speaker', kind: 'speaker', x: 536, y: 278, stage: 'layer', depth: 279, zone: 'marketing' },
   ];
-  // лампи: x — лівий край спрайта, top — де кріпиться шнур (стеля), y — верх спрайта
+  // лампи: x — лівий край спрайта, top — де кріпиться шнур (стеля), y — верх спрайта; zone — над чиїм столом (спалахує, коли Nexi там)
   const LAMPS = [
-    { id: 'bulbA', kind: 'edison', x: 327, top: -40, y: 26 }, { id: 'bulbB', kind: 'edison', x: 635, top: -40, y: 96 },
+    { id: 'bulbA', kind: 'edison', x: 327, top: -40, y: 26, zone: 'analytics' }, { id: 'bulbB', kind: 'edison', x: 635, top: -40, y: 96, zone: 'marketing' },
     { id: 'lantern', kind: 'chinese', x: 454, top: -40, y: 2, sway: 1 },
   ];
   // м'яка тінь кожної штучки на цеглі за нею (№1; запікається в стіну — wing_wall.js). Розміри — як у NX.kit.gadget
@@ -34,7 +36,7 @@
       id: 'wg_' + d.id, name: 'obj.plant', act: 'rustle', d, hit: null,
       sp() { if (!this._sp) { this._sp = K.gadget(d.kind); this.hit = { x: d.x, y: d.y - this._sp.h, w: this._sp.w, h: this._sp.h }; } return this._sp; },
       onTap() { const sp = this.sp(); for (let i = 0; i < 10; i++) NX.fx.emit('spark', d.x + Math.random() * sp.w, d.y - sp.h + Math.random() * sp.h * .6, { col: Math.random() < .5 ? '#7af0ff' : '#ff7af0', vy: -20 - Math.random() * 20, g: 30, ttl: 1, s: 1.1 }); NX.nexi.emote('happy', 1.2); return true; },
-      draw(c, t) { const sp = this.sp(), R = F.res(), y = d.y - sp.h; c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(sp.cv, sp.w, sp.h, R), d.x, y, sp.w, sp.h); c.restore(); sp.live(c, d.x, y, t); },
+      draw(c, t) { const sp = this.sp(), R = F.res(), y = d.y - sp.h; c.save(); c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(sp.cv, sp.w, sp.h, R), d.x, y, sp.w, sp.h); c.restore(); sp.live(c, d.x, y, t, d.zone ? RE.snd(d.zone) : 0); },
       layers(t) { return d.stage === 'layer' ? [{ y: d.depth, draw: c => this.draw(c, t) }] : []; },
     });
     if (d.stage === 'wall') wall.push(o);
@@ -50,7 +52,7 @@
         c.save(); c.translate(cx, d.top); c.rotate(a); c.translate(-cx, -d.top);
         c.strokeStyle = '#0a0612'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(cx, d.top); c.lineTo(cx, d.y + .5); c.stroke();       // шнур зі стелі
         c.strokeStyle = '#2a2454'; c.lineWidth = .4; c.beginPath(); c.moveTo(cx - .3, d.top); c.lineTo(cx - .3, d.y + .5); c.stroke();
-        c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(sp.cv, sp.w, sp.h, R), d.x, d.y, sp.w, sp.h); sp.live(c, d.x, d.y, t);
+        c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(sp.cv, sp.w, sp.h, R), d.x, d.y, sp.w, sp.h); sp.live(c, d.x, d.y, t, d.zone ? RE.bulb(d.zone) : 0);
         c.restore();
       });
       wall.forEach(o => o.draw(c, t));

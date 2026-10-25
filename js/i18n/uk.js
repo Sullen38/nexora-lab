@@ -4,6 +4,7 @@ NX.i18n.add('uk', {
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
   cats: { face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   board: { title: 'ЗАДАЧІ NEXI', waiting: 'ЧЕКАЮ НА ЗАДАЧУ...' },
+  desk: { cat: ['Рудик прийшов допомагати ♥', 'Мур-асистент на місці!', 'Рудику, тільки не на клавіатуру…', 'Удвох працювати веселіше!'] },   // кіт застрибнув на стіл (objects/wing_react.js)
   obj: { pillow: 'Подушка', coin: 'Монетка', vacuum: 'Робопилосос', aiPc: "AI-центр · комп'ютер", taskboard: 'Дошка задач', analytics: 'Аналітика', marketing: 'Маркетинг', coffee: 'Кавомашина', sofa: 'Диван', workshop: 'Майстерня', tools: 'Інструменти', portal: 'Портал', catCorner: 'Куток кота', rug: 'Док-станція', fountain: 'Фонтан', lounge: 'Пуф', lamp: 'Торшер', plant: 'Рослина', ball: "М'ячик", window: 'Вікно в місто', nexiTag: 'NEXI · СКІНИ', catTag: 'РУДИК · ПОГЛАДИТИ' },
   zones: {
     go: 'Просто підійди сюди', start: 'Беруся: {task}!',

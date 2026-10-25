@@ -4,6 +4,7 @@ NX.i18n.add('pl', {
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   board: { title: 'ZADANIA NEXI', waiting: 'CZEKAM NA ZADANIE...' },
+  desk: { cat: ['Rudy przyszedł pomagać ♥', 'Mruczący asystent na miejscu!', 'Rudy, tylko nie na klawiaturę…', 'We dwóch pracuje się weselej!'] },
   obj: { pillow: 'Poduszka', coin: 'Moneta', vacuum: 'Robot sprzątający', aiPc: 'Centrum AI · komputer', taskboard: 'Tablica zadań', analytics: 'Analityka', marketing: 'Marketing', coffee: 'Ekspres do kawy', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', fountain: 'Fontanna', lounge: 'Pufa', lamp: 'Lampa', plant: 'Roślina', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     go: 'Po prostu podejdź', start: 'Biorę się: {task}!',

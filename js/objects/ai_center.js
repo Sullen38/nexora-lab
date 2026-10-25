@@ -20,9 +20,12 @@
  *       стікери на правій рамці великого екрана (NOTES).
  * Nexi: POI.aiDesk.top = [228, 292] — стоїть на плиті між ноутбуком і горнятком.
  * Тап по мозку — спалах думки; тап по зоні — Nexi сам бере наступну задачу.
+ * РЕАКЦІЯ НА NEXI (пункт №8, objects/wing_react.js): поки Nexi на плиті, лампа горить (клацає,
+ *       світить униз-ліворуч), кубик-колонка грає (еквалайзер, хвилі, ноти; великий екран — у такт),
+ *       Рудик застрибує й гріється під лампою праворуч від Nexi. Без Nexi лампа вимкнена.
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, K = NX.kit, { Raster, outline, bump, hash, BAYER } = NX.art, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL;
+  const P = NX.px, F = NX.furn, K = NX.kit, RE = NX.wing.react, { Raster, outline, bump, hash, BAYER } = NX.art, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL;
   const rgba = K.rgba, lit = K.lit, noise = K.noise, ramp = F.ramp;
   const KP = ['#3a0b38', '#58134f', '#7a1c6d', '#a0288d', '#c63aa8', '#e656c0', '#ff84d4', '#ffc2ec'];   // рожевий неон рамки
   const D = ['#07041a', '#0d0828', '#140c36', '#1c1146', '#251758', '#301e6c', '#3d2784', '#4d33a0'];
@@ -44,6 +47,10 @@
   const LP1 = { q: [[182, 258], [214, 259.5], [214, 288], [182, 289]], base: [178, 218], neon: ['#3be8ff', '#2aa6c8'], rgb: '90,232,255' };
   const LP2 = { q: [[112, 262], [142, 263.5], [142, 288], [112, 289]], base: [108, 146], neon: ['#ff4fd8', '#c63aa8'], rgb: '255,120,230' };
   const MUG = [246, 283, 254, 294], LAMP = { base: [282, 294], head: [294, 274, 308, 282] };   // лампа низенька — не лізе на стелаж позаду
+  const SPK = { x0: 258, y0: 285, x1: 267, y1: 294, eq: [259.6, 286.8, 265.4, 292.2], cols: 3, rows: 3, col: '#7af0ff', waves: 1, notes: 1, seed: 1 };   // кубик-колонка: решітка = еквалайзер (№8)
+  // №8: стіл реагує на Nexi (objects/wing_react.js) — Nexi на плиті (loc 'aiDesk'); Рудик сідає праворуч від нього, між кубиком-колонкою
+  // і склянкою з сансев'єрою, просто під лампою (гріється); стрибає з підлоги перед шафкою AI-ядра; light — тепле світло лампи поверх кота
+  RE.add('ai', { loc: 'aiDesk', cat: { x: 281.5, y: 294.8, from: [279, 382], face: -1, sy: 352 }, light: { y: 303.2, at: [285, 291, 20] } });
   // дрібниці на столі (objects/wing_trinkets.js): папери з ручкою, склянка з ручками, блок стікерів, мишка чат-ноутбука, навушники
   const ITEMS = [
     { kind: 'papers', x: 60.6, y: 294, w: 12, n: 4, seed: 3, pen: 1 }, { kind: 'pens', x: 74.6, y: 293.6 }, { kind: 'notes', x: 98.4, y: 293.8, col: 'y' },
@@ -72,7 +79,7 @@
     S.rr(LAMP.base[0], LAMP.base[1] - 3, LAMP.base[0] + 12, LAMP.base[1], 1.2, (d, u, v, i, j) => d < .4 ? OUT : ramp(CHROME, .85 - v * .5, i, j));
     S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 9, 284, OUT, 2.4); S.line(LAMP.base[0] + 6, LAMP.base[1] - 3, LAMP.base[0] + 9, 284, CHROME[3], 1.2);
     S.line(LAMP.base[0] + 9, 284, LAMP.head[0] + 6, LAMP.head[3] - 2, OUT, 2.4); S.line(LAMP.base[0] + 9, 284, LAMP.head[0] + 6, LAMP.head[3] - 2, CHROME[4], 1.2);
-    S.rr(LAMP.head[0], LAMP.head[1], LAMP.head[2], LAMP.head[3], [3, 3, 1, 1], (d, u, v, i, j) => d < .5 ? OUT : v > .8 ? '#fff2c0' : ramp(KP, .85 - v * .5 - u * .2, i, j));
+    S.rr(LAMP.head[0], LAMP.head[1], LAMP.head[2], LAMP.head[3], [3, 3, 1, 1], (d, u, v, i, j) => d < .5 ? OUT : v > .8 ? (u > .25 && u < .75 ? '#5a4462' : '#3c2a4a') : ramp(KP, .85 - v * .5 - u * .2, i, j));   // №8: розсіювач вимкненої лампи (світло — живим, lampLive)
     // дрібнички (як на картинці): кубик-колонка з решіткою, рамка з фото, кабелі до задньої кромки
     S.rr(258, 285, 267, 294, 1, (d, u, v, i, j) => d < .5 ? OUT : (u > .2 && u < .8 && v > .25 && v < .75 && ((u * 12) | 0) % 2 === 0 && ((v * 8) | 0) % 2 === 0) ? CYAN[3] : ramp(NAVY, .45 - v * .25, i, j));
     S.rr(84, 283, 96, 293, .8, (d, u, v, i, j) => d < .5 ? OUT : d < 1.2 ? CHROME[3] : ramp(['#2a1860', '#5a3aa0', '#ff84d4', '#ffe27a'], .3 + .7 * Math.abs(Math.sin(u * 7) * Math.cos(v * 5)), i, j));
@@ -165,6 +172,25 @@
     return r.canvas();
   }
 
+  /** ЛАМПА (№8): горить, лише коли Nexi за столом — L = NX.wing.react.lamp('ai') 0..1 (з «клацанням»). Світло — униз-ліворуч,
+   *  туди, де гріється Рудик: конус з двох смуг (8-bit), калюжа на глянцевому верху, відблиск на губі скла, тепла пляма на
+   *  стелажі, ореол абажура, лампочка. Вимкнена — темний розсіювач і черговий вогник на основі. Серпанок у повітрі — wing_air.js. */
+  function lampLive(c, t, L) {
+    const [h0, , h2, h3] = LAMP.head, bx = LAMP.base[0], by = LAMP.base[1], y1 = 296.6;
+    lit(c, bx + 8.7, by - 2.3, .9, .8, L > .5 ? '#ffe27a' : rgba('255,90,150', .3 + .2 * Math.sin(t * 1.3)));   // вогник на основі: черговий / увімкнено
+    if (L < .01) return;
+    const f = L * (.97 + .03 * Math.sin(t * 9.3));
+    c.save(); c.globalCompositeOperation = 'lighter';
+    P.glow(c, h0 - 2, h3 + 4, 30, 'rgba(255,186,104,.85)', .18 * f);                                                         // тепла пляма на стелажі й стіні (під абажуром — щоб він лишався рожевим)
+    c.fillStyle = rgba('255,210,140', .09 * f); c.beginPath(); c.moveTo(h0 + .8, h3); c.lineTo(h2 - .8, h3); c.lineTo(h2 - 2, y1); c.lineTo(266, y1); c.fill();   // конус: широка смуга
+    c.fillStyle = rgba('255,230,170', .09 * f); c.beginPath(); c.moveTo(h0 + 3, h3); c.lineTo(h2 - 3, h3); c.lineTo(h2 - 6, y1); c.lineTo(275, y1); c.fill();     //        вузька, яскравіша
+    for (let s = 0; s < 3; s++) lit(c, 268 + s * 2, 294.2 + s, 36 - s * 4, 1, rgba('255,206,130', (.2 - s * .045) * f));    // калюжа світла на глянці
+    lit(c, 271, DESK.top - .5, 30, .45, rgba('255,226,160', .5 * f)); lit(c, 279, DESK.top - .5, 12, .45, rgba('255,250,225', .55 * f));   // відблиск на губі скла
+    P.glow(c, h0 + 7, h3 + 1, 7, 'rgba(255,236,190,1)', .34 * f);                                                             // ореол під абажуром
+    c.restore();
+    c.save(); c.globalAlpha = Math.min(1, L * 1.25); lit(c, h0 + 1.8, h3 - 2.5, h2 - h0 - 3.6, .9, '#ff9ec8'); lit(c, h0 + 1.3, h3 - 1.55, h2 - h0 - 2.6, 1.35, '#ffe9b0'); lit(c, h0 + 3.2, h3 - 1.2, h2 - h0 - 6.4, .75, '#ffffff'); c.restore();   // засвічений край абажура, лампочка
+  }
+
   let DSK, BIGS, UPAS, UPBS, BIGF, bf, UAF, uaf, UBF, ubf, MONF, mf, L1F, l1, L2F, l2;
   const MW = 256, MH = 288, L1W = 128, L1H = 160, L2W = 112, L2H = 136;
   function init() {
@@ -210,7 +236,8 @@
       P.text(c, 'NEURO ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
       const hl = act ? Math.floor(t * 3) % 2 : Math.floor(t * .7) % 5;
       for (let k = 0; k < 5; k++) { const y = IC.y + k * 87.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.16)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 74); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 18 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
-      for (let i = 0; i < 64; i++) { const v = P.clamp(noise(t * (1 + act * 2), i * .35), .1, 1), h = Math.round(v * (EQ.h - 10)); lit(c, EQ.x + 6 + i * 8, EQ.y + EQ.h - 3 - h, 5, h, i % 8 === 0 ? '#ff7af0' : '#2aa6c8'); }
+      const snd = RE.snd('ai'), kick = RE.beat(t).kick;                                  // №8: коли грає кубик-колонка — еквалайзер у такт (центр підстрибує на удар)
+      for (let i = 0; i < 64; i++) { const v = P.clamp(noise(t * (1 + act * 2), i * .35) * (1 - snd * .2) + snd * kick * (.55 - Math.abs(i - 31.5) / 80), .1, 1), h = Math.round(v * (EQ.h - 10)); lit(c, EQ.x + 6 + i * 8, EQ.y + EQ.h - 3 - h, 5, h, i % 8 === 0 ? '#ff7af0' : (snd > .3 && v > .85 ? '#9af6ff' : '#2aa6c8')); }
       c.strokeStyle = rgba('255,120,230', .2 + .14 * Math.sin(t * 1.8) + act * .14 + this.burst * .3); c.lineWidth = 18; c.beginPath(); c.roundRect ? c.roundRect(16, 16, BW - 32, BH - 32, 38) : c.rect(16, 16, BW - 32, BH - 32); c.stroke();
       const per = 2 * (BW + BH - 80), dd = (t * 240) % per, W = BW - 40, H = BH - 40; let sx, sy2;
       if (dd < W) { sx = 20 + dd; sy2 = 10; } else if (dd < W + H) { sx = BW - 10; sy2 = 20 + dd - W; } else if (dd < 2 * W + H) { sx = BW - 20 - (dd - W - H); sy2 = BH - 10; } else { sx = 10; sy2 = BH - 20 - (dd - 2 * W - H); }
@@ -290,12 +317,15 @@
       const core = DESK.sec[2]; K.coreLive(c, K.coreGeom(core.a, core.b, DESK.slab, DESK.bot), t, act);   // системний блок: вентилятори, логотип, LED, рідина
       K.trinketsLive(c, DESK, ITEMS, t, act);                                         // живе в дрібницях: RGB мишки, LED навушників, стилус
       K.underLive(c, DESK, t, act);                                                   // вимикач подовжувача під столом
-      K.deskShine(c, DESK, t, [[43, 12, '90,200,255'], [127, 11, '255,120,230'], [198, 12, '90,232,255'], [150, 50, '255,90,210'], [301, 8, '255,220,150']],   // відблиски на губі скла
-        [[30, 56, '90,180,255', .1, 294.2], [110, 144, '255,120,230', .1, 294.2], [180, 216, '90,232,255', .12 + act * .08, 294.2], [286, 316, '255,214,140', .1, 294.2]]);   // світло екранів і лампи на верху
+      K.deskShine(c, DESK, t, [[43, 12, '90,200,255'], [127, 11, '255,120,230'], [198, 12, '90,232,255'], [150, 50, '255,90,210']],   // відблиски на губі скла (тепла під лампою — у lampLive)
+        [[30, 56, '90,180,255', .1, 294.2], [110, 144, '255,120,230', .1, 294.2], [180, 216, '90,232,255', .12 + act * .08, 294.2]]);   // світло екранів на верху
       c.globalCompositeOperation = 'lighter';
       [DESK.sec[0], DESK.sec[3]].forEach((s, n) => { const cx = (s.a + s.b) / 2; P.glow(c, cx, 335, 14, 'rgba(59,232,255,.8)', .18 + .08 * Math.sin(t * 3 + n)); const q = (t * .7 + n * .5) % 1; lit(c, cx - 1, DESK.slab + 3 + q * (DESK.bot - DESK.slab - 8), 2, 3, 'rgba(255,255,255,.8)'); });
-      // лампа: тепле світло на плиту; пара над кавою; світло екранів
-      const lx = LAMP.head[0] + 7, ly = LAMP.head[3]; c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 3, ly); c.lineTo(lx + 3, ly); c.lineTo(lx + 16, 294); c.lineTo(lx - 16, 294); c.fill(); P.glow(c, lx, ly, 10, 'rgba(255,220,140,.9)', .5 + .05 * Math.sin(t * 7));
+      c.globalCompositeOperation = 'source-over';
+      lampLive(c, t, RE.lamp('ai', t));                                                // №8: лампа горить, коли Nexi за столом
+      K.soundFx(c, SPK, t, RE.snd('ai'));                                              // №8: кубик-колонка грає (еквалайзер, хвилі, ноти)
+      c.globalCompositeOperation = 'lighter';
+      // пара над кавою; світло екранів
       for (let i = 0; i < 5; i++) { const q = (t * .5 + i / 5) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(MUG[0] + 3.5 + Math.sin(q * 6 + i) * 1.5, MUG[1] - 1 - q * 14, 1, 1); }
       P.glow(c, 43, 262, 34, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4)); P.glow(c, 198, 274, 22, 'rgba(59,232,255,.6)', .16 + act * .25); P.glow(c, 127, 276, 18, 'rgba(255,120,230,.6)', .12);
       if (act) { const [ax, ay] = [198, 258], [bx, by] = F.homo(BIGQ).fwd(BC[0] / BW, BC[1] / BH), mx2 = (ax + bx) / 2 + 14, my2 = Math.min(ay, by) - 20;   // потік даних: ноутбук -> мозок

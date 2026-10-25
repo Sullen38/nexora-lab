@@ -13,9 +13,12 @@
  * Джерела: настінні ліхтарі (wing_wall.js NX.wing.LANT), лампи Едісона й китайський ліхтар
  * (wing_props.js), настільна лампа AI-центру (ai_center.js). Малюється після всього крила
  * (і після сяйва wingGlow), перед Nexi, котом і кріслами — тобто «у повітрі» перед стіною.
+ * №8 (реакція на Nexi, objects/wing_react.js): lamp — світло є, лише коли лампа горить (настільна
+ * лампа AI-центру світить униз-ліворуч, на місце кота; floorY — конус обривається на стільниці);
+ * zone — лампа Едісона над столом зони спалахує, поки Nexi там працює.
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, K = NX.kit, hash = NX.art.hash, BAYER = NX.art.BAYER, rgba = K.rgba;
+  const P = NX.px, F = NX.furn, K = NX.kit, RE = NX.wing.react, hash = NX.art.hash, BAYER = NX.art.BAYER, rgba = K.rgba;
   const TAU = Math.PI * 2, bay = (i, j) => BAYER[(j & 3) * 4 + (i & 3)];
   const WARM = [255, 172, 92], BULB = [255, 206, 132], RED = [255, 86, 54];
   // джерела: (ax, ay) — центр; hx, hy — піврозміри корпусу (промені й серпанок починаються з його краю);
@@ -24,10 +27,10 @@
   const LIGHTS = [
     { id: 'lantA', ax: 218, ay: 31, hx: 13, hy: 18, dir: Math.PI / 2, spread: 1.05, len: 118, col: WARM, rays: 9, haze: .5, ray: .62, dust: 18, seed: 1, fl: t => .85 + .1 * Math.sin(t * 6.3) + .05 * Math.sin(t * 13.7) },
     { id: 'lantB', ax: 510, ay: 171, hx: 13, hy: 25, dir: Math.PI / 2, spread: .95, len: 108, col: WARM, rays: 8, haze: .5, ray: .62, dust: 16, seed: 2, fl: t => .85 + .1 * Math.sin(t * 6.3 + 2) + .05 * Math.sin(t * 13.7 + 1) },
-    { id: 'bulbA', ax: 332, ay: 38.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 84, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 14, seed: 3, fl: t => .78 + .14 * Math.sin(t * 7 + 327) + .08 * Math.sin(t * 13.7) },
-    { id: 'bulbB', ax: 640, ay: 108.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 76, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 12, seed: 4, fl: t => .78 + .14 * Math.sin(t * 7 + 635) + .08 * Math.sin(t * 13.7) },
+    { id: 'bulbA', ax: 332, ay: 38.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 84, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 14, seed: 3, zone: 'analytics', fl: t => .78 + .14 * Math.sin(t * 7 + 327) + .08 * Math.sin(t * 13.7) },
+    { id: 'bulbB', ax: 640, ay: 108.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 76, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 12, seed: 4, zone: 'marketing', fl: t => .78 + .14 * Math.sin(t * 7 + 635) + .08 * Math.sin(t * 13.7) },
     { id: 'chinese', ax: 466, ay: 19.5, hx: 11, hy: 14, dir: Math.PI / 2, spread: 1.6, len: 58, col: RED, rays: 11, haze: .42, ray: .55, dust: 10, seed: 5, sway: { x: 466, y: -40, k: .05, ph: 454 }, fl: t => .86 + .14 * Math.sin(t * 5 + 454) },
-    { id: 'deskLamp', ax: 301, ay: 282.6, hx: 0, hy: 0, dir: Math.PI / 2, spread: .62, len: 15, beam: 1, col: [255, 222, 152], rays: 0, haze: .3, ray: 0, dust: 8, seed: 6, fl: t => .95 + .05 * Math.sin(t * 7) },
+    { id: 'deskLamp', ax: 300.5, ay: 282.4, hx: 0, hy: 0, dir: Math.PI / 2 + .5, spread: .58, len: 28, rr: 5, floorY: 296.8, beam: 1, col: [255, 222, 152], rays: 0, haze: .34, ray: 0, dust: 9, seed: 6, lamp: 'ai', fl: t => .95 + .05 * Math.sin(t * 7) },
   ];
   /** Кутова відстань від напрямку конуса. */
   const angOff = (a, dir) => Math.abs(((a - dir) % TAU + TAU * 1.5) % TAU - Math.PI);
@@ -35,8 +38,8 @@
   const inBody = (L, dx, dy) => Math.abs(dx) < L.hx && Math.abs(dy) < L.hy;
   /** Сила серпанку в точці: кругле сяйво біля джерела + конус, нерівний (шум), 0..1. */
   function hazeAt(L, X, Y) {
-    const dx = X - L.ax, dy = Y - L.ay, d = Math.hypot(dx, dy); if (d > L.len || inBody(L, dx, dy)) return 0;
-    const da = angOff(Math.atan2(dy, dx), L.dir), round = Math.max(0, 1 - d / (L.len * .4)) ** 2 * .55;
+    const dx = X - L.ax, dy = Y - L.ay, d = Math.hypot(dx, dy); if (d > L.len || inBody(L, dx, dy) || (L.floorY && Y > L.floorY)) return 0;
+    const da = angOff(Math.atan2(dy, dx), L.dir), round = Math.max(0, 1 - d / (L.rr || L.len * .4)) ** 2 * .55;   // rr — радіус круглого сяйва (за замовч. 0.4 довжини)
     const cone = da >= L.spread ? 0 : L.beam ? (1 - d / L.len) ** .85 * (da < L.spread * .5 ? 1 : .55)   // лампа: чіткий промінь-конус з двох смуг (8-bit)
       : (1 - d / L.len) ** 1.15 * (1 - (da / L.spread) ** 2);                                             // ліхтар: м'який конус (поверх — тонкі промені)
     return Math.max(round, cone) * (.66 + .34 * K.vn(X / 10 + L.seed * 7, Y / 7 + L.seed));
@@ -96,7 +99,7 @@
       const s0 = L.hx || L.hy ? Math.min(L.hx / Math.max(.1, Math.abs(Math.cos(a))), L.hy / Math.max(.1, Math.abs(Math.sin(a)))) + 2 : 1, dist = s0 + pu ** 1.3 * (L.len * .78 - s0);
       let x = L.ax + Math.cos(a) * dist + (hash(ci, k + 31) - .5) * 6 * u + Math.sin(t * .9 + k) * .8, y = L.ay + Math.sin(a) * dist + (hash(ci, k + 37) - .3) * 5 * u;
       const life = Math.sin(Math.PI * u) ** 1.5, tw = .6 + .4 * Math.sin(t * 3.1 + k * 2.3), A = Math.min(1, life * tw * f * (1 - dist / L.len) ** .5 * 1.5); if (A < .05) continue;
-      const sz = hash(k, L.seed + 15) > .7 ? 1.5 : 1; x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2;
+      const sz = hash(k, L.seed + 15) > .7 ? 1.5 : 1; x = Math.round(x * 2) / 2; y = Math.round(y * 2) / 2; if (L.floorY && y > L.floorY - sz) continue;
       c.fillStyle = rgba(rgb, A); c.fillRect(x, y, sz, sz);
       if (sz > 1 && A > .45) { c.fillStyle = rgba(rgb, A * .35); c.fillRect(x - .5, y + .5, sz + 1, .5); }   // «зірочка» на найяскравіших
     }
@@ -111,7 +114,8 @@
       c.save(); c.globalCompositeOperation = 'lighter';
       for (const L of LIGHTS) {
         if (!L.hz) build(L);
-        const f = L.fl(t); c.save();
+        const f = L.fl(t) * (L.lamp ? RE.lamp(L.lamp, t) : 1) * (L.zone ? 1 + .7 * RE.bulb(L.zone) : 1); if (f < .005) continue;   // №8: лампа вимкнена — світла нема; Nexi під лампою — яскравіше
+        c.save();
         if (L.sway) { const { x, y, k, ph } = L.sway, a = Math.sin(t * .8 + ph) * k; c.translate(x, y); c.rotate(a); c.translate(-x, -y); }   // китайський ліхтар гойдається — і світло з ним
         draw(c, L.hz, R, L.haze * f);
         if (L.rB) draw(c, L.rB, R, L.ray * f * (.35 + .65 * Math.sin(t * .6 + L.seed) ** 2));                   // друга група променів повільно спалахує й гасне

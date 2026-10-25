@@ -4,6 +4,7 @@ NX.i18n.add('nl', {
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   board: { title: 'NEXI-TAKEN', waiting: 'WACHT OP EEN TAAK...' },
+  desk: { cat: ['Gember komt helpen ♥', 'Spinnende assistent present!', 'Gember, niet op het toetsenbord…', 'Samen werken is leuker!'] },
   obj: { pillow: 'Kussen', coin: 'Munt', vacuum: 'Robotstofzuiger', aiPc: 'AI-centrum · computer', taskboard: 'Takenbord', analytics: 'Analyse', marketing: 'Marketing', coffee: 'Koffiemachine', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', fountain: 'Fontein', lounge: 'Zitzak', lamp: 'Staande lamp', plant: 'Plant', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
   zones: {
     go: 'Kom gewoon hier', start: 'Ik pak het op: {task}!',

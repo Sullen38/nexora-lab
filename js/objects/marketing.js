@@ -14,9 +14,12 @@
  * сердечка, росте лічильник; зроблене — NX.ui.zones.done.marketing на правому екрані.
  * Крісло — objects/office.js (NX.chairM); кавомашина перед столом — coffee.js;
  * рослина на столі зліва — wing_plants.js.
+ * РЕАКЦІЯ НА NEXI (пункт №8, objects/wing_react.js): поки Nexi сидить у кріслі, розумна колонка
+ *       грає (LED-кільце б'є в такт, решітка-еквалайзер, хвилі, ноти — wing_kit.js gadget 'speaker'),
+ *       лампа Едісона над зоною (bulbB) спалахує, Рудик застрибує на стіл ліворуч від крісла.
  * ========================================================================== */
 (() => {
-  const P = NX.px, F = NX.furn, K = NX.kit, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
+  const P = NX.px, F = NX.furn, K = NX.kit, RE = NX.wing.react, { NAVY, PINK, CYAN, CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit, noise = K.noise;
   const ACC = ['#58134f', '#a0288d', '#e656c0', '#ff84d4'];
   const BOOTH = { x0: 536, y0: 166, x1: 652, y1: 275, acc: ACC, sign: [546, 176, 642, 200], icon: [558, 188], iconKind: 'target', screens: [[548, 210, 600, 256], [608, 210, 644, 256]] };
   // №3: ширший верх (передній край 278 -> 281), віддзеркалення будки, кабелі за столом (лоток, пучки, подовжувач у ніші)
@@ -30,6 +33,9 @@
   ];
   // стікери-ідеї на рамках екранів будки
   const NOTES = [{ x: 550.6, y: 212.4, s: 4.4, col: 'c', rot: .2, seed: 3 }, { x: 642.6, y: 254.2, s: 4.4, col: 'y', rot: -.18, seed: 6 }, { x: 638.8, y: 256.2, s: 4, col: 'g', rot: .12, seed: 9 }];
+  // №8: стіл реагує на Nexi (objects/wing_react.js) — Nexi в кріслі (loc 'chairM'); Рудик сідає на стіл ліворуч від нього (перед телефоном
+  // і стікерами), стрибає з підлоги біля лівого краю крісла. Колонка — гаджет 'speaker' (wing_props.js, zone: 'marketing')
+  RE.add('marketing', { loc: 'chairM', cat: { x: 589, y: 278.4, from: [580, 382], face: 1, sy: 352 } });
 
   function buildBooth() { const S = F.Sheet(530, 160, 664, 280); K.booth(S, BOOTH); return S; }   // будка стоїть на столі (низ — за стільницею, без просвіту)
   function buildDesk() {

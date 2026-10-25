@@ -59,7 +59,7 @@
     sleep: { color: '#7d8cc4', route() { const p = P().sofa; return [{ walk: p.floor }, line('sleep'), { work: { pose: 'stretch', dur: 1.6 } }, { hop: p.lie }, { do: () => NX.objects.sofa.land(p.lie[0], .7) }, { loc: 'sofaLie' }, { rot: -90 }, { face: 1 },
       { work: { pose: 'sleep', dur: 9999, tick: () => Math.random() < .02 && NX.fx.emit('z', NX.nexi.x - 14, NX.nexi.y - 16) } }]; } },
 
-    petCat: { color: '#ff7a2a', route() { const c = NX.cat, side = c.x > 700 ? -1 : 1, gy = Math.max(c.ground, 362), [x, y] = NX.room.clampWalk(c.x + side * 26, gy);
+    petCat: { color: '#ff7a2a', route() { const c = NX.cat, [cx, cg] = c.floorPos(), side = cx > 700 ? -1 : 1, gy = Math.max(cg, 362), [x, y] = NX.room.clampWalk(cx + side * 26, gy); if (c.desk) c.leaveDesk();   // кіт на столі — зістрибне туди, звідки застрибнув (№8)
       return [{ walk: [x, y] }, { face: -side }, line('petCat'), { do: () => NX.cat.purr(4.5) }, { work: { pose: 'pet', dur: 4 } }, { do: () => NX.nexi.emote('love') }]; } },
 
     feedCat: { color: '#ff7a2a', route() { const b = NX.objects.catCorner.bowl; return [{ walk: [b[0] + 22, b[1] + 2] }, { face: -1 }, line('feedCat'), { work: { pose: 'pour', dur: 3, end: () => { NX.objects.catCorner.food = 1; NX.cat.hunger = .75; } } }]; } },

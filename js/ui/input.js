@@ -16,7 +16,7 @@ NX.input = {
     NX.ui.hud.firstTouch();
     if (NX.nexi.hitTest(x, y)) { NX.nexi.lastCmd = NX.time; if (NX.nexi.loc === 'sofaLie') { NX.nexi.emote('surprise'); NX.nexi.do('home'); } else { NX.nexi.temp = 'wave'; NX.nexi.tempT = NX.time + 2; NX.ui.skinlab.show(); } return; }
     const gv = NX.visitors.hit(x, y); if (gv) { NX.visitors.tap(gv); return; }
-    if (NX.cat.hitTest(x, y)) { NX.fx.emit('note', NX.cat.x, NX.cat.y - 24); NX.nexi.do('petCat'); return; }
+    if (NX.cat.hitTest(x, y)) { NX.fx.emit('note', NX.cat.x, NX.cat.y - 24); if (NX.cat.withNexi()) { NX.cat.purr(3); NX.nexi.emote('love', 2); } else NX.nexi.do('petCat'); return; }   // кіт на столі біля Nexi — мурчить, Nexi не відривається від роботи
     for (const ob of Object.values(NX.objects)) if (ob.tapFirst && ob.tapFirst(x, y)) return;   // напр. меню порталу
     const coin = NX.objects.coins.at(x, y); if (coin) { NX.nexi.do('collect'); return; }
     const o = this.objectAt(x, y); if (o) { if (o.onTap && o.onTap(x, y)) return; if (NX.ui.zones.hasMenu(o.act)) { const [sx, sy] = NX.cam.toScreen(x, y); NX.ui.zones.open(o.act, sx, sy); return; } if (NX.ui.zones.has(o.act)) { NX.nexi.do(o.act, true, { task: NX.ui.zones.pick(o.act) }); return; } NX.nexi.do(o.act); return; }
