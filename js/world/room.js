@@ -34,28 +34,25 @@ NX.room = {
     }
     // ---------- передня підлога: ПРОДОВЖЕННЯ тієї ж підлоги з картинки ----------
     // 1) останні рядки картинки розтягуємо вниз — кольори й відблиски тягнуться без шву
-    // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) сітка плитки
-    //    з'являється плавно (на шві її не видно)
-    this.front = document.createElement('canvas'); this.front.width = W; this.front.height = front + 2;
+    // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) плитка зі швами й калюжі світла (№7) — їх запікає
+    //    сюди objects/wing_floor.js через NX.room.frontFx (щокадру нічого не коштують). Полотно — FR px на одиницю (1).
+    this.front = document.createElement('canvas'); this.front.width = W * this.FR; this.front.height = (front + 2) * this.FR;
     this.frontFrom(this.img, 0, W);
     this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1));                                    // перемальовані зони (напр. AI-центр)
   },
-  patches: [],
+  patches: [], FR: 1, frontFx: null,                                                                  // FR 2 px/од. подвоював час кадру (велике полотно щокадру) — лишаємо 1
   /** Передня підлога для стовпчиків x0..x1 з джерела src (картинка кімнати або її перемальована копія того ж розміру). */
   frontFrom(src, x0, x1) {
-    const { ROOM_W: W, ROOM_H: H } = NX.cfg, front = this.front.height - 2, RS = this.RS, c = this.front.getContext('2d');
+    const { ROOM_W: W, ROOM_H: H } = NX.cfg, FR = this.FR, front = this.front.height / FR - 2, RS = this.RS, c = this.front.getContext('2d');
+    c.setTransform(FR, 0, 0, FR, 0, 0);
     c.save(); c.beginPath(); c.rect(x0, 0, x1 - x0, front + 2); c.clip(); c.clearRect(x0, 0, x1 - x0, front + 2);
     c.drawImage(src, 0, (H - 4) * RS, W * RS, 4 * RS, 0, 0, W, front + 2);
     const ref = Math.min(front, 240);
     c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(src, 0, (H - ref - 14) * RS, W * RS, ref * RS, 0, -ref, W, ref); c.restore();
     let g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(10,6,34,0)'); g.addColorStop(.18, 'rgba(10,6,34,.35)'); g.addColorStop(.75, 'rgba(6,6,26,.9)'); g.addColorStop(1, 'rgba(4,5,20,1)');
     c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
-    const gr = document.createElement('canvas'); gr.width = W; gr.height = front + 2; const gc = gr.getContext('2d');
-    const vx = W / 2, vy = -340; gc.lineWidth = 1;
-    for (let i = -16; i <= 16; i++) { const xb = vx + i * 120, xa = vx + (xb - vx) * (0 - vy) / (front - vy); gc.strokeStyle = i % 2 ? 'rgba(217,75,255,.16)' : 'rgba(59,232,255,.16)'; gc.beginPath(); gc.moveTo(xa, 0); gc.lineTo(xb, front); gc.stroke(); }
-    for (let k = 1; k < 12; k++) { const tt = k / 12; gc.fillStyle = `rgba(59,232,255,${.05 + .08 * tt})`; gc.fillRect(0, Math.round(front * Math.pow(tt, 1.6)), W, 1); }
-    gc.globalCompositeOperation = 'destination-in'; const gm = gc.createLinearGradient(0, 0, 0, Math.min(140, front)); gm.addColorStop(0, 'rgba(0,0,0,0)'); gm.addColorStop(1, 'rgba(0,0,0,1)'); gc.fillStyle = gm; gc.fillRect(0, 0, W, front + 2);
-    c.drawImage(gr, 0, 0); c.restore();
+    if (this.frontFx) { c.save(); c.translate(0, -H); this.frontFx(c, x0, x1, front); c.restore(); }   // №7: плитка й калюжі світла (у координатах кімнати)
+    c.restore(); c.setTransform(1, 0, 0, 1, 0, 0);
   },
   /** Об'єкт, що перемалював частину кімнати, віддає її копію: передня підлога (продовження й глянцеве
    *  віддзеркалення) для стовпчиків x0..x1 будується вже з неї — без "привидів" старої картинки. */
@@ -66,7 +63,7 @@ NX.room = {
     c.drawImage(this.ceil, 0, -top);
     c.drawImage(this.img, 0, 0, NX.cfg.ROOM_W, NX.cfg.ROOM_H);
     const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(0, 0, NX.cfg.ROOM_W, 22);
-    c.drawImage(this.front, 0, H);
+    c.drawImage(this.front, 0, H, NX.cfg.ROOM_W, this.front.height / this.FR);
   },
 
   /** Де можна ходити (прямокутник підлоги). */

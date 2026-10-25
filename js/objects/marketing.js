@@ -12,6 +12,8 @@
  *           стікери-ідеї на рамках екранів будки (NOTES)
  * Коли Nexi працює тут (obj 'marketing'), пости летять швидше, спливають
  * сердечка, росте лічильник; зроблене — NX.ui.zones.done.marketing на правому екрані.
+ * ЕКРАНИ (№6, objects/wing_screens.js): лівий по черзі стрічка постів ↔ AI-теги (розпізнавання
+ * картинки для поста: Рудик / логотип / обличчя / документ); перемикання з «глітчем», ледь мерехтять.
  * Крісло — objects/office.js (NX.chairM); кавомашина перед столом — coffee.js;
  * рослина на столі зліва — wing_plants.js.
  * РЕАКЦІЯ НА NEXI (пункт №8, objects/wing_react.js): поки Nexi сидить у кріслі, розумна колонка
@@ -52,7 +54,10 @@
   // ---------- живі екрани ----------
   const [LCV, lx] = F.canvas(208, 184), [RCV, rx] = F.canvas(144, 184), POSTS = ['#ff9ae6', '#7af0ff', '#ffe27a', '#9a8cff'];
   function drawLeft(c, t, act, prog) {
-    const W = 208, H = 184; K.screenBg(c, W, H, t); const sp = 14 + act * 26, off = (t * sp) % 62;
+    const W = 208, H = 184; K.screenBg(c, W, H, t);
+    const pg = K.pages(t, 8, 2, 13);                                                                // №6: стрічка постів <-> розпізнавання картинок для поста
+    if (pg.i === 1) { P.text(c, 'AI TAGS', 8, 18, '#bfe9ff', 11); K.scrScan(c, 6, 26, W - 12, H - 32, t, { id: pg.id + 1, f: pg.f, act }); K.glitch(c, W, H, t, pg.sw, 8); return; }
+    const sp = 14 + act * 26, off = (t * sp) % 62;
     c.save(); c.beginPath(); c.rect(0, 0, W, H); c.clip();
     for (let k = -1; k < 4; k++) { const id = k + Math.floor(t * sp / 62), y = 8 + k * 62 - off, col = POSTS[((id % 4) + 4) % 4];
       c.fillStyle = 'rgba(10,30,110,.55)'; c.fillRect(8, y, W - 16, 54); c.strokeStyle = 'rgba(160,220,255,.6)'; c.lineWidth = 2; c.strokeRect(9, y + 1, W - 18, 52);
@@ -60,6 +65,7 @@
       P.text(c, '♥' + (100 + Math.floor(P.hash(id, 4) * 900) + (act ? Math.floor(prog * 3400) : 0)), 62, y + 44, '#ff9ae6', 10); }
     c.restore();
     if (act) for (let i = 0; i < 4; i++) { const ph = (t * .7 + i / 4) % 1; c.globalAlpha = 1 - ph; P.text(c, '♥', 30 + i * 46, H - 10 - ph * 120, '#ff7ad8', 16); c.globalAlpha = 1; }
+    K.glitch(c, W, H, t, pg.sw, 8);
   }
   function drawRight(c, t, act, prog) {
     const W = 144, H = 184; K.screenBg(c, W, H, t); P.text(c, 'ADS', 8, 18, '#bfe9ff', 11);
@@ -93,7 +99,7 @@
       const act = this.active ? 1 : 0, R = F.res();
       c.save(); K.draw(c, BS, R);
       if ((this.fr++ % 3) === 1) { drawLeft(lx, t, act, this.prog); drawRight(rx, t, act, this.prog); }
-      c.imageSmoothingEnabled = true; const [L, Rr] = BOOTH.screens; c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]);
+      c.imageSmoothingEnabled = true; const [L, Rr] = BOOTH.screens; c.globalAlpha = K.flick(t, 21); c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.globalAlpha = K.flick(t, 22); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]); c.globalAlpha = 1;   // ледь мерехтять (№6)
       const [sx0, sy0, sx1, sy1] = BOOTH.sign; c.globalCompositeOperation = 'lighter';
       c.strokeStyle = rgba('255,79,216', .16 + .1 * Math.sin(t * 1.8) + act * .12); c.lineWidth = 3; c.beginPath(); c.roundRect ? c.roundRect(BOOTH.x0 - 1, BOOTH.y0 - 1, BOOTH.x1 - BOOTH.x0 + 2, BOOTH.y1 - BOOTH.y0 + 2, 7) : c.rect(BOOTH.x0, BOOTH.y0, BOOTH.x1 - BOOTH.x0, BOOTH.y1 - BOOTH.y0); c.stroke();
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));

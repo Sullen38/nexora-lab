@@ -11,6 +11,8 @@
  *           роздруківка-звіт звисає з краю плити, папери, телефон на зарядці, мишка
  * Коли Nexi працює тут (obj 'analytics'), екрани прискорюються й показують
  * приріст; зроблене (NX.ui.zones.done.analytics) видно на лівому екрані.
+ * ЕКРАНИ (№6, objects/wing_screens.js): лівий по черзі USERS ↔ карта користувачів (UA/PL/NL/EN),
+ * ноутбук — стовпчики ↔ лог; перемикання з «глітчем», усі ледь мерехтять.
  * Крісло — objects/office.js (NX.chairA). Рослина на даху будки — wing_plants.js.
  * РЕАКЦІЯ НА NEXI (пункт №8, objects/wing_react.js): поки Nexi сидить у кріслі, кубик-колонка грає
  *       (світле віконце стає еквалайзером, хвилі, ноти), лампа Едісона над зоною (bulbA) спалахує,
@@ -58,6 +60,14 @@
   const [LCV, lx] = F.canvas(248, 344), [RCV, rx] = F.canvas(240, 344), [ACV, ax] = F.canvas(104, 80), [TCV, tx] = F.canvas(72, 64);
   function drawLeft(c, t, act, prog) {
     const W = 248, H = 344; K.screenBg(c, W, H, t);
+    const pg = K.pages(t, 5, 2, 15);                                                                // №6: USERS <-> карта користувачів (по черзі)
+    if (pg.i === 1) {
+      P.text(c, 'MAP', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
+      K.scrMap(c, 8, 44, W - 16, 150, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london', 'newyork'], land: '#3a8ad8' });
+      [['UA', 38, '#ff9ae6'], ['PL', 24, '#7af0ff'], ['NL', 17, '#ffe27a'], ['EN', 21, '#3bff8a']].forEach(([k, v, col], n) => { const y = 214 + n * 24, vv = v + Math.round((noise(t * .3, n) - .5) * 4 + act * prog * 3); P.text(c, k, 12, y + 10, '#bfe9ff', 11); lit(c, 44, y, 150 * vv / 40, 10, col); P.text(c, vv + '%', W - 12, y + 10, '#e8fdff', 10, 'right'); });
+      (NX.ui.zones.done.analytics || []).slice(-1).forEach(d => { lit(c, 12, H - 30, 8, 8, '#3bff8a'); P.text(c, NX.t(`zones.analytics.${d.task}.t`).toUpperCase().slice(0, 24), 26, H - 21, '#bfe9ff', 8); });
+      K.glitch(c, W, H, t, pg.sw, 5); return;
+    }
     P.text(c, 'USERS', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
     for (let k = 0; k < 3; k++) { const x = 20 + k * 74, y = 42, on = Math.floor(t * (1 + act * 2)) % 3 === k;                                   // аватари
       c.fillStyle = on ? '#ffffff' : '#9fdcff'; c.beginPath(); c.arc(x + 22, y + 16, 12, 0, 7); c.fill(); c.beginPath(); c.ellipse(x + 22, y + 50, 20, 14, 0, Math.PI, 0); c.fill(); lit(c, x, y + 60, 44, 4, on ? '#3bff8a' : '#2a6ab0'); }
@@ -67,6 +77,7 @@
     for (let i = 0; i < 8; i++) { const v = P.clamp(noise(t * (1 + act * 1.8), i) + act * prog * .3, .12, 1), hh = v * (base - top), x = 14 + i * 29;   // стовпчики
       c.fillStyle = 'rgba(122,240,255,.28)'; c.fillRect(x, base - hh, 20, hh); lit(c, x, base - hh, 20, 4, '#e8fdff'); lit(c, x + 3, base - hh + 7, 4, Math.max(0, hh - 10), 'rgba(255,255,255,.25)'); }
     lit(c, 10, base + 3, W - 20, 3, '#9fdcff'); if (act) P.text(c, '+' + (12 + Math.floor(prog * 30)) + '%', W - 12, 160, '#ffe27a', 16, 'right');
+    K.glitch(c, W, H, t, pg.sw, 5);
   }
   function drawRight(c, t, act, prog) {
     const W = 240, H = 344; K.screenBg(c, W, H, t);
@@ -82,7 +93,13 @@
     P.text(c, Math.round(share * 100) + '%', cx, cy + 7, '#ffffff', 15, 'center');
     for (let k = 0; k < 4; k++) { lit(c, 130, 228 + k * 22, 12, 12, ['#7af0ff', '#ff9ae6', '#ffe27a', '#3bff8a'][k]); lit(c, 150, 232 + k * 22, 40 + 40 * noise(t * .5, k + 3), 5, '#bfe9ff'); }
   }
-  function drawLaptop(c, t, act) { c.clearRect(0, 0, 104, 80); c.fillStyle = 'rgba(22,80,210,.5)'; c.fillRect(0, 0, 104, 80); c.fillStyle = '#5ae8ff'; c.fillRect(0, 0, 104, 3); c.fillRect(0, 77, 104, 3); for (let i = 0; i < 9; i++) { const v = noise(t * (1.5 + act * 3), i + 9), h = 10 + v * 50; lit(c, 8 + i * 10, 72 - h, 7, h, i % 3 ? '#7af0ff' : '#ff9ae6'); } lit(c, 6, 8, 24, 4, '#bfe9ff'); }
+  function drawLaptop(c, t, act) {
+    c.clearRect(0, 0, 104, 80); c.fillStyle = 'rgba(22,80,210,.5)'; c.fillRect(0, 0, 104, 80); c.fillStyle = '#5ae8ff'; c.fillRect(0, 0, 104, 3); c.fillRect(0, 77, 104, 3);
+    const pg = K.pages(t, 6, 2, 11);                                                                // №6: стовпчики <-> лог продажів
+    if (pg.i === 1) K.scrLog(c, 3, 6, 98, 70, t, { act, size: 5, time: false, rate: 1.4, seed: 2 });
+    else { for (let i = 0; i < 9; i++) { const v = noise(t * (1.5 + act * 3), i + 9), h = 10 + v * 50; lit(c, 8 + i * 10, 72 - h, 7, h, i % 3 ? '#7af0ff' : '#ff9ae6'); } lit(c, 6, 8, 24, 4, '#bfe9ff'); }
+    K.glitch(c, 104, 80, t, pg.sw, 6);
+  }
   function drawTablet(c, t) { c.clearRect(0, 0, 72, 64); c.fillStyle = '#0b2a8a'; c.fillRect(0, 0, 72, 64); const a = t * .8; c.lineWidth = 9; for (const [col, s, e] of [['#ff9ae6', 0, 2.4], ['#7af0ff', 2.4, 4.6], ['#ffe27a', 4.6, 6.28]]) { c.strokeStyle = col; c.beginPath(); c.arc(36, 32, 18, a + s, a + e); c.stroke(); } }
 
   let BS = null, DS = null;
@@ -93,7 +110,7 @@
       if (!DS) { DS = buildDesk(); DS.cv = DS.canvas(); }
       const act = this.active ? 1 : 0, R = F.res();
       c.save(); K.draw(c, DS, R); c.imageSmoothingEnabled = true;
-      c.globalAlpha = .9; F.warp(c, ACV, LAPQ, Math.max(.5, 1.5 / R)); c.globalAlpha = 1; c.drawImage(TCV, TAB[0], TAB[1], TAB[2] - TAB[0], TAB[3] - TAB[1]);
+      c.globalAlpha = .9 * K.flick(t, 13); F.warp(c, ACV, LAPQ, Math.max(.5, 1.5 / R)); c.globalAlpha = 1; c.drawImage(TCV, TAB[0], TAB[1], TAB[2] - TAB[0], TAB[3] - TAB[1]);
       c.globalCompositeOperation = 'lighter';
       c.fillStyle = rgba('59,232,255', .14 + .05 * Math.sin(t * 3)); c.beginPath(); c.moveTo(LAPB[0] + 2, 276); c.lineTo(LAPB[1] - 2, 276); c.lineTo(LAPQ[2][0], LAPQ[2][1]); c.lineTo(LAPQ[3][0], LAPQ[3][1]); c.fill();   // промінь проектора
       c.fillStyle = rgba('255,79,216', .3 + .2 * Math.sin(t * 2.2) + act * .2); c.fillRect(DESK.l + 1, DESK.top + .5, DESK.r - DESK.l - 2, 1.4);                 // неон плити
@@ -115,7 +132,7 @@
       c.save(); K.draw(c, BS, R);
       if ((this.fr++ % 3) === 0) { drawLeft(lx, t, act, this.prog); drawRight(rx, t, act, this.prog); drawLaptop(ax, t, act); drawTablet(tx, t); }
       c.imageSmoothingEnabled = true;
-      const [L, Rr] = BOOTH.screens; c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]);
+      const [L, Rr] = BOOTH.screens; c.globalAlpha = K.flick(t, 11); c.drawImage(LCV, L[0], L[1], L[2] - L[0], L[3] - L[1]); c.globalAlpha = K.flick(t, 12); c.drawImage(RCV, Rr[0], Rr[1], Rr[2] - Rr[0], Rr[3] - Rr[1]); c.globalAlpha = 1;   // ледь мерехтять (№6)
       const [sx0, sy0, sx1, sy1] = BOOTH.sign; c.globalCompositeOperation = 'lighter';
       c.strokeStyle = rgba('59,232,255', .14 + .08 * Math.sin(t * 1.8) + act * .12); c.lineWidth = 3; c.beginPath(); c.roundRect ? c.roundRect(BOOTH.x0 - 1, BOOTH.y0 - 1, BOOTH.x1 - BOOTH.x0 + 2, BOOTH.y1 - BOOTH.y0 + 2, 7) : c.rect(BOOTH.x0, BOOTH.y0, BOOTH.x1 - BOOTH.x0, BOOTH.y1 - BOOTH.y0); c.stroke();   // ореол канта
       BOOTH.screens.forEach(([a, b, c2, d]) => P.glow(c, (a + c2) / 2, (b + d) / 2, (c2 - a) * .7, 'rgba(70,140,255,.6)', .14 + act * .1));

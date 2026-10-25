@@ -25,7 +25,7 @@
   // dir — напрям конуса (вниз = π/2), spread — піввідкриття, len — довжина; rays — скільки тонких променів;
   // haze/ray — сила серпанку й променів; dust — порошинок; fl(t) — мерехтіння як у самого джерела
   const LIGHTS = [
-    { id: 'lantA', ax: 218, ay: 31, hx: 13, hy: 18, dir: Math.PI / 2, spread: 1.05, len: 118, col: WARM, rays: 9, haze: .5, ray: .62, dust: 18, seed: 1, fl: t => .85 + .1 * Math.sin(t * 6.3) + .05 * Math.sin(t * 13.7) },
+    { id: 'lantA', ax: 218, ay: 31, hx: 13, hy: 18, dir: Math.PI / 2, spread: 1.05, len: 118, col: WARM, rays: 9, haze: .5, ray: .62, dust: 18, seed: 1, avoid: () => NX.objects.aiPc && NX.objects.aiPc.BIGQ, fl: t => .85 + .1 * Math.sin(t * 6.3) + .05 * Math.sin(t * 13.7) },   // промені не лягають білими смугами на голограму AI-центру
     { id: 'lantB', ax: 510, ay: 171, hx: 13, hy: 25, dir: Math.PI / 2, spread: .95, len: 108, col: WARM, rays: 8, haze: .5, ray: .62, dust: 16, seed: 2, fl: t => .85 + .1 * Math.sin(t * 6.3 + 2) + .05 * Math.sin(t * 13.7 + 1) },
     { id: 'bulbA', ax: 332, ay: 38.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 84, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 14, seed: 3, zone: 'analytics', fl: t => .78 + .14 * Math.sin(t * 7 + 327) + .08 * Math.sin(t * 13.7) },
     { id: 'bulbB', ax: 640, ay: 108.5, hx: 5, hy: 7, dir: Math.PI / 2, spread: .6, len: 76, beam: 1, col: BULB, rays: 0, haze: .4, ray: 0, dust: 12, seed: 4, zone: 'marketing', fl: t => .78 + .14 * Math.sin(t * 7 + 635) + .08 * Math.sin(t * 13.7) },
@@ -69,6 +69,8 @@
     for (let k = 0; k <= 16; k++) { const a = L.dir - L.spread + 2 * L.spread * k / 16, x = L.ax + Math.cos(a) * L.len, y = L.ay + Math.sin(a) * L.len; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
     return [Math.floor(x0), Math.floor(y0), Math.ceil(x1), Math.ceil(y1)];
   }
+  /** Чи точка в опуклому чотирикутнику q (обхід за годинниковою стрілкою, як BIGQ). */
+  const inQuad = (q, X, Y) => q.every(([ax, ay], k) => { const [bx, by] = q[(k + 1) % q.length]; return (bx - ax) * (Y - ay) - (by - ay) * (X - ax) >= 0; });
   /** Растр світла: сила 0..1 -> рівні (n) з дизерингом Байєра -> колір джерела, помножений на рівень (для 'lighter').
    *  fns — кілька шарів [fn, рівнів, підсвітлення кольору]; беремо найсильніший. Порожні краї обрізаються (менше малювати). */
   function bake(L, fns) {
@@ -88,7 +90,8 @@
   function build(L) {
     const haze = (X, Y) => hazeAt(L, X, Y);
     if (!L.rays) { L.hz = bake(L, [[haze, 6, 0]]); return; }
-    const rays = makeRays(L); L.hz = bake(L, [[haze, 6, 0], [(X, Y) => rayAt(L, rays, 0, X, Y) * L.ray / L.haze, 5, 30]]); L.rB = bake(L, [[(X, Y) => rayAt(L, rays, 1, X, Y), 5, 30]]);
+    const rays = makeRays(L), q = L.avoid && L.avoid(), out = q ? (X, Y) => !inQuad(q, X, Y) : () => true;   // промені не лягають на голограму AI-центру (вирізаємо при побудові — щокадру нічого не коштує)
+    L.hz = bake(L, [[haze, 6, 0], [(X, Y) => out(X, Y) ? rayAt(L, rays, 0, X, Y) * L.ray / L.haze : 0, 5, 30]]); L.rB = bake(L, [[(X, Y) => out(X, Y) ? rayAt(L, rays, 1, X, Y) : 0, 5, 30]]);
   }
   /** Порошинки: кожна живе 6..12 с у випадковому місці конуса (ближче до джерела — частіше), повільно пливе, мерехтить. */
   function dust(c, L, t, f) {
