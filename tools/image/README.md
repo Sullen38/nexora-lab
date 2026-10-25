@@ -10,8 +10,8 @@
 | 3 | `03_cut_chairs.py` | (застаріло) вирізати крісла в спрайти — крісла тепер малюються кодом (`objects/office.js`) |
 | 4 | `04_upscale_edsr.py` | збільшити ×2 нейромережею EDSR + різкість |
 | 5 | `05_fix_sofa_bg.py` | симетричний диван на фоні → `assets/room.webp` |
-| 6 | `06_trace_plants.py` | вазони лівого крила → чисті спрайти (`assets/plants_wing.png` + `js/objects/wing_plants_data.js`) |
-| 7 | `07_desk_props.py` | дрібнички на краю стола AI-центру (ноутбук, рамка, колонка, фігурка) → `assets/ai_desk_props.png` |
+| 6 | `06_trace_plants.py` | (застаріло, замінено 08) |
+| 7 | `08_wing_backdrop.py` | червоні зони власника → піксель-арт фон-полиці + атлас спрайтів (рослини, лампи, речі) + `wing_data.js` |
 
 Залежності: `pip install opencv-contrib-python numpy scipy pillow --break-system-packages`.
 Скрипти працюють у робочій папці (не в репозиторії) — імена файлів у шапці кожного.

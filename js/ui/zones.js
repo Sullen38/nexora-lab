@@ -16,8 +16,21 @@ NX.ui.zones = {
   $: id => document.getElementById(id),
   init() { this.$('zmenu').addEventListener('pointerdown', e => e.stopPropagation()); document.addEventListener('pointerdown', e => { if (!this.$('zmenu').contains(e.target)) this.hide(); }); },
   has(zone) { return !!this.TASKS[zone]; },
-  hasMenu(zone) { return this.has(zone) || !!this.MENUS[zone]; },
-  pick(zone) { const k = Object.keys(this.TASKS[zone]); return k[Math.random() * k.length | 0]; },
+  /** Меню більше немає: тап по робочій зоні — Nexi САМ вирішує, що робити (по черзі). */
+  hasMenu(zone) { return !!this.MENUS[zone]; },
+  /** Яку задачу зони робити далі: ПО ЧЕРЗІ (не повторюючи ту саму підряд); пам'ять — у localStorage. */
+  nextIdx: JSON.parse(localStorage.getItem('nx.zoneNext') || '{}'),
+  pick(zone) {
+    const k = Object.keys(this.TASKS[zone]), i = (this.nextIdx[zone] || 0) % k.length;
+    this.nextIdx[zone] = (i + 1) % k.length; try { localStorage.setItem('nx.zoneNext', JSON.stringify(this.nextIdx)); } catch (e) {}
+    return k[i];
+  },
+  /** Що вже зроблено в зоні (для екранів): останні записи з історії Nexi. */
+  done: JSON.parse(localStorage.getItem('nx.zoneDone') || '{}'),
+  log(zone, task, n) {
+    const L = this.done[zone] = this.done[zone] || []; L.push({ task, n, at: Date.now() }); if (L.length > 6) L.shift();
+    try { localStorage.setItem('nx.zoneDone', JSON.stringify(this.done)); } catch (e) {}
+  },
   /** Показати меню зони біля точки екрана (sx, sy). */
   open(zone, sx, sy) {
     const m = this.$('zmenu'); m.innerHTML = '';
@@ -34,7 +47,7 @@ NX.ui.zones = {
   hide() { this.$('zmenu').style.display = 'none'; },
   /** Картка результату після виконаної задачі. */
   result(zone, task, auto) {
-    const [a, b] = this.TASKS[zone][task], n = Math.round(a + Math.random() * (b - a)), r = this.$('result');
+    const [a, b] = this.TASKS[zone][task], n = Math.round(a + Math.random() * (b - a)), r = this.$('result'); this.log(zone, task, n);
     r.querySelector('b').textContent = NX.t(auto ? 'ui.resultAuto' : 'ui.result') + ' · ' + NX.t('nav.' + zone);
     r.querySelector('span').textContent = NX.t(`zones.${zone}.${task}.r`, { n });
     r.style.borderColor = { ai: '#3be8ff', analytics: '#ffc94d', marketing: '#d94bff', tools: '#3bff8a' }[zone];

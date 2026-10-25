@@ -11,10 +11,10 @@
  * ========================================================================== */
 NX.cat = {
   FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
-  x: 80, y: 349, ground: 378, alt: 29, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
+  x: 57, y: 352, ground: 378, alt: 26, dir: 1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
   spots() { const cc = NX.objects.catCorner; return {
-    bed: { x: 80, y: 349, from: [96, 380] }, platform: { x: 78, y: 312, from: [70, 380] }, sofa: { x: 830, y: 324, from: [830, 384] }, sofaArm: { x: 871, y: 301, from: [871, 384] },
+    bed: { x: 57, y: 352, from: [72, 382] }, platform: { x: 67, y: 326, from: [60, 382] }, sofa: { x: 830, y: 324, from: [830, 384] }, sofaArm: { x: 871, y: 301, from: [871, 384] },
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
     beanbag: { x: NX.objects.lounge.pos[0] + 6, y: NX.objects.lounge.pos[1] - 26 * NX.px.depthK(NX.objects.lounge.pos[1]), from: [NX.objects.lounge.pos[0] + 6, NX.objects.lounge.pos[1] + 6] } }; },
 

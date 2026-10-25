@@ -18,40 +18,47 @@
   const P = NX.px, F = NX.furn, { NAVY, CHROME } = F.PAL, ramp = F.ramp;
   const ACC = { analytics: ['#0f4870', '#17709a', '#2aa6c8', '#3be8ff', '#9af6ff'], marketing: ['#58134f', '#7a1c6d', '#c63aa8', '#ff4fd8', '#ffc2ec'] };
   // LED-стрічка по краю спинки (локальні координати крісла при масштабі 1)
-  const LED = [[45.5, 52], [45.5, 14], [48, 6], [56, 2.6], [70, 2.6], [78, 6], [81.4, 14], [81.4, 62]];
+  const LED = [[43.5, 50], [43.5, 14], [46, 5], [56, 1.2], [71, 1.2], [80, 5], [83.4, 14], [83.4, 60]];
   const N = ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'];
 
-  /** Крісло в растр (локальні координати, масштаб 1: 0..92 × 0..94). */
+  /** Крісло в растр (локальні координати, масштаб 1: 0..92 × 0..96). Геймерське: висока спинка з
+   *  "крилами", подушка під голову з неоном, стьобка, акцентні смуги, хромовані підлокітники,
+   *  товсте сидіння з кантом, газліфт з пружиною, п'ятипроменева основа з неоновими коліщатками. */
   function build(acc) {
-    const S = F.Sheet(0, 0, 92, 96, .25);
-    // основа: перекладина й коліщатка
-    S.rr(8, 82, 77, 86.6, 2, (d, u, v, i, j) => d < .5 ? F.PAL.OUT : ramp(CHROME, .75 - v * .6 - Math.abs(u - .5) * .3, i, j));
-    for (const cx of [11.5, 42.5, 73.5]) S.rr(cx - 3.4, 86.2, cx + 3.4, 93, 3.4, (d, u, v) => d < .6 ? F.PAL.OUT : d < 1.4 ? CHROME[2] : (u < .45 && v < .45 ? CHROME[3] : NAVY[1]));
-    // газліфт
-    S.rect(38.5, 70, 44.5, 82.5, (u, v, i, j) => Math.abs(v - .35) < .06 ? NAVY[1] : ramp(CHROME, .9 - Math.abs(u - .35) * 1.6, i, j));
-    // спинка: оббивка зі стьобкою, бокові валики, подушка під голову, значок N
-    S.rr(44, 1.5, 83, 66, [12, 12, 5, 5], (d, u, v, i, j, X, Y) => {
-      if (d < .6) return F.PAL.OUT; if (d < 1.4) return (u < .3 || v < .15) ? NAVY[8] : NAVY[5];
-      if (d < 5.5) return ramp(NAVY, .36 - v * .2 + (u < .4 ? .08 : -.04), i, j, .1);                 // валики
-      if (d < 6.3) return NAVY[1];
-      const quilt = ((Y - 6) % 7.5 + 7.5) % 7.5;
+    const S = F.Sheet(0, 0, 92, 96, .25), O = F.PAL.OUT;
+    // основа: 3 видимі промені з коліщатками
+    [[42.5, 14, 86.5], [42.5, 42.5, 86.5], [42.5, 71, 86.5]].forEach(([x0, x1, y1]) => S.line(x0, 79, x1, y1, CHROME[1], 3.6));
+    [[42.5, 14, 86.5], [42.5, 42.5, 86.5], [42.5, 71, 86.5]].forEach(([x0, x1, y1]) => S.line(x0, 78.4, x1, y1 - .6, CHROME[4], 1.2));
+    for (const cx of [14, 42.5, 71]) { S.rr(cx - 3.8, 86, cx + 3.8, 93.6, 3.8, (d, u, v) => d < .6 ? O : d < 1.5 ? CHROME[2] : (u < .45 && v < .45 ? CHROME[3] : NAVY[1])); S.rr(cx - 1.4, 88.6, cx + 1.4, 91.4, 1.4, acc[3]); }
+    // газліфт з пружиною
+    S.rect(38, 68, 47, 80, (u, v, i, j) => Math.abs(((v * 6) % 1) - .5) < .12 ? NAVY[1] : ramp(CHROME, .9 - Math.abs(u - .35) * 1.6, i, j));
+    S.rr(34, 66, 51, 69.5, 1.5, (d, u, v, i, j) => d < .5 ? O : ramp(CHROME, .7 - v * .4, i, j));
+    // спинка: високa, з "крилами" по боках, стьобка, акцентні смуги
+    S.rr(42, 0, 85, 64, [14, 14, 4, 4], (d, u, v, i, j, X, Y) => {
+      if (d < .6) return O; if (d < 1.5) return (u < .3 || v < .15) ? NAVY[8] : NAVY[5];
+      if (d < 6) return ramp(NAVY, .36 - v * .2 + (u < .4 ? .08 : -.04), i, j, .1);                   // валики-крила
+      if (d < 6.8) return NAVY[1];
+      if (Math.abs(X - 49.5) < .8 || Math.abs(X - 77.5) < .8) return acc[2];                          // акцентні смуги
+      const quilt = ((Y - 6) % 7 + 7) % 7;
       return quilt < .7 ? NAVY[2] : ramp(NAVY, .58 - v * .26 + (quilt < 2.2 ? .1 : 0) + (u < .45 ? .06 : 0), i, j, .1);
     });
-    S.rr(52, 6.5, 75, 17.5, 4.5, (d, u, v, i, j) => d < .6 ? F.PAL.OUT : ramp(acc, .85 - v * .6 - u * .1, i, j));   // подушка
-    N.forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && S.rect(59.5 + i * 1.2, 38 + j * 1.2, 60.7 + i * 1.2, 39.2 + j * 1.2, acc[3])));
-    // підлокітник
-    S.rect(30, 51, 35, 59, (u, v, i, j) => ramp(CHROME, .6 - u * .5, i, j));
-    S.rr(13, 45.5, 51, 51.5, 2.6, (d, u, v, i, j) => d < .5 ? F.PAL.OUT : v < .35 ? NAVY[7] : ramp(NAVY, .4 - v * .2, i, j));
-    // сидіння (збоку): світлий верх, темніший бік, заокруглений передній край
-    S.rr(3, 57.5, 76, 71.5, [5.5, 3, 3, 5.5], (d, u, v, i, j) => {
-      if (d < .6) return F.PAL.OUT;
-      if (v < .26) return d < 1.4 ? NAVY[8] : ramp(NAVY, .78 - v * .6, i, j, .08);
-      return ramp(NAVY, .46 - v * .3 + (u < .25 ? .06 : 0), i, j, .1);
+    S.rr(50, 5, 77, 16.5, 5, (d, u, v, i, j) => d < .6 ? O : d < 1.4 ? acc[4] : ramp(acc, .8 - v * .55 - u * .1, i, j));    // подушка-підголівник
+    S.rr(56, 22, 71, 30, 2, (d, u, v, i, j) => d < .5 ? NAVY[1] : ramp(NAVY, .2 + v * .2, i, j));                           // поперекова вставка
+    N.forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && S.rect(59.5 + i * 1.2, 36 + j * 1.2, 60.7 + i * 1.2, 37.2 + j * 1.2, acc[3])));
+    // підлокітник (3D): хромована стійка + м'яка накладка
+    S.rect(29, 49, 35, 58, (u, v, i, j) => ramp(CHROME, .6 - u * .5, i, j));
+    S.rr(11, 43, 50, 50, 3, (d, u, v, i, j) => d < .5 ? O : v < .3 ? NAVY[7] : ramp(NAVY, .4 - v * .2, i, j));
+    S.rect(13, 44.5, 48, 45.3, acc[3]);
+    // сидіння: товста подушка, світлий верх, кант, передній валик
+    S.rr(2, 55, 78, 70, [6, 3, 3, 6], (d, u, v, i, j) => {
+      if (d < .6) return O;
+      if (v < .25) return d < 1.4 ? NAVY[8] : ramp(NAVY, .78 - v * .6, i, j, .08);
+      if (v > .72) return ramp(NAVY, .36 - (v - .72) * .6, i, j, .1);
+      return ramp(NAVY, .5 - v * .3 + (u < .25 ? .06 : 0) + (Math.abs(((u * 5) % 1) - .5) < .06 ? -.12 : 0), i, j, .1);
     });
-    S.rect(5, 66.5, 74, 67.4, acc[2]);                                                              // кантик сидіння
+    S.rect(4, 64.5, 76, 65.4, acc[2]);
     return S.canvas();
   }
-
   function makeChair(id, x, y, seat, scale, glowAt) {
     const acc = ACC[id]; let CV = null;
     return NX.addObject({
@@ -62,7 +69,7 @@
         const v = (this.target - this.off) * Math.min(1, dt * 6); this.off += v;
         const n = NX.nexi, sitting = n.seat === this; this.wob = sitting && n.cur && n.cur.work ? Math.sin(t * 2.2) * .6 : this.wob * .9;
         if (sitting) { n.x = this.x + this.seat[0] + this.off; n.y = this.y + this.seat[1]; n.gy = 362; }
-        if (Math.abs(v) > .05 && Math.random() < .3) NX.fx.emit('dust', this.x + 40 * scale + this.off, this.y + 92 * scale);
+        if (Math.abs(v) > .05 && Math.random() < .3) NX.fx.emit('dust', this.x + 40 * scale + this.off, this.y + 94 * scale);
         this.spin = Math.max(0, this.spin - dt * 1.4);
       },
       layers(t) {
@@ -86,6 +93,6 @@
     });
   }
   // лівий верх крісла, точка сидіння (відносно нього), масштаб, де світить підсвітка на підлозі
-  NX.chairA = makeChair('analytics', 383, 252, [30, 62], 1, [423, 344]);
+  NX.chairA = makeChair('analytics', 383, 277, [30, 60], 1, [423, 370]);
   NX.chairM = makeChair('marketing', 588, 262, [30, 44], .8, [622, 336]);
 })();

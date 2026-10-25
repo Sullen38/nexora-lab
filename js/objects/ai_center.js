@@ -18,7 +18,7 @@
  *            перекриває стіл аналітики; плита з рожевим переливом, тумба з
  *            шухлядами, шафка AI-ядра, ніші; правий торець — до вікна (buildDeskSheet)
  *   FRONT  — речі на столі: монітор-коробка, бази голо-ноутбуків, горнятко, лампа
- *   PROPIMG — дрібнички з картинки на краю стола (tools/image/07_desk_props.py)
+ *   дрібнички з картинки на краю стола — спрайт ws_deskProps (wing_scene.js)
  *   MONF/L1F/L2F — живі екрани монітора й ноутбуків
  * Nexi злітає на стільницю (POI.aiDesk) і друкує на головному ноутбуці.
  * Тап по мозку — "спалах думки"; тап по зоні — меню з 3 задачами.
@@ -68,17 +68,17 @@
   // =====================================================================
   // ГЕОМЕТРІЯ СВІТУ (x, y, z) — див. core/persp.js
   // =====================================================================
-  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 291 };       // великий екран (на стіні, під кутом)
+  const BIG = { xw: 3, z0: 55, z1: 231, y0: 25, y1: 282 };   // низ екрана — трохи над стільницею (лінія власника 285→280)       // великий екран (на стіні, під кутом)
   const UPA = { xw: 3, z0: 40, z1: 108, y0: -30, y1: 12 };       // верхній екран 1 (мережа) — на місці двох маленьких екранів картинки
   const UPB = { xw: 3, z0: 116, z1: 166, y0: -26, y1: 12 };      // верхній екран 2 (журнал)
   const LANT = [{ z0: 174, z1: 195, y0: -36, y1: 22, w: 4 }, { z0: 207, z1: 214, y0: -33, y1: 19, w: 2.5 }];   // теплі ліхтарі на стіні (як на картинці)
-  const MON = { x0: 40, x1: 62, y0: 207, y1: 284, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
-  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 266, y1: 296 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
-  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 270, y1: 296 }, neon: ['#ff4fd8', '#c63aa8'] };
-  const MUG = { x0: 44, x1: 50, y0: 291, y1: 299, z0: 117, z1: 123 };
+  const MON = { x0: 40, x1: 62, y0: 196, y1: 272, z0: -8, z1: 44 };   // монітор (як на картинці: корпус видно спереду, екран дивиться в кімнату)
+  const LP1 = { x0: 26, x1: 48, z0: 126, z1: 150, scr: { xw: 28, z0: 127, z1: 150, y0: 254, y1: 283 }, neon: ['#3be8ff', '#2aa6c8'] };   // головний голо-ноутбук
+  const LP2 = { x0: 26, x1: 46, z0: 94, z1: 116, scr: { xw: 28, z0: 95, z1: 116, y0: 258, y1: 283 }, neon: ['#ff4fd8', '#c63aa8'] };
+  const MUG = { x0: 44, x1: 50, y0: 278, y1: 285.5, z0: 117, z1: 123 };
   const LAMP = { x: 30, z: 200 };
-  const TOPY = 299;                                               // висота стільниці у світі (для речей на столі)
-  const WALLR = { w: 248, h: 365 }, FRONTR = { oy: 222, w: 330, h: 142 }, FLOORR = { oy: 290, w: 350, h: 136 };
+  const TOPY = 285.5;                                             // висота стільниці у світі (речі стоять на видимому верху стільниці)
+  const WALLR = { w: 248, h: 365 }, FRONTR = { oy: 190, w: 330, h: 100 }, FLOORR = { oy: 290, w: 350, h: 136 };
 
   // =====================================================================
   // СТІНА (ліва стіна кімнати, x = 0) — цегла з неоновим плінтусом
@@ -237,7 +237,7 @@
         if (e < .5) return C.out; if (e < 1.3) return MB[6]; if (e < 3.2) return ramp(MB, .6 - v * .35, i, j); if (e < 3.8) return C.out; return '#020510'; },
     });
     // --- голо-ноутбуки: тонка база з неоновим краєм і світною проекцією клавіатури
-    for (const L of [LP2, LP1]) B({ x0: L.x0, x1: L.x1, y0: 297.6, y1: 299, z0: L.z0, z1: L.z1 }, {
+    for (const L of [LP2, LP1]) B({ x0: L.x0, x1: L.x1, y0: TOPY - 1.4, y1: TOPY, z0: L.z0, z1: L.z1 }, {
       top: (u, v, i, j) => { if (u > .96 || v < .02 || v > .98) return C.out; const kx = (v * 12) % 1, ky = (u * 6) % 1;
         if (u > .35 && u < .9 && v > .08 && v < .92 && (kx < .12 || ky < .14)) return L.neon[1];
         return ramp(CH, .55 + u * .25, i, j); },
@@ -245,113 +245,21 @@
     });
     // --- горнятко, лампа
     B(MUG, { top: (u, v) => (u < .18 || u > .82 || v < .18 || v > .82) ? K[6] : '#2a1408', right: (u, v, i, j) => v > .42 && v < .58 ? CY[4] : ramp(K, .8 - u * .5, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j) });
-    B({ x0: LAMP.x - 6, x1: LAMP.x + 6, y0: 297.6, y1: 299, z0: LAMP.z - 6, z1: LAMP.z + 6 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[0] });
+    B({ x0: LAMP.x - 6, x1: LAMP.x + 6, y0: TOPY - 1.4, y1: TOPY, z0: LAMP.z - 6, z1: LAMP.z + 6 }, { top: (u, v, i, j) => ramp(CH, .9 - v * .5, i, j), right: () => CH[1], front: () => CH[0] });
     const g = (x, y, z) => { const q = VD.p(x, y, z); return [q[0] / U, (q[1] - oy) / U]; };
-    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, 297.6, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 270, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 266, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
-    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 262, y1: 268, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
+    for (let k = 0; k < 3; k++) { const a = g(LAMP.x, TOPY - 1.4, LAMP.z - .5 + k * .5), b = g(LAMP.x + 3, 257, LAMP.z - 6 + k * .5), c2 = g(LAMP.x + 8, 253, LAMP.z - 9 + k * .5); const col = [C.out, CH[4], CH[2]][k]; r.line(a[0], a[1], b[0], b[1], col); r.line(b[0], b[1], c2[0], c2[1], col); }
+    B({ x0: LAMP.x + 2, x1: LAMP.x + 16, y0: 249, y1: 255, z0: LAMP.z - 14, z1: LAMP.z - 4 }, { right: (u, v, i, j) => v > .82 ? '#fff2c0' : ramp(K, .85 - v * .5 - u * .2, i, j), front: (u, v, i, j) => ramp(K, .4 - u * .2, i, j), top: (u, v, i, j) => ramp(K, .7 - v * .3, i, j) });
     outline(r, C.out);
     return r.canvas();
   }
 
-  // =====================================================================
-  // СТІЛ AI-ЦЕНТРУ — ПЕРШИЙ І НАЙБЛИЖЧИЙ (як на картинці): стоїть фронтально,
-  // ближче за стіл аналітики й трохи перекриває його лівий край. Далі по черзі
-  // йдуть аналітика й маркетинг. Малюється піксель-артом кодом (NX.furn.Sheet).
-  //   стільниця: видимий верх (глянець з відблиском великого екрана), світла
-  //              кромка і рожева неонова плита — кольори зняті з картинки
-  //              (ліворуч фіолетово-рожева, праворуч — тепліша, від ліхтарика)
-  //   корпус:    ліва опора зі світлою смужкою, ніша (там куток кота), тумба з
-  //              3 шухлядами, ніша (вазон і ліхтарик), шафка AI-ядра з вентилятором,
-  //              ніша (вазон), права опора; справа видно торець — він "тікає" до вікна
-  // =====================================================================
-  const DK = { l: 34, r: 330, back: 292, front: 298.5, slab: 308, floor: 369, inner: 355, dx: 9.6 };   // dx — товща правого торця (до вікна)
-  const SEC = { legL: [46, 60], cab: [156, 204], core: [266, 298], legR: [322, 330] };   // суцільні частини корпусу (решта — ніші)
-  const ROWS = [[311, 327.5], [329, 345.5], [347, 363.5]];                                // шухляди тумби
-  const FANC = [282, 325, 8.6];                                                           // вентилятор AI-ядра: центр і радіус
   const PROPS = { x: 232, y: 286 };                                                       // дрібнички з картинки (tools/image/07_desk_props.py)
-  const SL = ['#3a0e5b', '#4d0d6e', '#5b0775', '#6d058a', '#850498', '#ac14b9', '#b317bd', '#cb53cb', '#e07ae0'];   // плита (з картинки)
-  const SW = ['#5a1440', '#8e286a', '#a52174', '#c32988', '#d73f90', '#e45f8c', '#ee7aa4', '#f6a0c0', '#ffc8dc'];   // тепліша права частина
-  const NV = ['#02010a', '#05041a', '#080a2a', '#0d143c', '#121d50', '#182866', '#20357c', '#2a4494'];                // темно-синій корпус (з картинки)
-  /** Змішати два кольори #rrggbb (k = 0..1). */
-  const mix = (a, b, k) => { if (k <= 0) return a; if (k >= 1) return b; const A = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), B = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
-    return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
-  function buildDeskSheet() {
-    const F = NX.furn, S = F.Sheet(DK.l - 2, DK.back - 4, DK.r + 14, DK.floor + 2), o = '#060313';
-    const solid = X => Object.values(SEC).some(([a, b]) => X >= a && X < b);
-    // глибина стола в кадрі: верх іде на 6.5 вгору, низ — на 14 (низ далі від очей, тому видно більше), праворуч — на dx
-    const backY = Y => DK.back + (Y - DK.front) * (DK.inner - DK.back) / (DK.floor - DK.front);   // точка торця на задньому ребрі
-    const sideTop = [DK.r + DK.dx, DK.back], sideBot = [DK.r + DK.dx, DK.inner], slabBack = backY(DK.slab);
-    // --- корпус і ніші (від низу плити до підлоги)
-    S.rect(DK.l, DK.slab, DK.r, DK.floor, (u, v, i, j, X, Y) => {
-      if (!solid(X)) {                                                               // ніша: задня стінка, світлодіодна смужка, внутрішня підлога
-        if (X < SEC.legL[0]) return null;                                            // під виступом плити — нічого (там вазон у кутку)
-        if (Y < DK.slab + 2.2) return NV[0];                                         // тінь під плитою
-        if (Y < DK.inner - 1) return ((X - 64) % 12 + 12) % 12 < .8 ? NV[3] : ramp(['#030112', '#05031c', '#080526', '#0b0730'], .15 + (Y - DK.slab) / (DK.inner - DK.slab) * .6, i, j, .1);
-        if (Y < DK.inner) return '#123a6a';
-        const q = (Y - DK.inner) / (DK.floor - DK.inner);                            // внутрішня підлога: темна, світлішає до краю
-        return ramp(['#04021a', '#0a0628', '#120a36', '#1a0f46'], .15 + q * .7, i, j, .15);
-      }
-      // суцільна частина: шафки й опори
-      const [a, b] = Object.values(SEC).find(([p, q]) => X >= p && X < q), du = X - a, dw = b - X;
-      if (du < .5 || dw < .5) return o;
-      if (Y > DK.floor - 5) return Y > DK.floor - .6 ? o : Y < DK.floor - 4.2 ? CH[2] : (Y > DK.floor - 2.6 && Y < DK.floor - 1.4) ? '#05021a' : NV[1];   // цоколь
-      if (a === SEC.cab[0]) {                                                        // тумба з трьома шухлядами (як на картинці)
-        const row = ROWS.find(([p, q]) => Y >= p && Y < q);
-        if (!row) return Y < ROWS[0][0] ? NV[2] : NV[0];
-        const [p, q] = row, dv = Y - p, dh = q - Y, cy = (p + q) / 2;
-        if (dv < .5) return NV[7]; if (dh < .5 || dw < 1.4) return NV[0]; if (du < 1.4) return NV[6];
-        if (Math.abs(Y - cy) < 1.1 && Math.abs(X - (a + b) / 2) < 9) return Math.abs(Y - cy) < .45 ? '#000006' : NV[1];   // темна прорізна ручка
-        if (Math.abs(Y - cy + 1.6) < .4 && Math.abs(X - (a + b) / 2) < 9) return NV[6];
-        return ramp(NV, .78 - dv / (q - p) * .35 + (1 - du / (b - a)) * .1, i, j, .12);
-      }
-      if (a === SEC.core[0]) {                                                       // шафка AI-ядра: вентилятор, решітка, LED-стовпчик
-        const fd = Math.hypot(X - FANC[0], Y - FANC[1]);
-        if (fd < FANC[2] + .9) return fd > FANC[2] + .1 ? o : fd > FANC[2] - .9 ? CH[3] : '#03020c';
-        if (Y > 341 && Y < 359 && X > a + 3 && X < b - 3) return ((Y - 341) % 2.4 < .8) ? '#05021a' : NV[4];
-        if (X > b - 6 && X < b - 3 && Y > 311 && Y < 336) return '#020210';
-        return ramp(NV, .6 - (Y - DK.slab) / 60 * .3 + (du < 1.5 ? .2 : 0), i, j, .12);
-      }
-      // опори: темно-синя панель зі світлою вертикальною смужкою (як на картинці)
-      if (Math.abs(X - (a + (b - a) * .45)) < .7) return NV[6];
-      return ramp(NV, .45 - (Y - DK.slab) / 61 * .25 + (du < 1.2 ? .15 : 0), i, j, .12);
-    });
-    // --- торець справа: товща стола (плита — рожева, корпус — темно-синій), задній низ стоїть далі (вище)
-    S.poly([[DK.r - .3, DK.slab], [sideTop[0], slabBack], sideBot, [DK.r - .3, DK.floor]], (u, v, i, j, X, Y) => {
-      const e = (X - DK.r) / DK.dx; if (e < .08) return NV[5];                       // світле ребро
-      return Y > DK.floor - 5 - e * 14 ? NV[0] : ramp(NV, .34 - v * .22 - e * .12, i, j, .1);
-    });
-    S.poly([[DK.r - .3, DK.front], sideTop, [sideTop[0], slabBack], [DK.r - .3, DK.slab]], (u, v, i, j, X, Y) => {
-      const e = (X - DK.r) / DK.dx, top = DK.front - (DK.front - DK.back) * e, d = (Y - top) / ((DK.slab - DK.front) * (1 - e * .1));
-      if (d < .12) return mix('#ffd4ff', '#f6a0c0', e);                               // кромка
-      return ramp(SW, .7 - d * .65 - e * .2, i, j);
-    });
-    // --- видимий верх стільниці: глянець, під великим екраном — синій відблиск
-    S.poly([[DK.l + 3, DK.back], [sideTop[0], sideTop[1]], [DK.r, DK.front], [DK.l, DK.front]], (u, v, i, j, X, Y) => {
-      const d = (Y - DK.back) / (DK.front - DK.back), glow = Math.max(0, 1 - Math.abs(X - 150) / 95);
-      if (Y < DK.back + .5) return o;
-      if (glow > 0) return ramp(['#0a0a30', '#0e1450', '#122070', '#183090', '#2244b0', '#3060cc'], .15 + glow * .6 * (1 - d * .5) + d * .15, i, j, .12);
-      return ramp(['#0b0730', '#120a36', '#1c0a3c', '#2b0c40', '#43123f', '#612758'], .1 + d * .75, i, j, .12);
-    });
-    // --- плита: світла кромка зверху, рожевий перелив униз; праворуч тепліша (світло ліхтарика)
-    S.rr(DK.l, DK.front, DK.r, DK.slab, [2.2, 1.6, 1.6, 2.2], (d, u, v, i, j, X, Y) => {
-      const k = P.clamp((X - 228) / 70, 0, 1), dy = Y - DK.front;
-      if (dy < 1.1) return k > .5 ? '#ffe2ee' : '#ffd4ff';
-      if (dy < 1.8) return k > .5 ? SW[7] : SL[8];
-      const seam = [200, 262].some(sx => Math.abs(X - sx) < .45);                    // шви між панелями плити (як на картинці)
-      if (seam) return SL[2];
-      const q = 1 - (dy - 1.8) / (DK.slab - DK.front - 1.8), n = SL.length - 1;
-      const idx = P.clamp(Math.round(q * .95 * n + BAYER[(j & 3) * 4 + (i & 3)] * .9), 0, n);
-      return mix(SL[idx], SW[idx], k);                                                // плавний перехід до теплішого (без "шуму")
-    });
-    return S;
-  }
 
   // ---------- полотна живих екранів ----------
-  let WALL, BIGS, UPAS, UPBS, FRONT, FLOOR, DESKS, PROPIMG, BIGF, bf, UAF, uaf, UBF, ubf, MONF, mf, L1F, l1, L2F, l2;
+  let WALL, BIGS, UPAS, UPBS, FRONT, FLOOR, PROPIMG, BIGF, bf, UAF, uaf, UBF, ubf, MONF, mf, L1F, l1, L2F, l2;
   const MW = 256, MH = 288, L1W = 128, L1H = 160, L2W = 112, L2H = 136;
   function init() {
-    WALL = buildWall(); BIGS = buildBig(); UPAS = buildUpper('net'); UPBS = buildUpper('log'); FRONT = buildFront(); FLOOR = buildFloor(); DESKS = buildDeskSheet(); DESKS.cv = DESKS.canvas();
-    PROPIMG = new Image(); PROPIMG.src = (window.NX_ASSETS && NX_ASSETS['ai_desk_props.png']) || 'assets/ai_desk_props.png';
+    WALL = buildWall(); BIGS = buildBig(); UPAS = buildUpper('net'); UPBS = buildUpper('log'); FRONT = buildFront(); FLOOR = buildFloor();
     [BIGF, bf] = canvas(BW, BH); [UAF, uaf] = canvas(UW, UH); [UBF, ubf] = canvas(UW, UH); [MONF, mf] = canvas(MW, MH); [L1F, l1] = canvas(L1W, L1H); [L2F, l2] = canvas(L2W, L2H);
   }
   /** Растр, зменшений один раз під поточну роздільність екрана (щоб щокадру не стискати 4-кратний растр). */
@@ -503,15 +411,15 @@
       const img = NX.room.img, RS = NX.room.RS, [cv, x] = canvas(img.naturalWidth, img.naturalHeight), t = NX.time;
       x.imageSmoothingEnabled = true; x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS);
       x.drawImage(WALL, 0, 0, WALLR.w, WALLR.h); x.drawImage(this.WARP, 0, -12, WALLR.w, 312);
-      x.drawImage(FLOOR, 0, FLOORR.oy, FLOORR.w, FLOORR.h); if (NX.wingPlants) NX.wingPlants.drawBehind(x, t);
+      x.drawImage(FLOOR, 0, FLOORR.oy, FLOORR.w, FLOORR.h); 
       // аналітика й маркетинг, потім стіл AI-центру (він найближчий), крісла і вазони крила — нерухомий кадр
       ['analytics', 'marketing'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
-      this.drawDesk(x, t);
+      if (NX.aiDesk) NX.aiDesk.draw(x, t); this.drawDesk(x, t);
       [NX.chairA, NX.chairM].forEach(ch => ch && ch.layers(t).forEach(l => l.draw(x, t)));
-      Object.values(NX.objects).forEach(o => { if (o.id.startsWith('wp_') && o.draw) o.draw(x, 0); });
+      Object.values(NX.objects).forEach(o => { if (o.id.startsWith('ws_') && o.d.stage === 'layer') o.draw(x, 0); });
       // нижні ряди — підлога з картинки: з них кімната тягне передню підлогу вниз (інакше потягнувся б цоколь стола,
       // а з іншою підлогою був би шов праворуч від стола)
-      x.drawImage(img, 0, 362.5 * RS, 344 * RS, 5.5 * RS, 0, 362.5, 344, 5.5);
+      
       x.restore(); this.comp = cv; NX.room.patchFront(cv, 0, 664);
     },
     /** Роздільність кешів (пікселів на одиницю): не більше 1/U, тобто рідної для растрів. */
@@ -538,27 +446,22 @@
       if (!this.comp && this.fr > 4) this.patchRoom();                                   // після кількох кадрів: усі меблі крила вже готові
       // --- глянцева підлога під виступом стільниці й біля стіни (закриває залишки старого стола картинки);
       //     нижче лінії стола — уже передня підлога кімнати (без шва)
-      c.save(); c.beginPath(); c.rect(0, FLOORR.oy, FLOORR.w, DK.floor - FLOORR.oy); c.clip();
+      c.save(); c.beginPath(); c.rect(0, FLOORR.oy, FLOORR.w, 352 - FLOORR.oy); c.clip();
       c.drawImage(fit(FLOOR, FLOORR.w, FLOORR.h, R), 0, FLOORR.oy, FLOORR.w, FLOORR.h); c.restore();
-      if (NX.wingPlants) NX.wingPlants.drawBehind(c, t);                                    // кущ у кутку й ліани — за столом і монітором (як на картинці)
-      // --- тінь контакту стола з підлогою (стіл стоїть ближче — тінь трохи нижче лінії підлоги картинки)
-      const g = c.createLinearGradient(0, DK.floor - 1, 0, DK.floor + 5); g.addColorStop(0, 'rgba(4,2,14,.6)'); g.addColorStop(1, 'rgba(4,2,14,0)');
-      c.fillStyle = g; c.fillRect(DK.l + 8, DK.floor - 1, DK.r - DK.l, 6);
       // --- теплі ліхтарі на стіні: мерехтять
       LANT.forEach((L, n) => { const [lx, ly] = V.p(L.w, (L.y0 + L.y1) / 2, (L.z0 + L.z1) / 2); P.glow(c, lx, ly, n ? 16 : 30, 'rgba(255,180,80,.9)', .3 + .08 * Math.sin(t * 6.3 + n * 2) + .05 * Math.sin(t * 13.7 + n)); });
       c.restore();
     },
     /** Стіл — окремий шар: він найближчий, тому малюється ПІСЛЯ столу аналітики (перекриває його лівий край),
      *  а Nexi на стільниці (y більший) — уже поверх стола. */
-    layers(t) { return [{ y: DK.back - 3, draw: c => this.drawDesk(c, t) }]; },
+    /** Речі на столі — шар одразу над столом (objects/ai_desk.js малює сам стіл на y = 280). */
+    layers(t) { return [{ y: 280.5, draw: c => this.drawDesk(c, t) }]; },
     drawDesk(c, t) {
       if (!WALL) return;
       const act = this.active ? 1 : 0, Kk = NX.cam.k * (NX.loop.dpr || 1), R = this.res(Kk);
       c.save(); c.imageSmoothingEnabled = Kk * U < .95;
-      // --- сам стіл
-      const dw = DESKS.x1 - DESKS.x0, dh = DESKS.y1 - DESKS.y0; c.drawImage(fit(DESKS.cv, dw, dh, R), DESKS.x0, DESKS.y0, dw, dh);
       // --- дрібнички з картинки (ноутбук, рамка, колонка, фігурка) стоять на новій стільниці
-      if (PROPIMG.complete && PROPIMG.naturalWidth) { c.imageSmoothingEnabled = Kk < 2; c.drawImage(PROPIMG, PROPS.x, PROPS.y, PROPIMG.naturalWidth / 2, PROPIMG.naturalHeight / 2); }
+      { const pr = NX.objects.ws_deskProps; if (pr) pr.draw(c, t, NX.aiDesk.top(282) - 297.5); }   // дрібнички з картинки стоять на стільниці
       // --- речі на столі: монітор, бази голо-ноутбуків, горнятко, лампа
       c.imageSmoothingEnabled = Kk * U < .95;
       c.drawImage(fit(FRONT, FRONTR.w, FRONTR.h, R), 0, FRONTR.oy, FRONTR.w, FRONTR.h);
@@ -573,7 +476,7 @@
         const d = this.dl; d.globalCompositeOperation = 'lighter';
         for (const [L, F2] of [[LP2, L2F], [LP1, L1F]]) {
           const S = L.scr; d.globalAlpha = .9; VD.wall(d, F2, S.xw, S.z0, S.z1, S.y0, S.y1, Math.max(.75, st));
-          const a = VD.p(S.xw, 297.6, S.z0), b = VD.p(S.xw, 297.6, S.z1), a2 = VD.p(S.xw, S.y1, S.z0), b2 = VD.p(S.xw, S.y1, S.z1);   // промінь проектора від бази до екрана
+          const a = VD.p(S.xw, TOPY - 1.4, S.z0), b = VD.p(S.xw, TOPY - 1.4, S.z1), a2 = VD.p(S.xw, S.y1, S.z0), b2 = VD.p(S.xw, S.y1, S.z1);   // промінь проектора від бази до екрана
           d.globalAlpha = .18 + .06 * Math.sin(t * 3); d.fillStyle = L.neon[0]; d.beginPath(); d.moveTo(a[0], a[1]); d.lineTo(b[0], b[1]); d.lineTo(b2[0], b2[1]); d.lineTo(a2[0], a2[1]); d.fill();
         }
         d.globalAlpha = 1; d.globalCompositeOperation = 'source-over';
@@ -582,29 +485,10 @@
       c.drawImage(this.DM, DX[0], DX[1], DX[2] - DX[0], DX[3] - DX[1]);
       c.save(); c.globalCompositeOperation = 'lighter'; c.drawImage(this.DL, DX[0], DX[1], DX[2] - DX[0], DX[3] - DX[1]); c.restore();
       c.imageSmoothingEnabled = false;
-      // --- ноутбук з картинки в кінці столу: лишається оригінальним, але його екран оживає (стовпчики й стрілка вгору)
-      if (!this.OLD) [this.OLD, this.oldc] = canvas(54, 54);
-      if (this.fr % 3 === 1) { const o = this.oldc; o.clearRect(0, 0, 54, 54);
-        for (let i = 0; i < 4; i++) { const h = 10 + 26 * noise(t * (1 + act * 2), i + 20); o.fillStyle = i % 2 ? 'rgba(122,240,255,.9)' : 'rgba(90,200,255,.8)'; o.fillRect(6 + i * 12, 50 - h, 8, h); }
-        const ay = 20 - ((t * 18) % 14); o.fillStyle = 'rgba(200,250,255,.95)'; o.beginPath(); o.moveTo(27, ay); o.lineTo(37, ay + 10); o.lineTo(17, ay + 10); o.fill(); o.fillRect(23, ay + 10, 8, 8); }
-      c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .55; c.imageSmoothingEnabled = true;
-      c.transform(27 / 54, 0, -6.5 / 54, 27 / 54, 250.5, 262.5); c.drawImage(this.OLD, 0, 0); c.restore();
-      // --- живі вогники столу
       c.globalCompositeOperation = 'lighter';
-      c.fillStyle = rgba('255,79,216', .28 + .16 * Math.sin(t * 2.2) + act * .18); c.fillRect(DK.l + 1, DK.front + .3, DK.r - DK.l - 2, 1.4);   // неон краю плити
-      const sp = DK.l + ((t * .22) % 1) * (DK.r - DK.l); lit(c, sp - 7, DK.front + .4, 14, 1, 'rgba(255,255,255,.85)');              // бігуча іскра
-      for (const [a, b] of [SEC.legL, SEC.cab, SEC.core, SEC.legR]) for (let x = a + 1.5; x < b - 1.5; x += 2) {                       // LED у цоколі (у роботі — веселка)
-        const hue = (t * 120 + x * 4) % 360; c.fillStyle = act ? `hsla(${hue},95%,62%,.85)` : rgba('59,232,255', .4 + .3 * Math.sin(t * 2 + x * .12)); c.fillRect(x, DK.floor - 2.6, 1.3, 1.2); }
-      for (let x = 64; x < 154; x += 2) if (x < 96 || x > 112) lit(c, x, 351, 1.3, .9, rgba('59,232,255', .18 + .14 * Math.sin(t * 1.6 + x * .08)));   // смужка в глибині ніші
-      for (let x = 206; x < 264; x += 2) lit(c, x, 351, 1.3, .9, rgba('255,79,216', .16 + .12 * Math.sin(t * 1.6 + x * .08)));
-      ROWS.forEach(([p, q], k) => lit(c, SEC.cab[1] - 6, (p + q) / 2 - 3, 2.4, 1, rgba('59,232,255', .45 + .5 * Math.sin(t * 2 + k * 1.7))));   // вогники шухляд
-      for (let k = 0; k < 8; k++) lit(c, SEC.core[1] - 5.4, 312.5 + k * 3, 1.8, 1.6, hash(k, Math.floor(t * (4 + act * 8))) > .4 ? ['#3bff8a', '#3be8ff', '#ff7af0'][k % 3] : '#0a1a20');   // LED AI-ядра
-      P.glow(c, FANC[0], FANC[1], 14, 'rgba(59,232,255,.7)', .22 + act * .3);
-      const fa = t * (4 + act * 14); for (let bl = 0; bl < 5; bl++) { const a = fa + bl * Math.PI * .4; for (let r2 = 1.4; r2 < FANC[2] - 1; r2 += .5) lit(c, FANC[0] + Math.cos(a + r2 * .12) * r2 - .35, FANC[1] + Math.sin(a + r2 * .12) * r2 - .35, .7, .7, '#5ad8ff'); }
-      lit(c, FANC[0] - 1, FANC[1] - 1, 2, 2, '#c3cbea');
       // лампа: тепле світло на стільницю; пара над кавою
-      const [lx, ly] = VD.p(LAMP.x + 9, 268, LAMP.z - 9);
-      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, DK.front); c.lineTo(lx - 14, DK.front); c.fill();
+      const [lx, ly] = VD.p(LAMP.x + 9, 255, LAMP.z - 9);
+      c.fillStyle = 'rgba(255,226,140,.09)'; c.beginPath(); c.moveTo(lx - 2, ly); c.lineTo(lx + 2, ly); c.lineTo(lx + 16, 286); c.lineTo(lx - 14, 286); c.fill();
       P.glow(c, lx, ly, 10, 'rgba(255,220,140,.9)', .5 + .05 * Math.sin(t * 7));
       const [mx, my] = VD.p((MUG.x0 + MUG.x1) / 2, MUG.y0, (MUG.z0 + MUG.z1) / 2);
       for (let i = 0; i < 5; i++) { const q = (t * .5 + i / 5) % 1; c.fillStyle = `rgba(220,230,255,${.35 * (1 - q)})`; c.fillRect(mx - .5 + Math.sin(q * 6 + i) * 1.5, my - 1 - q * 14, 1, 1); }
@@ -615,7 +499,7 @@
       c.globalCompositeOperation = 'source-over';
       // світло від екранів
       const [mcx, mcy] = VD.p(MON.x1, (MON.y0 + MON.y1) / 2, (MON.z0 + MON.z1) / 2); P.glow(c, mcx + 6, mcy, 40, 'rgba(59,160,255,.5)', .14 + .04 * Math.sin(t * 1.4));
-      const [lcx, lcy] = VD.p(LP1.scr.xw, 284, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
+      const [lcx, lcy] = VD.p(LP1.scr.xw, 271, 138); P.glow(c, lcx + 4, lcy, 22, 'rgba(59,232,255,.6)', .16 + act * .25);
       c.restore();
     },
   });

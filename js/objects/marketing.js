@@ -95,6 +95,8 @@
     const cx = W / 2, cy = 142, pul = 1 + .08 * Math.sin(t * 4 + act * t * 4);
     for (const [r, col] of [[24, '#ff9ae6'], [16, '#ffffff'], [8, '#ff4fd8']]) { c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * pul, 0, 7); c.stroke(); }
     if (act) P.text(c, Math.round(40 + prog * 340) + ' →', cx, 176, '#ffe27a', 10, 'center');
+    const done = (NX.ui.zones.done.marketing || []).slice(-2);                                      // зроблено (по черзі)
+    done.forEach((d, k) => { lit(c, 8, 112 + k * 10, 5, 5, '#3bff8a'); P.text(c, NX.t(`zones.marketing.${d.task}.t`).toUpperCase().slice(0, 14), 16, 118 + k * 10, '#bfe9ff', 6); });
   }
 
   let BOOTHS = null, DESKS = null;

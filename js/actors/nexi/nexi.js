@@ -44,7 +44,7 @@ NX.nexi = {
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
-    if (done && this.task && this.taskOpt && NX.ui.zones.has(this.task.id)) { NX.ui.zones.result(this.task.id, this.taskOpt, this.task.auto); this.taskOpt = null; } if (this.task && done && !this.task.auto) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
+    if (done && this.task && this.taskOpt && NX.ui.zones.has(this.task.id)) { NX.ui.zones.result(this.task.id, this.taskOpt, this.task.auto); this.taskOpt = null; } if (this.task && done) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
   say(text) { this.speak = { text, t: 0 }; NX.ui.hud.bubble(text); NX.ui.chat && NX.ui.chat.add('b', text); },
   emote(m, d = 2.5) { this.mood = m; this.moodT = NX.time + d; },
   hitTest(x, y) { const b = this.box; return b && this.alpha > .3 && x > b[0] && x < b[0] + b[2] && y > b[1] && y < b[1] + b[3]; },
