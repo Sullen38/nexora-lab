@@ -76,10 +76,10 @@ NX.citySky = (() => {
       const lon = u / TW * 360 - 180, lat = 90 - (v + .5) / TH * 180, gx = (lon + 180) / 7.5 - .5, gy = (80 - lat) / 7 - .5, ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy;
       F[v * TW + u] = WM ? (cell(ix, iy) * (1 - fx) + cell(ix + 1, iy) * fx) * (1 - fy) + (cell(ix, iy + 1) * (1 - fx) + cell(ix + 1, iy + 1) * fx) * fy : fbm(u * .05, v * .05) * 1.2 - .1;
     }
-    const blur = (A, r) => { const O = new Float32Array(A.length);
-      for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) { let sm = 0; for (let k = -r; k <= r; k++) sm += A[v * TW + ((u + k + TW) % TW)]; O[v * TW + u] = sm / (2 * r + 1); }
-      const O2 = new Float32Array(A.length);
-      for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) { let sm = 0, c = 0; for (let k = -r; k <= r; k++) { const vv = v + k; if (vv < 0 || vv >= TH) continue; sm += O[vv * TW + u]; c++; } O2[v * TW + u] = sm / c; }
+    const blur = (A, r) => { const O = new Float32Array(A.length), O2 = new Float32Array(A.length), n = 2 * r + 1;   // ковзне середнє: по горизонталі (по колу) і по вертикалі
+      for (let v = 0; v < TH; v++) { const row = v * TW; let sm = 0; for (let k = -r; k <= r; k++) sm += A[row + ((k + TW) % TW)];
+        for (let u = 0; u < TW; u++) { O[row + u] = sm / n; sm += A[row + ((u + r + 1) % TW)] - A[row + ((u - r + TW) % TW)]; } }
+      for (let u = 0; u < TW; u++) for (let v = 0; v < TH; v++) { let sm = 0, c = 0; for (let k = Math.max(0, v - r); k <= Math.min(TH - 1, v + r); k++) { sm += O[k * TW + u]; c++; } O2[v * TW + u] = sm / c; }
       return O2; };
     F = blur(blur(blur(F, 2), 2), 2);
     for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) {

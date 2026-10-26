@@ -84,6 +84,11 @@ NX.cityBuild = (() => {
         (b.decks || []).forEach(([y, ex, h]) => { const hh = h || 3, pts = []; for (let k = 0; k <= 10; k++) { const a = -Math.PI / 2 + Math.PI * k / 10; pts.push([x1 + ex - hh / 2 + Math.cos(a) * hh / 2, y + hh / 2 + Math.sin(a) * hh / 2]); }
           for (let k = 0; k <= 10; k++) { const a = Math.PI / 2 + Math.PI * k / 10; pts.push([x0 - ex + hh / 2 + Math.cos(a) * hh / 2, y + hh / 2 + Math.sin(a) * hh / 2]); } P.push(pts); });
         break; }
+      case 'pyramid': {                                                              // ступінчаста піраміда-мегаспоруда
+        const st = b.steps || 12, L = [], Rr = [], hw = k => w / 2 * (.08 + .92 * (k + 1) / st), yk = k => top + (bot - top) * k / st;
+        for (let k = 0; k < st; k++) L.push([cx - hw(k), yk(k)], [cx - hw(k), yk(k + 1)]);
+        for (let k = st - 1; k >= 0; k--) Rr.push([cx + hw(k), yk(k + 1)], [cx + hw(k), yk(k)]);
+        P.push([...L, ...Rr]); break; }
       default: box(x0, top, x1, bot);
     }
     return P;
@@ -275,7 +280,7 @@ NX.cityBuild = (() => {
   /** Небесна траса: довга витримка руху — тонкі смуги фар (білі/теплі) і стоп-сигналів (червоні), ряди на висоті y. */
   function skyway(R, y, seed, o = {}) {
     const r = rng(seed), W = [col('#fff4d8'), col('#ffe2a0'), col('#cfe8ff')], Rd = [col('#ff3b5a'), col('#ff6a7a')], x0 = o.x0 || R.x0, x1 = o.x1 || R.x1;
-    for (let n = 0; n < (o.n || 70); n++) { const lane = r() < .5 ? 0 : 1, yy = y + lane * 1.5 + (r() - .5) * .6, len = 3 + r() * 14, x = x0 + r() * (x1 - x0), c = lane ? Rd[Math.floor(r() * 2)] : W[Math.floor(r() * 3)];
+    for (let n = 0; n < (o.n || 70); n++) { const lane = r() < .5 ? 0 : 1, yy = y + lane * 1.5 + (r() - .5) * .6, len = 5 + r() * 22, x = x0 + r() * (x1 - x0), c = lane ? Rd[Math.floor(r() * 2)] : W[Math.floor(r() * 3)];
       for (let k = 0; k < len / R.U; k++) { const xx = x + k * R.U, a = .25 + .75 * (k / (len / R.U)); R.over(R.I(lane ? x + len - k * R.U : xx), R.J(yy), c, lane ? 1 - a * .75 : a); } }
   }
   /** Скляна транспортна труба (маглев) по кривій Безьє p0 -> c -> p1: напівпрозоре скло, світлі краї, опори. */
@@ -304,5 +309,5 @@ NX.cityBuild = (() => {
     return { R, live };
   }
 
-  return { FAC, LITE, NEON, CSS, layer, tower, silhouette, farBand, lowRoofs, highway, rail, signBoard, skyway, tube, elevatorBase };
+  return { FAC, LITE, NEON, CSS, layer, tower, silhouette, maskOf, ringOf, farBand, lowRoofs, highway, rail, signBoard, skyway, tube, elevatorBase };
 })();

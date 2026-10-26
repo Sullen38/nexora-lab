@@ -32,70 +32,58 @@ NX.city = (() => {
     { x: 884, y: 94, w: 128, h: 14, seed: 3, k: .22 }, { x: 842, y: 108, w: 96, h: 7, seed: 4, k: .28 }, { x: 606, y: 101, w: 84, h: 9, seed: 5, k: .14 },
     { x: 732, y: 126, w: 150, h: 7, seed: 8, k: .3 }, { x: 664, y: 38, w: 74, h: 4, seed: 13, k: .12 }, { x: 864, y: 22, w: 58, h: 3.4, seed: 17, k: .08 },
   ];
-  // ---------- головні вежі: ТРИ ЕСКІЗИ на вибір власника (#city-a / #city-b / #city-c в адресі) ----------
-  // спершу задній ряд (нижчі), потім передній (вищі, з характером); краї вікна — високі вежі-рамки
-  const VARIANTS = {
-    // A — як на картинці: висока ліва з короною, шпиль, центральна вежа зі щоглою під планетою, права вежа з голограмою
-    a: [
-      { x0: 586, x1: 608, top: 124, pal: FAC.violet, ant: [{ x: 597, h: 7 }] },
-      { x0: 674, x1: 698, top: 120, shape: 'setback', tiers: [[4, 7]], pal: FAC.blue },
-      { x0: 744, x1: 770, top: 128, pal: FAC.violet, win: { style: 'stripes', cols: ['lav', 'cyan'] } },
-      { x0: 788, x1: 816, top: 121, shape: 'dome', dh: 5, pal: FAC.blue, win: { cols: ['cyan', 'lav'] }, holo: { x: 793, y: 131, w: 18, h: 10, kind: 'graph' } },
-      { x0: 836, x1: 862, top: 112, shape: 'setback', tiers: [[5, 6], [2.5, 8]], pal: FAC.indigo, ledge: NEON.pink, ant: [{ x: 849, h: 9 }] },
-      { x0: 866, x1: 892, top: 124, shape: 'taper', k: .6, th: 14, pal: FAC.violet },
-      { x0: 610, x1: 638, top: 100, shape: 'crown', spikes: 3, ch: 5, pal: FAC.indigo, ledge: NEON.cyan, win: { style: 'stripes', cols: ['lav', 'pink'] }, sign: { x: 612.5, y: 112, w: 4, h: 26, seed: 3 } },
-      { x0: 642, x1: 668, top: 76, shape: 'spire', sh: 22, ins: 3, pal: FAC.blue, ledge: NEON.cyanL, needle: { h: 10, y0: 54 }, win: { style: 'cols', sx: 3, w: 1, cols: ['cyan', 'lav'] } },
-      { x0: 702, x1: 728, top: 92, pal: FAC.indigo, ledge: NEON.violet, ant: [{ x: 715, h: 24 }], win: { cols: ['lav', 'pink', 'white'] } },
-      { x0: 556, x1: 600, top: 66, shape: 'crown', spikes: 5, ch: 6, pal: FAC.indigo, ledge: NEON.pink, win: { cols: ['lav', 'cyan'] } },
-      { x0: 890, x1: 952, top: 36, shape: 'setback', tiers: [[22, 10], [12, 12]], pal: FAC.violet, ledge: NEON.pink, holo: { x: 906, y: 66, w: 12, h: 44, kind: 'tall' } },
-    ],
-    // B — арт-деко: ступінчасті вежі, вертикальні світлі смуги, золоті уступи; симетрично довкола планети
-    b: [
-      { x0: 600, x1: 624, top: 118, shape: 'setback', tiers: [[5, 5]], pal: FAC.violet, win: { style: 'cols', sx: 2.5, w: 1, cols: ['gold', 'lav'] } },
-      { x0: 690, x1: 712, top: 122, shape: 'setback', tiers: [[4, 5]], pal: FAC.blue, win: { style: 'cols', sx: 2.5, w: 1, cols: ['lav', 'gold'] } },
-      { x0: 796, x1: 818, top: 122, shape: 'setback', tiers: [[4, 5]], pal: FAC.blue, win: { style: 'cols', sx: 2.5, w: 1, cols: ['lav', 'gold'] } },
-      { x0: 868, x1: 890, top: 116, shape: 'setback', tiers: [[5, 5]], pal: FAC.violet, win: { style: 'cols', sx: 2.5, w: 1, cols: ['gold', 'lav'] } },
-      { x0: 652, x1: 684, top: 72, shape: 'setback', tiers: [[11, 7], [7.5, 7], [4, 8]], pal: FAC.indigo, ledge: NEON.gold, needle: { h: 18 }, pil: 6, win: { style: 'cols', sx: 3, w: 1.2, cols: ['gold', 'lav'] } },
-      { x0: 826, x1: 858, top: 72, shape: 'setback', tiers: [[11, 7], [7.5, 7], [4, 8]], pal: FAC.indigo, ledge: NEON.gold, needle: { h: 18 }, pil: 6, win: { style: 'cols', sx: 3, w: 1.2, cols: ['gold', 'lav'] } },
-      { x0: 736, x1: 772, top: 108, shape: 'setback', tiers: [[13, 6], [9, 6], [5, 6]], pal: FAC.violet, ledge: NEON.pink, needle: { h: 28 }, pil: 6, win: { style: 'cols', sx: 3, w: 1.2, cols: ['lav', 'pink'] } },
-      { x0: 556, x1: 606, top: 40, shape: 'setback', tiers: [[16, 8], [10, 10], [5, 12]], pal: FAC.blue, ledge: NEON.cyan, pil: 7, win: { style: 'cols', sx: 3, w: 1.2, cols: ['lav', 'cyan'] } },
-      { x0: 884, x1: 952, top: 32, shape: 'setback', tiers: [[22, 8], [14, 10], [6, 12]], pal: FAC.violet, ledge: NEON.pink, pil: 7, win: { style: 'cols', sx: 3, w: 1.2, cols: ['lav', 'pink'] }, holo: { x: 905, y: 72, w: 12, h: 40, kind: 'tall' } },
-    ],
-    // C — футуристичне: скруглені верхівки, звужені вежі з голками, вежа з кільцем-майданчиком, близнюки з мостом, скляні стрічки
-    c: [
-      { x0: 596, x1: 620, top: 116, shape: 'round', pal: FAC.blue, win: { style: 'stripes', cols: ['cyan', 'white'] } },
-      { x0: 676, x1: 700, top: 120, shape: 'round', flat: .6, pal: FAC.violet, win: { style: 'stripes', cols: ['lav', 'cyan'] } },
-      { x0: 742, x1: 766, top: 126, pal: FAC.blue, win: { style: 'stripes', cols: ['cyan', 'pink'] } },
-      { x0: 864, x1: 888, top: 118, shape: 'round', pal: FAC.violet, win: { style: 'stripes', cols: ['pink', 'lav'] } },
-      { x0: 620, x1: 648, top: 60, shape: 'taper', k: .5, th: 30, pal: FAC.blue, ledge: NEON.cyan, ring: { y: 90, a: 21, b: 3.4 }, needle: { h: 14 }, win: { style: 'stripes', cols: ['cyan', 'white'] } },
-      { x0: 784, x1: 850, top: 98, shape: 'twin', gap: 22, dt: 10, bridge: 132, bh: 4, pal: FAC.indigo, bands: [[133.5, NEON.pink]], win: { style: 'stripes', cols: ['lav', 'pink'] } },
-      { x0: 704, x1: 732, top: 96, shape: 'round', pal: FAC.indigo, needle: { h: 16 }, win: { style: 'stripes', cols: ['cyan', 'lav'] } },
-      { x0: 556, x1: 604, top: 44, shape: 'round', pal: FAC.violet, win: { style: 'stripes', cols: ['lav', 'cyan'] } },
-      { x0: 886, x1: 952, top: 30, shape: 'taper', k: .45, th: 40, pal: FAC.blue, ledge: NEON.cyan, needle: { h: 16 }, win: { style: 'stripes', cols: ['cyan', 'lav'] }, holo: { x: 905, y: 74, w: 12, h: 40, kind: 'tall' } },
-    ],
-  };
-  // F — МІСТО МАЙБУТНЬОГО (власник: «це не виглядає як місто майбутнього»): скляні вежі зі світловими лініями й неоновим
-  //     контуром замість сітки вікон, нові форми (мегавежа-аркологія за край вікна, «космічна голка» з дисками, скручена вежа,
-  //     ворота-арка, голки), космічний ліфт, скляна труба маглева, небесні траси, літаюча платформа, голограма-кит у небі
-  const G = (c1, extra) => ({ win: { style: 'glass', lit: .12, cols: [c1] }, outline: true, ...extra });
+  // ---------- МЕГАПОЛІС v3 (NX.cityMega): план за планом, від дальніх до ближніх ----------
+  // far2 — бліді силуети в рожевому серпанку; far1 — піраміда-мегаспоруда й щільні квартали; mid — вежі з вивісками;
+  // hero — гіганти майбутнього (аркологія за край вікна, «космічна голка», скручена вежа, ворота-арка, голка, кругла
+  // вежа з голограмою, основа космічного ліфта); між планами — небесні траси й серпанок, унизу — світло міста
+  const CM = NX.cityMega, col2 = CK.col;
   let TUBE = null;
-  VARIANTS.f = [
-    { fx: R => CB.skyway(R, 104, 5, { n: 90 }) },                                       // далека небесна траса — за вежами
-    { x0: 614, x1: 636, top: 124, shape: 'round', pal: FAC.blue, ...G('lav', { strip: 4, band: 9, rimI: NEON.cyan, rimO: NEON.violet }) },
-    { x0: 686, x1: 708, top: 128, shape: 'dome', dh: 6, pal: FAC.violet, ...G('pink', { band: 7, bandC: NEON.cyan, rimI: NEON.cyan, rimO: NEON.pink }) },
-    { x0: 846, x1: 872, top: 118, shape: 'round', pal: FAC.violet, ...G('lav', { strip: 5, stripC: NEON.pink, rimI: NEON.blueL, rimO: NEON.pink }) },
-    { x0: 650, x1: 682, top: 50, shape: 'saucer', stem: 8, pod: { y: 82, a: 16, b: 3.6 }, pod2: { y: 108, a: 9, b: 2 }, pal: FAC.indigo, ...G('cyan', { band: 8, rimI: NEON.cyan, rimO: NEON.pink }) },
-    { x0: 708, x1: 738, top: 96, shape: 'twist', seg: 10, sh: 10, pal: FAC.blue, ...G('lav', { band: 6, bandC: NEON.cyan, rimI: NEON.cyanL, rimO: NEON.violet }) },
-    { x0: 752, x1: 806, top: 104, shape: 'arch', leg: 9, ah: 30, pal: FAC.violet, ...G('pink', { strip: 4, stripC: NEON.pink, rimI: NEON.cyanL, rimO: NEON.pink }) },
-    { fx: R => CB.elevatorBase(R, 832, 140, 252, { w: 30 }) },                          // основа космічного ліфта (трос — поверх неба)
-    { x0: 874, x1: 900, top: 26, shape: 'needle', k: .5, pal: FAC.indigo, ...G('cyan', { band: 7, rimI: NEON.cyan, rimO: NEON.violet }) },
-    { x0: 556, x1: 606, top: -6, shape: 'mega', decks: [[30, 6, 3], [70, 9, 3.5], [110, 6, 3], [150, 10, 3.5]], pal: FAC.indigo, ...G('lav', { strip: 5, band: 12, rimI: NEON.cyan, rimO: NEON.pink }) },
-    { x0: 900, x1: 952, top: 18, shape: 'round', pal: FAC.violet, ...G('pink', { strip: 6, stripC: NEON.pink, band: 10, rimI: NEON.cyanL, rimO: NEON.pink }), holo: { x: 906, y: 60, w: 12, h: 44, kind: 'tall' } },
-    { fx: R => CB.skyway(R, 172, 9, { n: 110 }) },                                      // ближча траса — перед вежами
-    { fx: R => { TUBE = CB.tube(R, [596, 158], [750, 196], [916, 150], { posts: [.3, .7], postTo: 252 }); } },   // скляна труба маглева
+  const HEROES = [
+    { x0: 556, x1: 606, top: -6, shape: 'mega', plane: 'hero', tone: 3, decks: [[30, 6, 3], [70, 9, 3.5], [110, 6, 3], [150, 10, 3.5]], glass: true, strip: 7, outline: true, rimI: NEON.cyan, rimO: NEON.pink, lit: .42, lights: ['lav', 'cyan', 'white'], holo: { x: 576, y: 78, w: 26, h: 30, kind: 'nexi' } },
+    { x0: 650, x1: 682, top: 50, shape: 'saucer', stem: 8, pod: { y: 82, a: 16, b: 3.6 }, pod2: { y: 108, a: 9, b: 2 }, plane: 'hero', tone: 3, band: 8, outline: true, ledge: NEON.pinkL, rimI: NEON.cyan, rimO: NEON.pink, lit: .5, lights: ['cyan', 'lav', 'white'] },
+    { x0: 708, x1: 738, top: 96, shape: 'twist', seg: 10, sh: 10, plane: 'hero', tone: 3, glass: true, band: 6, bandC: NEON.cyan, outline: true, rimI: NEON.cyanL, rimO: NEON.violet, lit: .46, lights: ['pink', 'lav', 'warm'], crown: 3 },
+    { x0: 752, x1: 806, top: 104, shape: 'arch', leg: 9, ah: 30, plane: 'hero', tone: 3, strip: 3, stripC: NEON.pink, glass: true, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, lit: .4 },
+    { fx: R => CB.elevatorBase(R, 832, 140, 252, { w: 30 }) },
+    { x0: 874, x1: 900, top: 26, shape: 'needle', k: .5, plane: 'hero', tone: 3, band: 7, outline: true, rimI: NEON.cyan, rimO: NEON.violet, lit: .5, lights: ['warm', 'cyan', 'lav'] },
+    { x0: 900, x1: 952, top: 18, shape: 'round', plane: 'hero', tone: 3, glass: true, strip: 5, stripC: NEON.pink, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, holo: { x: 906, y: 60, w: 12, h: 44, kind: 'tall' }, lit: .4, crown: 4 },
   ];
-  const VAR = ((typeof location !== 'undefined' && location.hash.match(/city-([abcf])/)) || [])[1] || 'a', FUT = VAR === 'f';
-  const MID = VARIANTS[VAR];
+  const FAR = [                                                                       // дальні плани — растр 2 px/од. (у серпанку дрібниці не потрібні), потім підкладка під BACK
+    { skyline: ['far2', 31, { w: [3.5, 9], top: [128, 162], tall: .2, tallBy: 36, lit: [.16, .3], step: .68, antP: .15, shapes: [['box', 5], ['round', 2], ['needle', 2], ['dome', 1], ['setback', 1]] }] },
+    { b: { x0: 744, x1: 920, top: 86, bot: 236, shape: 'pyramid', steps: 22, plane: 'far1', tone: 4, lit: .55, lights: ['amber', 'warm', 'pink'], ledge: col2('#ffcf7a'), ant: [{ x: 832, h: 4 }] } },   // піраміда-мегаспоруда вдалині
+    { haze: [118, 252, '#c464e4', .3] },
+    { skyline: ['far1', 47, { w: [5, 12], top: [118, 154], tall: .18, tallBy: 32, lit: [.22, .38], step: .74, antP: .25, signP: .06, shapes: [['box', 6], ['setback', 2], ['round', 2], ['needle', 1], ['dome', 1]] }] },
+    { fx: R => CB.skyway(R, 121, 61, { n: 90 }) },
+    { fx: R => CM.mist(R, 140, 7, '#d070e8', .5, 3) },
+    { haze: [138, 252, '#b452dc', .24] },
+  ];
+  const BACK = [
+    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.28, .46], step: .82, antP: .3, signP: .4, glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
+    { b: { x0: 604, x1: 652, top: 132, plane: 'mid', tone: 2, lit: .3, holo: { x: 608, y: 144, w: 40, h: 11, kind: 'wide' }, ant: [{ x: 640, h: 6 }] } },   // будинок з великим білбордом
+    { fx: R => CB.skyway(R, 150, 9, { n: 120 }) },
+    ...HEROES.map(b => (b.fx ? b : { b })),
+    { fx: R => CM.mist(R, 164, 6, '#c060e0', .45, 9) },
+    { haze: [176, 252, '#c450d8', .34] },                                                // світло міста знизу
+    { fx: R => { TUBE = CB.tube(R, [596, 158], [750, 196], [916, 150], { posts: [.3, .7], postTo: 252 }); } },   // скляна труба маглева
+    { fx: R => CB.skyway(R, 172, 19, { n: 130 }) },
+  ];
+  const FRONT = [
+    { fx: R => { R.rect(R.x0, 252, R.x1, R.y1, (i, j, X, Y) => CK.ramp(NEAR_LOW, (Y - 252) / 90, i, j)); CB.highway(R, HWY.y, HWY.posts); CB.rail(R, RAIL.y, RAIL.posts); } },   // нижче 252 — за диваном: проста темна підкладка
+    { skyline: ['near', 33, { w: [12, 26], top: [226, 246], bot: 258, lit: [.14, .26], step: .92, antP: .4, antH: 9, boxes: true, signP: .35, shapes: [['box', 5], ['dome', 2], ['round', 2], ['setback', 1]] }] },
+  ];
+  const NEAR_LOW = CK.pal(['#1a1250', '#120c3c', '#0c082c', '#08061e']);
+  /** Растр плану з переліку: {skyline}, {b: будинок}, {haze}, {fx}. */
+  function megaLayer(x0, y0, x1, y1, items, seed, pre, U = BU, live = { lights: [], win: [], signs: [], holo: [], pad: [] }) {
+    const R = CK.Ras(x0, y0, x1, y1, U); let n = 0;
+    if (pre) pre(R);
+    items.forEach(it => { const tt = performance.now();
+      if (it.fx) it.fx(R, live);
+      else if (it.haze) CM.haze(R, ...it.haze);
+      else if (it.b) CM.building(R, it.b, live, seed * 1000 + (n++) * 37 + 11);
+      else if (it.skyline) CM.skyline(it.skyline[0], x0, x1, it.skyline[1], it.skyline[2]).forEach(b => CM.building(R, b, live, seed * 1000 + (n++) * 37 + 11));
+      if (window.CITY_LOG) console.log('  layer item', Object.keys(it)[0], (it.skyline || [it.b && it.b.shape || ''])[0], Math.round(performance.now() - tt), 'ms');
+    });
+    return { R, live };
+  }
   const RAIL = { y: 199.5, posts: [598, 672, 746, 820, 894] }, HWY = { y: 216.5, posts: [612, 690, 768, 846, 924] };   // монорейка й шосе над диваном
   // ---------- рух ----------
   const LANES = [{ y: 106, s: .55, sp: 16, dir: 1, n: 5, st: 0 }, { y: 146, s: .8, sp: 28, dir: -1, n: 5, st: 1 }, { y: 211, s: 1.15, sp: 44, dir: 1, n: 3, st: 2 }];
@@ -108,7 +96,7 @@ NX.city = (() => {
   const L = R => ({ cv: R.canvas(), x: R.x0, y: R.y0, w: R.W * R.U, h: R.H * R.U });
   /** Поза вікном (машинерія майстерні праворуч унизу) — прозоро. CLIP — прямокутні сходинки, тож перевірка проста. */
   const outside = (X, Y) => (Y > CLIP[2][1] && X > CLIP[3][0]) || (Y > CLIP[4][1] && X > CLIP[5][0]);
-  function maskOut(R) { for (let j = 0; j < R.H; j++) { const Y = R.Y(j); if (Y <= CLIP[2][1]) continue; for (let i = 0; i < R.W; i++) if (outside(R.X(i), Y)) R.d[j * R.W + i] = 0; } }
+  function maskOut(R) { for (let j = 0; j < R.H; j++) { const Y = R.Y(j); if (Y <= CLIP[2][1]) continue; const xs = Y > CLIP[4][1] ? CLIP[5][0] : CLIP[3][0], i0 = Math.max(0, Math.ceil((xs - R.x0) / R.U - .5)); if (i0 < R.W) R.d.fill(0, j * R.W + i0, (j + 1) * R.W); } }
   /** Промінь прожектора: спрайт з градієнтом (уздовж — згасає, поперек — м'які краї), малюється з поворотом. */
   function beamSprite() {
     const cv = document.createElement('canvas'); cv.width = 128; cv.height = 32; const x = cv.getContext('2d');
@@ -229,7 +217,7 @@ NX.city = (() => {
   }
 
   // ---------- побудова ----------
-  const FAR_Y0 = -2, FAR_H = 160, BLD_Y0 = 2, BU = .5;                              // BU — од. на піксель растрів будинків (2 px/од.: крупніші «пікселі»)                                        // небо: y -2..158; будинки (обидва плани разом): y 2..345
+  const FAR_Y0 = -2, FAR_H = 160, BLD_Y0 = 2, BU = .25;                             // BU — од. на піксель растрів будинків (4 px/од.: дрібні вогники-вікна)                                        // небо: y -2..158; будинки (обидва плани разом): y 2..345
   /** Небо під будинками (y >= 150): той самий перелив, що й у неба, — у просвітах між будинками немає «дір». */
   function skyFill(R, y0) {
     const G = SK.SKY;
@@ -240,8 +228,10 @@ NX.city = (() => {
     const t0 = performance.now();
     const sky = SK.sky(GL.x0, FAR_Y0, GL.x1, FAR_Y0 + FAR_H, { seed: 7, sun: SUN });
     const planet = SK.Planet(PL.x, PL.y, PL.r), ring = SK.Ring(PL.x, PL.y, RING.a, RING.e, RING.th, PL.r);
-    const back = CB.layer(GL.x0, BLD_Y0, GL.x1, 252, [...CB.farBand(GL.x0, GL.x1, 21, { future: FUT }), ...MID], 5, R => skyFill(R, 150), BU);
-    const front = CB.layer(GL.x0, 150, GL.x1, GL.y1, CB.lowRoofs(GL.x0, GL.x1, 33, { future: FUT }), 9, R => { CB.highway(R, HWY.y, HWY.posts); CB.rail(R, RAIL.y, RAIL.posts); }, BU);   // низ над диваном: шосе, монорейка, низькі дахи
+    const far = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, FAR, 3, R => skyFill(R, 150), BU * 2);
+    const back = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, BACK, 5, R => {                     // підкладка — дальні плани (кожен їхній піксель = 2×2)
+      const fw = far.R.W, fd = far.R.d, d = R.d; for (let j = 0; j < R.H; j++) { const fr = Math.min(far.R.H - 1, j >> 1) * fw, row = j * R.W; for (let i = 0; i < R.W; i++) d[row + i] = fd[fr + Math.min(fw - 1, i >> 1)]; } }, BU, far.live);
+    const front = megaLayer(GL.x0, 150, GL.x1, GL.y1, FRONT, 9);                          // низ над диваном: шосе, монорейка, низькі дахи
     [back.R, front.R].forEach(maskOut);                                              // форма вікна запікається в растри — щокадру без дорогого clip()
     // обидва плани — в одне полотно (щокадру один drawImage); живі точки дальнього плану, які закриває ближній, — прибираємо
     const bld = document.createElement('canvas'); bld.width = back.R.W; bld.height = Math.round((GL.y1 - BLD_Y0) / BU); const bx = bld.getContext('2d');
@@ -262,11 +252,11 @@ NX.city = (() => {
       tw: Array.from({ length: 22 }, () => [GL.x0 + 6 + r() * (GW - 12), 4 + r() * 84, r() * 6.28, .9 + r() * 1.4]).filter(([x, y]) => Math.hypot(x - PL.x, y - PL.y) > PL.r + 5).slice(0, 16),
       lanes: LANES.map(Ln => Array.from({ length: Ln.n }, (_, k) => ({ x: GL.x0 + (k + r() * .6) * GW / Ln.n, c: (k + Ln.st) % 4, dy: (r() - .5) * 3 }))),
       train: null, trainT: 6 + r() * 10, trainSp: trainSprite(), skyC: null,
-      elev: FUT ? elevSprite() : null, plat: FUT ? platformSprite() : null, whale: FUT ? whaleSprite() : null, tube: TUBE,
+      elev: elevSprite(), plat: platformSprite(), whale: whaleSprite(), tube: TUBE,
     };
     planet.update(0); bloom();
     NX.room.pieces = PIECES;                                                         // кімната більше не малює картинку під вікном — там усе кодом
-    S.ms = Math.round(performance.now() - t0);
+    S.ms = Math.round(performance.now() - t0); if (window.CITY_LOG) console.log("city build ms", S.ms);
   }
   // що кімната ще малює з картинки (усе, крім вікна): ліворуч, праворуч, підлога під вікном, машинерія майстерні
   const PIECES = [[0, 0, GL.x0, 368], [GL.x1, 0, 1536, 368], [GL.x0, GL.y1, GL.x1, 368], [CLIP[5][0], CLIP[4][1], GL.x1, GL.y1], [CLIP[3][0], CLIP[2][1], GL.x1, CLIP[4][1]]];
@@ -282,7 +272,7 @@ NX.city = (() => {
       for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }   // як у крила (wing_wall.js)
       bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2);
       const bc = document.createElement('canvas'); bc.width = b1.width; bc.height = b1.height; const cx2 = bc.getContext('2d'); cx2.globalCompositeOperation = 'lighter'; cx2.imageSmoothingEnabled = true;
-      [[b1, .1], [b2, .2], [b3, .3]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
+      [[b1, .14], [b2, .26], [b3, .36]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
       cx2.globalAlpha = 1; cx2.globalCompositeOperation = 'destination-out'; cx2.fillRect(0, 0, Math.round((664 - GL.x0) / GW * bc.width), bc.height);   // ліворуч від 664 — сяйво крила
       S.bloom = bc;
       // у будинки: сяйво лише поверх самих будинків (маска — їхня непрозорість), додаванням кольору
@@ -448,6 +438,12 @@ NX.city = (() => {
       else if (page === 1) { const s = 1.9 + .25 * Math.sin(t * 7); CK.glyph(c, '♥', h.x + 6 - 2.5 * s, h.y + 15 - 2.5 * s, s, '#ff4fd8'); CK.glyph(c, '24', h.x + 1.6, h.y + 30, 1.2, '#ffe27a'); CK.glyph(c, '7', h.x + 7.4, h.y + 30, 1.2, '#ffe27a'); }
       else if (page === 2) { bitmap(c, CAT, h.x + .6, h.y + 13, 1.55, '#ff9a3c'); if (Math.sin(t * 3) > -.85) { c.fillStyle = '#7aff9a'; c.fillRect(h.x + .6 + 1.55 * 1, h.y + 13 + 1.55 * 3, 1.55, 1.55); c.fillRect(h.x + .6 + 1.55 * 5, h.y + 13 + 1.55 * 3, 1.55, 1.55); } }
       else for (let i = 0; i < 5; i++) { const v = .3 + .7 * Math.abs(Math.sin(t * (2 + i * .7) + i)); c.fillStyle = i % 2 ? '#5aeaff' : '#ff6ad8'; for (let k = 0; k < v * 14; k++) c.fillRect(h.x + 1 + i * 2.1, h.y + h.h - 3 - k * 2.6, 1.6, 1.8); }
+    } else if (h.kind === 'nexi') {                                                  // велика голограма Nexi: обличчя, що кліпає й усміхається, напис
+      const p = Math.min(h.w / 9, h.h / 11), ox = h.x + (h.w - 7 * p) / 2, oy = h.y + 2, blink = (t % 4.2) < .14, page = Math.floor(t / 6) % 3;
+      c.globalAlpha = fl; bitmap(c, NEXI, ox, oy, p, '#9af6ff');
+      c.fillStyle = page === 1 ? '#ff6ad8' : '#5aeaff'; if (!blink) { c.fillRect(ox + 2 * p, oy + 2 * p, p, p); c.fillRect(ox + 4 * p, oy + 2 * p, p, p); }   // очі
+      if (page === 1) { c.fillStyle = '#ff6ad8'; c.fillRect(ox + 2 * p, oy + 3.6 * p, 3 * p, p * .6); }                                // усмішка
+      c.globalAlpha = fl * .9; CK.glyph(c, page === 2 ? 'AI' : 'NEXI', h.x + (h.w - CK.glyphW(page === 2 ? 'AI' : 'NEXI') * p * .42) / 2, oy + 7.2 * p, p * .42, page === 2 ? '#ffe27a' : '#ff6ad8');
     } else if (h.kind === 'wide') {
       const ad = S.ad, p = 1.75, off = (t * 9) % (ad.width * p); c.globalAlpha = fl; c.imageSmoothingEnabled = false;
       for (let k = 0; k < 3; k++) c.drawImage(ad, h.x + 12 + k * ad.width * p - off, h.y + 3, ad.width * p, 5 * p);
@@ -460,7 +456,7 @@ NX.city = (() => {
     c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = 'rgba(0,0,20,.28)'; for (let y = h.y + .5; y < h.y + h.h; y += 1.2) c.fillRect(h.x, y, h.w, .4);   // скан-лінії
     c.fillStyle = 'rgba(160,240,255,.18)'; c.fillRect(h.x, h.y + ((t * .35) % 1) * h.h, h.w, .8);
     c.restore();
-    CK.glow(c, h.x + h.w / 2, h.y + h.h / 2, Math.max(h.w, h.h) * .7, h.kind === 'tall' ? '255,90,220' : '80,220,255', .08 * fl);
+    CK.glow(c, h.x + h.w / 2, h.y + h.h / 2, Math.max(h.w, h.h) * .7, h.kind === 'tall' ? '255,90,220' : '80,220,255', (h.kind === 'nexi' ? .16 : .08) * fl);
   }
   function train(c, t, dt) {
     if (!S.train) { S.trainT -= dt; if (S.trainT <= 0) S.train = { x: GL.x1 + 10 }; return; }
