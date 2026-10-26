@@ -58,10 +58,10 @@ NX.citySky = (() => {
   // ---------------- ПЛАНЕТА ----------------
   // голографічна Земля, як на картинці: глибокий синій океан, світліші блакитні континенти з яскравим берегом,
   // голо-сітка, яскравий блакитний обідок і світіння від краю всередину
-  const OCEAN = ['#040a3c', '#061052', '#08176a', '#0b1f84', '#0e289e', '#1232b6', '#173ec8', '#1d4cd8'];
-  const LAND = ['#0c2f80', '#103d98', '#164eb0', '#1d62c6', '#2678d8', '#3292e6', '#46acf0', '#62c6f8'];
-  const COAST = ['#2a6ad0', '#327ade', '#3c8cea', '#4aa2f2', '#5cbaf8', '#74d0fc', '#90e2ff', '#b0f0ff'];
-  const ICE = ['#1e3474', '#2a4690', '#385aa8', '#4a70be', '#6088d0', '#7ca2e0', '#9cc0ee', '#c0dcf8'];
+  const OCEAN = ['#081a6e', '#0b2286', '#0e2c9e', '#1236b4', '#1642c8', '#1c50d8', '#2460e6', '#2e72f0'];
+  const LAND = ['#1650b0', '#1c62c4', '#2476d6', '#2e8ce4', '#3ca4f0', '#52bcf8', '#6ed2fc', '#96e6ff'];
+  const COAST = ['#3c8ae6', '#4a9cee', '#5aaef4', '#6cc0f8', '#84d4fc', '#a0e4ff', '#bff0ff', '#dcf8ff'];
+  const ICE = ['#3050a0', '#3c62b4', '#4c76c6', '#608cd6', '#78a4e4', '#92bcee', '#b0d2f6', '#d2e8fc'];
   /** Таблиця кольорів: [тип 0..3 (+4 — з лінією сітки)] × [світіння від краю 0..3] × [тон 0..7] -> c32 (рахується раз). */
   const LUT = (() => { const out = new Uint32Array(8 * 32), base = [OCEAN, LAND, ICE, COAST];
     for (let ty = 0; ty < 8; ty++) for (let g = 0; g < 4; g++) for (let s = 0; s < 8; s++) { let c = col(base[ty & 3][s]); if (ty > 3) c = mix(c, '#5ad8ff', .3); if (g) c = mix(c, '#3aa8ff', g * .13); out[ty * 32 + g * 8 + s] = c; }
@@ -70,12 +70,22 @@ NX.citySky = (() => {
   function worldTex() {
     const TW = 256, TH = 128, T = new Uint8Array(TW * TH), WM = (NX.kit && NX.kit.WORLD) || null;
     const cell = (gx, gy) => { if (!WM || gy < 0 || gy >= WM.length) return 0; const row = WM[gy]; return row[((gx % 48) + 48) % 48] === 'X' ? 1 : 0; };
+    // покриття сушею з грубої мапи (48×20) -> розмиття (3 проходи ковзного середнього) -> плавні континенти + шум берегів
+    let F = new Float32Array(TW * TH);
     for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) {
       const lon = u / TW * 360 - 180, lat = 90 - (v + .5) / TH * 180, gx = (lon + 180) / 7.5 - .5, gy = (80 - lat) / 7 - .5, ix = Math.floor(gx), iy = Math.floor(gy), fx = gx - ix, fy = gy - iy;
-      let f = WM ? (cell(ix, iy) * (1 - fx) + cell(ix + 1, iy) * fx) * (1 - fy) + (cell(ix, iy + 1) * (1 - fx) + cell(ix + 1, iy + 1) * fx) * fy : fbm(u * .05, v * .05) * 1.2 - .1;
-      f += (fbm(u * .11 + 3, v * .11 + 7) - .5) * .55;
+      F[v * TW + u] = WM ? (cell(ix, iy) * (1 - fx) + cell(ix + 1, iy) * fx) * (1 - fy) + (cell(ix, iy + 1) * (1 - fx) + cell(ix + 1, iy + 1) * fx) * fy : fbm(u * .05, v * .05) * 1.2 - .1;
+    }
+    const blur = (A, r) => { const O = new Float32Array(A.length);
+      for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) { let sm = 0; for (let k = -r; k <= r; k++) sm += A[v * TW + ((u + k + TW) % TW)]; O[v * TW + u] = sm / (2 * r + 1); }
+      const O2 = new Float32Array(A.length);
+      for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) { let sm = 0, c = 0; for (let k = -r; k <= r; k++) { const vv = v + k; if (vv < 0 || vv >= TH) continue; sm += O[vv * TW + u]; c++; } O2[v * TW + u] = sm / c; }
+      return O2; };
+    F = blur(blur(blur(F, 2), 2), 2);
+    for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) {
+      const lat = 90 - (v + .5) / TH * 180, f = F[v * TW + u] + (fbm(u * .09 + 3, v * .09 + 7) - .5) * .42 + (vn(u * .35, v * .35) - .5) * .12;
       const ice = Math.abs(lat) + (vn(u * .2, v * .2) - .5) * 9;
-      T[v * TW + u] = (lat > 0 ? ice > 74 : ice > 66) ? 2 : f > .5 ? 1 : 0;
+      T[v * TW + u] = (lat > 0 ? ice > 74 : ice > 66) ? 2 : f > .44 ? 1 : 0;
     }
     for (let v = 0; v < TH; v++) for (let u = 0; u < TW; u++) { const k = v * TW + u; if (T[k] !== 1) continue;   // берег: суша поруч з океаном
       if (T[v * TW + (u + 1) % TW] === 0 || T[v * TW + (u + TW - 1) % TW] === 0 || (v > 0 && T[k - TW] === 0) || (v < TH - 1 && T[k + TW] === 0)) T[k] = 3; }
@@ -149,7 +159,7 @@ NX.citySky = (() => {
 
   // ---------------- ХМАРИ ----------------
   // тонкі пасма, як на картинці: фіолетові з рожевими верхівками (світло міста й зорі), без розмиття — дизеринг
-  const CLOUD = pal(['#2a1c74', '#38218c', '#4a28a2', '#6230b6', '#7e3ac4', '#a046d0', '#c456da', '#e470e2', '#ff9cec']);
+  const CLOUD = pal(['#2e1c7c', '#3e2296', '#5228ac', '#6c30be', '#8a3ccc', '#ae4cd8', '#d05ee2', '#f07ae8', '#ffa8f0']);
   /** Одна хмара-пасмо: растр на її межах (щокадру хмари пливуть окремими спрайтами — це в рази дешевше за смугу
    *  на всю ширину вікна). cl: {x, y, w, h, seed, k} — центр, розмір, тон. */
   function Cloud(cl) {
