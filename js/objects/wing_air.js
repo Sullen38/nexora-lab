@@ -109,8 +109,10 @@
   }
   /** Растр -> екран: один раз зменшений під роздільність (F.fit), без згладжування (дешевше; дизеринг уже усереднено). */
   const draw = (c, S, R, a) => { if (!S || a <= .003) return; const w = S.x1 - S.x0, h = S.y1 - S.y0; c.globalAlpha = a; c.imageSmoothingEnabled = false; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
-  NX.addObject({
-    id: 'wingAir', LIGHTS,
+  /** Шар «повітря» з переліком джерел: ліве крило — 'wingAir' (тут), праве — 'rwingAir' (objects/rwing_plants.js, реєструється
+   *  після своїх зон, щоб серпанок лягав поверх них). */
+  const layer = (id, LIGHTS, span) => NX.addObject({
+    id, LIGHTS, span,
     drawBack(c, t) {
       if (c.isRefl) return;
       const R = Math.min(2, F.res());
@@ -128,4 +130,6 @@
       c.restore();
     },
   });
+  NX.wing.air = layer;
+  layer('wingAir', LIGHTS, [0, 700]);
 })();

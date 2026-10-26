@@ -6,7 +6,7 @@
 (async () => {
   await NX.room.load(window.NX_ROOM_SRC || 'assets/room.webp');
   NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
-  NX.ambient.init(); NX.city.init();
+  NX.city.init();
   try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}')); } catch (e) {}
   NX.objects.coins.init(); NX.ui.zones.init();
   NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();

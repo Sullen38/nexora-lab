@@ -4,8 +4,8 @@
  * Кожен кадр:
  *   1) update(dt) усіх модулів (Nexi, кіт, об'єкти, частинки, UI)
  *   2) малювання шарами:
- *        стеля -> картинка кімнати -> "життя" фону (ambient)
- *        -> drawBack об'єктів (те, що завжди позаду персонажів)
+ *        стеля -> картинка кімнати (лише те, що ще не кодом) -> місто за вікном
+ *        -> drawBack об'єктів (те, що завжди позаду персонажів; обидва крила — кодом)
  *        -> СОРТУВАННЯ ЗА ГЛИБИНОЮ: персонажі + drawFront об'єктів
  *           (хто нижче на екрані — той ближче і малюється пізніше)
  *        -> частинки -> підсвітка наведення
@@ -13,7 +13,7 @@
  * частини одного меблю (сидіння і спинка крісла) правильно перекривають Nexi.
  * ========================================================================== */
 NX.loop = {
-  canvas: null, c: null, last: 0, dpr: 1,
+  canvas: null, c: null, last: 0, dpr: 1, frames: 0,
   start() {
     this.canvas = document.getElementById('world');
     this.c = this.canvas.getContext('2d');
@@ -44,10 +44,13 @@ NX.loop = {
     c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
     c.imageSmoothingEnabled = false;
     NX.room.draw(c, t);
-    NX.city.draw(c, t, dt);
-    NX.ambient.draw(c, t);
+    if (this.frames < 90 || (NX.cam.x < 970 && NX.cam.x + NX.cam.viewW > 534)) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
     const objs = Object.values(NX.objects);
-    objs.forEach(o => o.drawBack && o.drawBack(c, t));
+    // ПОЗА ЕКРАНОМ НЕ МАЛЮЄМО: об'єкт зі span [x0, x1] (одиниці кімнати) пропускається, якщо він увесь за межами видимої
+    // смуги (телефон бачить ~третину кімнати, а крила малювались завжди). Перші 90 кадрів — малюється все: крила складають
+    // нерухомі копії для підлоги й сяйва (NX.wing.patch / NX.rwing.patch), а растри будуються.
+    const vx0 = NX.cam.x - 24, vx1 = NX.cam.x + NX.cam.viewW + 24, all = ++this.frames < 90;
+    objs.forEach(o => { if (!o.drawBack) return; if (!all && o.span && (o.span[1] < vx0 || o.span[0] > vx1)) return; o.drawBack(c, t); });
     const list = [NX.nexi.layer(), NX.cat.layer(), ...NX.visitors.layers()];
     objs.forEach(o => o.layers && list.push(...o.layers(t)));
     // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true),

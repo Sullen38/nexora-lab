@@ -231,7 +231,7 @@
   }
 
   const ai = NX.addObject({
-    id: 'aiPc', name: 'obj.aiPc', act: 'ai',
+    id: 'aiPc', name: 'obj.aiPc', act: 'ai', span: [0, 332],                      // span — де об'єкт на екрані (поза екраном не малюється, core/loop.js)
     hit: { x: 22, y: 4, w: 300, h: 300 }, active: false, prog: 0, burst: 0, sweep: null, nextSweep: 4, fr: 0,
     DESK, BIGQ,
     onTap(x, y) {

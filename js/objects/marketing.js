@@ -77,7 +77,7 @@
 
   let BS = null, DS = null;
   const mk = NX.addObject({
-    id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0, fr: 0, BOOTH, DESK,
+    id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0, fr: 0, BOOTH, DESK, span: [478, 668],
     hit: { x: 536, y: 166, w: 116, h: 172 },
     drawDesk(c, t) {
       if (!DS) { DS = buildDesk(); DS.cv = DS.canvas(); }

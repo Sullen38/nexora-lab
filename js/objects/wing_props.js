@@ -43,7 +43,7 @@
   });
   const lamps = LAMPS.map(d => ({ d, sp: null }));
   NX.addObject({
-    id: 'wingProps',
+    id: 'wingProps', span: [0, 668],
     drawBack(c, t) {
       const R = F.res();
       lamps.forEach(L => {

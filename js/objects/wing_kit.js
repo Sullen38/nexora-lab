@@ -51,17 +51,20 @@ NX.kit = (() => {
     const a = L(xi, yi), b = L(xi + 1, yi), c = L(xi, yi + 1), d = L(xi + 1, yi + 1); return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy; };
   /** Межі впливу відсвіту / тіні — щоб далекі пікселі пропускати одразу. */
   const bbOf = h => { if (h.box) { const r = h.r || 0, dx = h.dx || 0, dy = h.dy || 0; return [h.box[0] + dx - r, h.box[1] + dy - r, h.box[2] + dx + r, h.box[3] + dy + r]; }
+    if (h.under) { const [ax, ay, bx, by] = h.under; return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by) + h.d]; }
     if (h.ell) return [h.ell[0] - h.ell[2], h.ell[1] - h.ell[3], h.ell[0] + h.ell[2], h.ell[1] + h.ell[3]];
     if (h.band) return [h.x0, h.y - h.r, h.x1, h.y + h.r]; return [h.x - h.r, h.y - h.r, h.x + h.r, h.y + h.r]; };
   /** М'яка тінь на стіні в точці (X, Y) — найсильніша з переліку:
    *    {box:[x0,y0,x1,y1], dx, dy, r, k} — від прямокутника (будка, полиця, стелаж, труба, постер): зсунута на (dx, dy), розмита на r
-   *    {ell:[cx,cy,rx,ry], k}            — від предмета неправильної форми (гаджет, рослина) */
+   *    {ell:[cx,cy,rx,ry], k}            — від предмета неправильної форми (гаджет, рослина)
+   *    {under:[ax,ay,bx,by], d, k}       — смуга під похилою лінією (антресоль праворуч): найтемніше одразу під лінією, згасає на d */
   function shadeAt(X, Y, list) {
     let s = 0;
     for (const h of list) {
       const b = h.bb; if (X < b[0] || X > b[2] || Y < b[1] || Y > b[3]) continue;
       let v;
-      if (h.box) { const [a, c0, c1, e] = h.box, dx = h.dx || 0, dy = h.dy || 0, d = Math.hypot(Math.max(a + dx - X, 0, X - c1 - dx), Math.max(c0 + dy - Y, 0, Y - e - dy)); v = d >= h.r ? 0 : (1 - d / h.r) ** 2; }
+      if (h.under) { const [ax, ay, bx, by] = h.under, yl = ay + (by - ay) * (X - ax) / (bx - ax), dd = Y - yl; v = dd < 0 || dd > h.d ? 0 : (1 - dd / h.d) ** 1.4; }
+      else if (h.box) { const [a, c0, c1, e] = h.box, dx = h.dx || 0, dy = h.dy || 0, d = Math.hypot(Math.max(a + dx - X, 0, X - c1 - dx), Math.max(c0 + dy - Y, 0, Y - e - dy)); v = d >= h.r ? 0 : (1 - d / h.r) ** 2; }
       else { const [cx, cy, rx, ry] = h.ell, q = ((X - cx) / rx) ** 2 + ((Y - cy) / ry) ** 2; v = q >= 1 ? 0 : (1 - q) ** 1.5; }
       if (v * h.k > s) s = v * h.k;
     }
@@ -87,18 +90,78 @@ NX.kit = (() => {
    *    shades — м'які тіні від предметів (shadeAt), drips — патьоки (dripAt),
    *    stains 0..1 — старі плями з темнішим «берегом» і сольові розводи внизу,
    *    grime — кіптява під стелею й у лівому куті, cracks — частка цеглин з тріщиною / вибитим кутом. */
-  function brick(S, [x0, y0, x1, y1], lights = [], fx = {}) {
+  /** Узор поверхні (заповнює спільний PAT, без нових об'єктів на кожен піксель): q — тон, seam — шов (світло й плями
+   *  на ньому слабші), g — зерно, crack(q, cr) — пошкодження (тріщина / вибитий кут / вм'ятина), або null. */
+  const PAT = { q: 0, seam: false, g: .22, id: 0, bx: 0, by: 0, crack: null };
+  /** ЦЕГЛА 14×7 зі швами (ліве крило). */
+  const brickCrack = (q, cr) => {
+    const { id, bx, by } = PAT;
+    if (hash(id, 13) < cr && bx > 1.6 && bx < 12.4 && Math.abs(by - (1.4 + (bx - 1.6) * .42 + .55 * Math.sin(bx * 2.1 + id))) < .5) return q * .2;
+    if (hash(id, 17) < cr && bx + by < 3.8) return bx + by > 3.1 ? q + .12 : q * .35;
+    return q;
+  };
+  function brickPat(X, Y) {
+    const row = Math.floor(Y / 7), bx = (((X + (row & 1) * 7) % 14) + 14) % 14, by = ((Y % 7) + 7) % 7;
+    const id = Math.floor((X + (row & 1) * 7) / 14) * 31 + row, mortar = bx < .8 || by < .6;
+    PAT.q = mortar ? .02 : .11 + hash(id, 7) * .13 + (by < 1.4 ? .07 : by > 6.2 ? -.05 : 0) + (bx < 1.6 ? .03 : 0);
+    PAT.seam = mortar; PAT.g = mortar ? 0 : .22; PAT.id = id; PAT.bx = bx; PAT.by = by; PAT.crack = brickCrack;
+    return PAT;
+  }
+  /** МЕТАЛЕВІ ПАНЕЛІ (праве крило — майстерня, інструменти, портал): o = {w, h — розмір панелі, ox, oy — початок сітки,
+   *  bands — номери рядів з темним технологічним каналом}. Кожна панель — свій тон і різновид: гладка (шліфовані смуги),
+   *  жалюзі-вентиляція, накладна плита з фаскою, перфорація; шов з темною щілиною, світла верхня фаска, тінь знизу,
+   *  заклепки по кутах; пошкодження — вм'ятина з подряпиною. */
+  function panelPat(o = {}) {
+    const W = o.w || 44, H = o.h || 38, ox = o.ox || 0, oy = o.oy || 0, bands = o.bands || [], rib = o.rib || 0, lit0 = o.light === 'right' ? 1 : 0;
+    const dent = (q, cr) => { const { id, bx, by } = PAT; if (hash(id, 13) < cr) { const cx = 8 + hash(id, 14) * (W - 16), cy = 8 + hash(id, 15) * (H - 16), d = Math.hypot(bx - cx, (by - cy) * 1.4); if (d < 3.2) return d < 2.2 ? q * .55 : q + .07; if (Math.abs(by - cy - (bx - cx) * .35) < .3 && Math.abs(bx - cx - 6) < 4) return q + .1; } return q; };
+    return (X, Y) => {
+      const cx = Math.floor((X - ox) / W), cy = Math.floor((Y - oy) / H), px = X - ox - cx * W, py = Y - oy - cy * H, id = cx * 37 + cy * 101 + 7, h1 = hash(id, 3);
+      let q = .15 + hash(id, 7) * .09, seam = false, g = .14;
+      const sl = lit0 ? W - px : px, sr = lit0 ? px : W - px;                                                // відстань до освітленого / тіньового краю (світло від вікна)
+      if (rib && ((cx % rib) + rib) % rib === 0 && px < 3.4) {                                               // ребро-стійка: опукла, світлий край до вікна
+        q = px < .5 || px > 3 ? .02 : .2 + (lit0 ? (px - .5) : (3 - px)) * .07; seam = px < .5 || px > 3; g = .06;
+      } else if (bands.includes(cy) && py > 3 && py < 9) {                                                   // технологічний канал: темна смуга з ребрами
+        q = py < 3.8 || py > 8.2 ? .26 : ((px | 0) % 4 === 0 ? .1 : .04); g = .05;
+      } else if (px < .7 || py < .7) { q = .015; seam = true; g = 0; }                                       // шов: щілина між панелями
+      else if (py < 1.5) q += .13;                                                                           // верхня фаска ловить світло
+      else if (sl < 1.5) q += .08;                                                                           // фаска з боку вікна
+      else if (py > H - 1.2) q -= .08;                                                                       // нижній край — у тіні
+      else if (sr < 1.1) q -= .05;
+      else {
+        const dx = px - (px < W / 2 ? 3 : W - 3), dy = py - (py < H / 2 ? 3.2 : H - 3), rr = dx * dx + dy * dy;
+        if (rr < .42) q += dx + dy < 0 ? .14 : .07;                                                          // заклепка: світла голівка
+        else if (rr < 1.1 && dx > 0 && dy > 0) q -= .04;                                                      // ...і тінь від неї праворуч-знизу
+        else if (h1 < .17) {                                                                                 // жалюзі-вентиляція
+          if (px > 6 && px < W - 6 && py > 7 && py < H - 7) { const s = (py - 7) % 2.6; q = s < .9 ? .03 : s < 1.3 ? q + .07 : q - .01; g = .06; }
+        } else if (h1 < .36) {                                                                               // накладна плита з фаскою
+          if (px > 4.5 && px < W - 4.5 && py > 5 && py < H - 4.5) { const e = Math.min(px - 4.5, W - 4.5 - px, py - 5, H - 4.5 - py); q += e < .7 ? (py - 5 < .7 || (lit0 ? W - 4.5 - px : px - 4.5) < .7 ? .1 : -.08) : .035; }
+        } else if (h1 < .45) {                                                                               // перфорація
+          if (px > 5 && px < W - 5 && py > 6 && py < H - 6 && ((px * 1.5) | 0) % 3 === 0 && ((py * 1.5) | 0) % 3 === 0) q = .03;
+        } else q += (hash(Math.floor(px * 1.6), id) - .5) * .028;                                              // гладка: ледь помітні шліфовані смуги
+      }
+      PAT.q = q; PAT.seam = seam; PAT.g = g; PAT.id = id; PAT.bx = px; PAT.by = py; PAT.crack = seam ? null : dent;
+      return PAT;
+    };
+  }
+  /** Цегла (див. surface): незмінний виклик лівого крила. */
+  const brick = (S, box, lights, fx) => surface(S, box, lights, fx, brickPat, BRK);
+  /** Металеві панелі (праве крило): fx.panel — розмір і сітка панелей (panelPat), fx.pal — палітра (за замовч. PANEL). */
+  const PANEL = ['#07051a', '#0c0924', '#120e32', '#191442', '#211a54', '#2a2168', '#352a7e', '#423496'];
+  const panels = (S, box, lights, fx = {}) => surface(S, box, lights, fx, panelPat(fx.panel), fx.pal || PANEL);
+  /** СТІНА будь-якого узору (pat — brickPat / panelPat) з відсвітами, тінями, патьоками, плямами, кіптявою й пошкодженнями.
+   *  fx.grime: 1 — під стелею й у лівому куті (ліве крило); {top, left, right} — товщина кіптяви біля стелі / лівого / правого краю. */
+  function surface(S, [x0, y0, x1, y1], lights = [], fx = {}, pat = brickPat, pal = BRK) {
     lights.forEach(L => { L.bb = bbOf(L); });
     const shades0 = (fx.shades || []).map(h => ({ ...h, bb: bbOf(h) })), drips0 = (fx.drips || []).map(d => ({ ...d, bb: [d.x - d.w - 1.5, d.y, d.x + d.w + 1.5, d.y + d.len] })), st = fx.stains || 0, cr = fx.cracks || 0;
+    const gr = fx.grime === 1 || fx.grime === true ? { top: 16, left: 9 } : fx.grime || null;
     // сітка 16×16 од.: для кожної клітинки — лише ті відсвіти / тіні / патьоки, що її торкаються (швидше в рази)
     const G = 16, nx = Math.ceil((x1 - x0) / G) + 1, ny = Math.ceil((y1 - y0) / G) + 1, cells = k => Array.from({ length: nx * ny }, () => []);
     const fill = (grid, list) => { list.forEach(h => { const b = h.bb; for (let cy = Math.max(0, Math.floor((b[1] - y0) / G)); cy <= Math.min(ny - 1, Math.floor((b[3] - y0) / G)); cy++) for (let cx = Math.max(0, Math.floor((b[0] - x0) / G)); cx <= Math.min(nx - 1, Math.floor((b[2] - x0) / G)); cx++) grid[cx + cy * nx].push(h); }); return grid; };
     const LG = fill(cells(), lights), SG = fill(cells(), shades0), DG = fill(cells(), drips0);
     S.rect(x0, y0, x1, y1, (u, v, i, j, X, Y) => {
       const cell = Math.min(nx - 1, Math.floor((X - x0) / G)) + Math.min(ny - 1, Math.floor((Y - y0) / G)) * nx, lights = LG[cell], shades = SG[cell], drips = DG[cell];
-      const row = Math.floor(Y / 7), bx = (((X + (row & 1) * 7) % 14) + 14) % 14, by = ((Y % 7) + 7) % 7;
-      const id = Math.floor((X + (row & 1) * 7) / 14) * 31 + row, mortar = bx < .8 || by < .6;
-      let q = (mortar ? .02 : .11 + hash(id, 7) * .13 + (by < 1.4 ? .07 : by > 6.2 ? -.05 : 0) + (bx < 1.6 ? .03 : 0)), col = null, ck = 0;
+      const p = pat(X, Y), mortar = p.seam;
+      let q = p.q, col = null, ck = 0;
       for (const L of lights) {
         const b = L.bb; if (X < b[0] || X > b[2] || Y < b[1] || Y > b[3]) continue;
         let d;
@@ -113,14 +176,15 @@ NX.kit = (() => {
         if (n > .58) q *= 1 - (Math.min(.32, (n - .58) * 1.4) + (n < .605 ? .14 : 0)) * st;
         if (Y > 200 && vn(X / 9 + 31, Y / 5 + 17) > .78) q += (mortar ? .1 : .05) * st;
       }
-      if (fx.grime) { if (Y < 16) q *= 1 - (1 - Y / 16) ** 2 * .45; if (X < 9) q *= 1 - (1 - X / 9) ** 2 * .35; }   // кіптява під стелею і в куті
-      if (cr && !mortar) {                                                                                  // пошкоджені цеглини: тріщина навскіс або вибитий кут
-        if (hash(id, 13) < cr && bx > 1.6 && bx < 12.4 && Math.abs(by - (1.4 + (bx - 1.6) * .42 + .55 * Math.sin(bx * 2.1 + id))) < .5) q *= .2;
-        else if (hash(id, 17) < cr && bx + by < 3.8) q = bx + by > 3.1 ? q + .12 : q * .35;
+      if (gr) {                                                                                             // кіптява під стелею і в кутах
+        if (gr.top && Y < gr.top) q *= 1 - (1 - Y / gr.top) ** 2 * .45;
+        if (gr.left && X < x0 + gr.left) q *= 1 - (1 - (X - x0) / gr.left) ** 2 * .35;
+        if (gr.right && X > x1 - gr.right) q *= 1 - (1 - (x1 - X) / gr.right) ** 2 * .35;
       }
+      if (cr && !mortar && p.crack) q = p.crack(q, cr);                                                      // пошкодження: тріщина, вибитий кут / вм'ятина
       const sh = shades.length ? shadeAt(X, Y, shades) : 0, dr = drips.length ? dripAt(X, Y, drips) * 1.25 : 0, dk = Math.min(.88, Math.max(sh, dr)), rust = dr ? DRIP.rust * 1.25 : 0;
       if (dk > 0) { q = q * (1 - dk * .72) - dk * .04; ck *= 1 - dk * .4; }                               // тінь / патьок: темніше, але колір відсвіту лишається
-      let out = ramp(BRK, q, i, j, mortar ? 0 : .22); if (col) out = mix(out, col, Math.min(.6, ck * 1.1));
+      let out = ramp(pal, q, i, j, p.g); if (col) out = mix(out, col, Math.min(.6, ck * 1.1));
       return rust > .03 ? mix(out, '#3a1a14', Math.min(.55, rust)) : out;                                  // іржаві патьоки під трубою
     });
   }
@@ -508,22 +572,44 @@ NX.kit = (() => {
     ai: ['..XXX..', '.XXXXX.', 'XX.X.XX', 'XXXXXXX', 'X.XXX.X', '.XX.XX.', '..X.X..'],
     chart: ['......X', '.....XX', '...X.XX', '..XX.XX', 'X.XX.XX', 'XXXX.XX', 'XXXXXXX'],
     target: ['..XXX..', '.X...X.', 'X..X..X', 'X.XXX.X', 'X..X..X', '.X...X.', '..XXX..'],
+    bot: ['.X...X.', '..XXX..', '.XXXXX.', 'XX.X.XX', 'XXXXXXX', '.XXXXX.', '.X...X.'],      // праве крило: майстерня (голова робота з антенами)
+    gear: ['.X.X.X.', 'XXXXXXX', '.XX.XX.', 'XX...XX', '.XX.XX.', 'XXXXXXX', '.X.X.X.'],     // інструменти
+    spiral: ['.XXXXX.', 'X.....X', 'X.XXX.X', 'X.X.X.X', 'X.X...X', 'X.XXXXX', 'X......'],   // портал
   };
   /** Вивіска: темна пластина з неоновим кантом кольору зони (acc[3]) і ореолом, кругла іконка зліва (ICON[o.icon]),
    *  напис NX.t(o.key) по центру (дихає), вогник-статус справа. c — контекст кімнати АБО пласке полотно екрана
    *  (x, y, w, h — у його одиницях); так три зони мають однакову вивіску. */
-  function sign(c, x, y, w, h, o) {
-    const t = o.t || 0, acc = o.acc, r = h * .24, lw = Math.max(.8, h * .07), ix = x + h * .62, iy = y + h / 2, ir = h * .3, RR = (X, Y, W2, H2, rr) => { c.beginPath(); c.roundRect ? c.roundRect(X, Y, W2, H2, rr) : c.rect(X, Y, W2, H2); };
-    c.save();
+  function signStatic(c, x, y, w, h, o, ta) {
+    const acc = o.acc, r = h * .24, lw = Math.max(.8, h * .07), ix = x + h * .62, iy = y + h / 2, ir = h * .3, RR = (X, Y, W2, H2, rr) => { c.beginPath(); c.roundRect ? c.roundRect(X, Y, W2, H2, rr) : c.rect(X, Y, W2, H2); };
     c.fillStyle = '#0a0620'; RR(x, y, w, h, r); c.fill();
     c.strokeStyle = acc[3]; c.lineWidth = lw; RR(x + lw / 2, y + lw / 2, w - lw, h - lw, r); c.stroke();
     c.strokeStyle = acc[1]; c.lineWidth = lw * .55; RR(x + lw * 1.9, y + lw * 1.9, w - lw * 3.8, h - lw * 3.8, r * .7); c.stroke();
-    c.globalCompositeOperation = 'lighter'; c.strokeStyle = rgba(o.glow, .3 + .14 * Math.sin(t * 1.8)); c.lineWidth = lw * 2.4; RR(x, y, w, h, r); c.stroke(); c.globalCompositeOperation = 'source-over';
     c.strokeStyle = acc[3]; c.lineWidth = lw * .9; c.beginPath(); c.arc(ix, iy, ir, 0, 7); c.stroke(); c.fillStyle = '#06102e'; c.beginPath(); c.arc(ix, iy, ir - lw * .6, 0, 7); c.fill();
     const px = ir * 1.3 / 7; (ICON[o.icon] || ICON.ai).forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, ix - 3.5 * px + i * px, iy - 3.5 * px + j * px, px + .05, px + .05, acc[3])));
-    const s = NX.t(o.key), tx = x + h * 1.12, tw = w - h * 1.12 - h * .5, sz = Math.min(h * .42, tw / Math.max(1, s.length) * 1.1), tc = rgba(o.text || '154,246,255', .88 + .12 * Math.sin(t * 2.2));
+    const s = NX.t(o.key), tx = x + h * 1.12, tw = w - h * 1.12 - h * .5, sz = Math.min(h * .42, tw / Math.max(1, s.length) * 1.1), tc = rgba(o.text || '154,246,255', ta);
     c.globalCompositeOperation = 'lighter'; P.glow(c, tx + tw / 2, iy, tw * .45, rgba(o.glow, .6), .12); c.globalCompositeOperation = 'source-over';
     P.text(c, s, tx + tw / 2 + sz * .04, iy + sz * .42, tc, sz, 'center'); P.text(c, s, tx + tw / 2, iy + sz * .42, tc, sz, 'center');
+  }
+  /** Нерухома частина вивіски (пластина, канти, іконка, напис) — у кеш-полотно точно під масштаб контексту, раз на мову/масштаб:
+   *  щокадру лише drawImage + живе (ореол канта дихає, вогник блимає). Текст (fillText) і контури кожного кадру були дорогими. */
+  const SIGNC = new Map();
+  function sign(c, x, y, w, h, o) {
+    const t = o.t || 0, r = h * .24, lw = Math.max(.8, h * .07), iy = y + h / 2, RR = (X, Y, W2, H2, rr) => { c.beginPath(); c.roundRect ? c.roundRect(X, Y, W2, H2, rr) : c.rect(X, Y, W2, H2); };
+    const m = c.getTransform ? c.getTransform() : null, R = m ? Math.round(Math.hypot(m.a, m.b) * 100) / 100 : 0;
+    const tw = w - h * 1.12 - h * .5, pad = Math.ceil(Math.max(lw * 2, tw * .45 - h / 2) + 1);
+    c.save();
+    if (R > 0 && R < 12 && !c.isRefl) {
+      const key = [x, y, w, h, o.key, NX.i18n.lang, o.icon, o.acc[3], o.text, o.glow, R].join('|');
+      let cv = SIGNC.get(key);
+      if (!cv && (!document.fonts || document.fonts.status === 'loaded')) {             // кешуємо, коли шрифт уже завантажено
+        cv = document.createElement('canvas'); cv.width = Math.ceil((w + pad * 2) * R); cv.height = Math.ceil((h + pad * 2) * R);
+        const x2 = cv.getContext('2d'); x2.setTransform(R, 0, 0, R, (pad - x) * R, (pad - y) * R); signStatic(x2, x, y, w, h, o, .96); SIGNC.set(key, cv);
+        if (SIGNC.size > 64) SIGNC.delete(SIGNC.keys().next().value);
+      }
+      if (cv) { c.imageSmoothingEnabled = false; c.drawImage(cv, x - pad, y - pad, cv.width / R, cv.height / R); }
+      else signStatic(c, x, y, w, h, o, .88 + .12 * Math.sin(t * 2.2));
+    } else signStatic(c, x, y, w, h, o, .88 + .12 * Math.sin(t * 2.2));
+    c.globalCompositeOperation = 'lighter'; c.strokeStyle = rgba(o.glow, .3 + .14 * Math.sin(t * 1.8)); c.lineWidth = lw * 2.4; RR(x, y, w, h, r); c.stroke(); c.globalCompositeOperation = 'source-over';   // ореол канта дихає
     lit(c, x + w - h * .36, iy - h * .08, h * .16, h * .16, Math.sin(t * 3 + x) > 0 ? '#3bff8a' : '#1f6a45');
     c.restore();
   }
@@ -689,5 +775,5 @@ NX.kit = (() => {
   }
 
   const draw = (c, S, R) => { const w = S.x1 - S.x0, h = S.y1 - S.y0; c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
-  return { BRK, SLAB, GREEN, POT, brick, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, wire, snap, gloss, deskShine, underLive, reflectors: [] };
+  return { BRK, SLAB, GREEN, POT, PANEL, brick, panels, surface, panelPat, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, wire, snap, gloss, deskShine, underLive, shadeAt, bbOf, reflectors: [] };
 })();

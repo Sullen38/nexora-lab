@@ -80,18 +80,22 @@
     }
     x.putImageData(im, 0, 0); p.cv = cv; p.w = w / R2; p.h = h / R2; p.ox = p.rx + pad; p.oy = p.ry + pad;
   }
-  /** Калюжі світлом у контекст c (координати кімнати). Відбиття потім лягає поверх (.4), тож тут трохи яскравіше. */
-  function paintPuddles(c) {
+  /** Калюжі світлом у контекст c (координати кімнати). Відбиття потім лягає поверх (.4), тож тут трохи яскравіше.
+   *  list — свій перелік калюж (праве крило — objects/rwing_floor.js), за замовчуванням — калюжі лівого крила. */
+  function paintPuddles(c, list = PUDDLES) {
     c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = false;
-    PUDDLES.forEach(p => { if (!p.cv) bakePuddle(p); c.globalAlpha = Math.min(1, p.k * 1.3); c.drawImage(p.cv, p.x - p.ox, p.y - p.oy, p.w, p.h); });
+    list.forEach(p => { if (!p.cv) bakePuddle(p); c.globalAlpha = Math.min(1, p.k * 1.3); c.drawImage(p.cv, p.x - p.ox, p.y - p.oy, p.w, p.h); });
     c.restore();
   }
+  NX.wing.paintTiles = paintTiles; NX.wing.paintPuddles = paintPuddles;           // праве крило кладе ту саму плитку й калюжі у свою підлогу (rwing_floor.js)
   // ЗАПІКАННЯ: передня підлога кімнати (room.js кличе при кожній перебудові — зміна розміру, латка крила)
   NX.room.frontFx = (c, x0, x1, front) => {
     const lw = 1 / NX.room.FR, H2 = NX.cfg.ROOM_H, y1 = H2 + front + 2;                                // шов — 1 піксель полотна (на телефоні — 8-bit «драбинкою», як і вся передня підлога)
-    if (x0 < 664) { c.save(); c.beginPath(); c.rect(x0, H2, Math.min(x1, 664) - x0, front + 2); c.clip(); paintTiles(c, H2, y1, lw); c.restore(); }   // крило: плитка без переходу
-    if (x1 > 664) { c.save(); c.beginPath(); c.rect(664, H2, x1 - 664, front + 2); c.clip(); paintTiles(c, H2, y1, lw, [H2, H2 + 46]); c.restore(); }   // підлога картинки: плитка проступає плавно
-    paintPuddles(c);
+    const RX = 891;                                                                                    // праве крило (кодом) — від x 891
+    if (x0 < 664) { c.save(); c.beginPath(); c.rect(x0, H2, Math.min(x1, 664) - x0, front + 2); c.clip(); paintTiles(c, H2, y1, lw); c.restore(); }   // ліве крило: плитка без переходу
+    if (x1 > 664 && x0 < RX) { c.save(); c.beginPath(); c.rect(Math.max(x0, 664), H2, Math.min(x1, RX) - Math.max(x0, 664), front + 2); c.clip(); paintTiles(c, H2, y1, lw, [H2, H2 + 46]); c.restore(); }   // під вікном і диваном (підлога картинки): плитка проступає плавно
+    if (x1 > RX) { c.save(); c.beginPath(); c.rect(Math.max(x0, RX), H2, x1 - Math.max(x0, RX), front + 2); c.clip(); paintTiles(c, H2, y1, lw); c.restore(); }   // праве крило: плитка без переходу
+    paintPuddles(c); if (NX.rwing && NX.rwing.PUDDLES) paintPuddles(c, NX.rwing.PUDDLES);
   };
   // ЗАПІКАННЯ: смуга підлоги під столами крила (растр wing_wall.js, 2 px/од.) — лише нижче ліній підлоги
   NX.wing.floorFx = S => {
@@ -111,7 +115,7 @@
   }
 
   NX.addObject({
-    id: 'wingFloor',
+    id: 'wingFloor', span: [0, 680],
     drawBack(c, t) {
       if (c.isRefl) return;
       const Kk = NX.cam.k * (NX.loop.dpr || 1), R = Math.min(2, Math.ceil(Kk * 2) / 2);
@@ -136,13 +140,11 @@
    * кладуться світлом поверх стіни, столів і будок — м'які ореоли навколо неону, екранів і ліхтарів, як на картинці.
    * Малюється після всіх drawBack крила (перед Nexi й котом), повільно "дихає". */
   NX.addObject({
-    id: 'wingGlow',
+    id: 'wingGlow', span: [0, 664],
     drawBack(c, t) {
       const B = NX.wing.bloom; if (!B || c.isRefl) return;
-      const { ROOM_W: W, ROOM_H: H } = NX.cfg, br = .9 + .1 * Math.sin(t * .9);
-      c.save(); c.beginPath(); c.rect(0, -40, 664, H + 60); c.clip(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
-      [[B[0], .1], [B[1], .2], [B[2], .3]].forEach(([b, a]) => { c.globalAlpha = a * br; c.drawImage(b, 0, 0, W, H); });
-      c.restore();
+      const H = NX.cfg.ROOM_H, br = .9 + .1 * Math.sin(t * .9);                     // три масштаби вже змішані в одне полотно (wing_wall.js -> patch)
+      c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true; c.globalAlpha = br; c.drawImage(B.cv, 0, 0, B.w, H); c.restore();
     },
   });
 })();

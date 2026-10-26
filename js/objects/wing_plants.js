@@ -46,5 +46,5 @@
     });
     if (d.stage === 'wall') wall.push(o);
   });
-  NX.addObject({ id: 'wingPlantsWall', drawBack(c, t) { wall.forEach(o => o.draw(c, t)); } });
+  NX.addObject({ id: 'wingPlantsWall', span: [0, 536], drawBack(c, t) { wall.forEach(o => o.draw(c, t)); } });
 })();

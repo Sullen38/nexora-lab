@@ -166,13 +166,17 @@
         for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }
         bx.putImageData(im, 0, 0); const lim = Math.round(664 * RS / 8); bx.clearRect(lim, 0, bw - lim, bh);
         const down = (src, f) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / f)); o.height = Math.max(1, Math.round(src.height / f)); const ox = o.getContext('2d'); ox.imageSmoothingEnabled = true; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
-        const b2 = down(b1, 2), b3 = down(b2, 2); this.bloom = [b1, b2, b3];
+        const b2 = down(b1, 2), b3 = down(b2, 2);
+        // три масштаби змішуємо ОДИН раз в одне полотно (лише крило, до x 664) — щокадру один drawImage замість трьох
+        const m = document.createElement('canvas'); m.width = lim; m.height = bh; const mx = m.getContext('2d'); mx.imageSmoothingEnabled = true; mx.globalCompositeOperation = 'lighter';
+        [[b1, .1], [b2, .2], [b3, .3]].forEach(([b, k]) => { mx.globalAlpha = k; mx.drawImage(b, 0, 0, lim * b.width / bw, b.height, 0, 0, lim, bh); });
+        this.bloom = { cv: m, w: lim * 8 / RS };
       } catch (e) { this.bloom = null; }
     },
   };
   NX.i18n.onLang(() => { if (NX.wing.patched) setTimeout(() => NX.wing.patch(), 300); });   // віддзеркалення крила в підлозі — з написами новою мовою
   NX.addObject({
-    id: 'wingBack', fr: 0,
+    id: 'wingBack', fr: 0, span: [0, 668],
     drawBack(c, t) {
       if (!WALL) { WALL = buildWall(); WALL.cv = WALL.canvas(null); FLOOR = buildFloor(); FLOOR.cv = FLOOR.canvas(null); if (NX.wing.floorFx) NX.wing.floorFx(FLOOR); FURN = buildFurn(); FURN.cv = FURN.canvas(); }   // floorFx — плитка й калюжі світла (wing_floor.js, №7)
       const R = F.res();
