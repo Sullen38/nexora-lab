@@ -15,6 +15,10 @@
  *   угорі    — косинка-підсилювач у куті (як справа на картинці) з блакитним неоном по скосу
  * Растр 4 px/од. будується раз; щокадру — дві копії (одна дзеркальна) + світіння трубок і вогники.
  * Малюється після стіни крила й до будки маркетингу (вона стоїть перед лівим відкосом).
+ * ПАНОРАМНЕ ВІКНО (власник: «прибрати чорну перемичку, зробити вікно повністю панорамним»): між відкосами —
+ * одне суцільне скло від стелі до підлоги (місто за ним — world/cityscape.js). Тут же:
+ *   верхня балка над склом (лицьова панель зі швами + рожева неонова трубка, як на картинці; світить на скло)
+ *   поріг біля підлоги (низький профіль з блакитним неоном — там, де скло сходиться з підлогою)
  * ========================================================================== */
 (() => {
   const P = NX.px, F = NX.furn, K = NX.kit, { CHROME, OUT } = F.PAL, ramp = F.ramp, rgba = K.rgba, lit = K.lit;
@@ -66,6 +70,39 @@
     S.poly([[19.4, 9], [22, 7.6], [24.6, 9], [24.6, 12], [22, 13.4], [19.4, 12]], (u, v, i, j) => u < .5 && v < .5 ? CHROME[4] : CHROME[2]);   // шестигранний болт
     return S;
   }
+  // ---- верхня балка і поріг панорамного скла (між відкосами; кінці ховаються під косинками й стійками) ----
+  const BX0 = 556, BX1 = 948, SILL = 340.5, SX1 = 887.5;                        // поріг — до машинерії майстерні (x 887.5)
+  function buildBeam() {
+    const S = F.Sheet(BX0, -4, BX1, 5.4);
+    S.rect(BX0, -4, BX1, 5.4, (u, v, i, j, X, Y) => {
+      if (Y < .9) return ramp(PF, .1 + (Y + 4) / 5 * .14, i, j, .08);                                   // нижня грань стелі (у тіні)
+      if (Y < 3) { const sx = ((X - BX0 - 20) % 48 + 48) % 48; if (sx < .5) return '#05031a'; if (sx < 1) return '#3c248c';
+        return ramp(PF, .44 + (Y - .9) / 2.1 * .3 + (sx < 4 ? .05 : 0), i, j, .08); }                      // лицьова панель зі швами
+      if (Y < 3.3) return '#0a0620';
+      if (Y < 4.4) return Y < 3.6 || Y > 4.1 ? '#ff4fd8' : '#ffc2ec';                                   // неонова трубка
+      return Y < 4.8 ? '#0a0620' : '#140c3a';                                                            // кромка над склом
+    });
+    for (let x = BX0 + 44; x < BX1; x += 48) S.rr(x - .7, 1.3, x + .7, 2.7, .7, (d, u, v) => d < .25 ? OUT : u < .45 && v < .45 ? CHROME[4] : CHROME[2]);   // болти
+    return S;
+  }
+  function buildSill() {
+    const S = F.Sheet(BX0, SILL - .6, SX1, 348);
+    S.rect(BX0, SILL - .6, SX1, 348, (u, v, i, j, X, Y) => {
+      if (Y < SILL) return '#0a0620'; if (Y < SILL + 1) return Y < SILL + .5 ? '#9af6ff' : '#3be8ff';   // блакитний неон уздовж скла
+      if (Y < SILL + 1.4) return '#0a0620';
+      const sx = ((X - BX0 - 20) % 48 + 48) % 48; if (sx < .5) return '#05031a';
+      return ramp(PF, .34 - (Y - SILL) / 7.5 * .22, i, j, .08);
+    });
+    return S;
+  }
+  let BM = null, SL = null;
+  function beamLive(c, t) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    const br = .16 + .05 * Math.sin(t * 1.1) + .015 * Math.sin(t * 6.3), g = c.createLinearGradient(0, 4.4, 0, 13);
+    g.addColorStop(0, `rgba(255,79,216,${br * 1.6})`); g.addColorStop(1, 'rgba(255,79,216,0)'); c.fillStyle = g; c.fillRect(574, 4.4, 356, 8.6);   // трубка світить на скло
+    [[664, 1], [818, .7]].forEach(([x, k], n) => P.glow(c, x + Math.sin(t * .3 + n) * 6, 4, 16, 'rgba(255,150,236,.9)', (.22 + .06 * Math.sin(t * 1.7 + n * 2)) * k));   // гарячі точки на трубці
+    c.restore();
+  }
   // м'яке світіння трубки (кешоване полотно: горизонтальний перелив, однаковий для обох відкосів)
   let GL = null;
   function glowStrip() {
@@ -92,7 +129,9 @@
   NX.addObject({
     id: 'windowFrame',
     drawBack(c, t) {
-      if (!SH) { SH = build(); SH.cv = SH.canvas(); GL = glowStrip(); }
+      if (!SH) { SH = build(); SH.cv = SH.canvas(); GL = glowStrip(); BM = buildBeam(); BM.cv = BM.canvas(null); SL = buildSill(); SL.cv = SL.canvas(null); }
+      K.draw(c, BM, Math.min(4, F.res())); beamLive(c, t);
+      K.draw(c, SL, Math.min(4, F.res()));                                       // поріг — лише там, де за ним місто (праворуч стоїть машинерія майстерні)
       jamb(c, t, false, H);                                                      // лівий — біля стіни крила (низ ховається за будкою й столом маркетингу)
       c.save(); c.beginPath(); R_STOP.forEach(([a, b, y]) => c.rect(a, -2, b - a, y + 2)); c.clip();              // правий — до машинерії майстерні
       jamb(c, t, true, 182);

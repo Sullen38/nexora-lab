@@ -151,6 +151,8 @@
     patch() {
       this.patched = true; this.patching = true; const img = NX.room.img, RS = NX.room.RS, cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d'), t = NX.time;
       x.imageSmoothingEnabled = true; x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS);
+      if (NX.city && NX.city.paint) NX.city.paint(x, t, 'patch', RS);              // місто за панорамним вікном (cityscape.js) і рама вікна — під будкою маркетингу
+      if (NX.objects.windowFrame) NX.objects.windowFrame.drawBack(x, t);
       ['wingBack', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall', 'wingProps'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
       const L = []; ['analyticsChair', 'marketingChair', 'coffee', 'catCorner'].forEach(id => { const o = NX.objects[id]; if (o && o.layers) L.push(...o.layers(t)); });
       Object.values(NX.objects).forEach(o => { if (o.id.startsWith('wp_') && o.layers) L.push(...o.layers(t)); });

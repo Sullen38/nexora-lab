@@ -8,6 +8,8 @@
  *   2. Стеля (y < 0) — добудовується кодом під висоту екрана.
  *   3. Передня підлога (y > 368) — продовження тієї ж глянцевої підлоги:
  *      нижні рядки картинки тягнуться вниз, тому шву між ними не видно.
+ * Частини, що вже повністю намальовані кодом (панорамне вікно з містом), з картинки не малюються:
+ * world/cityscape.js задає NX.room.pieces — прямокутники картинки, які ще потрібні.
  * Межі, де можна ходити, повертає walkBounds().
  * ========================================================================== */
 NX.room = {
@@ -40,7 +42,8 @@ NX.room = {
     this.frontFrom(this.img, 0, W);
     this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1));                                    // перемальовані зони (напр. AI-центр)
   },
-  patches: [], FR: 1, frontFx: null,                                                                  // FR 2 px/од. подвоював час кадру (велике полотно щокадру) — лишаємо 1
+  patches: [], FR: 1, frontFx: null, pieces: null,                                    // pieces — які частини картинки ще малювати (вікно вже кодом: world/cityscape.js)
+                                                                  // FR 2 px/од. подвоював час кадру (велике полотно щокадру) — лишаємо 1
   /** Передня підлога для стовпчиків x0..x1 з джерела src (картинка кімнати або її перемальована копія того ж розміру). */
   frontFrom(src, x0, x1) {
     const { ROOM_W: W, ROOM_H: H } = NX.cfg, FR = this.FR, front = this.front.height / FR - 2, RS = this.RS, c = this.front.getContext('2d');
@@ -61,7 +64,8 @@ NX.room = {
   draw(c, t) {
     const { ROOM_H: H } = NX.cfg, { top } = NX.cam;
     c.drawImage(this.ceil, 0, -top);
-    c.drawImage(this.img, 0, 0, NX.cfg.ROOM_W, NX.cfg.ROOM_H);
+    if (this.pieces) { const RS = this.RS; this.pieces.forEach(([x0, y0, x1, y1]) => c.drawImage(this.img, x0 * RS, y0 * RS, (x1 - x0) * RS, (y1 - y0) * RS, x0, y0, x1 - x0, y1 - y0)); }
+    else c.drawImage(this.img, 0, 0, NX.cfg.ROOM_W, NX.cfg.ROOM_H);
     const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(0, 0, NX.cfg.ROOM_W, 22);
     c.drawImage(this.front, 0, H, NX.cfg.ROOM_W, this.front.height / this.FR);
   },

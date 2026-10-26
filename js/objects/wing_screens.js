@@ -50,6 +50,7 @@
     '..............XXXX......................XXXXX...', '..............XXX.............................XX',
     '..............XX................................', '................................................',
   ];
+  K.WORLD = WORLD;                                                                // та сама мапа світу — для планети за вікном (world/city_sky.js)
   const CITIES = { kyiv: [28.0, 4.3], warsaw: [26.8, 4.0], amsterdam: [24.7, 4.0], london: [24.0, 4.1], newyork: [14.1, 5.6], sf: [7.7, 6.0],
     tokyo: [42.7, 6.3], sydney: [44.1, 16.3], saopaulo: [17.9, 14.7], dubai: [31.3, 7.9], singapore: [37.9, 11.3], lagos: [24.4, 10.6] };
   const ROUTES = [['kyiv', 'newyork'], ['amsterdam', 'tokyo'], ['warsaw', 'saopaulo'], ['london', 'dubai'], ['kyiv', 'singapore'], ['amsterdam', 'sydney'], ['sf', 'tokyo']];
