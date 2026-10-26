@@ -58,6 +58,32 @@ NX.cityBuild = (() => {
       case 'dome': { box(x0, top, x1, bot); const r = w / 2 - (b.ins || 1), rh = b.dh || r * .75, pts = []; for (let k = 0; k <= 18; k++) { const a = Math.PI * k / 18; pts.push([cx - Math.cos(a) * r, top + .01 - Math.sin(a) * rh]); } P.push(pts); break; }
       case 'round': { const r = w / 2, pts = [[x0, bot], [x0, top + r]]; for (let k = 0; k <= 18; k++) { const a = Math.PI * (1 - k / 18); pts.push([cx + Math.cos(a) * r, top + r - Math.sin(a) * r * (b.flat || 1)]); } pts.push([x1, bot]); P.push(pts); break; }
       case 'twin': { const g = b.gap == null ? w * .22 : b.gap, tw = (w - g) / 2; box(x0, top, x0 + tw, bot); box(x1 - tw, top + (b.dt || 0), x1, bot); if (b.bridge) box(x0 + tw - .2, b.bridge, x1 - tw + .2, b.bridge + (b.bh || 4)); break; }
+      // ---- майбутнє ----
+      case 'needle': {                                                               // голка: плавно звужується догори до вістря
+        const L = [], Rr = [], N = 24, k = b.k == null ? .55 : b.k;
+        for (let s2 = 0; s2 <= N; s2++) { const v = s2 / N, y = top + (bot - top) * v, hw = w / 2 * (.06 + .94 * Math.pow(v, k)); L.push([cx - hw, y]); Rr.unshift([cx + hw, y]); }
+        P.push([...L, ...Rr]); break; }
+      case 'saucer': {                                                               // «космічна голка»: тонкий стовбур, диск-под угорі, шпиль
+        const st = b.stem || w * .34, pod = b.pod || { y: top + 14, a: w * .6, b: 4 }, pts = [];
+        box(cx - st / 2, pod.y, cx + st / 2, bot);
+        for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2; pts.push([cx + Math.cos(a) * pod.a, pod.y + Math.sin(a) * pod.b * (Math.sin(a) > 0 ? 1.4 : 1)]); } P.push(pts);
+        P.push([[cx - st * .35, pod.y - pod.b + .2], [cx - .4, top], [cx + .4, top], [cx + st * .35, pod.y - pod.b + .2]]);
+        if (b.pod2) { const q = b.pod2, pp = []; for (let k = 0; k < 20; k++) { const a = k / 20 * Math.PI * 2; pp.push([cx + Math.cos(a) * q.a, q.y + Math.sin(a) * q.b]); } P.push(pp); }
+        break; }
+      case 'arch': {                                                                 // ворота: дві опори й арка вгорі
+        const lw = b.leg || w * .18, ah = b.ah || 26, out = [], inn = [];
+        box(x0, top + ah, x0 + lw, bot); box(x1 - lw, top + ah, x1, bot);
+        for (let k = 0; k <= 20; k++) { const a = Math.PI * (1 - k / 20); out.push([cx + Math.cos(a) * w / 2, top + ah - Math.sin(a) * ah]); inn.unshift([cx + Math.cos(a) * (w / 2 - lw), top + ah - Math.sin(a) * (ah - lw * .8)]); }
+        P.push([...out, ...inn]); break; }
+      case 'twist': {                                                                // скручена: сегменти з різною шириною й зсувом
+        const N = b.seg || 9, L = [], Rr = [], sh = (bot - top) / N;
+        for (let s2 = 0; s2 <= N; s2++) { const y = top + s2 * sh, k2 = s2 < N ? s2 : N - 1, ww = w / 2 * (.72 + .28 * Math.abs(Math.sin(k2 * .8 + .3))) * (s2 === 0 ? .8 : 1), dx = w * .1 * Math.sin(k2 * 1.15); L.push([cx + dx - ww, y]); Rr.unshift([cx + dx + ww, y]); }
+        P.push([[cx - 1, top - (b.sh || 8)], [cx + 1, top - (b.sh || 8)], ...Rr.slice(-1), ...L.slice(0, 1)]); P.push([...L, ...Rr]); break; }
+      case 'mega': {                                                                 // мегавежа-аркологія: виходить за край вікна, палуби-майданчики
+        box(x0, top, x1, bot);
+        (b.decks || []).forEach(([y, ex, h]) => { const hh = h || 3, pts = []; for (let k = 0; k <= 10; k++) { const a = -Math.PI / 2 + Math.PI * k / 10; pts.push([x1 + ex - hh / 2 + Math.cos(a) * hh / 2, y + hh / 2 + Math.sin(a) * hh / 2]); }
+          for (let k = 0; k <= 10; k++) { const a = Math.PI / 2 + Math.PI * k / 10; pts.push([x0 - ex + hh / 2 + Math.cos(a) * hh / 2, y + hh / 2 + Math.sin(a) * hh / 2]); } P.push(pts); });
+        break; }
       default: box(x0, top, x1, bot);
     }
     return P;
@@ -94,6 +120,7 @@ NX.cityBuild = (() => {
     const floorLit = f => { const h = hash2(seed * 7 + f, 99); return h < .14 ? 1.7 : h > .82 ? .2 : 1; };   // поверх: увесь світиться / темний / звичайний
     const winCol = (cell, f) => { const h = hash2(cell * 5 + seed, f); return cols.length < 2 || h < .72 ? cols[0] : cols[1 + Math.floor((h - .72) / .28 * (cols.length - 1)) % (cols.length - 1)]; };
     /** Клітинка вікна в точці (X, ly): номер або -1 (простінок), для кожного стилю. */
+    const glass = style === 'glass', strip = b.strip || 0, band = b.band || 0, stripC = b.stripC || NEON.cyan, bandC = b.bandC || NEON.pink, outline = !!b.outline;
     const cellAt = (X, ly) => {
       const fl = Math.floor((ly - my0) / sy), fy = ly - my0 - fl * sy; if (fl < 0) return -1;
       if (style === 'stripes') { if (fy >= wh) return -1; const u = (X - x0) % seg; return u < seg - .5 ? Math.floor((X - x0) / seg) : -1; }
@@ -114,18 +141,26 @@ NX.cityBuild = (() => {
         const ii = i + M.i0, X = R.X(ii), L = !M.at(i - 1, j), Rt = !M.at(i + 1, j), T = !M.at(i, j - 1);
         const xin = inner > 0 ? x1 - X : X - x0, side = xin < sw;
         let c = P[clamp(Math.round((q0 - (side ? .2 : 0) + (b.pil && ((X - x0 + b.pil / 2) % b.pil) < .8 ? .12 : 0)) * (n - 1) + B(ii, jj) * .9), 0, n - 1)];
+        if (glass) {                                                                 // СКЛЯНИЙ ФАСАД (майбутнє): відблиск неба згори, косий відблиск, світлові лінії й пояси
+          const sheen = ((X - x0) + ly * .55 + seed * 7) % 46; if (sheen < 5) c = P[clamp(Math.round((q0 + .2) * (n - 1) + B(ii, jj) * .9), 0, n - 1)];
+          const inn = M.at(i - 2, j) && M.at(i + 2, j) && M.at(i, j - 2);
+          if (inn && strip && !side && ((X - x0 - strip / 2 + 100 * strip) % strip) < R.U * 1.01) c = (jj + (seed & 3)) % 9 < 7 ? stripC : mix(stripC, '#000000', .45);
+          else if (inn && band && ((ly - band / 2 + 100 * band) % band) < R.U * 1.01) c = side ? mix(bandC, '#000000', .45) : bandC;
+          else if (inn && !side && WIN.lit && hash2(seed * 31 + Math.floor((X - x0) / 2.5), Math.floor(ly / 3)) < WIN.lit && ((ly % 3) < 1.01) && ((X - x0) % 2.5) < 1.6) c = cols[0][0][hash2(ii, seed) > .8 ? 1 : 0];   // рідкі світлі панелі
+        }
         // вікна: лише всередині силуету з полями від краю
-        if (style !== 'none' && !side && M.at(i - mH, j) && M.at(i + mH, j) && M.at(i, j - mV) && Y < bot - 1.5) {
+        else if (style !== 'none' && !side && M.at(i - mH, j) && M.at(i + mH, j) && M.at(i, j - mV) && Y < bot - 1.5) {
           const cell = cellAt(X, ly);
           if (cell >= 0) {
             if (style === 'dots' ? hash2(seed * 131 + cell, fl * 17 + 3) < lit : hash2(seed * 131 + cell, fl * 17 + 3) < lit * fF) { const pk = winCol(cell, fl)[0]; c = sill ? pk[2] : hash2(cell, fl + seed) > .85 ? pk[1] : pk[0]; }
             else if (plane !== 'far') c = mix(c, '#3448c8', .22);                    // темне скло
           }
-        } else if (side && style !== 'none' && plane !== 'far' && M.at(i, j - mV) && cellAt(X, ly) >= 0 && hash2(seed + ii, fl) > .8) c = mix(c, cols[0][0][2], .55);   // рідкі тьмяні вікна на бічній грані
+        } else if (!glass && side && style !== 'none' && plane !== 'far' && M.at(i, j - mV) && cellAt(X, ly) >= 0 && hash2(seed + ii, fl) > .8) c = mix(c, cols[0][0][2], .55);   // рідкі тьмяні вікна на бічній грані
         // канти: бічні (з боку центру — світло планети) і верхні (уступи, скоси даху)
-        if (L || Rt) { const isIn = (Rt && inner > 0) || (L && inner < 0), rc = isIn ? rimI : rimO; if (rc) c = mix(c, rc, rimF * (isIn ? 1 : .6)); }
+        if (outline && (L || Rt || T)) c = T ? (ledge || rimI || rimO) : ((Rt && inner > 0) || (L && inner < 0)) ? (rimI || rimO) : (rimO || rimI);   // неоновий контур усього силуету
+        else if (L || Rt) { const isIn = (Rt && inner > 0) || (L && inner < 0), rc = isIn ? rimI : rimO; if (rc) c = mix(c, rc, rimF * (isIn ? 1 : .6)); }
         else if (rimI && plane !== 'far' && ((inner > 0 && !M.at(i + 2, j)) || (inner < 0 && !M.at(i - 2, j)))) c = mix(c, rimI, rimF * .45);
-        if (T) c = ledge ? ledge : mix(c, rimI || P[n - 1], plane === 'far' ? .3 : .55);
+        if (T && !outline) c = ledge ? ledge : mix(c, rimI || P[n - 1], plane === 'far' ? .3 : .55);
         // серпанок плану (дизерингом)
         if (hz > 0) { const k = Math.floor(hz * 4 + B(ii + 1, jj) + .5) / 4; if (k > 0) c = mix(c, hc, k); }
         if (hz2 > 0) { const k = Math.floor(hz2 * 4 + B(ii, jj + 1) + .5) / 4; if (k > 0) c = mix(c, plane === 'near' ? HAZE.near : HAZE.mid, k); }
@@ -135,12 +170,19 @@ NX.cityBuild = (() => {
     // неонові пояси — лише в межах силуету
     (b.bands || []).forEach(([y, cc]) => { const j = R.J(y) - M.j0; if (j < 0 || j >= M.H) return; for (let i = 0; i < M.W; i++) if (M.m[j * M.W + i]) { R.d[(j + M.j0) * R.W + i + M.i0] = cc; R.over(i + M.i0, j + M.j0 + 1, cc, .3); } });
     if (b.ring) ringOf(R, b, M);
+    if (b.shape === 'mega') (b.decks || []).forEach(([y, ex, h]) => {                // палуби аркології: плита з неоновими краями й вогнями, світло знизу
+      const hh = h || 3, a0 = x0 - ex, a1 = x1 + ex, DK = [col('#1c1660'), col('#2a2280'), col('#3a30a0')];
+      R.rect(a0, y, a1, y + hh, (i, j, X, Y) => { const r = hh / 2, cx2 = X < a0 + r ? a0 + r : X > a1 - r ? a1 - r : X; if (((X - cx2) / r) ** 2 + ((Y - y - r) / r) ** 2 > 1) return 0;
+        const v = (Y - y) / hh; return v < .22 ? NEON.cyanL : v > .78 ? NEON.pink : DK[clamp(Math.round((1 - v) * 2 + B(i, j) * .8), 0, 2)]; });
+      for (let x = a0 + 2; x < a1 - 1; x += 3) R.rect(x, y + hh * .42, x + .5, y + hh * .62, (Math.round(x) % 2) ? col('#ffe7a0') : col('#9af6ff'));
+      for (let k = 1; k <= 3; k++) for (let i = R.I(a0 + 2); i <= R.I(a1 - 2); i++) R.over(i, R.J(y + hh) + k, NEON.cyan, .3 / k);   // світло з-під палуби
+    });
     roof(R, b, live, rng(seed));
     if (b.sign) { signBoard(R, b.sign); live.signs.push(b.sign); }
     if (b.holo) { const h = b.holo; R.rect(h.x - .5, h.y - .5, h.x + h.w + .5, h.y + h.h + .5, OUT); R.rect(h.x, h.y, h.x + h.w, h.y + h.h, (i, j) => (i + j) & 1 ? col('#071a3a') : col('#0a2450')); live.holo.push(h); }
     if (b.pad) live.pad.push(...b.pad);
     // «живі» вікна: зараз темні, засвічуються й гаснуть (cityscape.js) — клітинки одразу за порогом світла
-    if (plane !== 'far' && style !== 'none') {
+    if (plane !== 'far' && style !== 'none' && !glass) {
       const cap = live.win.length + (b.liveMax || 5), nf = Math.floor((bot - 3 - top - my0) / sy);
       for (let f = 1; f <= nf && live.win.length < cap; f++) { const thr = lit * floorLit(f);
         for (let cl = 0; cl < (style === 'stripes' ? Math.ceil(w / seg) : ncol) && live.win.length < cap; cl++) { const h = hash2(seed * 131 + cl, f * 17 + 3); if (h < thr || h > thr + .06) continue;
@@ -189,8 +231,9 @@ NX.cityBuild = (() => {
     const r = rng(seed), out = []; let x = x0 - 6;
     while (x < x1 + 6) {
       const w = 6 + r() * 12, tall = r() < .14, t = (o.top || 118) + (tall ? -18 - r() * 12 : r() * (o.var || 30)), k = r();
-      const shape = k < .62 ? 'box' : k < .74 ? 'spire' : k < .84 ? 'setback' : k < .92 ? 'taper' : 'round';
-      out.push({ x0: x, x1: x + w, top: t, bot: o.bot || 214, plane: 'far', q: r() * .25, shape, sh: 4 + r() * 8, tiers: [[w * .2, 3 + r() * 4]], k: .45, th: 10 + r() * 10,
+      const shape = o.future ? (k < .3 ? 'needle' : k < .55 ? 'round' : k < .7 ? 'dome' : k < .82 ? 'saucer' : 'box') : k < .62 ? 'box' : k < .74 ? 'spire' : k < .84 ? 'setback' : k < .92 ? 'taper' : 'round';
+      out.push({ x0: x, x1: x + w, top: t - (o.future && shape === 'needle' ? 14 + r() * 16 : 0), bot: o.bot || 214, plane: 'far', q: r() * .25, shape, sh: 4 + r() * 8, tiers: [[w * .2, 3 + r() * 4]], k: .45, th: 10 + r() * 10,
+        pod: { y: t + 6, a: w * .7, b: 1.6 }, outline: o.future && r() < .35, rimO: o.future ? NEON.violet : undefined,
         rimI: r() < .45 ? NEON.violet : 0, win: { style: 'dots', sx: 1.5, sy: 2, w: .5, h: .5, lit: .1, cols: ['lav', 'pink'], mx: 1, my: 1.5 },
         ant: r() < .2 ? [{ x: x + w * (.3 + r() * .4), h: 3 + r() * 6 }] : [] });
       x += w + (r() < .4 ? 2 + r() * 6 : -r() * 1.5);
@@ -201,8 +244,8 @@ NX.cityBuild = (() => {
   function lowRoofs(x0, x1, seed, o = {}) {
     const r = rng(seed), out = []; let x = x0 - 4;
     while (x < x1 + 4) {
-      const w = 14 + r() * 18, t = (o.top || 228) + r() * (o.var || 18);
-      out.push({ x0: x, x1: x + w, top: t, plane: 'near', q: r() * .12, side: .6, rimI: r() < .5 ? NEON.violet : NEON.blue, rimO: 0, rimLen: 14,
+      const w = 14 + r() * 18, t = (o.top || 228) + r() * (o.var || 18), fs = o.future ? ['dome', 'round', 'box', 'round'][Math.floor(r() * 4)] : 'box';
+      out.push({ x0: x, x1: x + w, top: t, plane: 'near', q: r() * .12, side: .6, rimI: r() < .5 ? NEON.violet : NEON.blue, rimO: o.future ? NEON.pink : 0, rimLen: 14, shape: fs, dh: 4 + r() * 3, flat: .5, outline: !!o.future,
         win: { style: 'grid', sx: 5, sy: 5.5, w: 2.5, h: 1.6, lit: .2, cols: ['warm', 'pink', 'lav'], mx: 2, my: 3, my0: 3 },
         gear: { boxes: 1 + Math.floor(r() * 3), tank: r() < .3 ? [x + 2 + r() * (w - 8), 4 + r() * 2] : null, dish: r() < .18 ? [x + w * .7] : null },
         ant: r() < .3 ? [{ x: x + 2 + r() * (w - 4), h: 5 + r() * 7 }] : [] });
@@ -229,13 +272,37 @@ NX.cityBuild = (() => {
     for (let x = R.x0 + 3; x < R.x1; x += 9.5) R.rect(x, top + 1.5, x + .5, b0 - 1.2, col('#3a3a80'));   // шви сегментів
   }
 
+  /** Небесна траса: довга витримка руху — тонкі смуги фар (білі/теплі) і стоп-сигналів (червоні), ряди на висоті y. */
+  function skyway(R, y, seed, o = {}) {
+    const r = rng(seed), W = [col('#fff4d8'), col('#ffe2a0'), col('#cfe8ff')], Rd = [col('#ff3b5a'), col('#ff6a7a')], x0 = o.x0 || R.x0, x1 = o.x1 || R.x1;
+    for (let n = 0; n < (o.n || 70); n++) { const lane = r() < .5 ? 0 : 1, yy = y + lane * 1.5 + (r() - .5) * .6, len = 3 + r() * 14, x = x0 + r() * (x1 - x0), c = lane ? Rd[Math.floor(r() * 2)] : W[Math.floor(r() * 3)];
+      for (let k = 0; k < len / R.U; k++) { const xx = x + k * R.U, a = .25 + .75 * (k / (len / R.U)); R.over(R.I(lane ? x + len - k * R.U : xx), R.J(yy), c, lane ? 1 - a * .75 : a); } }
+  }
+  /** Скляна транспортна труба (маглев) по кривій Безьє p0 -> c -> p1: напівпрозоре скло, світлі краї, опори. */
+  function tube(R, p0, cc, p1, o = {}) {
+    const wd = o.w || 3.2, N = 160, pts = [], GL2 = col('#5ad8ff'), ED = col('#c4f6ff');
+    for (let k = 0; k <= N; k++) { const t = k / N, x = (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * cc[0] + t * t * p1[0], y = (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * cc[1] + t * t * p1[1]; pts.push([x, y]); }
+    for (let k = 0; k < N; k++) { const [x, y] = pts[k], [x2, y2] = pts[k + 1], len = Math.hypot(x2 - x, y2 - y), nx = -(y2 - y) / len, ny = (x2 - x) / len;
+      for (let u = 0; u <= len; u += R.U * .7) for (let v = -wd / 2; v <= wd / 2; v += R.U * .7) { const X = x + (x2 - x) * u / len + nx * v, Y = y + (y2 - y) * u / len + ny * v, i = R.I(X), j = R.J(Y), e = Math.abs(v) / (wd / 2);
+        if (e > .82) R.put(i, j, ED); else R.over(i, j, GL2, .16 + .1 * (1 - e)); } }
+    (o.posts || []).forEach(t => { const k = Math.round(t * N), [x, y] = pts[k]; R.rect(x - .5, y + wd / 2, x + .5, o.postTo || y + 30, col('#2a2e7a')); });
+    return pts;
+  }
+  /** Основа космічного ліфта: конусна вежа з неоновими ребрами (трос малюється окремо, поверх неба). */
+  function elevatorBase(R, x, y0, y1, o = {}) {
+    const w0 = o.w || 26, P = FAC.violet, T = col('#9af6ff');
+    R.poly([[x - w0 / 2, y1], [x - 2, y0], [x + 2, y0], [x + w0 / 2, y1]], (i, j, X, Y) => { const v = (Y - y0) / (y1 - y0), hw = 2 + (w0 / 2 - 2) * v, u = (X - x + hw) / (2 * hw);
+      if (u < .06 || u > .94) return NEON.pink; if (Math.abs(u - .5) < .03) return T; const rib = ((Y - y0) % 7) < .6; return rib ? NEON.violet : P[clamp(Math.round((.3 + (u < .5 ? .15 : 0) - v * .15) * 7 + B(i, j) * .9), 0, 7)]; });
+    for (let y = y0 + 10; y < y1 - 4; y += 14) R.rect(x - 1.5, y, x + 1.5, y + 1, NEON.cyanL);
+  }
+
   /** Растр плану (U од./піксель): list — вежі (малюються по черзі: спершу дальші); pre — підкладка. */
   function layer(x0, y0, x1, y1, list, seed0, pre, U = .5) {
     const R = Ras(x0, y0, x1, y1, U), live = { lights: [], win: [], signs: [], holo: [], pad: [] };
     if (pre) pre(R);
-    list.forEach((b, n) => tower(R, b, live, (seed0 || 1) * 1000 + n * 37 + 11));
+    list.forEach((b, n) => b.fx ? b.fx(R, live) : tower(R, b, live, (seed0 || 1) * 1000 + n * 37 + 11));   // fx — довільне малювання між вежами (траси, труби, основа ліфта)
     return { R, live };
   }
 
-  return { FAC, LITE, NEON, CSS, layer, tower, silhouette, farBand, lowRoofs, highway, rail, signBoard };
+  return { FAC, LITE, NEON, CSS, layer, tower, silhouette, farBand, lowRoofs, highway, rail, signBoard, skyway, tube, elevatorBase };
 })();
