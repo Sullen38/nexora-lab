@@ -14,6 +14,8 @@ NX.i18n.add('nl', {
     tools: { crm: { t: 'CRM koppelen', r: 'CRM gekoppeld: {n} contacten gesynchroniseerd.' }, calendar: { t: 'Agenda synchroniseren', r: 'Agenda gesynchroniseerd: {n} afspraken deze week, herinneringen aan.' }, auto: { t: 'Automatisering instellen', r: 'Aanvragen via de site gaan nu vanzelf naar het CRM. Bespaart {n} uur per week.' } },
   },
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
+  city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
+    ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   visitors: {
     snowwhite: { hi: 'Hallo! Wonen hier dwergen?', apple: 'Proef dit appeltje!', bye: 'Slaap lekker!', wake: 'Oh... ben ik in slaap gevallen?' },
     leprechaun: { hi: 'Waar is mijn pot?..', oops: 'Oh nee, mijn munten!', bye: 'Blijf van mijn goud af!' },

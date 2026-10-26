@@ -24,7 +24,7 @@
  *   haze(R, y0, y1, color, a) — серпанок / світло вулиць знизу поверх усього, що вже намальовано
  * ========================================================================== */
 NX.cityMega = (() => {
-  const { col, pal, mix, B, rng, hash2, vn, clamp, FONT } = NX.ckit, CB = NX.cityBuild, NEON = CB.NEON, VPX = 774;
+  const { col, pal, mix, B, rng, hash2, vn, clamp, gf } = NX.ckit, CB = NX.cityBuild, NEON = CB.NEON, VPX = 774;
   // фасади: 11 тонів від майже чорного до приглушеного синього (нічні будинки — темні, світло дають вікна й неон)
   const BASE = pal(['#020312', '#04061c', '#070a29', '#0b0f37', '#101646', '#161d57', '#1e266a', '#28307f', '#333b94', '#4148aa', '#5357c0']);
   const LIGHT = { warm: col('#ffd27e'), amber: col('#ffa64a'), pink: col('#ff6ad6'), cyan: col('#5cf0ff'), lav: col('#b49cff'), white: col('#fff3e2'), mint: col('#78ffc8') };
@@ -39,13 +39,14 @@ NX.cityMega = (() => {
   };
   const PCACHE = new Map();                                                         // палітри рядків (план × туман × світло) — спільні для всіх будинків
   const LIGHTSETS = [['cyan', 'white', 'pink'], ['pink', 'lav', 'cyan'], ['warm', 'white', 'amber'], ['cyan', 'lav', 'white'], ['pink', 'warm', 'cyan'], ['warm', 'pink', 'lav'], ['white', 'cyan', 'warm'], ['amber', 'warm', 'pink']];
-  // написи вивісок (латиниця й українська; лише загальні слова — без чужих брендів)
+  // написи вивісок — КЛЮЧІ словника мов (js/i18n/*.js -> city.signs): місто говорить мовою сайту; лише загальні слова, без чужих брендів
   const WORDS = {
-    far1: ['AI', 'BAR', '24', 'HI', 'SPA'],
-    mid: ['NEON', 'TAXI', 'HOTEL', 'КАВА', 'CLUB', 'SUSHI', 'ТАКСІ', 'КІНО', 'RAMEN', 'BAR', 'DATA', 'МЕТРО', 'ГОТЕЛЬ', 'NEXI', 'ARCADE', 'АПТЕКА', 'OPEN', '24/7', 'CYBER', 'БАР', 'ПІЦА', 'SYNTH'],
-    hero: ['NEXORA', 'NEXI', 'AI'],
-    near: ['КАВА', 'BAR', 'TAXI', 'NEON', 'SHOP', 'ПІЦА', 'КІНО', 'OPEN', 'RAMEN', 'СУШІ', 'ТАКСІ', 'HOTEL'],
+    far1: ['bar', 'spa', 'open', 'taxi'],
+    mid: ['neon', 'taxi', 'hotel', 'coffee', 'club', 'sushi', 'cinema', 'ramen', 'bar', 'metro', 'pharmacy', 'pizza', 'games', 'open', 'shop', 'spa'],
+    near: ['coffee', 'bar', 'taxi', 'neon', 'shop', 'pizza', 'cinema', 'open', 'ramen', 'sushi', 'hotel', 'club'],
   };
+  /** Напис вивіски поточною мовою (немає перекладу — сам ключ). */
+  const word = k => { const v = NX.t ? NX.t('city.signs.' + k) : k; return String(v === 'city.signs.' + k ? k : v).toLocaleUpperCase(); };
 
   /** М'який відсвіт кольору C на вже намальованому (еліпс rx×ry, сильніше в центрі), дизерингом. */
   function spill(R, cx, cy, rx, ry, C, a) {
@@ -54,7 +55,7 @@ NX.cityMega = (() => {
       for (let i = i0; i <= i1; i++) { const k0 = j * R.W + i, o = d[k0]; if (!o) continue; const u = (R.X(i) - cx) / rx, e = u * u + vv; if (e >= 1) continue;
         const q = Math.floor((1 - e) * (1 - e) * a * 8 + B(i, j) + .5) / 8; if (q > 0) d[k0] = mix(o, C, q); } }
   }
-  const gw = ch => (FONT[ch] || FONT[' '])[0].length;
+  const gw = ch => gf(ch)[0].length;
   /** Неонова вивіска з написом. s: x, y (лівий верхній кут), text, dir 'v' (літери стовпчиком) | 'h', p — «піксель» шрифту (од.),
    *  c — колір трубок, c2 — рамка. Трубка: колір + світле осердя по центру штрихів; ореол навколо літер; відсвіт на фасад. */
   function sign(R, s, live) {
@@ -70,7 +71,7 @@ NX.cityMega = (() => {
     const fw = Math.max(U, Math.round(p * .4 / U) * U);                               // рамка
     R.rect(s.x, s.y, s.x + w, s.y + fw, C2); R.rect(s.x, s.y + h - fw, s.x + w, s.y + h, C2); R.rect(s.x, s.y, s.x + fw, s.y + h, C2); R.rect(s.x + w - fw, s.y, s.x + w, s.y + h, C2);
     const ins = p / U >= 3 ? U : 0;                                                    // осердя трубки (від 3 пікс. на «піксель» шрифту)
-    for (const pass of [0, 1, 2]) pos.forEach(([ch, x, y]) => { const g = FONT[ch] || FONT[' '];
+    for (const pass of [0, 1, 2]) pos.forEach(([ch, x, y]) => { const g = gf(ch);
       g.forEach((row, j) => { for (let i = 0; i < row.length; i++) { if (row[i] !== 'X') continue; const ax = x + i * p, ay = y + j * p;
         if (pass === 0) R.rect(ax - U, ay - U, ax + p + U, ay + p + U, halo);            // ореол
         else if (pass === 1) R.rect(ax, ay, ax + p, ay + p, tube);                       // трубка
@@ -80,19 +81,22 @@ NX.cityMega = (() => {
     live.signs.push({ x: s.x, y: s.y, w, h, p, c: s.c, letters: pos, seed: s.seed || 0 });
     return s;
   }
-  /** Випадкова вивіска на будинку: вертикальна біля зовнішнього краю (часом виступає за край) або дахова з написом. */
+  /** Випадкова вивіска на будинку: вертикальна біля зовнішнього краю (часом виступає за край) або дахова з написом.
+   *  Слова різних мов різної довжини, тож пробуємо кілька, доки якесь не влізе. */
   function autoSign(R, b, r, live, inner, seed, botY) {
-    const p = b.plane === 'far1' ? .5 : b.plane === 'mid' ? .75 : 1, words = WORDS[b.plane] || WORDS.mid, text = words[Math.floor(r() * words.length)], n = [...text].length;
-    const ci = Math.floor(r() * NEONS.length), c = NEONS[ci], c2 = NEONS[(ci + 2 + Math.floor(r() * 3)) % NEONS.length], m = Math.max(p, .5), w = b.x1 - b.x0, tall = botY - b.top;
-    if (r() < .72) {
-      const mw = Math.max(...[...text].map(gw)), sw = mw * p + 2 * m, sh = n * 6 * p - p + 2 * m; if (sh > tall - 10 || w < sw + 1) return;
-      const out = r() < .35 ? sw * .45 : -.6 - r();                                  // виступає за край будинку або висить на фасаді
-      const x = inner > 0 ? b.x0 - out : b.x1 - sw + out, y = b.top + 4 + r() * Math.max(1, Math.min(60, tall - sh - 12));
-      sign(R, { x, y, text, dir: 'v', p, c, c2, seed }, live);
-    } else {
-      const sw = [...text].reduce((a, ch) => a + (gw(ch) + 1) * p, -p) + 2 * m, sh = 5 * p + 2 * m; if (sw > w + 2) return;
-      const x = (b.x0 + b.x1) / 2 - sw / 2, y = b.top - sh - .75 - r() * 1.5;
-      sign(R, { x, y, text, dir: 'h', p, c, c2, seed, posts: b.top + .2 }, live);
+    const p = b.plane === 'far1' ? .5 : b.plane === 'mid' ? .75 : 1, words = WORDS[b.plane] || WORDS.mid, m = Math.max(p, .5), w = b.x1 - b.x0, tall = botY - b.top;
+    const free = (x, y, sw, sh) => !(b.avoid || []).some(([a0, b0, a1, b1]) => x < a1 && x + sw > a0 && y < b1 && y + sh > b0);   // не лізти на головні вивіски
+    const ci = Math.floor(r() * NEONS.length), c = NEONS[ci], c2 = NEONS[(ci + 2 + Math.floor(r() * 3)) % NEONS.length], vert = r() < .72;
+    for (let k = 0; k < 4; k++) {
+      const text = word(words[Math.floor(r() * words.length)]), L = [...text];
+      if (vert) {
+        const mw = Math.max(...L.map(gw)), sw = mw * p + 2 * m, sh = L.length * 6 * p - p + 2 * m; if (sh > tall - 10 || w < sw + 1) continue;
+        const out = r() < .35 ? sw * .45 : -.6 - r();                                // виступає за край будинку або висить на фасаді
+        const x = inner > 0 ? b.x0 - out : b.x1 - sw + out, y = b.top + 4 + r() * Math.max(1, Math.min(60, tall - sh - 12)); if (!free(x, y, sw, sh)) return;
+        return sign(R, { x, y, text, dir: 'v', p, c, c2, seed }, live);
+      }
+      const sw = L.reduce((a, ch) => a + (gw(ch) + 1) * p, -p) + 2 * m, sh = 5 * p + 2 * m, x = (b.x0 + b.x1) / 2 - sw / 2, y = b.top - sh - .75 - r() * 1.5; if (sw > w + 2) continue; if (!free(x, y, sw, sh)) return;
+      return sign(R, { x, y, text, dir: 'h', p, c, c2, seed, posts: b.top + .2 }, live);
     }
   }
 
@@ -203,14 +207,15 @@ NX.cityMega = (() => {
   }
 
   /** Щільний ряд будинків плану. o: w [мін, макс], top [мін, макс], tall (частка високих), tallBy, shapes [[форма, вага]], lit [мін, макс],
-   *  step (крок як частка ширини — <1: будинки перекриваються), gapP/gap — просвіти, antP, glassP, mediaP, signP, bot, dark (частка темних). */
+   *  step (крок як частка ширини — <1: будинки перекриваються), gapP/gap — просвіти, antP, glassP, mediaP, signP, bot, dark (частка темних),
+ *  avoid [[x0, y0, x1, y1]] — де випадкових вивісок не ставити (головні вивіски). */
   function skyline(plane, x0, x1, seed, o = {}) {
     const r = rng(seed), out = [], SH = o.shapes || [['box', 6], ['round', 2], ['setback', 2], ['needle', 1], ['dome', 1]], tot = SH.reduce((a, s) => a + s[1], 0), P = PLANES[plane];
     let x = x0 - 10;
     while (x < x1 + 10) {
       const w = o.w[0] + r() * (o.w[1] - o.w[0]); let t = o.top[0] + r() * (o.top[1] - o.top[0]); if (r() < (o.tall || 0)) t -= (o.tallBy || 30) * (.4 + r() * .6);
       let q = r() * tot, shape = 'box'; for (const [s, k] of SH) { if ((q -= k) < 0) { shape = s; break; } }
-      const xs = Math.round(x * 2) / 2, b = { x0: xs, x1: Math.round((x + w) * 2) / 2, top: Math.round(t * 2) / 2, plane, shape, bot: o.bot, lit: o.lit ? o.lit[0] + r() * (o.lit[1] - o.lit[0]) : undefined, signP: o.signP,
+      const xs = Math.round(x * 2) / 2, b = { x0: xs, x1: Math.round((x + w) * 2) / 2, top: Math.round(t * 2) / 2, plane, shape, bot: o.bot, lit: o.lit ? o.lit[0] + r() * (o.lit[1] - o.lit[0]) : undefined, signP: o.signP, avoid: o.avoid,
         tiers: [[w * (.12 + r() * .14), 2 + r() * 6], [w * .06, 3 + r() * 6]], sh: 5 + r() * 12, ins: w * (.15 + r() * .1), k: .45 + r() * .35, dh: w * (.25 + r() * .2), flat: .6 + r() * .4, th: 8 + r() * 14,
         ant: r() < (o.antP == null ? .25 : o.antP) ? [{ x: x + w * (.25 + r() * .5), h: 2 + r() * (o.antH || 7) }] : [], boxes: o.boxes ? Math.floor(r() * 3) : 0 };
       if (shape === 'needle') b.top -= 8 + r() * (o.needleBy || 18);

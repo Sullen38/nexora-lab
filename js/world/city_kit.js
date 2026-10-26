@@ -17,7 +17,8 @@
  *   fade(a, b, t, i, j, k)   — перехід між двома кольорами дизерингом (k — різкість)
  *   rng(seed)                — відтворюваний випадковий генератор (місто однакове щоразу)
  *   vn(x, y), fbm(x, y)      — плавний шум (хмари, береги континентів, плями на фасадах)
- *   glyph(c, s, x, y, p)     — мініатюрний піксельний шрифт 3×5 для вивісок і реклами
+ *   glyph(c, s, x, y, p)     — мініатюрний піксельний шрифт 3×5 (латиниця, цифри, кирилиця) для вивісок і реклами;
+ *   gf(ch)                   — бітмап знака (немає знака — базова літера без діакритики: тексти з усіх 4 мов)
  *   glow(c, x, y, r, rgb, a) — швидке світіння (спрайт з градієнтом кешується для кольору)
  * ========================================================================== */
 NX.ckit = (() => {
@@ -103,14 +104,21 @@ NX.ckit = (() => {
     'П': ['XXX', 'X.X', 'X.X', 'X.X', 'X.X'], 'Я': ['XXX', 'X.X', 'XXX', '.XX', 'X.X'], 'У': ['X.X', 'X.X', 'XXX', '..X', 'XX.'], 'Ь': ['X..', 'X..', 'XX.', 'X.X', 'XX.'],
     'Ц': ['X.X.', 'X.X.', 'X.X.', 'XXXX', '...X'], 'Ш': ['X.X.X', 'X.X.X', 'X.X.X', 'X.X.X', 'XXXXX'], 'Ї': ['X.X', '...', '.X.', '.X.', '.X.'], 'Є': ['.XX', 'X..', 'XX.', 'X..', '.XX'],
     'Ф': ['.X.', 'XXX', 'X.X', 'XXX', '.X.'], 'Ж': ['X.X.X', 'X.X.X', '.XXX.', 'X.X.X', 'X.X.X'], 'И': ['X..X', 'X.XX', 'XX.X', 'X..X', 'X..X'],
+    'Ч': ['X.X', 'X.X', 'XXX', '..X', '..X'], 'Щ': ['X.X.X', 'X.X.X', 'X.X.X', 'XXXXX', '....X'], 'Ю': ['X.XXX', 'X.X.X', 'XXX.X', 'X.X.X', 'X.XXX'], 'Ґ': ['..X', 'XXX', 'X..', 'X..', 'X..'],
+    J: ['..X', '..X', '..X', 'X.X', 'XXX'], Q: ['XXX', 'X.X', 'X.X', 'XXX', '..X'], 'Ł': ['X..', 'X..', 'XX.', 'X..', 'XXX'],
+    '-': ['...', '...', 'XXX', '...', '...'], '.': ['.', '.', '.', '.', 'X'], ',': ['.', '.', '.', 'X', 'X'], '!': ['X', 'X', 'X', '.', 'X'], '?': ['XXX', '..X', '.XX', '...', '.X.'],
+    ':': ['.', 'X', '.', 'X', '.'], "'": ['X', 'X', '.', '.', '.'], '%': ['X..X', '..X.', '.X..', 'X...', 'X..X'], '•': ['...', '.X.', 'XXX', '.X.', '...'],
   };
-  Object.entries({ 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I' }).forEach(([k, v]) => { FONT[k] = FONT[v]; });
+  Object.entries({ 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I', 'З': '3', 'Й': 'И', '—': '-', '–': '-', 'ʼ': "'", '’': "'" }).forEach(([k, v]) => { FONT[k] = FONT[v]; });
+  /** Бітмап знака: великою літерою; якщо такого знака немає — базова літера без діакритики (Ó -> O, Ś -> S), інакше пробіл.
+   *  Тексти міста приходять зі словників мов (js/i18n/*.js), тож шрифт мусить переживати будь-яку з 4 мов. */
+  const gf = ch => FONT[ch] || FONT[ch = String(ch).toLocaleUpperCase()] || FONT[ch.normalize('NFD')[0]] || FONT[' '];
   /** Ширина рядка s у пікселях шрифту (з проміжками 1). */
-  const glyphW = s => [...s].reduce((w, ch) => w + (FONT[ch] || FONT[' '])[0].length + 1, -1);
+  const glyphW = s => [...s].reduce((w, ch) => w + gf(ch)[0].length + 1, -1);
   /** Рядок s піксельним шрифтом: c — 2D-контекст, p — розмір «пікселя» шрифту (од.), x, y — лівий верхній кут. */
   function glyph(c, s, x, y, p, color) {
     c.fillStyle = color; let cx = x;
-    for (const ch of s) { const g = FONT[ch] || FONT[' ']; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') c.fillRect(cx + i * p, y + j * p, p, p); }); cx += (g[0].length + 1) * p; }
+    for (const ch of s) { const g = gf(ch); g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') c.fillRect(cx + i * p, y + j * p, p, p); }); cx += (g[0].length + 1) * p; }
     return cx - x - p;
   }
 
@@ -129,5 +137,5 @@ NX.ckit = (() => {
     c.globalCompositeOperation = op; c.globalAlpha = ga; c.imageSmoothingEnabled = sm;
   }
 
-  return { B, BAY, clamp, col, rgb, pack, mix, pal, ramp, fade, rng, hash2, vn, fbm, Ras, FONT, glyph, glyphW, glow, glowSprite };
+  return { B, BAY, clamp, col, rgb, pack, mix, pal, ramp, fade, rng, hash2, vn, fbm, Ras, FONT, gf, glyph, glyphW, glow, glowSprite };
 })();

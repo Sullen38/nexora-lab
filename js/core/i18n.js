@@ -19,7 +19,7 @@ NX.i18n = {
     // for (const l of (navigator.languages || [])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
     return 'uk';
   },
-  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); },
+  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); NX.city && NX.city.relang && NX.city.relang(); },   // місто: вивіски — новою мовою
   get(obj, key) { return key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); },
 };
 NX.t = (key, vars) => {

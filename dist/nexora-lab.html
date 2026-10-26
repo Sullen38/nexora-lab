@@ -185,7 +185,7 @@ NX.i18n = {
     // for (const l of (navigator.languages || [])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
     return 'uk';
   },
-  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); },
+  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); NX.city && NX.city.relang && NX.city.relang(); },   // місто: вивіски — новою мовою
   get(obj, key) { return key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); },
 };
 NX.t = (key, vars) => {
@@ -214,6 +214,8 @@ NX.i18n.add('uk', {
     tools: { crm: { t: 'Підключити CRM', r: 'CRM підключено: синхронізовано {n} контактів.' }, calendar: { t: 'Синхронізувати календар', r: 'Календар синхронізовано: {n} зустрічей цього тижня, нагадування увімкнено.' }, auto: { t: 'Налаштувати автоматизацію', r: 'Заявки з сайту тепер самі йдуть у CRM. Економія {n} год на тиждень.' } },
   },
   sofa: { news: 'NEXORA NEWS • ПРОДАЖІ +18% • 3 НОВІ КЛІЄНТИ • NEXI — ПРАЦІВНИК МІСЯЦЯ • ' },
+  city: { signs: { coffee: 'КАВА', taxi: 'ТАКСІ', hotel: 'ГОТЕЛЬ', cinema: 'КІНО', pharmacy: 'АПТЕКА', metro: 'МЕТРО', pizza: 'ПІЦА', sushi: 'СУШІ', bar: 'БАР', shop: 'МАГАЗИН', club: 'КЛУБ', ramen: 'РАМЕН', neon: 'НЕОН', games: 'ІГРИ', spa: 'СПА', open: '24/7' },   // неонові вивіски міста за вікном (world/city_mega.js)
+    ad: 'NEXORA AI · AI-ПОМІЧНИК ДЛЯ БІЗНЕСУ · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },   // білборд і екран дирижабля (world/cityscape.js); шрифт міста: латиниця, цифри, кирилиця
   visitors: {
     snowwhite: { hi: 'Добрий день! Тут гноми не живуть?', apple: 'Скуштуй яблучко!', bye: 'Солодких снів!', wake: 'Ой... я що, заснув?' },
     leprechaun: { hi: 'Де мій горщик?..', oops: 'Ой, мої монетки!', bye: 'Не чіпай моє золото!' },
@@ -298,6 +300,8 @@ NX.i18n.add('en', {
     tools: { crm: { t: 'Connect CRM', r: 'CRM connected: {n} contacts synced.' }, calendar: { t: 'Sync calendar', r: 'Calendar synced: {n} meetings this week, reminders on.' }, auto: { t: 'Set up automation', r: 'Website leads now go straight to CRM. Saves {n} h a week.' } },
   },
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
+  city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
+    ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   visitors: {
     snowwhite: { hi: 'Hello! Do dwarfs live here?', apple: 'Try this apple!', bye: 'Sweet dreams!', wake: 'Oh... did I fall asleep?' },
     leprechaun: { hi: "Where's my pot?..", oops: 'Oh no, my coins!', bye: "Hands off my gold!" },
@@ -382,6 +386,8 @@ NX.i18n.add('pl', {
     tools: { crm: { t: 'Podłącz CRM', r: 'CRM podłączony: zsynchronizowano {n} kontaktów.' }, calendar: { t: 'Synchronizuj kalendarz', r: 'Kalendarz zsynchronizowany: {n} spotkań w tym tygodniu, przypomnienia włączone.' }, auto: { t: 'Ustaw automatyzację', r: 'Zgłoszenia ze strony trafiają teraz same do CRM. Oszczędność {n} h tygodniowo.' } },
   },
   sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
+  city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },
+    ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   visitors: {
     snowwhite: { hi: 'Dzień dobry! Czy tu mieszkają krasnoludki?', apple: 'Spróbuj jabłuszka!', bye: 'Słodkich snów!', wake: 'Oj... czy ja zasnąłem?' },
     leprechaun: { hi: 'Gdzie mój garnek?..', oops: 'Oj, moje monety!', bye: 'Ręce precz od mojego złota!' },
@@ -466,6 +472,8 @@ NX.i18n.add('nl', {
     tools: { crm: { t: 'CRM koppelen', r: 'CRM gekoppeld: {n} contacten gesynchroniseerd.' }, calendar: { t: 'Agenda synchroniseren', r: 'Agenda gesynchroniseerd: {n} afspraken deze week, herinneringen aan.' }, auto: { t: 'Automatisering instellen', r: 'Aanvragen via de site gaan nu vanzelf naar het CRM. Bespaart {n} uur per week.' } },
   },
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
+  city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
+    ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   visitors: {
     snowwhite: { hi: 'Hallo! Wonen hier dwergen?', apple: 'Proef dit appeltje!', bye: 'Slaap lekker!', wake: 'Oh... ben ik in slaap gevallen?' },
     leprechaun: { hi: 'Waar is mijn pot?..', oops: 'Oh nee, mijn munten!', bye: 'Blijf van mijn goud af!' },
@@ -1194,7 +1202,8 @@ NX.ambient = {
  *   fade(a, b, t, i, j, k)   — перехід між двома кольорами дизерингом (k — різкість)
  *   rng(seed)                — відтворюваний випадковий генератор (місто однакове щоразу)
  *   vn(x, y), fbm(x, y)      — плавний шум (хмари, береги континентів, плями на фасадах)
- *   glyph(c, s, x, y, p)     — мініатюрний піксельний шрифт 3×5 для вивісок і реклами
+ *   glyph(c, s, x, y, p)     — мініатюрний піксельний шрифт 3×5 (латиниця, цифри, кирилиця) для вивісок і реклами;
+ *   gf(ch)                   — бітмап знака (немає знака — базова літера без діакритики: тексти з усіх 4 мов)
  *   glow(c, x, y, r, rgb, a) — швидке світіння (спрайт з градієнтом кешується для кольору)
  * ========================================================================== */
 NX.ckit = (() => {
@@ -1280,14 +1289,21 @@ NX.ckit = (() => {
     'П': ['XXX', 'X.X', 'X.X', 'X.X', 'X.X'], 'Я': ['XXX', 'X.X', 'XXX', '.XX', 'X.X'], 'У': ['X.X', 'X.X', 'XXX', '..X', 'XX.'], 'Ь': ['X..', 'X..', 'XX.', 'X.X', 'XX.'],
     'Ц': ['X.X.', 'X.X.', 'X.X.', 'XXXX', '...X'], 'Ш': ['X.X.X', 'X.X.X', 'X.X.X', 'X.X.X', 'XXXXX'], 'Ї': ['X.X', '...', '.X.', '.X.', '.X.'], 'Є': ['.XX', 'X..', 'XX.', 'X..', '.XX'],
     'Ф': ['.X.', 'XXX', 'X.X', 'XXX', '.X.'], 'Ж': ['X.X.X', 'X.X.X', '.XXX.', 'X.X.X', 'X.X.X'], 'И': ['X..X', 'X.XX', 'XX.X', 'X..X', 'X..X'],
+    'Ч': ['X.X', 'X.X', 'XXX', '..X', '..X'], 'Щ': ['X.X.X', 'X.X.X', 'X.X.X', 'XXXXX', '....X'], 'Ю': ['X.XXX', 'X.X.X', 'XXX.X', 'X.X.X', 'X.XXX'], 'Ґ': ['..X', 'XXX', 'X..', 'X..', 'X..'],
+    J: ['..X', '..X', '..X', 'X.X', 'XXX'], Q: ['XXX', 'X.X', 'X.X', 'XXX', '..X'], 'Ł': ['X..', 'X..', 'XX.', 'X..', 'XXX'],
+    '-': ['...', '...', 'XXX', '...', '...'], '.': ['.', '.', '.', '.', 'X'], ',': ['.', '.', '.', 'X', 'X'], '!': ['X', 'X', 'X', '.', 'X'], '?': ['XXX', '..X', '.XX', '...', '.X.'],
+    ':': ['.', 'X', '.', 'X', '.'], "'": ['X', 'X', '.', '.', '.'], '%': ['X..X', '..X.', '.X..', 'X...', 'X..X'], '•': ['...', '.X.', 'XXX', '.X.', '...'],
   };
-  Object.entries({ 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I' }).forEach(([k, v]) => { FONT[k] = FONT[v]; });
+  Object.entries({ 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I', 'З': '3', 'Й': 'И', '—': '-', '–': '-', 'ʼ': "'", '’': "'" }).forEach(([k, v]) => { FONT[k] = FONT[v]; });
+  /** Бітмап знака: великою літерою; якщо такого знака немає — базова літера без діакритики (Ó -> O, Ś -> S), інакше пробіл.
+   *  Тексти міста приходять зі словників мов (js/i18n/*.js), тож шрифт мусить переживати будь-яку з 4 мов. */
+  const gf = ch => FONT[ch] || FONT[ch = String(ch).toLocaleUpperCase()] || FONT[ch.normalize('NFD')[0]] || FONT[' '];
   /** Ширина рядка s у пікселях шрифту (з проміжками 1). */
-  const glyphW = s => [...s].reduce((w, ch) => w + (FONT[ch] || FONT[' '])[0].length + 1, -1);
+  const glyphW = s => [...s].reduce((w, ch) => w + gf(ch)[0].length + 1, -1);
   /** Рядок s піксельним шрифтом: c — 2D-контекст, p — розмір «пікселя» шрифту (од.), x, y — лівий верхній кут. */
   function glyph(c, s, x, y, p, color) {
     c.fillStyle = color; let cx = x;
-    for (const ch of s) { const g = FONT[ch] || FONT[' ']; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') c.fillRect(cx + i * p, y + j * p, p, p); }); cx += (g[0].length + 1) * p; }
+    for (const ch of s) { const g = gf(ch); g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') c.fillRect(cx + i * p, y + j * p, p, p); }); cx += (g[0].length + 1) * p; }
     return cx - x - p;
   }
 
@@ -1306,7 +1322,7 @@ NX.ckit = (() => {
     c.globalCompositeOperation = op; c.globalAlpha = ga; c.imageSmoothingEnabled = sm;
   }
 
-  return { B, BAY, clamp, col, rgb, pack, mix, pal, ramp, fade, rng, hash2, vn, fbm, Ras, FONT, glyph, glyphW, glow, glowSprite };
+  return { B, BAY, clamp, col, rgb, pack, mix, pal, ramp, fade, rng, hash2, vn, fbm, Ras, FONT, gf, glyph, glyphW, glow, glowSprite };
 })();
 
 </script>
@@ -1840,7 +1856,7 @@ NX.cityBuild = (() => {
  *   haze(R, y0, y1, color, a) — серпанок / світло вулиць знизу поверх усього, що вже намальовано
  * ========================================================================== */
 NX.cityMega = (() => {
-  const { col, pal, mix, B, rng, hash2, vn, clamp, FONT } = NX.ckit, CB = NX.cityBuild, NEON = CB.NEON, VPX = 774;
+  const { col, pal, mix, B, rng, hash2, vn, clamp, gf } = NX.ckit, CB = NX.cityBuild, NEON = CB.NEON, VPX = 774;
   // фасади: 11 тонів від майже чорного до приглушеного синього (нічні будинки — темні, світло дають вікна й неон)
   const BASE = pal(['#020312', '#04061c', '#070a29', '#0b0f37', '#101646', '#161d57', '#1e266a', '#28307f', '#333b94', '#4148aa', '#5357c0']);
   const LIGHT = { warm: col('#ffd27e'), amber: col('#ffa64a'), pink: col('#ff6ad6'), cyan: col('#5cf0ff'), lav: col('#b49cff'), white: col('#fff3e2'), mint: col('#78ffc8') };
@@ -1855,13 +1871,14 @@ NX.cityMega = (() => {
   };
   const PCACHE = new Map();                                                         // палітри рядків (план × туман × світло) — спільні для всіх будинків
   const LIGHTSETS = [['cyan', 'white', 'pink'], ['pink', 'lav', 'cyan'], ['warm', 'white', 'amber'], ['cyan', 'lav', 'white'], ['pink', 'warm', 'cyan'], ['warm', 'pink', 'lav'], ['white', 'cyan', 'warm'], ['amber', 'warm', 'pink']];
-  // написи вивісок (латиниця й українська; лише загальні слова — без чужих брендів)
+  // написи вивісок — КЛЮЧІ словника мов (js/i18n/*.js -> city.signs): місто говорить мовою сайту; лише загальні слова, без чужих брендів
   const WORDS = {
-    far1: ['AI', 'BAR', '24', 'HI', 'SPA'],
-    mid: ['NEON', 'TAXI', 'HOTEL', 'КАВА', 'CLUB', 'SUSHI', 'ТАКСІ', 'КІНО', 'RAMEN', 'BAR', 'DATA', 'МЕТРО', 'ГОТЕЛЬ', 'NEXI', 'ARCADE', 'АПТЕКА', 'OPEN', '24/7', 'CYBER', 'БАР', 'ПІЦА', 'SYNTH'],
-    hero: ['NEXORA', 'NEXI', 'AI'],
-    near: ['КАВА', 'BAR', 'TAXI', 'NEON', 'SHOP', 'ПІЦА', 'КІНО', 'OPEN', 'RAMEN', 'СУШІ', 'ТАКСІ', 'HOTEL'],
+    far1: ['bar', 'spa', 'open', 'taxi'],
+    mid: ['neon', 'taxi', 'hotel', 'coffee', 'club', 'sushi', 'cinema', 'ramen', 'bar', 'metro', 'pharmacy', 'pizza', 'games', 'open', 'shop', 'spa'],
+    near: ['coffee', 'bar', 'taxi', 'neon', 'shop', 'pizza', 'cinema', 'open', 'ramen', 'sushi', 'hotel', 'club'],
   };
+  /** Напис вивіски поточною мовою (немає перекладу — сам ключ). */
+  const word = k => { const v = NX.t ? NX.t('city.signs.' + k) : k; return String(v === 'city.signs.' + k ? k : v).toLocaleUpperCase(); };
 
   /** М'який відсвіт кольору C на вже намальованому (еліпс rx×ry, сильніше в центрі), дизерингом. */
   function spill(R, cx, cy, rx, ry, C, a) {
@@ -1870,7 +1887,7 @@ NX.cityMega = (() => {
       for (let i = i0; i <= i1; i++) { const k0 = j * R.W + i, o = d[k0]; if (!o) continue; const u = (R.X(i) - cx) / rx, e = u * u + vv; if (e >= 1) continue;
         const q = Math.floor((1 - e) * (1 - e) * a * 8 + B(i, j) + .5) / 8; if (q > 0) d[k0] = mix(o, C, q); } }
   }
-  const gw = ch => (FONT[ch] || FONT[' '])[0].length;
+  const gw = ch => gf(ch)[0].length;
   /** Неонова вивіска з написом. s: x, y (лівий верхній кут), text, dir 'v' (літери стовпчиком) | 'h', p — «піксель» шрифту (од.),
    *  c — колір трубок, c2 — рамка. Трубка: колір + світле осердя по центру штрихів; ореол навколо літер; відсвіт на фасад. */
   function sign(R, s, live) {
@@ -1886,7 +1903,7 @@ NX.cityMega = (() => {
     const fw = Math.max(U, Math.round(p * .4 / U) * U);                               // рамка
     R.rect(s.x, s.y, s.x + w, s.y + fw, C2); R.rect(s.x, s.y + h - fw, s.x + w, s.y + h, C2); R.rect(s.x, s.y, s.x + fw, s.y + h, C2); R.rect(s.x + w - fw, s.y, s.x + w, s.y + h, C2);
     const ins = p / U >= 3 ? U : 0;                                                    // осердя трубки (від 3 пікс. на «піксель» шрифту)
-    for (const pass of [0, 1, 2]) pos.forEach(([ch, x, y]) => { const g = FONT[ch] || FONT[' '];
+    for (const pass of [0, 1, 2]) pos.forEach(([ch, x, y]) => { const g = gf(ch);
       g.forEach((row, j) => { for (let i = 0; i < row.length; i++) { if (row[i] !== 'X') continue; const ax = x + i * p, ay = y + j * p;
         if (pass === 0) R.rect(ax - U, ay - U, ax + p + U, ay + p + U, halo);            // ореол
         else if (pass === 1) R.rect(ax, ay, ax + p, ay + p, tube);                       // трубка
@@ -1896,19 +1913,22 @@ NX.cityMega = (() => {
     live.signs.push({ x: s.x, y: s.y, w, h, p, c: s.c, letters: pos, seed: s.seed || 0 });
     return s;
   }
-  /** Випадкова вивіска на будинку: вертикальна біля зовнішнього краю (часом виступає за край) або дахова з написом. */
+  /** Випадкова вивіска на будинку: вертикальна біля зовнішнього краю (часом виступає за край) або дахова з написом.
+   *  Слова різних мов різної довжини, тож пробуємо кілька, доки якесь не влізе. */
   function autoSign(R, b, r, live, inner, seed, botY) {
-    const p = b.plane === 'far1' ? .5 : b.plane === 'mid' ? .75 : 1, words = WORDS[b.plane] || WORDS.mid, text = words[Math.floor(r() * words.length)], n = [...text].length;
-    const ci = Math.floor(r() * NEONS.length), c = NEONS[ci], c2 = NEONS[(ci + 2 + Math.floor(r() * 3)) % NEONS.length], m = Math.max(p, .5), w = b.x1 - b.x0, tall = botY - b.top;
-    if (r() < .72) {
-      const mw = Math.max(...[...text].map(gw)), sw = mw * p + 2 * m, sh = n * 6 * p - p + 2 * m; if (sh > tall - 10 || w < sw + 1) return;
-      const out = r() < .35 ? sw * .45 : -.6 - r();                                  // виступає за край будинку або висить на фасаді
-      const x = inner > 0 ? b.x0 - out : b.x1 - sw + out, y = b.top + 4 + r() * Math.max(1, Math.min(60, tall - sh - 12));
-      sign(R, { x, y, text, dir: 'v', p, c, c2, seed }, live);
-    } else {
-      const sw = [...text].reduce((a, ch) => a + (gw(ch) + 1) * p, -p) + 2 * m, sh = 5 * p + 2 * m; if (sw > w + 2) return;
-      const x = (b.x0 + b.x1) / 2 - sw / 2, y = b.top - sh - .75 - r() * 1.5;
-      sign(R, { x, y, text, dir: 'h', p, c, c2, seed, posts: b.top + .2 }, live);
+    const p = b.plane === 'far1' ? .5 : b.plane === 'mid' ? .75 : 1, words = WORDS[b.plane] || WORDS.mid, m = Math.max(p, .5), w = b.x1 - b.x0, tall = botY - b.top;
+    const free = (x, y, sw, sh) => !(b.avoid || []).some(([a0, b0, a1, b1]) => x < a1 && x + sw > a0 && y < b1 && y + sh > b0);   // не лізти на головні вивіски
+    const ci = Math.floor(r() * NEONS.length), c = NEONS[ci], c2 = NEONS[(ci + 2 + Math.floor(r() * 3)) % NEONS.length], vert = r() < .72;
+    for (let k = 0; k < 4; k++) {
+      const text = word(words[Math.floor(r() * words.length)]), L = [...text];
+      if (vert) {
+        const mw = Math.max(...L.map(gw)), sw = mw * p + 2 * m, sh = L.length * 6 * p - p + 2 * m; if (sh > tall - 10 || w < sw + 1) continue;
+        const out = r() < .35 ? sw * .45 : -.6 - r();                                // виступає за край будинку або висить на фасаді
+        const x = inner > 0 ? b.x0 - out : b.x1 - sw + out, y = b.top + 4 + r() * Math.max(1, Math.min(60, tall - sh - 12)); if (!free(x, y, sw, sh)) return;
+        return sign(R, { x, y, text, dir: 'v', p, c, c2, seed }, live);
+      }
+      const sw = L.reduce((a, ch) => a + (gw(ch) + 1) * p, -p) + 2 * m, sh = 5 * p + 2 * m, x = (b.x0 + b.x1) / 2 - sw / 2, y = b.top - sh - .75 - r() * 1.5; if (sw > w + 2) continue; if (!free(x, y, sw, sh)) return;
+      return sign(R, { x, y, text, dir: 'h', p, c, c2, seed, posts: b.top + .2 }, live);
     }
   }
 
@@ -2019,14 +2039,15 @@ NX.cityMega = (() => {
   }
 
   /** Щільний ряд будинків плану. o: w [мін, макс], top [мін, макс], tall (частка високих), tallBy, shapes [[форма, вага]], lit [мін, макс],
-   *  step (крок як частка ширини — <1: будинки перекриваються), gapP/gap — просвіти, antP, glassP, mediaP, signP, bot, dark (частка темних). */
+   *  step (крок як частка ширини — <1: будинки перекриваються), gapP/gap — просвіти, antP, glassP, mediaP, signP, bot, dark (частка темних),
+ *  avoid [[x0, y0, x1, y1]] — де випадкових вивісок не ставити (головні вивіски). */
   function skyline(plane, x0, x1, seed, o = {}) {
     const r = rng(seed), out = [], SH = o.shapes || [['box', 6], ['round', 2], ['setback', 2], ['needle', 1], ['dome', 1]], tot = SH.reduce((a, s) => a + s[1], 0), P = PLANES[plane];
     let x = x0 - 10;
     while (x < x1 + 10) {
       const w = o.w[0] + r() * (o.w[1] - o.w[0]); let t = o.top[0] + r() * (o.top[1] - o.top[0]); if (r() < (o.tall || 0)) t -= (o.tallBy || 30) * (.4 + r() * .6);
       let q = r() * tot, shape = 'box'; for (const [s, k] of SH) { if ((q -= k) < 0) { shape = s; break; } }
-      const xs = Math.round(x * 2) / 2, b = { x0: xs, x1: Math.round((x + w) * 2) / 2, top: Math.round(t * 2) / 2, plane, shape, bot: o.bot, lit: o.lit ? o.lit[0] + r() * (o.lit[1] - o.lit[0]) : undefined, signP: o.signP,
+      const xs = Math.round(x * 2) / 2, b = { x0: xs, x1: Math.round((x + w) * 2) / 2, top: Math.round(t * 2) / 2, plane, shape, bot: o.bot, lit: o.lit ? o.lit[0] + r() * (o.lit[1] - o.lit[0]) : undefined, signP: o.signP, avoid: o.avoid,
         tiers: [[w * (.12 + r() * .14), 2 + r() * 6], [w * .06, 3 + r() * 6]], sh: 5 + r() * 12, ins: w * (.15 + r() * .1), k: .45 + r() * .35, dh: w * (.25 + r() * .2), flat: .6 + r() * .4, th: 8 + r() * 14,
         ant: r() < (o.antP == null ? .25 : o.antP) ? [{ x: x + w * (.25 + r() * .5), h: 2 + r() * (o.antH || 7) }] : [], boxes: o.boxes ? Math.floor(r() * 3) : 0 };
       if (shape === 'needle') b.top -= 8 + r() * (o.needleBy || 18);
@@ -2123,7 +2144,7 @@ NX.city = (() => {
     { haze: [138, 252, '#d25ee0', .3] },
   ];
   const BACK = [
-    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
+    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, avoid: [[756, 89, 802, 106]], glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
     { b: { x0: 604, x1: 652, top: 132, plane: 'mid', tone: 1, lit: .3, holo: { x: 608, y: 144, w: 40, h: 11, kind: 'wide' }, ant: [{ x: 640, h: 6 }] } },   // будинок з великим білбордом
     { fx: R => CB.skyway(R, 150, 9, { n: 120 }) },
     ...HEROES.map(b => (b.fx ? b : { b })),
@@ -2276,10 +2297,12 @@ NX.city = (() => {
     return L(R);
   }
 
+  /** Текст міста поточною мовою (js/i18n/*.js -> city.*), великими літерами; немає ключа — запасний. */
+  const txt = (k, def) => { const v = NX.t ? NX.t('city.' + k) : def; return String(v === 'city.' + k ? def : v).toLocaleUpperCase(); };
   /** Піксельний текст у полотно (1 px = 1 піксель шрифту) — для білборда й дирижабля. */
   function textCanvas(s, colors) {
     const w = CK.glyphW(s) + 1, cv = document.createElement('canvas'); cv.width = w; cv.height = 5; const x = cv.getContext('2d'); let cx = 0, n = 0;
-    for (const ch of s) { const g = CK.FONT[ch] || CK.FONT[' ']; if (ch !== ' ') { x.fillStyle = colors[n++ % colors.length]; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') x.fillRect(cx + i, j, 1, 1); }); } cx += g[0].length + 1; }
+    for (const ch of s) { const g = CK.gf(ch); if (ch !== ' ') { x.fillStyle = colors[n++ % colors.length]; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') x.fillRect(cx + i, j, 1, 1); }); } cx += g[0].length + 1; }
     return cv;
   }
 
@@ -2317,7 +2340,7 @@ NX.city = (() => {
       sky: L(sky), ringB: L(ring.back), ringF: L(ring.front), planet, prot: -1, pfit: null,
       clouds: CLOUDS.map(cl => L(SK.Cloud(cl))), bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
       liveB, liveF, cars: CARC.map(carSprite), airship: airshipSprite(), ship: shipSprite(),
-      ad: textCanvas('NEXORA AI · NEXI ♥ · ', ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas('NEXORA AI ♥ ', ['#9af6ff', '#ff8ade']),
+      ad: textCanvas(txt('ad', 'NEXORA AI · NEXI ♥ · '), ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas(txt('zep', 'NEXORA AI ♥ '), ['#9af6ff', '#ff8ade']),   // тексти — зі словника мов
       beam: beamSprite(),
       tw: Array.from({ length: 22 }, () => [GL.x0 + 6 + r() * (GW - 12), 4 + r() * 84, r() * 6.28, .9 + r() * 1.4]).filter(([x, y]) => Math.hypot(x - PL.x, y - PL.y) > PL.r + 5).slice(0, 16),
       lanes: LANES.map(Ln => Array.from({ length: Ln.n }, (_, k) => ({ x: GL.x0 + (k + r() * .6) * GW / Ln.n, c: (k + Ln.st) % 4, dy: (r() - .5) * 3 }))),
@@ -2563,6 +2586,8 @@ NX.city = (() => {
   return {
     GL, CLIP, CLIPP,
     init() {},
+    /** Мову змінено: вивіски й реклама — іншими словами, тож місто збирається заново (наступного кадру). */
+    relang() { if (S) { S = null; frames = 0; } },
     fireworks(sec) { fwUntil = NX.time + sec; },
     paint,
     draw(c, t, dt) {
@@ -8148,7 +8173,7 @@ NX.ui.skinlab = {
     this.CATS.forEach(c => { const b = document.createElement('button'); b.onclick = () => { this.cat = c; this.grid(); }; c.btn = b; $('cats').appendChild(b); });
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key === 'Escape') this.hide(); });
     $('pl').onclick = () => this.cycle(-1); $('pr').onclick = () => this.cycle(1);
-    $('save').onclick = () => { try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} NX.ui.hud.toast('NEXI ЗБЕРЕЖЕНО'); NX.nexi.emote('love'); };
+    $('save').onclick = () => { try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love'); };
     $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
       NX.nexi.look = { face: p(FACES), ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? ['backpack', 'cape', 'wings'][r() * 3 | 0] : null, head: r() < .3 ? ['hood', 'hat', 'goggles', 'phones'][r() * 4 | 0] : null, hand: r() < .3 ? ['shield', 'sword'][r() * 2 | 0] : null, fx: r() < .5 ? p(FX) : 'none' };

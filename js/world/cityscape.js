@@ -58,7 +58,7 @@ NX.city = (() => {
     { haze: [138, 252, '#d25ee0', .3] },
   ];
   const BACK = [
-    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
+    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, avoid: [[756, 89, 802, 106]], glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
     { b: { x0: 604, x1: 652, top: 132, plane: 'mid', tone: 1, lit: .3, holo: { x: 608, y: 144, w: 40, h: 11, kind: 'wide' }, ant: [{ x: 640, h: 6 }] } },   // будинок з великим білбордом
     { fx: R => CB.skyway(R, 150, 9, { n: 120 }) },
     ...HEROES.map(b => (b.fx ? b : { b })),
@@ -211,10 +211,12 @@ NX.city = (() => {
     return L(R);
   }
 
+  /** Текст міста поточною мовою (js/i18n/*.js -> city.*), великими літерами; немає ключа — запасний. */
+  const txt = (k, def) => { const v = NX.t ? NX.t('city.' + k) : def; return String(v === 'city.' + k ? def : v).toLocaleUpperCase(); };
   /** Піксельний текст у полотно (1 px = 1 піксель шрифту) — для білборда й дирижабля. */
   function textCanvas(s, colors) {
     const w = CK.glyphW(s) + 1, cv = document.createElement('canvas'); cv.width = w; cv.height = 5; const x = cv.getContext('2d'); let cx = 0, n = 0;
-    for (const ch of s) { const g = CK.FONT[ch] || CK.FONT[' ']; if (ch !== ' ') { x.fillStyle = colors[n++ % colors.length]; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') x.fillRect(cx + i, j, 1, 1); }); } cx += g[0].length + 1; }
+    for (const ch of s) { const g = CK.gf(ch); if (ch !== ' ') { x.fillStyle = colors[n++ % colors.length]; g.forEach((row, j) => { for (let i = 0; i < row.length; i++) if (row[i] === 'X') x.fillRect(cx + i, j, 1, 1); }); } cx += g[0].length + 1; }
     return cv;
   }
 
@@ -252,7 +254,7 @@ NX.city = (() => {
       sky: L(sky), ringB: L(ring.back), ringF: L(ring.front), planet, prot: -1, pfit: null,
       clouds: CLOUDS.map(cl => L(SK.Cloud(cl))), bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
       liveB, liveF, cars: CARC.map(carSprite), airship: airshipSprite(), ship: shipSprite(),
-      ad: textCanvas('NEXORA AI · NEXI ♥ · ', ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas('NEXORA AI ♥ ', ['#9af6ff', '#ff8ade']),
+      ad: textCanvas(txt('ad', 'NEXORA AI · NEXI ♥ · '), ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas(txt('zep', 'NEXORA AI ♥ '), ['#9af6ff', '#ff8ade']),   // тексти — зі словника мов
       beam: beamSprite(),
       tw: Array.from({ length: 22 }, () => [GL.x0 + 6 + r() * (GW - 12), 4 + r() * 84, r() * 6.28, .9 + r() * 1.4]).filter(([x, y]) => Math.hypot(x - PL.x, y - PL.y) > PL.r + 5).slice(0, 16),
       lanes: LANES.map(Ln => Array.from({ length: Ln.n }, (_, k) => ({ x: GL.x0 + (k + r() * .6) * GW / Ln.n, c: (k + Ln.st) % 4, dy: (r() - .5) * 3 }))),
@@ -498,6 +500,8 @@ NX.city = (() => {
   return {
     GL, CLIP, CLIPP,
     init() {},
+    /** Мову змінено: вивіски й реклама — іншими словами, тож місто збирається заново (наступного кадру). */
+    relang() { if (S) { S = null; frames = 0; } },
     fireworks(sec) { fwUntil = NX.time + sec; },
     paint,
     draw(c, t, dt) {

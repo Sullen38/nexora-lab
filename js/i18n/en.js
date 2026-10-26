@@ -14,6 +14,8 @@ NX.i18n.add('en', {
     tools: { crm: { t: 'Connect CRM', r: 'CRM connected: {n} contacts synced.' }, calendar: { t: 'Sync calendar', r: 'Calendar synced: {n} meetings this week, reminders on.' }, auto: { t: 'Set up automation', r: 'Website leads now go straight to CRM. Saves {n} h a week.' } },
   },
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
+  city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
+    ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   visitors: {
     snowwhite: { hi: 'Hello! Do dwarfs live here?', apple: 'Try this apple!', bye: 'Sweet dreams!', wake: 'Oh... did I fall asleep?' },
     leprechaun: { hi: "Where's my pot?..", oops: 'Oh no, my coins!', bye: "Hands off my gold!" },
