@@ -530,3 +530,4 @@ NX.city = (() => {
 })();
 /** Вікно як об'єкт: тап -> Nexi підходить і милується містом (феєрверк). */
 NX.addObject({ id: 'cityWindow', name: 'obj.window', act: 'window', hit: { x: 574, y: 4, w: 356, h: 156 } });
+NX.i18n.onLang(() => NX.city.relang());                                              // вивіски й реклама міста — новою мовою

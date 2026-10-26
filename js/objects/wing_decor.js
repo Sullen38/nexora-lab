@@ -57,14 +57,27 @@
     X: ['X...X', 'X...X', '.X.X.', '..X..', '.X.X.', 'X...X', 'X...X'], O: ['.XXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
     R: ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X.X..', 'X..X.', 'X...X'], A: ['.XXX.', 'X...X', 'X...X', 'XXXXX', 'X...X', 'X...X', 'X...X'],
     M: ['X...X', 'XX.XX', 'X.X.X', 'X.X.X', 'X...X', 'X...X', 'X...X'], W: ['X...X', 'X...X', 'X...X', 'X.X.X', 'X.X.X', 'XX.XX', 'X...X'],
+    // для перекладів напису кота («МЯУ», «MIAU», «MIAUW»)
+    I: ['.XXX.', '..X..', '..X..', '..X..', '..X..', '..X..', '.XXX.'], U: ['X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+    'Я': ['.XXXX', 'X...X', 'X...X', '.XXXX', '..X.X', '.X..X', 'X...X'], 'У': ['X...X', 'X...X', 'X...X', '.XXXX', '....X', 'X...X', '.XXX.'],
   };
   const F3 = { 8: ['XXX', 'X.X', 'XXX', 'X.X', 'XXX'], '-': ['...', '...', 'XXX', '...', '...'], B: ['XX.', 'X.X', 'XX.', 'X.X', 'XX.'], I: ['XXX', '.X.', '.X.', '.X.', 'XXX'], T: ['XXX', '.X.', '.X.', '.X.', '.X.'], A: ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'], ' ': ['...', '...', '...', '...', '...'] };
+  // написи постерів — мовою сайту (scene.poster); кирилиця, схожа на латиницю, бере латинські знаки; чого немає в шрифті постера —
+  // береться з шрифту міста NX.ckit (3×5; для 5×7 — розтягнутий)
+  const LOOK = { 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I' };
+  function glyphOf(Fn, ch) {
+    const g = Fn[ch] || Fn[LOOK[ch]]; if (g) return g;
+    const s = NX.ckit ? NX.ckit.gf(ch) : null, H = Fn[' '] ? Fn[' '].length : 7; if (!s) return null;
+    if (H === 5) return s;
+    return Array.from({ length: 7 }, (_, j) => Array.from({ length: 5 }, (_, i) => (s[Math.min(4, Math.floor(j * 5 / 7))][Math.min(s[0].length - 1, Math.floor(i * s[0].length / 5))] || '.')).join(''));
+  }
   /** Чи точка (lx, ly) на літері напису s: (x0, y0) — лівий верх, p — розмір «пікселя» шрифту. */
   function onText(lx, ly, s, x0, y0, p, Fn) {
-    const g0 = Fn[s[0]] || Fn[' '] || Fn.N, cw = g0[0].length, ch = g0.length, gx = Math.floor((lx - x0) / p), gy = Math.floor((ly - y0) / p);
+    const g0 = glyphOf(Fn, s[0]) || Fn.N || Fn.A, cw = g0[0].length, ch = g0.length, gx = Math.floor((lx - x0) / p), gy = Math.floor((ly - y0) / p);
     if (gy < 0 || gy >= ch || gx < 0) return false; const k = Math.floor(gx / (cw + 1)), cx = gx % (cw + 1); if (k >= s.length || cx >= cw) return false;
-    const g = Fn[s[k]]; return !!g && g[gy][cx] === 'X';
+    const g = glyphOf(Fn, s[k]); return !!g && g[gy][cx] === 'X';
   }
+  let TX = { meow: 'MEOW', tag: '8-BIT AI' };
   const textW = (s, p, cw) => (s.length * (cw + 1) - 1) * p;
 
   // ---------- постер «NEXORA»: синтвейв-сонце, силует Nexi, неонова сітка ----------
@@ -75,7 +88,7 @@
     const p = .9, tx = cx - textW('NEXORA', p, 5) / 2;
     if (onText(lx, ly, 'NEXORA', tx, 4.2, p, F5)) return '#5ae8ff';
     if (onText(lx - .9, ly - .9, 'NEXORA', tx, 4.2, p, F5)) return '#c8309e';                                       // рожева тінь напису
-    const p3 = .62, t3 = '8-BIT AI', tx3 = cx - textW(t3, p3, 3) / 2;
+    const p3 = .62, t3 = TX.tag, tx3 = cx - textW(t3, p3, 3) / 2;
     if (onText(lx, ly, t3, tx3, h - m - 4.3, p3, F3)) return '#ff84d4';
     // силует Nexi на тлі сонця: голова з антеною, «вушка», плечі; очі світяться
     const dx = lx - cx, hy = ly - 26.6, qx = Math.abs(dx) - 3.1, qy = Math.abs(hy) - 2.2;
@@ -104,9 +117,9 @@
   function catArt(lx, ly, w, h, i, j, seed) {
     const m = 1.4, cx = w / 2, dx = lx - cx, ady = Math.abs(dx);
     if (lx < m || lx > w - m || ly < m || ly > h - m) return ramp(PAPERW, .78 - ly / h * .35, i, j, .14);
-    const p = .62, tx = cx - textW('MEOW', p, 5) / 2;
-    if (onText(lx, ly, 'MEOW', tx, 22.2, p, F5)) return '#ff6ec8';
-    if (onText(lx - .6, ly - .6, 'MEOW', tx, 22.2, p, F5)) return '#1a0820';
+    const p = .62, tx = cx - textW(TX.meow, p, 5) / 2;
+    if (onText(lx, ly, TX.meow, tx, 22.2, p, F5)) return '#ff6ec8';
+    if (onText(lx - .6, ly - .6, TX.meow, tx, 22.2, p, F5)) return '#1a0820';
     const ex = ady, inEar = (ly < 9.4 && ly > 2.6 && ex > 3.4 + (9.4 - ly) * .2 && ex < 8.9 - (9.4 - ly) * .32);   // вушка
     if (inEar) return ex > 4.6 + (9.4 - ly) * .2 && ex < 7.6 - (9.4 - ly) * .32 && ly > 4.6 ? '#e06a9a' : ramp(FUR, .7 - (9.4 - ly) * .05, i, j);
     const hd = (dx / 9.2) ** 2 + ((ly - 13) / 7.2) ** 2;
@@ -128,6 +141,7 @@
   }
   /** Постер -> аркуш: трохи нахилений, загнутий нижній правий кутик, скотч по верхніх кутах. */
   function buildPoster(Q) {
+    TX = { meow: String(NX.t('scene.poster.meow')).toLocaleUpperCase(), tag: String(NX.t('scene.poster.tag')).toLocaleUpperCase() };   // написи мовою сайту
     const { x, y, w, h } = Q, a = Q.rot || 0, ca = Math.cos(a), sa = Math.sin(a), cx = x + w / 2, cy = y + h / 2, R = Math.hypot(w, h) / 2 + 1.5;
     const S = F.Sheet(cx - R, cy - R, cx + R, cy + R), at = (px, py) => [cx + px * ca - py * sa, cy + px * sa + py * ca], art = Q.kind === 'sunset' ? sunset : catArt;
     S.poly([at(-w / 2, -h / 2), at(w / 2, -h / 2), at(w / 2, h / 2), at(-w / 2, h / 2)], (u, v, i, j, X, Y) => {
@@ -192,6 +206,7 @@
   function buildSticker(o) { const R = (o.s || 4.4) * .85, S = F.Sheet(o.x - R, o.y - R, o.x + R, o.y + R); K.sticker(S, o); S.cv = S.canvas(null); return S; }
 
   let UNDER = null, OVER = null;
+  NX.i18n.onLang(() => { UNDER = OVER = null; });                                    // постери з написами — новою мовою
   function build() {
     UNDER = [...DUCTS.map(buildDuct), buildRiser(), buildPipe(), ...POSTERS.map(buildPoster), ...STICKERS.filter(s => s.on === undefined && !s.over).map(buildSticker)];
     OVER = STICKERS.filter(s => s.over).map(buildSticker);

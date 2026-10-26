@@ -1,6 +1,6 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij' },
+  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny', coins: 'Monety Nexora' },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   board: { title: 'ZADANIA NEXI', waiting: 'CZEKAM NA ZADANIE...' },
@@ -16,6 +16,18 @@ NX.i18n.add('pl', {
   sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
   city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
+  scene: {
+    ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
+    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND' },
+    marketing: { tags: 'TAGI AI', ads: 'REKLAMY' },
+    wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
+    log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
+      msg: { reply: 'odpowiedź w czacie', intent: 'intencja: cena', sync: 'synchronizacja', mail: 'mail wysłany', summary: 'podsumowanie gotowe', lead: 'CRM: nowy lead', api: 'API 200', cpu: 'procesor', langUk: 'język: uk', post: 'post w kolejce',
+        mood: 'nastrój +', cache: 'cache', invoice: 'faktura.pdf', tokens: 'tokeny', backup: 'kopia zapasowa', ping: 'ping', draft: 'szkic odpowiedzi', retry: 'ponowienie 1/3', report: 'raport.xlsx', langPl: 'język: pl' } },
+    seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
+    poster: { meow: 'MIAU', tag: '8-BIT AI' },
+    unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
+  },
   visitors: {
     snowwhite: { hi: 'Dzień dobry! Czy tu mieszkają krasnoludki?', apple: 'Spróbuj jabłuszka!', bye: 'Słodkich snów!', wake: 'Oj... czy ja zasnąłem?' },
     leprechaun: { hi: 'Gdzie mój garnek?..', oops: 'Oj, moje monety!', bye: 'Ręce precz od mojego złota!' },

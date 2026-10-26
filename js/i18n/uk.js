@@ -1,6 +1,6 @@
 /* js/i18n/uk.js — УКРАЇНСЬКА (базова мова: якщо ключа немає в іншій мові, береться звідси) */
 NX.i18n.add('uk', {
-  ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ КІМНАТИ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати' },
+  ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ КІМНАТИ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати', room: 'Кімната Nexi', lab: 'Лабораторія скінів', prev: 'Попередній', next: 'Наступний', coins: 'Монетки Nexora' },
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
   cats: { face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   board: { title: 'ЗАДАЧІ NEXI', waiting: 'ЧЕКАЮ НА ЗАДАЧУ...' },
@@ -16,6 +16,18 @@ NX.i18n.add('uk', {
   sofa: { news: 'NEXORA NEWS • ПРОДАЖІ +18% • 3 НОВІ КЛІЄНТИ • NEXI — ПРАЦІВНИК МІСЯЦЯ • ' },
   city: { signs: { coffee: 'КАВА', taxi: 'ТАКСІ', hotel: 'ГОТЕЛЬ', cinema: 'КІНО', pharmacy: 'АПТЕКА', metro: 'МЕТРО', pizza: 'ПІЦА', sushi: 'СУШІ', bar: 'БАР', shop: 'МАГАЗИН', club: 'КЛУБ', ramen: 'РАМЕН', neon: 'НЕОН', games: 'ІГРИ', spa: 'СПА', open: '24/7' },   // неонові вивіски міста за вікном (world/city_mega.js)
     ad: 'NEXORA AI · AI-ПОМІЧНИК ДЛЯ БІЗНЕСУ · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },   // білборд і екран дирижабля (world/cityscape.js); шрифт міста: латиниця, цифри, кирилиця
+  scene: {   // НАПИСИ В КІМНАТІ (намальовані на екранах і табличках): objects/*.js. Великими літерами — як на екранах
+    ai: { live: 'НАЖИВО', neuro: 'НЕЙРО', net: 'МЕРЕЖА', map: 'КАРТА', log: 'ЖУРНАЛ', vision: 'ЗІР', kpi: 'KPI', ok: 'ОК' },
+    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД' },
+    marketing: { tags: 'AI-ТЕГИ', ads: 'РЕКЛАМА' },
+    wallChat: ['AI', 'ЧАТ'], core: 'ЯДРО', scan: 'СКАН', coffee: { brew: 'ВАРЮ', done: 'ГОТОВО' },
+    log: { tags: { OK: 'ОК', AI: 'AI', NET: 'МЕРЕЖА', WARN: 'УВАГА', ERR: 'ЗБІЙ' },   // журнал подій на екранах (objects/wing_screens.js)
+      msg: { reply: 'відповідь у чаті', intent: 'намір: ціна', sync: 'синхронізація', mail: 'лист надіслано', summary: 'підсумок готовий', lead: 'CRM: новий лід', api: 'API 200', cpu: 'процесор', langUk: 'мова: uk', post: 'пост у черзі',
+        mood: 'настрій +', cache: 'кеш', invoice: 'рахунок.pdf', tokens: 'токени', backup: 'резервна копія', ping: 'пінг', draft: 'чернетка відповіді', retry: 'повтор 1/3', report: 'звіт.xlsx', langPl: 'мова: pl' } },
+    seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
+    poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
+    unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
+  },
   visitors: {
     snowwhite: { hi: 'Добрий день! Тут гноми не живуть?', apple: 'Скуштуй яблучко!', bye: 'Солодких снів!', wake: 'Ой... я що, заснув?' },
     leprechaun: { hi: 'Де мій горщик?..', oops: 'Ой, мої монетки!', bye: 'Не чіпай моє золото!' },

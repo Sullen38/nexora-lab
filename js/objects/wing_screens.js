@@ -84,12 +84,14 @@
   };
 
   /* ---------------- ЛОГИ ---------------- */
-  const LOGS = [['OK', 'chat.reply', 'ms'], ['AI', 'intent: price', ''], ['NET', 'sync', 'n'], ['OK', 'mail.sent', '#'], ['AI', 'summary.ready', ''], ['OK', 'crm.lead', '+1'],
-    ['NET', 'api 200', 'ms'], ['WARN', 'cpu', '%'], ['AI', 'lang: uk', ''], ['OK', 'post.queued', '#'], ['AI', 'sentiment +', ''], ['NET', 'cache.hit', '%'], ['OK', 'invoice.pdf', '#'],
-    ['AI', 'tokens', 'k'], ['OK', 'backup', 'ms'], ['NET', 'ws.ping', 'ms'], ['AI', 'reply.draft', ''], ['ERR', 'retry 1/3', ''], ['OK', 'report.xlsx', '#'], ['AI', 'lang: pl', '']];
+  // рівень (колір) і КЛЮЧ повідомлення: тексти — мовою сайту зі словника (scene.log.tags / scene.log.msg)
+  const LOGS = [['OK', 'reply', 'ms'], ['AI', 'intent', ''], ['NET', 'sync', 'n'], ['OK', 'mail', '#'], ['AI', 'summary', ''], ['OK', 'lead', '+1'],
+    ['NET', 'api', 'ms'], ['WARN', 'cpu', '%'], ['AI', 'langUk', ''], ['OK', 'post', '#'], ['AI', 'mood', ''], ['NET', 'cache', '%'], ['OK', 'invoice', '#'],
+    ['AI', 'tokens', 'k'], ['OK', 'backup', 'ms'], ['NET', 'ping', 'ms'], ['AI', 'draft', ''], ['ERR', 'retry', ''], ['OK', 'report', '#'], ['AI', 'langPl', '']];
   const LV = { OK: '#3bff8a', AI: '#3be8ff', NET: '#9a8cff', WARN: '#ffe27a', ERR: '#ff6ec8' };
-  const val = (kind, id) => kind === 'ms' ? (24 + Math.floor(hash(id, 5) * 380)) + 'ms' : kind === '#' ? '#' + (1000 + Math.floor(hash(id, 6) * 8999)) : kind === '%' ? (38 + Math.floor(hash(id, 7) * 58)) + '%'
-    : kind === 'n' ? (1 + Math.floor(hash(id, 8) * 4)) + '/4' : kind === 'k' ? (1 + hash(id, 9) * 8).toFixed(1) + 'k' : kind;
+  const val = (kind, id) => kind === 'ms' ? (24 + Math.floor(hash(id, 5) * 380)) + NX.t('scene.unit.ms') : kind === '#' ? '#' + (1000 + Math.floor(hash(id, 6) * 8999)) : kind === '%' ? (38 + Math.floor(hash(id, 7) * 58)) + '%'
+    : kind === 'n' ? (1 + Math.floor(hash(id, 8) * 4)) + '/4' : kind === 'k' ? NX.num(1 + hash(id, 9) * 8, 1) + NX.t('scene.unit.k') : kind;
+  const tag = k => NX.t('scene.log.tags.' + k), tagW = () => Math.max(...Object.keys(LV).map(k => tag(k).length));
   const two = v => String(v).padStart(2, '0');
   /** o = {act, size — px шрифту, rate — рядків за секунду, time — показувати час, seed}.
    *  Текст рядків рендериться в кеш-полотно лише коли з'являється новий рядок або міняється секунда (fillText дорогий),
@@ -105,8 +107,8 @@
         const id = n0 - r, E = LOGS[Math.floor(hash(id, 3 + (o.seed || 0)) * LOGS.length)], yy = Math.round(lh + h - lh * (r + 1) + lh * .78); if (yy < 0) continue;
         let tx = 3;
         if (showT) { const d = new Date((sec - Math.round(r / rate)) * 1000); P.text(g, two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()), tx, yy, '#5a7ab8', sz); tx += sz * 9; }
-        P.text(g, E[0], tx, yy, LV[E[0]], sz); tx += sz * 5;
-        const msg = (E[1] + ' ' + val(E[2], id)).trim(); P.text(g, msg, tx, yy, r === 0 ? '#e8fdff' : '#9fc8f0', sz);
+        P.text(g, tag(E[0]), tx, yy, LV[E[0]], sz); tx += sz * (tagW() + 1);
+        const msg = (NX.t('scene.log.msg.' + E[1]) + ' ' + val(E[2], id)).trim(); P.text(g, msg, tx, yy, r === 0 ? '#e8fdff' : '#9fc8f0', sz);
         if (r === 0) L.cur = Math.min(w - sz, tx + msg.length * sz + 2);
       }
     }
@@ -118,6 +120,7 @@
   };
 
   /* ---------------- РОЗПІЗНАВАННЯ ---------------- */
+  const seen = k => NX.t('scene.seen.' + k.toLowerCase());                         // назва розпізнаного мовою сайту (ключі — FACE, CAT…)
   const TARGETS = [
     { key: 'FACE', col: '#7af0ff', alt: ['USER', 'BOT'], marks: [[5, 5], [10, 5], [7.5, 8], [7.5, 10.5]], px: [
       '.....XXXXXX.....', '...XX......XX...', '..X..........X..', '.X............X.', '.X..XX....XX..X.', 'X...XX....XX...X', 'X..............X', 'X......XX......X',
@@ -147,13 +150,13 @@
     if (done) {                                                                                                               // рамка й мітка з упевненістю
       const pad = cs, bx = gx - pad, by = gy - pad, bw = cs * 16 + pad * 2, bh = cs * 16 + pad * 2, bl = Math.min(1, (f - .45) / .08);
       c.strokeStyle = rgba('255,79,216', .9 * bl); c.lineWidth = Math.max(1, cs / 2); c.setLineDash([cs * 1.5, cs]); c.strokeRect(bx, by, bw, bh); c.setLineDash([]);
-      const lb = T.key + ' ' + Math.round(conf * bl) + '%', fs = Math.max(6, Math.round(cs * 1.6)); lit(c, bx, by - fs - 4, lb.length * fs + 6, fs + 4, 'rgba(10,6,40,.85)'); P.text(c, lb, bx + 3, by - 3, '#ff9ae6', fs);
+      const lb = seen(T.key) + ' ' + Math.round(conf * bl) + '%', fs = Math.max(6, Math.round(cs * 1.6)); lit(c, bx, by - fs - 4, lb.length * fs + 6, fs + 4, 'rgba(10,6,40,.85)'); P.text(c, lb, bx + 3, by - 3, '#ff9ae6', fs);
     }
     if (side) {                                                                                                               // кандидати: стовпчики впевненості
       const px0 = x + aw + 4, pw = w - aw - 8, fs = Math.max(6, Math.round(h / 22)), list = [[T.key, conf], [T.alt[0], Math.floor((100 - conf) * .7)], [T.alt[1], 100 - conf - Math.floor((100 - conf) * .7)]];
-      list.forEach(([k2, v], n) => { const yy = y + h * .22 + n * fs * 3.2, grow = Math.min(1, Math.max(0, (f - .1 - n * .05) / .4)); P.text(c, k2, px0, yy, n ? '#7f9cd0' : '#e8fdff', fs);
+      list.forEach(([k2, v], n) => { const yy = y + h * .22 + n * fs * 3.2, grow = Math.min(1, Math.max(0, (f - .1 - n * .05) / .4)), s2 = seen(k2); P.text(c, s2, px0, yy, n ? '#7f9cd0' : '#e8fdff', Math.min(fs, pw / s2.length));
         lit(c, px0, yy + fs * .5, pw, fs * .7, 'rgba(40,70,150,.6)'); lit(c, px0, yy + fs * .5, pw * v / 100 * grow, fs * .7, n ? '#5a7ab8' : '#3bff8a'); });
-      P.text(c, done ? 'MATCH' : 'SCAN', px0, y + h * .12, done ? '#3bff8a' : (Math.sin(t * 6) > 0 ? '#3be8ff' : '#17709a'), fs);
+      const st = seen(done ? 'MATCH' : 'SCAN'); P.text(c, st, px0, y + h * .12, done ? '#3bff8a' : (Math.sin(t * 6) > 0 ? '#3be8ff' : '#17709a'), Math.min(fs, pw / st.length));
     }
     c.restore();
   };

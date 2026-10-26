@@ -13,7 +13,7 @@ NX.addObject({
     const P = NX.px, b = this.brew, on = b > 0 && b < 1;
     P.cube(c, 491, 349, 34, 46, 6, '#2a2f5e', '#3e4588', '#1a1d40');
     P.rect(c, 491, 303, 34, 1, '#ff4fd8');                                                    // неонова окантовка
-    P.rect(c, 496, 308, 24, 9, '#06102e'); P.text(c, on ? 'BREW' : b >= 1 ? 'DONE' : 'NEXI', 498, 315, on ? '#ffe27a' : '#3be8ff', 3.5);
+    P.rect(c, 496, 308, 24, 9, '#06102e'); const ds = on ? NX.t('scene.coffee.brew') : b >= 1 ? NX.t('scene.coffee.done') : 'NEXI'; P.text(c, ds, 498, 315, on ? '#ffe27a' : '#3be8ff', Math.min(3.5, 21 / ds.length));
     [0, 1, 2].forEach(i => P.rect(c, 498 + i * 7, 320, 4, 2, on && Math.floor(t * 6) % 3 === i ? '#3bff8a' : '#4a55a0'));
     P.rect(c, 497, 326, 22, 17, '#0e1030'); P.rect(c, 503, 324, 10, 3, '#5a6590');            // ніша і носик
     if (on) P.rect(c, 507, 327, 2, 10, '#7a4a22');                                            // струмінь кави

@@ -170,6 +170,7 @@
       } catch (e) { this.bloom = null; }
     },
   };
+  NX.i18n.onLang(() => { if (NX.wing.patched) setTimeout(() => NX.wing.patch(), 300); });   // віддзеркалення крила в підлозі — з написами новою мовою
   NX.addObject({
     id: 'wingBack', fr: 0,
     drawBack(c, t) {
@@ -191,7 +192,7 @@
       c.fillStyle = rgba('255,79,216', .2 + .1 * Math.sin(t * 1.7)); c.fillRect(SHELF.l + 3.6, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4); c.fillRect(SHELF.r - 6.2, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4);   // рожеві смуги стелажа дихають
       c.globalCompositeOperation = 'source-over';
       if (NX.wing.decor) NX.wing.decor.over(c, t, R);                             // живе: рідина в трубі, неон, LED каналів, манометр
-      P.text(c, 'AI', SIGN.x + 24, SIGN.y + 14, '#ff7af0', 5); P.text(c, 'CHAT', SIGN.x + 24, SIGN.y + 23, '#3be8ff', 5);
+      const wc = NX.t('scene.wallChat'); P.text(c, wc[0], SIGN.x + 24, SIGN.y + 14, '#ff7af0', Math.min(5, 26 / wc[0].length)); P.text(c, wc[1], SIGN.x + 24, SIGN.y + 23, '#3be8ff', Math.min(5, 26 / wc[1].length));   // напис мовою сайту
       if (Math.sin(t * 3) > 0) lit(c, SIGN.x + SIGN.w - 8, SIGN.y + 4, 3, 3, '#3bff8a');
       c.restore();
       if (!NX.wing.patched && this.fr > 6 && !c.isRefl && NX.room.img.naturalWidth) NX.wing.patch();

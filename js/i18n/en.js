@@ -1,6 +1,6 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next', coins: 'Nexora coins' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   board: { title: 'NEXI TASKS', waiting: 'WAITING FOR A TASK...' },
@@ -16,6 +16,18 @@ NX.i18n.add('en', {
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
+  scene: {
+    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
+    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND' },
+    marketing: { tags: 'AI TAGS', ads: 'ADS' },
+    wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
+    log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
+      msg: { reply: 'chat.reply', intent: 'intent: price', sync: 'sync', mail: 'mail.sent', summary: 'summary.ready', lead: 'crm.lead', api: 'api 200', cpu: 'cpu', langUk: 'lang: uk', post: 'post.queued',
+        mood: 'sentiment +', cache: 'cache.hit', invoice: 'invoice.pdf', tokens: 'tokens', backup: 'backup', ping: 'ws.ping', draft: 'reply.draft', retry: 'retry 1/3', report: 'report.xlsx', langPl: 'lang: pl' } },
+    seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
+    poster: { meow: 'MEOW', tag: '8-BIT AI' },
+    unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
+  },
   visitors: {
     snowwhite: { hi: 'Hello! Do dwarfs live here?', apple: 'Try this apple!', bye: 'Sweet dreams!', wake: 'Oh... did I fall asleep?' },
     leprechaun: { hi: "Where's my pot?..", oops: 'Oh no, my coins!', bye: "Hands off my gold!" },

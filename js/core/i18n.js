@@ -19,7 +19,10 @@ NX.i18n = {
     // for (const l of (navigator.languages || [])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
     return 'uk';
   },
-  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); NX.city && NX.city.relang && NX.city.relang(); },   // місто: вивіски — новою мовою
+  /** Тексти, ЗАПЕЧЕНІ в растри й кеші (вивіски міста, постери, віддзеркалення в підлозі), підписуються на зміну мови й перебудовуються. */
+  hooks: [],
+  onLang(f) { this.hooks.push(f); },
+  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); this.hooks.forEach(f => { try { f(l); } catch (e) { console.error(e); } }); },
   get(obj, key) { return key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); },
 };
 NX.t = (key, vars) => {
@@ -28,3 +31,5 @@ NX.t = (key, vars) => {
   return v;
 };
 NX.pick = key => { const a = NX.t(key); return Array.isArray(a) ? a[Math.random() * a.length | 0] : a; };
+/** Число з d знаками після коми — десятковим знаком мови (12,3 / 12.3). */
+NX.num = (v, d = 1) => Number(v).toFixed(d).replace('.', NX.t('scene.dec') === 'scene.dec' ? '.' : NX.t('scene.dec'));

@@ -62,13 +62,13 @@
     const W = 248, H = 344; K.screenBg(c, W, H, t);
     const pg = K.pages(t, 5, 2, 15);                                                                // №6: USERS <-> карта користувачів (по черзі)
     if (pg.i === 1) {
-      P.text(c, 'MAP', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
+      P.text(c, NX.t('scene.analytics.map'), 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
       K.scrMap(c, 8, 44, W - 16, 150, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london', 'newyork'], land: '#3a8ad8' });
       [['UA', 38, '#ff9ae6'], ['PL', 24, '#7af0ff'], ['NL', 17, '#ffe27a'], ['EN', 21, '#3bff8a']].forEach(([k, v, col], n) => { const y = 214 + n * 24, vv = v + Math.round((noise(t * .3, n) - .5) * 4 + act * prog * 3); P.text(c, k, 12, y + 10, '#bfe9ff', 11); lit(c, 44, y, 150 * vv / 40, 10, col); P.text(c, vv + '%', W - 12, y + 10, '#e8fdff', 10, 'right'); });
       (NX.ui.zones.done.analytics || []).slice(-1).forEach(d => { lit(c, 12, H - 30, 8, 8, '#3bff8a'); P.text(c, NX.t(`zones.analytics.${d.task}.t`).toUpperCase().slice(0, 24), 26, H - 21, '#bfe9ff', 8); });
       K.glitch(c, W, H, t, pg.sw, 5); return;
     }
-    P.text(c, 'USERS', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
+    P.text(c, NX.t('scene.analytics.users'), 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
     for (let k = 0; k < 3; k++) { const x = 20 + k * 74, y = 42, on = Math.floor(t * (1 + act * 2)) % 3 === k;                                   // аватари
       c.fillStyle = on ? '#ffffff' : '#9fdcff'; c.beginPath(); c.arc(x + 22, y + 16, 12, 0, 7); c.fill(); c.beginPath(); c.ellipse(x + 22, y + 50, 20, 14, 0, Math.PI, 0); c.fill(); lit(c, x, y + 60, 44, 4, on ? '#3bff8a' : '#2a6ab0'); }
     const done = (NX.ui.zones.done.analytics || []).slice(-2);                                                                                  // що вже зроблено (по черзі)
@@ -81,7 +81,7 @@
   }
   function drawRight(c, t, act, prog) {
     const W = 240, H = 344; K.screenBg(c, W, H, t);
-    P.text(c, 'TREND', 10, 24, '#bfe9ff', 14);
+    P.text(c, NX.t('scene.analytics.trend'), 10, 24, '#bfe9ff', 14);
     const b = 170, h = 120; c.strokeStyle = 'rgba(160,220,255,.35)'; c.lineWidth = 1; for (let y = 0; y < 5; y++) { c.beginPath(); c.moveTo(10, b - y * 30); c.lineTo(W - 10, b - y * 30); c.stroke(); }
     c.lineWidth = 4; c.strokeStyle = '#ff9ae6'; c.beginPath();
     for (let x = 0; x <= W - 20; x += 4) { const v = .45 + .25 * Math.sin((x + t * (26 + act * 50)) * .045) + .12 * Math.sin((x + t * 40) * .13) + (act ? prog * .2 * x / W : 0), y = b - v * h; x ? c.lineTo(10 + x, y) : c.moveTo(10 + x, y); }

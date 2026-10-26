@@ -21,6 +21,9 @@ NX.ui.hud = {
     $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins');
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
+    // підказки для екранних читачів і title — теж мовою сайту
+    [['world', 'ui.room'], ['lab', 'ui.lab'], ['pl', 'ui.prev'], ['pr', 'ui.next']].forEach(([id, k]) => { const el = $(id); if (el) el.setAttribute('aria-label', T(k)); });
+    const sb = document.querySelector('#ask button'); if (sb) sb.setAttribute('aria-label', T('ui.send')); if ($('coins')) $('coins').title = T('ui.coins');
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
     if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },

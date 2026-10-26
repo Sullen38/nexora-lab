@@ -56,7 +56,7 @@
   function drawLeft(c, t, act, prog) {
     const W = 208, H = 184; K.screenBg(c, W, H, t);
     const pg = K.pages(t, 8, 2, 13);                                                                // №6: стрічка постів <-> розпізнавання картинок для поста
-    if (pg.i === 1) { P.text(c, 'AI TAGS', 8, 18, '#bfe9ff', 11); K.scrScan(c, 6, 26, W - 12, H - 32, t, { id: pg.id + 1, f: pg.f, act }); K.glitch(c, W, H, t, pg.sw, 8); return; }
+    if (pg.i === 1) { P.text(c, NX.t('scene.marketing.tags'), 8, 18, '#bfe9ff', 11); K.scrScan(c, 6, 26, W - 12, H - 32, t, { id: pg.id + 1, f: pg.f, act }); K.glitch(c, W, H, t, pg.sw, 8); return; }
     const sp = 14 + act * 26, off = (t * sp) % 62;
     c.save(); c.beginPath(); c.rect(0, 0, W, H); c.clip();
     for (let k = -1; k < 4; k++) { const id = k + Math.floor(t * sp / 62), y = 8 + k * 62 - off, col = POSTS[((id % 4) + 4) % 4];
@@ -68,7 +68,7 @@
     K.glitch(c, W, H, t, pg.sw, 8);
   }
   function drawRight(c, t, act, prog) {
-    const W = 144, H = 184; K.screenBg(c, W, H, t); P.text(c, 'ADS', 8, 18, '#bfe9ff', 11);
+    const W = 144, H = 184; K.screenBg(c, W, H, t); P.text(c, NX.t('scene.marketing.ads'), 8, 18, '#bfe9ff', 11);
     for (let k = 0; k < 4; k++) { const w = (W - 20) * (1 - k * .2) * (.9 + .1 * Math.sin(t * (1 + act * 2) + k)), y = 28 + k * 20; lit(c, (W - w) / 2, y, w, 14, ['rgba(255,154,230,.75)', 'rgba(122,240,255,.75)', 'rgba(255,226,122,.75)', 'rgba(59,255,138,.75)'][k]); }
     const cx = W / 2, cy = 138, pul = 1 + .08 * Math.sin(t * 4 + act * t * 4); for (const [r, col] of [[24, '#ff9ae6'], [16, '#ffffff'], [8, '#ff4fd8']]) { c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * pul, 0, 7); c.stroke(); }
     if (act) P.text(c, Math.round(40 + prog * 340) + ' →', cx, 178, '#ffe27a', 10, 'center');

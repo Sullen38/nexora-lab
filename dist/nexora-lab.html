@@ -185,7 +185,10 @@ NX.i18n = {
     // for (const l of (navigator.languages || [])) { const p = String(l).slice(0, 2).toLowerCase(); if (this.LANGS.includes(p)) return p; }
     return 'uk';
   },
-  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); NX.city && NX.city.relang && NX.city.relang(); },   // місто: вивіски — новою мовою
+  /** Тексти, ЗАПЕЧЕНІ в растри й кеші (вивіски міста, постери, віддзеркалення в підлозі), підписуються на зміну мови й перебудовуються. */
+  hooks: [],
+  onLang(f) { this.hooks.push(f); },
+  set(l) { this.lang = l; document.documentElement.lang = l; NX.ui.hud && NX.ui.hud.applyLang && NX.ui.hud.applyLang(); this.hooks.forEach(f => { try { f(l); } catch (e) { console.error(e); } }); },
   get(obj, key) { return key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); },
 };
 NX.t = (key, vars) => {
@@ -194,13 +197,15 @@ NX.t = (key, vars) => {
   return v;
 };
 NX.pick = key => { const a = NX.t(key); return Array.isArray(a) ? a[Math.random() * a.length | 0] : a; };
+/** Число з d знаками після коми — десятковим знаком мови (12,3 / 12.3). */
+NX.num = (v, d = 1) => Number(v).toFixed(d).replace('.', NX.t('scene.dec') === 'scene.dec' ? '.' : NX.t('scene.dec'));
 
 </script>
 <script>
 /* ---- js/i18n/uk.js ---- */
 /* js/i18n/uk.js — УКРАЇНСЬКА (базова мова: якщо ключа немає в іншій мові, береться звідси) */
 NX.i18n.add('uk', {
-  ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ КІМНАТИ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати' },
+  ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ КІМНАТИ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати', room: 'Кімната Nexi', lab: 'Лабораторія скінів', prev: 'Попередній', next: 'Наступний', coins: 'Монетки Nexora' },
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
   cats: { face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   board: { title: 'ЗАДАЧІ NEXI', waiting: 'ЧЕКАЮ НА ЗАДАЧУ...' },
@@ -216,6 +221,18 @@ NX.i18n.add('uk', {
   sofa: { news: 'NEXORA NEWS • ПРОДАЖІ +18% • 3 НОВІ КЛІЄНТИ • NEXI — ПРАЦІВНИК МІСЯЦЯ • ' },
   city: { signs: { coffee: 'КАВА', taxi: 'ТАКСІ', hotel: 'ГОТЕЛЬ', cinema: 'КІНО', pharmacy: 'АПТЕКА', metro: 'МЕТРО', pizza: 'ПІЦА', sushi: 'СУШІ', bar: 'БАР', shop: 'МАГАЗИН', club: 'КЛУБ', ramen: 'РАМЕН', neon: 'НЕОН', games: 'ІГРИ', spa: 'СПА', open: '24/7' },   // неонові вивіски міста за вікном (world/city_mega.js)
     ad: 'NEXORA AI · AI-ПОМІЧНИК ДЛЯ БІЗНЕСУ · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },   // білборд і екран дирижабля (world/cityscape.js); шрифт міста: латиниця, цифри, кирилиця
+  scene: {   // НАПИСИ В КІМНАТІ (намальовані на екранах і табличках): objects/*.js. Великими літерами — як на екранах
+    ai: { live: 'НАЖИВО', neuro: 'НЕЙРО', net: 'МЕРЕЖА', map: 'КАРТА', log: 'ЖУРНАЛ', vision: 'ЗІР', kpi: 'KPI', ok: 'ОК' },
+    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД' },
+    marketing: { tags: 'AI-ТЕГИ', ads: 'РЕКЛАМА' },
+    wallChat: ['AI', 'ЧАТ'], core: 'ЯДРО', scan: 'СКАН', coffee: { brew: 'ВАРЮ', done: 'ГОТОВО' },
+    log: { tags: { OK: 'ОК', AI: 'AI', NET: 'МЕРЕЖА', WARN: 'УВАГА', ERR: 'ЗБІЙ' },   // журнал подій на екранах (objects/wing_screens.js)
+      msg: { reply: 'відповідь у чаті', intent: 'намір: ціна', sync: 'синхронізація', mail: 'лист надіслано', summary: 'підсумок готовий', lead: 'CRM: новий лід', api: 'API 200', cpu: 'процесор', langUk: 'мова: uk', post: 'пост у черзі',
+        mood: 'настрій +', cache: 'кеш', invoice: 'рахунок.pdf', tokens: 'токени', backup: 'резервна копія', ping: 'пінг', draft: 'чернетка відповіді', retry: 'повтор 1/3', report: 'звіт.xlsx', langPl: 'мова: pl' } },
+    seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
+    poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
+    unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
+  },
   visitors: {
     snowwhite: { hi: 'Добрий день! Тут гноми не живуть?', apple: 'Скуштуй яблучко!', bye: 'Солодких снів!', wake: 'Ой... я що, заснув?' },
     leprechaun: { hi: 'Де мій горщик?..', oops: 'Ой, мої монетки!', bye: 'Не чіпай моє золото!' },
@@ -286,7 +303,7 @@ NX.i18n.add('uk', {
 /* ---- js/i18n/en.js ---- */
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ROOM ZONE — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next', coins: 'Nexora coins' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   board: { title: 'NEXI TASKS', waiting: 'WAITING FOR A TASK...' },
@@ -302,6 +319,18 @@ NX.i18n.add('en', {
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
+  scene: {
+    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
+    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND' },
+    marketing: { tags: 'AI TAGS', ads: 'ADS' },
+    wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
+    log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
+      msg: { reply: 'chat.reply', intent: 'intent: price', sync: 'sync', mail: 'mail.sent', summary: 'summary.ready', lead: 'crm.lead', api: 'api 200', cpu: 'cpu', langUk: 'lang: uk', post: 'post.queued',
+        mood: 'sentiment +', cache: 'cache.hit', invoice: 'invoice.pdf', tokens: 'tokens', backup: 'backup', ping: 'ws.ping', draft: 'reply.draft', retry: 'retry 1/3', report: 'report.xlsx', langPl: 'lang: pl' } },
+    seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
+    poster: { meow: 'MEOW', tag: '8-BIT AI' },
+    unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
+  },
   visitors: {
     snowwhite: { hi: 'Hello! Do dwarfs live here?', apple: 'Try this apple!', bye: 'Sweet dreams!', wake: 'Oh... did I fall asleep?' },
     leprechaun: { hi: "Where's my pot?..", oops: 'Oh no, my coins!', bye: "Hands off my gold!" },
@@ -372,7 +401,7 @@ NX.i18n.add('en', {
 /* ---- js/i18n/pl.js ---- */
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij' },
+  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY POKOJU — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny', coins: 'Monety Nexora' },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   board: { title: 'ZADANIA NEXI', waiting: 'CZEKAM NA ZADANIE...' },
@@ -388,6 +417,18 @@ NX.i18n.add('pl', {
   sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
   city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
+  scene: {
+    ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
+    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND' },
+    marketing: { tags: 'TAGI AI', ads: 'REKLAMY' },
+    wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
+    log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
+      msg: { reply: 'odpowiedź w czacie', intent: 'intencja: cena', sync: 'synchronizacja', mail: 'mail wysłany', summary: 'podsumowanie gotowe', lead: 'CRM: nowy lead', api: 'API 200', cpu: 'procesor', langUk: 'język: uk', post: 'post w kolejce',
+        mood: 'nastrój +', cache: 'cache', invoice: 'faktura.pdf', tokens: 'tokeny', backup: 'kopia zapasowa', ping: 'ping', draft: 'szkic odpowiedzi', retry: 'ponowienie 1/3', report: 'raport.xlsx', langPl: 'język: pl' } },
+    seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
+    poster: { meow: 'MIAU', tag: '8-BIT AI' },
+    unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
+  },
   visitors: {
     snowwhite: { hi: 'Dzień dobry! Czy tu mieszkają krasnoludki?', apple: 'Spróbuj jabłuszka!', bye: 'Słodkich snów!', wake: 'Oj... czy ja zasnąłem?' },
     leprechaun: { hi: 'Gdzie mój garnek?..', oops: 'Oj, moje monety!', bye: 'Ręce precz od mojego złota!' },
@@ -458,7 +499,7 @@ NX.i18n.add('pl', {
 /* ---- js/i18n/nl.js ---- */
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
-  ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen' },
+  ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende', coins: 'Nexora-munten' },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   board: { title: 'NEXI-TAKEN', waiting: 'WACHT OP EEN TAAK...' },
@@ -474,6 +515,18 @@ NX.i18n.add('nl', {
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
   city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
+  scene: {
+    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
+    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND' },
+    marketing: { tags: 'AI-TAGS', ads: 'RECLAME' },
+    wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
+    log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
+      msg: { reply: 'chat-antwoord', intent: 'intentie: prijs', sync: 'synchronisatie', mail: 'mail verzonden', summary: 'samenvatting klaar', lead: 'CRM: nieuwe lead', api: 'API 200', cpu: 'processor', langUk: 'taal: uk', post: 'post in wachtrij',
+        mood: 'sentiment +', cache: 'cache', invoice: 'factuur.pdf', tokens: 'tokens', backup: 'back-up', ping: 'ping', draft: 'concept-antwoord', retry: 'opnieuw 1/3', report: 'rapport.xlsx', langPl: 'taal: pl' } },
+    seen: { face: 'GEZICHT', user: 'PERSOON', bot: 'BOT', cat: 'KAT', fox: 'VOS', dog: 'HOND', logo: 'LOGO', icon: 'ICOON', text: 'TEKST', doc: 'DOC', form: 'FORMULIER', photo: 'FOTO', match: 'GEVONDEN', scan: 'SCAN' },
+    poster: { meow: 'MIAUW', tag: '8-BIT AI' },
+    unit: { ms: 'ms', k: 'k', K: 'K' }, dec: ',',
+  },
   visitors: {
     snowwhite: { hi: 'Hallo! Wonen hier dwergen?', apple: 'Proef dit appeltje!', bye: 'Slaap lekker!', wake: 'Oh... ben ik in slaap gevallen?' },
     leprechaun: { hi: 'Waar is mijn pot?..', oops: 'Oh nee, mijn munten!', bye: 'Blijf van mijn goud af!' },
@@ -2616,6 +2669,7 @@ NX.city = (() => {
 })();
 /** Вікно як об'єкт: тап -> Nexi підходить і милується містом (феєрверк). */
 NX.addObject({ id: 'cityWindow', name: 'obj.window', act: 'window', hit: { x: 574, y: 4, w: 356, h: 156 } });
+NX.i18n.onLang(() => NX.city.relang());                                              // вивіски й реклама міста — новою мовою
 
 </script>
 <script>
@@ -2628,6 +2682,8 @@ NX.addObject({ id: 'cityWindow', name: 'obj.window', act: 'window', hit: { x: 57
  * Для інших мов текст вивіски акуратно зафарбовується кольором її фону і
  * пишеться заново перекладом з js/i18n (ключі nav.*), неоновим піксельним
  * шрифтом. Українською показується оригінальний малюнок.
+ * ВІДДЗЕРКАЛЕННЯ: передня глянцева підлога будується з картинки, тож у ній «світилися» українські
+ * написи. Для інших мов кімната отримує копію картинки з перекладеними вивісками (patchFront, x 948..1536).
  *   box  — де на картинці текст (зафарбовуємо)
  *   maxW — скільки місця на табличці для нового тексту
  * ========================================================================== */
@@ -2638,8 +2694,15 @@ NX.addObject({
     { key: 'nav.tools',     box: [1201, 180, 1280, 197], maxW: 84, bg: '#001568' },
     { key: 'nav.portal',    box: [1377, 132, 1439, 153], maxW: 96, bg: '#040943' },
   ],
+  X0: 948,                                                                          // з цього x підлога віддзеркалює картинку (ліворуч — крило й місто)
+  floor: false,
   drawBack(c, t) {
     if (NX.i18n.lang === 'uk') return;
+    if (!this.floor && !c.isRefl && NX.room.img.naturalWidth && NX.room.front && (this.fr = (this.fr || 0) + 1) > 20 && (!document.fonts || document.fonts.status === 'loaded')) { this.floor = true; this.patchFloor(t); }   // після завантаження шрифту
+    this.paint(c, t);
+  },
+  /** Перекладені написи поверх намальованих. */
+  paint(c, t) {
     const P = NX.px;
     this.SIGNS.forEach((s, i) => {
       const [x0, y0, x1, y1] = s.box, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, txt = NX.t(s.key);
@@ -2651,6 +2714,16 @@ NX.addObject({
       c.fillStyle = '#8ef4ff'; c.fillText(txt, cx, cy + .5); c.shadowBlur = 0; c.fillStyle = '#d8fbff'; c.globalAlpha = .5; c.fillText(txt, cx, cy); c.restore();
     });
   },
+  /** Підлога-дзеркало праворуч: копія картинки з перекладеними вивісками (раз після старту й при зміні мови). */
+  patchFloor(t) {
+    const img = NX.room.img, RS = NX.room.RS, cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    const x = cv.getContext('2d'); x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS); this.paint(x, t); x.restore();
+    NX.room.patchFront(cv, this.X0, NX.cfg.ROOM_W);
+  },
+});
+NX.i18n.onLang(l => {                                                               // мову змінено: підлога — з новими написами (українською — оригінал картинки)
+  const S = NX.objects.signs; S.floor = false;
+  if (l === 'uk') { NX.room.patches = NX.room.patches.filter(p => p.x0 !== S.X0); if (NX.room.front) NX.room.frontFrom(NX.room.img, S.X0, NX.cfg.ROOM_W); }
 });
 
 </script>
@@ -3821,7 +3894,7 @@ NX.kit = (() => {
     const tubes = [[(cx0 + cx1) / 2 + 2, cy0, (qx0 + qx1) / 2 - 3, qy0 - 1.5], [cx1, (cy0 + cy1) / 2, qx0, (qy0 + qy1) / 2]];
     tubes.forEach(([x0, y0, x1, y1], n) => { for (let k = 0; k < 3; k++) { const q = ((t * (.5 + act) + k / 3 + n * .5) % 1), x = x0 + (x1 - x0) * q, y = y0 + (y1 - y0) * q; lit(c, x - .6, y - .6, 1.2, 1.2, '#5ae8ff'); } });   // потік рідини
     c.globalCompositeOperation = 'source-over';
-    const [sx0, sy0, sx1, sy1] = g.strip, load = act ? .7 + .25 * Math.sin(t * 3) : .35 + .2 * Math.sin(t * .8); P.text(c, 'CORE ' + Math.round(load * 100) + '%', sx0 + 1.5, sy1 - .7, '#3be8ff', 2.2); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) , 1.2, '#0a1a3a'); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) * load, 1.2, act ? '#3bff8a' : '#3be8ff');
+    const [sx0, sy0, sx1, sy1] = g.strip, load = act ? .7 + .25 * Math.sin(t * 3) : .35 + .2 * Math.sin(t * .8); const cs = NX.t('scene.core') + ' ' + Math.round(load * 100) + '%'; P.text(c, cs, sx0 + 1.5, sy1 - .7, '#3be8ff', Math.min(2.2, 18 / cs.length)); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) , 1.2, '#0a1a3a'); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) * load, 1.2, act ? '#3bff8a' : '#3be8ff');
     c.restore();
   }
 
@@ -4261,12 +4334,14 @@ NX.kit = (() => {
   };
 
   /* ---------------- ЛОГИ ---------------- */
-  const LOGS = [['OK', 'chat.reply', 'ms'], ['AI', 'intent: price', ''], ['NET', 'sync', 'n'], ['OK', 'mail.sent', '#'], ['AI', 'summary.ready', ''], ['OK', 'crm.lead', '+1'],
-    ['NET', 'api 200', 'ms'], ['WARN', 'cpu', '%'], ['AI', 'lang: uk', ''], ['OK', 'post.queued', '#'], ['AI', 'sentiment +', ''], ['NET', 'cache.hit', '%'], ['OK', 'invoice.pdf', '#'],
-    ['AI', 'tokens', 'k'], ['OK', 'backup', 'ms'], ['NET', 'ws.ping', 'ms'], ['AI', 'reply.draft', ''], ['ERR', 'retry 1/3', ''], ['OK', 'report.xlsx', '#'], ['AI', 'lang: pl', '']];
+  // рівень (колір) і КЛЮЧ повідомлення: тексти — мовою сайту зі словника (scene.log.tags / scene.log.msg)
+  const LOGS = [['OK', 'reply', 'ms'], ['AI', 'intent', ''], ['NET', 'sync', 'n'], ['OK', 'mail', '#'], ['AI', 'summary', ''], ['OK', 'lead', '+1'],
+    ['NET', 'api', 'ms'], ['WARN', 'cpu', '%'], ['AI', 'langUk', ''], ['OK', 'post', '#'], ['AI', 'mood', ''], ['NET', 'cache', '%'], ['OK', 'invoice', '#'],
+    ['AI', 'tokens', 'k'], ['OK', 'backup', 'ms'], ['NET', 'ping', 'ms'], ['AI', 'draft', ''], ['ERR', 'retry', ''], ['OK', 'report', '#'], ['AI', 'langPl', '']];
   const LV = { OK: '#3bff8a', AI: '#3be8ff', NET: '#9a8cff', WARN: '#ffe27a', ERR: '#ff6ec8' };
-  const val = (kind, id) => kind === 'ms' ? (24 + Math.floor(hash(id, 5) * 380)) + 'ms' : kind === '#' ? '#' + (1000 + Math.floor(hash(id, 6) * 8999)) : kind === '%' ? (38 + Math.floor(hash(id, 7) * 58)) + '%'
-    : kind === 'n' ? (1 + Math.floor(hash(id, 8) * 4)) + '/4' : kind === 'k' ? (1 + hash(id, 9) * 8).toFixed(1) + 'k' : kind;
+  const val = (kind, id) => kind === 'ms' ? (24 + Math.floor(hash(id, 5) * 380)) + NX.t('scene.unit.ms') : kind === '#' ? '#' + (1000 + Math.floor(hash(id, 6) * 8999)) : kind === '%' ? (38 + Math.floor(hash(id, 7) * 58)) + '%'
+    : kind === 'n' ? (1 + Math.floor(hash(id, 8) * 4)) + '/4' : kind === 'k' ? NX.num(1 + hash(id, 9) * 8, 1) + NX.t('scene.unit.k') : kind;
+  const tag = k => NX.t('scene.log.tags.' + k), tagW = () => Math.max(...Object.keys(LV).map(k => tag(k).length));
   const two = v => String(v).padStart(2, '0');
   /** o = {act, size — px шрифту, rate — рядків за секунду, time — показувати час, seed}.
    *  Текст рядків рендериться в кеш-полотно лише коли з'являється новий рядок або міняється секунда (fillText дорогий),
@@ -4282,8 +4357,8 @@ NX.kit = (() => {
         const id = n0 - r, E = LOGS[Math.floor(hash(id, 3 + (o.seed || 0)) * LOGS.length)], yy = Math.round(lh + h - lh * (r + 1) + lh * .78); if (yy < 0) continue;
         let tx = 3;
         if (showT) { const d = new Date((sec - Math.round(r / rate)) * 1000); P.text(g, two(d.getHours()) + ':' + two(d.getMinutes()) + ':' + two(d.getSeconds()), tx, yy, '#5a7ab8', sz); tx += sz * 9; }
-        P.text(g, E[0], tx, yy, LV[E[0]], sz); tx += sz * 5;
-        const msg = (E[1] + ' ' + val(E[2], id)).trim(); P.text(g, msg, tx, yy, r === 0 ? '#e8fdff' : '#9fc8f0', sz);
+        P.text(g, tag(E[0]), tx, yy, LV[E[0]], sz); tx += sz * (tagW() + 1);
+        const msg = (NX.t('scene.log.msg.' + E[1]) + ' ' + val(E[2], id)).trim(); P.text(g, msg, tx, yy, r === 0 ? '#e8fdff' : '#9fc8f0', sz);
         if (r === 0) L.cur = Math.min(w - sz, tx + msg.length * sz + 2);
       }
     }
@@ -4295,6 +4370,7 @@ NX.kit = (() => {
   };
 
   /* ---------------- РОЗПІЗНАВАННЯ ---------------- */
+  const seen = k => NX.t('scene.seen.' + k.toLowerCase());                         // назва розпізнаного мовою сайту (ключі — FACE, CAT…)
   const TARGETS = [
     { key: 'FACE', col: '#7af0ff', alt: ['USER', 'BOT'], marks: [[5, 5], [10, 5], [7.5, 8], [7.5, 10.5]], px: [
       '.....XXXXXX.....', '...XX......XX...', '..X..........X..', '.X............X.', '.X..XX....XX..X.', 'X...XX....XX...X', 'X..............X', 'X......XX......X',
@@ -4324,13 +4400,13 @@ NX.kit = (() => {
     if (done) {                                                                                                               // рамка й мітка з упевненістю
       const pad = cs, bx = gx - pad, by = gy - pad, bw = cs * 16 + pad * 2, bh = cs * 16 + pad * 2, bl = Math.min(1, (f - .45) / .08);
       c.strokeStyle = rgba('255,79,216', .9 * bl); c.lineWidth = Math.max(1, cs / 2); c.setLineDash([cs * 1.5, cs]); c.strokeRect(bx, by, bw, bh); c.setLineDash([]);
-      const lb = T.key + ' ' + Math.round(conf * bl) + '%', fs = Math.max(6, Math.round(cs * 1.6)); lit(c, bx, by - fs - 4, lb.length * fs + 6, fs + 4, 'rgba(10,6,40,.85)'); P.text(c, lb, bx + 3, by - 3, '#ff9ae6', fs);
+      const lb = seen(T.key) + ' ' + Math.round(conf * bl) + '%', fs = Math.max(6, Math.round(cs * 1.6)); lit(c, bx, by - fs - 4, lb.length * fs + 6, fs + 4, 'rgba(10,6,40,.85)'); P.text(c, lb, bx + 3, by - 3, '#ff9ae6', fs);
     }
     if (side) {                                                                                                               // кандидати: стовпчики впевненості
       const px0 = x + aw + 4, pw = w - aw - 8, fs = Math.max(6, Math.round(h / 22)), list = [[T.key, conf], [T.alt[0], Math.floor((100 - conf) * .7)], [T.alt[1], 100 - conf - Math.floor((100 - conf) * .7)]];
-      list.forEach(([k2, v], n) => { const yy = y + h * .22 + n * fs * 3.2, grow = Math.min(1, Math.max(0, (f - .1 - n * .05) / .4)); P.text(c, k2, px0, yy, n ? '#7f9cd0' : '#e8fdff', fs);
+      list.forEach(([k2, v], n) => { const yy = y + h * .22 + n * fs * 3.2, grow = Math.min(1, Math.max(0, (f - .1 - n * .05) / .4)), s2 = seen(k2); P.text(c, s2, px0, yy, n ? '#7f9cd0' : '#e8fdff', Math.min(fs, pw / s2.length));
         lit(c, px0, yy + fs * .5, pw, fs * .7, 'rgba(40,70,150,.6)'); lit(c, px0, yy + fs * .5, pw * v / 100 * grow, fs * .7, n ? '#5a7ab8' : '#3bff8a'); });
-      P.text(c, done ? 'MATCH' : 'SCAN', px0, y + h * .12, done ? '#3bff8a' : (Math.sin(t * 6) > 0 ? '#3be8ff' : '#17709a'), fs);
+      const st = seen(done ? 'MATCH' : 'SCAN'); P.text(c, st, px0, y + h * .12, done ? '#3bff8a' : (Math.sin(t * 6) > 0 ? '#3be8ff' : '#17709a'), Math.min(fs, pw / st.length));
     }
     c.restore();
   };
@@ -4511,6 +4587,7 @@ NX.kit = (() => {
       } catch (e) { this.bloom = null; }
     },
   };
+  NX.i18n.onLang(() => { if (NX.wing.patched) setTimeout(() => NX.wing.patch(), 300); });   // віддзеркалення крила в підлозі — з написами новою мовою
   NX.addObject({
     id: 'wingBack', fr: 0,
     drawBack(c, t) {
@@ -4532,7 +4609,7 @@ NX.kit = (() => {
       c.fillStyle = rgba('255,79,216', .2 + .1 * Math.sin(t * 1.7)); c.fillRect(SHELF.l + 3.6, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4); c.fillRect(SHELF.r - 6.2, SHELF.planks[0] + 4, 2.6, SHELF.planks[4] - SHELF.planks[0] - 4);   // рожеві смуги стелажа дихають
       c.globalCompositeOperation = 'source-over';
       if (NX.wing.decor) NX.wing.decor.over(c, t, R);                             // живе: рідина в трубі, неон, LED каналів, манометр
-      P.text(c, 'AI', SIGN.x + 24, SIGN.y + 14, '#ff7af0', 5); P.text(c, 'CHAT', SIGN.x + 24, SIGN.y + 23, '#3be8ff', 5);
+      const wc = NX.t('scene.wallChat'); P.text(c, wc[0], SIGN.x + 24, SIGN.y + 14, '#ff7af0', Math.min(5, 26 / wc[0].length)); P.text(c, wc[1], SIGN.x + 24, SIGN.y + 23, '#3be8ff', Math.min(5, 26 / wc[1].length));   // напис мовою сайту
       if (Math.sin(t * 3) > 0) lit(c, SIGN.x + SIGN.w - 8, SIGN.y + 4, 3, 3, '#3bff8a');
       c.restore();
       if (!NX.wing.patched && this.fr > 6 && !c.isRefl && NX.room.img.naturalWidth) NX.wing.patch();
@@ -4602,14 +4679,27 @@ NX.kit = (() => {
     X: ['X...X', 'X...X', '.X.X.', '..X..', '.X.X.', 'X...X', 'X...X'], O: ['.XXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
     R: ['XXXX.', 'X...X', 'X...X', 'XXXX.', 'X.X..', 'X..X.', 'X...X'], A: ['.XXX.', 'X...X', 'X...X', 'XXXXX', 'X...X', 'X...X', 'X...X'],
     M: ['X...X', 'XX.XX', 'X.X.X', 'X.X.X', 'X...X', 'X...X', 'X...X'], W: ['X...X', 'X...X', 'X...X', 'X.X.X', 'X.X.X', 'XX.XX', 'X...X'],
+    // для перекладів напису кота («МЯУ», «MIAU», «MIAUW»)
+    I: ['.XXX.', '..X..', '..X..', '..X..', '..X..', '..X..', '.XXX.'], U: ['X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+    'Я': ['.XXXX', 'X...X', 'X...X', '.XXXX', '..X.X', '.X..X', 'X...X'], 'У': ['X...X', 'X...X', 'X...X', '.XXXX', '....X', 'X...X', '.XXX.'],
   };
   const F3 = { 8: ['XXX', 'X.X', 'XXX', 'X.X', 'XXX'], '-': ['...', '...', 'XXX', '...', '...'], B: ['XX.', 'X.X', 'XX.', 'X.X', 'XX.'], I: ['XXX', '.X.', '.X.', '.X.', 'XXX'], T: ['XXX', '.X.', '.X.', '.X.', '.X.'], A: ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'], ' ': ['...', '...', '...', '...', '...'] };
+  // написи постерів — мовою сайту (scene.poster); кирилиця, схожа на латиницю, бере латинські знаки; чого немає в шрифті постера —
+  // береться з шрифту міста NX.ckit (3×5; для 5×7 — розтягнутий)
+  const LOOK = { 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I' };
+  function glyphOf(Fn, ch) {
+    const g = Fn[ch] || Fn[LOOK[ch]]; if (g) return g;
+    const s = NX.ckit ? NX.ckit.gf(ch) : null, H = Fn[' '] ? Fn[' '].length : 7; if (!s) return null;
+    if (H === 5) return s;
+    return Array.from({ length: 7 }, (_, j) => Array.from({ length: 5 }, (_, i) => (s[Math.min(4, Math.floor(j * 5 / 7))][Math.min(s[0].length - 1, Math.floor(i * s[0].length / 5))] || '.')).join(''));
+  }
   /** Чи точка (lx, ly) на літері напису s: (x0, y0) — лівий верх, p — розмір «пікселя» шрифту. */
   function onText(lx, ly, s, x0, y0, p, Fn) {
-    const g0 = Fn[s[0]] || Fn[' '] || Fn.N, cw = g0[0].length, ch = g0.length, gx = Math.floor((lx - x0) / p), gy = Math.floor((ly - y0) / p);
+    const g0 = glyphOf(Fn, s[0]) || Fn.N || Fn.A, cw = g0[0].length, ch = g0.length, gx = Math.floor((lx - x0) / p), gy = Math.floor((ly - y0) / p);
     if (gy < 0 || gy >= ch || gx < 0) return false; const k = Math.floor(gx / (cw + 1)), cx = gx % (cw + 1); if (k >= s.length || cx >= cw) return false;
-    const g = Fn[s[k]]; return !!g && g[gy][cx] === 'X';
+    const g = glyphOf(Fn, s[k]); return !!g && g[gy][cx] === 'X';
   }
+  let TX = { meow: 'MEOW', tag: '8-BIT AI' };
   const textW = (s, p, cw) => (s.length * (cw + 1) - 1) * p;
 
   // ---------- постер «NEXORA»: синтвейв-сонце, силует Nexi, неонова сітка ----------
@@ -4620,7 +4710,7 @@ NX.kit = (() => {
     const p = .9, tx = cx - textW('NEXORA', p, 5) / 2;
     if (onText(lx, ly, 'NEXORA', tx, 4.2, p, F5)) return '#5ae8ff';
     if (onText(lx - .9, ly - .9, 'NEXORA', tx, 4.2, p, F5)) return '#c8309e';                                       // рожева тінь напису
-    const p3 = .62, t3 = '8-BIT AI', tx3 = cx - textW(t3, p3, 3) / 2;
+    const p3 = .62, t3 = TX.tag, tx3 = cx - textW(t3, p3, 3) / 2;
     if (onText(lx, ly, t3, tx3, h - m - 4.3, p3, F3)) return '#ff84d4';
     // силует Nexi на тлі сонця: голова з антеною, «вушка», плечі; очі світяться
     const dx = lx - cx, hy = ly - 26.6, qx = Math.abs(dx) - 3.1, qy = Math.abs(hy) - 2.2;
@@ -4649,9 +4739,9 @@ NX.kit = (() => {
   function catArt(lx, ly, w, h, i, j, seed) {
     const m = 1.4, cx = w / 2, dx = lx - cx, ady = Math.abs(dx);
     if (lx < m || lx > w - m || ly < m || ly > h - m) return ramp(PAPERW, .78 - ly / h * .35, i, j, .14);
-    const p = .62, tx = cx - textW('MEOW', p, 5) / 2;
-    if (onText(lx, ly, 'MEOW', tx, 22.2, p, F5)) return '#ff6ec8';
-    if (onText(lx - .6, ly - .6, 'MEOW', tx, 22.2, p, F5)) return '#1a0820';
+    const p = .62, tx = cx - textW(TX.meow, p, 5) / 2;
+    if (onText(lx, ly, TX.meow, tx, 22.2, p, F5)) return '#ff6ec8';
+    if (onText(lx - .6, ly - .6, TX.meow, tx, 22.2, p, F5)) return '#1a0820';
     const ex = ady, inEar = (ly < 9.4 && ly > 2.6 && ex > 3.4 + (9.4 - ly) * .2 && ex < 8.9 - (9.4 - ly) * .32);   // вушка
     if (inEar) return ex > 4.6 + (9.4 - ly) * .2 && ex < 7.6 - (9.4 - ly) * .32 && ly > 4.6 ? '#e06a9a' : ramp(FUR, .7 - (9.4 - ly) * .05, i, j);
     const hd = (dx / 9.2) ** 2 + ((ly - 13) / 7.2) ** 2;
@@ -4673,6 +4763,7 @@ NX.kit = (() => {
   }
   /** Постер -> аркуш: трохи нахилений, загнутий нижній правий кутик, скотч по верхніх кутах. */
   function buildPoster(Q) {
+    TX = { meow: String(NX.t('scene.poster.meow')).toLocaleUpperCase(), tag: String(NX.t('scene.poster.tag')).toLocaleUpperCase() };   // написи мовою сайту
     const { x, y, w, h } = Q, a = Q.rot || 0, ca = Math.cos(a), sa = Math.sin(a), cx = x + w / 2, cy = y + h / 2, R = Math.hypot(w, h) / 2 + 1.5;
     const S = F.Sheet(cx - R, cy - R, cx + R, cy + R), at = (px, py) => [cx + px * ca - py * sa, cy + px * sa + py * ca], art = Q.kind === 'sunset' ? sunset : catArt;
     S.poly([at(-w / 2, -h / 2), at(w / 2, -h / 2), at(w / 2, h / 2), at(-w / 2, h / 2)], (u, v, i, j, X, Y) => {
@@ -4737,6 +4828,7 @@ NX.kit = (() => {
   function buildSticker(o) { const R = (o.s || 4.4) * .85, S = F.Sheet(o.x - R, o.y - R, o.x + R, o.y + R); K.sticker(S, o); S.cv = S.canvas(null); return S; }
 
   let UNDER = null, OVER = null;
+  NX.i18n.onLang(() => { UNDER = OVER = null; });                                    // постери з написами — новою мовою
   function build() {
     UNDER = [...DUCTS.map(buildDuct), buildRiser(), buildPipe(), ...POSTERS.map(buildPoster), ...STICKERS.filter(s => s.on === undefined && !s.over).map(buildSticker)];
     OVER = STICKERS.filter(s => s.over).map(buildSticker);
@@ -5316,7 +5408,7 @@ NX.kit = (() => {
       c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, BW, BH); c.drawImage(BIGS, 0, 0);   // скло напівпрозоре — спершу чистимо
       K.sign(c, HD.x, HD.y, HD.w, HD.h, { acc: ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'], icon: 'ai', key: 'nav.ai', t, glow: '59,232,255' });   // вивіска в єдиному стилі з будками
       const d = new Date(), hm = String(d.getHours()).padStart(2, '0') + (d.getSeconds() % 2 ? ':' : ' ') + String(d.getMinutes()).padStart(2, '0');
-      P.text(c, hm, EQ.x + EQ.w - 4, EQ.y - 4, '#3be8ff', 11, 'right'); lit(c, EQ.x + 2, EQ.y - 12, 8, 8, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, 'LIVE', EQ.x + 14, EQ.y - 4, '#a8c4ff', 10);
+      P.text(c, hm, EQ.x + EQ.w - 4, EQ.y - 4, '#3be8ff', 11, 'right'); lit(c, EQ.x + 2, EQ.y - 12, 8, 8, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, NX.t('scene.ai.live'), EQ.x + 14, EQ.y - 4, '#a8c4ff', 10);
       c.globalCompositeOperation = 'lighter';
       const k1 = 1 + act * 1.5, base = C1.y + C1.h - 28, top = C1.y + 44;
       for (let i = 0; i < 11; i++) { const v = P.clamp(noise(t * k1, i) * (.8 + .3 * this.burst), .08, 1), segs = Math.round(v * (base - top) / 7); for (let s = 0; s < segs; s++) lit(c, C1.x + 11 + i * 9.4, base - 6 - s * 7, 7, 5, s === segs - 1 ? '#ffffff' : CY[2 + Math.min(3, (s / segs * 4) | 0)]); }
@@ -5332,7 +5424,7 @@ NX.kit = (() => {
       const sy = BR.y + 40 + ((t * .35) % 1) * (BR.h - 80); c.fillStyle = 'rgba(122,240,255,.14)'; c.fillRect(BR.x + 4, sy, BR.w - 8, 3);
       const lvl = this.active ? this.prog : .55 + .35 * noise(t * .4, 2), bx = BR.x + 24, by = BR.y + BR.h - 34, bw = BR.w - 48;
       lit(c, bx, by, bw, 8, '#0a1d40'); lit(c, bx, by, bw * lvl, 8, this.active ? '#3bff8a' : '#3be8ff'); lit(c, bx + bw * lvl - 3, by - 3, 5, 14, '#ffffff');
-      P.text(c, 'NEURO ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
+      P.text(c, NX.t('scene.ai.neuro') + ' ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
       const hl = act ? Math.floor(t * 3) % 2 : Math.floor(t * .7) % 5;
       for (let k = 0; k < 5; k++) { const y = IC.y + k * 87.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.16)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 74); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 18 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
       const snd = RE.snd('ai'), kick = RE.beat(t).kick;                                  // №8: коли грає кубик-колонка — еквалайзер у такт (центр підстрибує на удар)
@@ -5363,12 +5455,12 @@ NX.kit = (() => {
       if (kind === 'net') {                                                             // №6: мережа <-> карта світу (по черзі, з «глітчем» перемикання)
         const pg = K.pages(t, 1, 2, 16);
         if (pg.i === 0) {
-          P.text(c, 'NET', 28, 37, '#3be8ff', 12); c.drawImage(NETL, 0, 0); c.globalCompositeOperation = 'lighter';
+          P.text(c, NX.t('scene.ai.net'), 28, 37, '#3be8ff', 12); c.drawImage(NETL, 0, 0); c.globalCompositeOperation = 'lighter';
           NODES.forEach((a, k) => { const b = NODES[(k + 3) % 9], q = (t * (.5 + act) + k * .37) % 1; lit(c, a[0] + (b[0] - a[0]) * q - 2.5, a[1] + (b[1] - a[1]) * q - 2.5, 5, 5, k % 2 ? '#ff9ae0' : '#9af6ff'); });
           const k = Math.floor(t * 2) % 9; P.glow(c, NODES[k][0], NODES[k][1], 16, 'rgba(59,232,255,.9)', .8);
-        } else { P.text(c, 'MAP', 28, 37, '#3be8ff', 12); P.text(c, (12 + noise(t * .2, 4) * 3).toFixed(1) + 'K', UW - 50, 37, '#9af6ff', 11, 'right'); K.scrMap(c, 22, 48, UW - 44, UH - 66, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london'] }); }
+        } else { P.text(c, NX.t('scene.ai.map'), 28, 37, '#3be8ff', 12); P.text(c, NX.num(12 + noise(t * .2, 4) * 3, 1) + NX.t('scene.unit.K'), UW - 50, 37, '#9af6ff', 11, 'right'); K.scrMap(c, 22, 48, UW - 44, UH - 66, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london'] }); }
         c.globalCompositeOperation = 'source-over'; K.glitch(c, UW, UH, t, pg.sw, 1);
-      } else { P.text(c, 'LOG', 28, 37, '#3be8ff', 12); K.scrLog(c, 22, 48, UW - 44, UH - 64, t, { act, size: 8 }); }   // №6: живий журнал подій
+      } else { P.text(c, NX.t('scene.ai.log'), 28, 37, '#3be8ff', 12); K.scrLog(c, 22, 48, UW - 44, UH - 64, t, { act, size: 8 }); }   // №6: живий журнал подій
       c.globalCompositeOperation = 'source-over';
     },
     /** Голо-екран: напівпрозоре блакитне скло з кантом і скан-лініями. */
@@ -5379,9 +5471,9 @@ NX.kit = (() => {
     monitor(c, t) {
       this.holo(c, MW, MH, '90,216,255', .9);
       const pg = K.pages(t, 3, 2, 17);                                                  // №6: KPI <-> розпізнавання (обличчя / Рудик / логотип / документ)
-      if (pg.i === 1) { lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, 'VISION', 16, 30, '#9af6ff', 14); K.scrScan(c, 10, 46, MW - 20, MH - 58, t, { id: pg.id, f: pg.f, act: this.active ? 1 : 0 }); K.glitch(c, MW, MH, t, pg.sw, 3); return; }
+      if (pg.i === 1) { lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, NX.t('scene.ai.vision'), 16, 30, '#9af6ff', 14); K.scrScan(c, 10, 46, MW - 20, MH - 58, t, { id: pg.id, f: pg.f, act: this.active ? 1 : 0 }); K.glitch(c, MW, MH, t, pg.sw, 3); return; }
       c.fillStyle = '#2a5cc0'; for (let x = 14; x < MW - 6; x += 30) c.fillRect(x, 48, 1, MH - 60); for (let y = 60; y < MH - 10; y += 30) c.fillRect(8, y, MW - 16, 1);
-      lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, 'KPI', 16, 30, '#9af6ff', 14); P.text(c, '+' + (18 + Math.round(6 * noise(t * .2, 1))) + '%', MW - 16, 30, '#7dff9a', 14, 'right');
+      lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, NX.t('scene.ai.kpi'), 16, 30, '#9af6ff', 14); P.text(c, '+' + (18 + Math.round(6 * noise(t * .2, 1))) + '%', MW - 16, 30, '#7dff9a', 14, 'right');
       c.globalCompositeOperation = 'lighter'; const b = MH - 14, h = MH - 74;
       for (let x = 0; x < MW - 20; x += 2) { const v1 = .5 + .3 * Math.sin((x + t * 60) * .04) + .12 * Math.sin((x + t * 100) * .11), v2 = .35 + .2 * Math.sin((x + t * 44) * .03 + 2), y1 = b - v1 * h, y2 = b - v2 * h; c.fillStyle = 'rgba(122,240,255,.16)'; c.fillRect(10 + x, y1, 2, b - y1); lit(c, 10 + x, y1, 2, 3, '#e8fdff'); lit(c, 10 + x, y2, 2, 2, '#ff9ae6'); }
       const px = 10 + ((t * 60) % (MW - 20)); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(px, 48, 2, MH - 60); c.globalCompositeOperation = 'source-over';
@@ -5389,7 +5481,7 @@ NX.kit = (() => {
     },
     laptop1(c, t) {
       this.holo(c, L1W, L1H, '90,232,255', .8, '12,38,124');                       // темніше скло: на тлі голограми не «біла коробка»
-      if (this.active) { const lines = Math.min(11, Math.floor(this.prog * 26) + 1); for (let i = 0; i < lines; i++) { const w = [96, 70, 88, 50, 80, 62, 92, 40, 74, 58, 86][i]; lit(c, 12, 12 + i * 12, i === lines - 1 ? w * ((t * 3) % 1) : w, 5, i % 2 ? '#ff9ae6' : '#e8fdff'); } if (this.prog > .8) { lit(c, L1W - 46, L1H - 26, 36, 16, '#3bff8a'); P.text(c, 'OK', L1W - 28, L1H - 13, '#0a3a1a', 10, 'center'); } }
+      if (this.active) { const lines = Math.min(11, Math.floor(this.prog * 26) + 1); for (let i = 0; i < lines; i++) { const w = [96, 70, 88, 50, 80, 62, 92, 40, 74, 58, 86][i]; lit(c, 12, 12 + i * 12, i === lines - 1 ? w * ((t * 3) % 1) : w, 5, i % 2 ? '#ff9ae6' : '#e8fdff'); } if (this.prog > .8) { lit(c, L1W - 46, L1H - 26, 36, 16, '#3bff8a'); P.text(c, NX.t('scene.ai.ok'), L1W - 28, L1H - 13, '#0a3a1a', 10, 'center'); } }
       else { const bx = L1W / 2 + Math.sin(t * .7) * 26, by = L1H / 2 + Math.sin(t * 1.1) * 30, a = .7 + .3 * Math.sin(t * 2); ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, bx - 15 + i * 6, by - 15 + j * 6, 6, 6, rgba('110,226,255', a)))); }
     },
     laptop2(c, t) {
@@ -5540,13 +5632,13 @@ NX.kit = (() => {
     const W = 248, H = 344; K.screenBg(c, W, H, t);
     const pg = K.pages(t, 5, 2, 15);                                                                // №6: USERS <-> карта користувачів (по черзі)
     if (pg.i === 1) {
-      P.text(c, 'MAP', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
+      P.text(c, NX.t('scene.analytics.map'), 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
       K.scrMap(c, 8, 44, W - 16, 150, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london', 'newyork'], land: '#3a8ad8' });
       [['UA', 38, '#ff9ae6'], ['PL', 24, '#7af0ff'], ['NL', 17, '#ffe27a'], ['EN', 21, '#3bff8a']].forEach(([k, v, col], n) => { const y = 214 + n * 24, vv = v + Math.round((noise(t * .3, n) - .5) * 4 + act * prog * 3); P.text(c, k, 12, y + 10, '#bfe9ff', 11); lit(c, 44, y, 150 * vv / 40, 10, col); P.text(c, vv + '%', W - 12, y + 10, '#e8fdff', 10, 'right'); });
       (NX.ui.zones.done.analytics || []).slice(-1).forEach(d => { lit(c, 12, H - 30, 8, 8, '#3bff8a'); P.text(c, NX.t(`zones.analytics.${d.task}.t`).toUpperCase().slice(0, 24), 26, H - 21, '#bfe9ff', 8); });
       K.glitch(c, W, H, t, pg.sw, 5); return;
     }
-    P.text(c, 'USERS', 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
+    P.text(c, NX.t('scene.analytics.users'), 10, 24, '#bfe9ff', 14); lit(c, W - 26, 11, 12, 12, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45');
     for (let k = 0; k < 3; k++) { const x = 20 + k * 74, y = 42, on = Math.floor(t * (1 + act * 2)) % 3 === k;                                   // аватари
       c.fillStyle = on ? '#ffffff' : '#9fdcff'; c.beginPath(); c.arc(x + 22, y + 16, 12, 0, 7); c.fill(); c.beginPath(); c.ellipse(x + 22, y + 50, 20, 14, 0, Math.PI, 0); c.fill(); lit(c, x, y + 60, 44, 4, on ? '#3bff8a' : '#2a6ab0'); }
     const done = (NX.ui.zones.done.analytics || []).slice(-2);                                                                                  // що вже зроблено (по черзі)
@@ -5559,7 +5651,7 @@ NX.kit = (() => {
   }
   function drawRight(c, t, act, prog) {
     const W = 240, H = 344; K.screenBg(c, W, H, t);
-    P.text(c, 'TREND', 10, 24, '#bfe9ff', 14);
+    P.text(c, NX.t('scene.analytics.trend'), 10, 24, '#bfe9ff', 14);
     const b = 170, h = 120; c.strokeStyle = 'rgba(160,220,255,.35)'; c.lineWidth = 1; for (let y = 0; y < 5; y++) { c.beginPath(); c.moveTo(10, b - y * 30); c.lineTo(W - 10, b - y * 30); c.stroke(); }
     c.lineWidth = 4; c.strokeStyle = '#ff9ae6'; c.beginPath();
     for (let x = 0; x <= W - 20; x += 4) { const v = .45 + .25 * Math.sin((x + t * (26 + act * 50)) * .045) + .12 * Math.sin((x + t * 40) * .13) + (act ? prog * .2 * x / W : 0), y = b - v * h; x ? c.lineTo(10 + x, y) : c.moveTo(10 + x, y); }
@@ -5687,7 +5779,7 @@ NX.kit = (() => {
   function drawLeft(c, t, act, prog) {
     const W = 208, H = 184; K.screenBg(c, W, H, t);
     const pg = K.pages(t, 8, 2, 13);                                                                // №6: стрічка постів <-> розпізнавання картинок для поста
-    if (pg.i === 1) { P.text(c, 'AI TAGS', 8, 18, '#bfe9ff', 11); K.scrScan(c, 6, 26, W - 12, H - 32, t, { id: pg.id + 1, f: pg.f, act }); K.glitch(c, W, H, t, pg.sw, 8); return; }
+    if (pg.i === 1) { P.text(c, NX.t('scene.marketing.tags'), 8, 18, '#bfe9ff', 11); K.scrScan(c, 6, 26, W - 12, H - 32, t, { id: pg.id + 1, f: pg.f, act }); K.glitch(c, W, H, t, pg.sw, 8); return; }
     const sp = 14 + act * 26, off = (t * sp) % 62;
     c.save(); c.beginPath(); c.rect(0, 0, W, H); c.clip();
     for (let k = -1; k < 4; k++) { const id = k + Math.floor(t * sp / 62), y = 8 + k * 62 - off, col = POSTS[((id % 4) + 4) % 4];
@@ -5699,7 +5791,7 @@ NX.kit = (() => {
     K.glitch(c, W, H, t, pg.sw, 8);
   }
   function drawRight(c, t, act, prog) {
-    const W = 144, H = 184; K.screenBg(c, W, H, t); P.text(c, 'ADS', 8, 18, '#bfe9ff', 11);
+    const W = 144, H = 184; K.screenBg(c, W, H, t); P.text(c, NX.t('scene.marketing.ads'), 8, 18, '#bfe9ff', 11);
     for (let k = 0; k < 4; k++) { const w = (W - 20) * (1 - k * .2) * (.9 + .1 * Math.sin(t * (1 + act * 2) + k)), y = 28 + k * 20; lit(c, (W - w) / 2, y, w, 14, ['rgba(255,154,230,.75)', 'rgba(122,240,255,.75)', 'rgba(255,226,122,.75)', 'rgba(59,255,138,.75)'][k]); }
     const cx = W / 2, cy = 138, pul = 1 + .08 * Math.sin(t * 4 + act * t * 4); for (const [r, col] of [[24, '#ff9ae6'], [16, '#ffffff'], [8, '#ff4fd8']]) { c.strokeStyle = col; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, r * pul, 0, 7); c.stroke(); }
     if (act) P.text(c, Math.round(40 + prog * 340) + ' →', cx, 178, '#ffe27a', 10, 'center');
@@ -6272,7 +6364,7 @@ NX.addObject({
     const P = NX.px, b = this.brew, on = b > 0 && b < 1;
     P.cube(c, 491, 349, 34, 46, 6, '#2a2f5e', '#3e4588', '#1a1d40');
     P.rect(c, 491, 303, 34, 1, '#ff4fd8');                                                    // неонова окантовка
-    P.rect(c, 496, 308, 24, 9, '#06102e'); P.text(c, on ? 'BREW' : b >= 1 ? 'DONE' : 'NEXI', 498, 315, on ? '#ffe27a' : '#3be8ff', 3.5);
+    P.rect(c, 496, 308, 24, 9, '#06102e'); const ds = on ? NX.t('scene.coffee.brew') : b >= 1 ? NX.t('scene.coffee.done') : 'NEXI'; P.text(c, ds, 498, 315, on ? '#ffe27a' : '#3be8ff', Math.min(3.5, 21 / ds.length));
     [0, 1, 2].forEach(i => P.rect(c, 498 + i * 7, 320, 4, 2, on && Math.floor(t * 6) % 3 === i ? '#3bff8a' : '#4a55a0'));
     P.rect(c, 497, 326, 22, 17, '#0e1030'); P.rect(c, 503, 324, 10, 3, '#5a6590');            // ніша і носик
     if (on) P.rect(c, 507, 327, 2, 10, '#7a4a22');                                            // струмінь кави
@@ -6611,7 +6703,7 @@ NX.addObject({
         this.orbit(c, t, true);
         const k = Math.sin(t * 2.5) * .5 + .5, y = py - 4 - k * 56;                     // кільце сканера
         c.save(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1.5; c.shadowColor = '#3be8ff'; c.shadowBlur = 8; c.beginPath(); c.ellipse(px, y, 23, 5, 0, 0, Math.PI * 2); c.stroke(); c.restore();
-        P.rect(c, 1040, 296, 34, 13, '#06102ee6'); P.holo(c, 1040, 296, 34, 13, '#3be8ff', t, 1); P.text(c, 'SCAN ' + Math.floor(this.prog * 100) + '%', 1042, 305, '#9af6ff', 3.4);
+        P.rect(c, 1040, 296, 34, 13, '#06102ee6'); P.holo(c, 1040, 296, 34, 13, '#3be8ff', t, 1); const sc = NX.t('scene.scan') + ' ' + Math.floor(this.prog * 100) + '%'; P.text(c, sc, 1042, 305, '#9af6ff', Math.min(3.4, 30.5 / sc.length));
       }
       // маніпулятор (кріплення під куполом капсули)
       const ny = this.nozzleY; P.rect(c, 994, 202, 22, 5, '#3a4070'); P.rect(c, 994, 202, 22, 1, '#7a84c0');
@@ -8128,6 +8220,9 @@ NX.ui.hud = {
     $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins');
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
+    // підказки для екранних читачів і title — теж мовою сайту
+    [['world', 'ui.room'], ['lab', 'ui.lab'], ['pl', 'ui.prev'], ['pr', 'ui.next']].forEach(([id, k]) => { const el = $(id); if (el) el.setAttribute('aria-label', T(k)); });
+    const sb = document.querySelector('#ask button'); if (sb) sb.setAttribute('aria-label', T('ui.send')); if ($('coins')) $('coins').title = T('ui.coins');
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
     if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },

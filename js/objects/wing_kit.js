@@ -648,7 +648,7 @@ NX.kit = (() => {
     const tubes = [[(cx0 + cx1) / 2 + 2, cy0, (qx0 + qx1) / 2 - 3, qy0 - 1.5], [cx1, (cy0 + cy1) / 2, qx0, (qy0 + qy1) / 2]];
     tubes.forEach(([x0, y0, x1, y1], n) => { for (let k = 0; k < 3; k++) { const q = ((t * (.5 + act) + k / 3 + n * .5) % 1), x = x0 + (x1 - x0) * q, y = y0 + (y1 - y0) * q; lit(c, x - .6, y - .6, 1.2, 1.2, '#5ae8ff'); } });   // потік рідини
     c.globalCompositeOperation = 'source-over';
-    const [sx0, sy0, sx1, sy1] = g.strip, load = act ? .7 + .25 * Math.sin(t * 3) : .35 + .2 * Math.sin(t * .8); P.text(c, 'CORE ' + Math.round(load * 100) + '%', sx0 + 1.5, sy1 - .7, '#3be8ff', 2.2); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) , 1.2, '#0a1a3a'); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) * load, 1.2, act ? '#3bff8a' : '#3be8ff');
+    const [sx0, sy0, sx1, sy1] = g.strip, load = act ? .7 + .25 * Math.sin(t * 3) : .35 + .2 * Math.sin(t * .8); const cs = NX.t('scene.core') + ' ' + Math.round(load * 100) + '%'; P.text(c, cs, sx0 + 1.5, sy1 - .7, '#3be8ff', Math.min(2.2, 18 / cs.length)); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) , 1.2, '#0a1a3a'); lit(c, sx0 + 20, sy0 + .9, (sx1 - sx0 - 22) * load, 1.2, act ? '#3bff8a' : '#3be8ff');
     c.restore();
   }
 

@@ -249,7 +249,7 @@
       c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, BW, BH); c.drawImage(BIGS, 0, 0);   // скло напівпрозоре — спершу чистимо
       K.sign(c, HD.x, HD.y, HD.w, HD.h, { acc: ['#0a2a4a', '#17709a', '#2aa6c8', '#3be8ff'], icon: 'ai', key: 'nav.ai', t, glow: '59,232,255' });   // вивіска в єдиному стилі з будками
       const d = new Date(), hm = String(d.getHours()).padStart(2, '0') + (d.getSeconds() % 2 ? ':' : ' ') + String(d.getMinutes()).padStart(2, '0');
-      P.text(c, hm, EQ.x + EQ.w - 4, EQ.y - 4, '#3be8ff', 11, 'right'); lit(c, EQ.x + 2, EQ.y - 12, 8, 8, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, 'LIVE', EQ.x + 14, EQ.y - 4, '#a8c4ff', 10);
+      P.text(c, hm, EQ.x + EQ.w - 4, EQ.y - 4, '#3be8ff', 11, 'right'); lit(c, EQ.x + 2, EQ.y - 12, 8, 8, Math.sin(t * 4) > 0 ? '#3bff8a' : '#1f6a45'); P.text(c, NX.t('scene.ai.live'), EQ.x + 14, EQ.y - 4, '#a8c4ff', 10);
       c.globalCompositeOperation = 'lighter';
       const k1 = 1 + act * 1.5, base = C1.y + C1.h - 28, top = C1.y + 44;
       for (let i = 0; i < 11; i++) { const v = P.clamp(noise(t * k1, i) * (.8 + .3 * this.burst), .08, 1), segs = Math.round(v * (base - top) / 7); for (let s = 0; s < segs; s++) lit(c, C1.x + 11 + i * 9.4, base - 6 - s * 7, 7, 5, s === segs - 1 ? '#ffffff' : CY[2 + Math.min(3, (s / segs * 4) | 0)]); }
@@ -265,7 +265,7 @@
       const sy = BR.y + 40 + ((t * .35) % 1) * (BR.h - 80); c.fillStyle = 'rgba(122,240,255,.14)'; c.fillRect(BR.x + 4, sy, BR.w - 8, 3);
       const lvl = this.active ? this.prog : .55 + .35 * noise(t * .4, 2), bx = BR.x + 24, by = BR.y + BR.h - 34, bw = BR.w - 48;
       lit(c, bx, by, bw, 8, '#0a1d40'); lit(c, bx, by, bw * lvl, 8, this.active ? '#3bff8a' : '#3be8ff'); lit(c, bx + bw * lvl - 3, by - 3, 5, 14, '#ffffff');
-      P.text(c, 'NEURO ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
+      P.text(c, NX.t('scene.ai.neuro') + ' ' + Math.round(lvl * 100) + '%', BR.x + 16, BR.y + 30, '#7af0ff', 14);
       const hl = act ? Math.floor(t * 3) % 2 : Math.floor(t * .7) % 5;
       for (let k = 0; k < 5; k++) { const y = IC.y + k * 87.5 | 0, onI = k === hl || (act && k < 2 && Math.floor(t * 4 + k) % 2 === 0); if (!onI) continue; c.fillStyle = 'rgba(59,232,255,.16)'; c.fillRect(IC.x + 2, y + 2, IC.w - 4, 74); ICONS[k].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, IC.x + 11 + i * 6, y + 18 + j * 6, 6, 6, k === 3 ? '#ffe27a' : '#9af6ff'))); }
       const snd = RE.snd('ai'), kick = RE.beat(t).kick;                                  // №8: коли грає кубик-колонка — еквалайзер у такт (центр підстрибує на удар)
@@ -296,12 +296,12 @@
       if (kind === 'net') {                                                             // №6: мережа <-> карта світу (по черзі, з «глітчем» перемикання)
         const pg = K.pages(t, 1, 2, 16);
         if (pg.i === 0) {
-          P.text(c, 'NET', 28, 37, '#3be8ff', 12); c.drawImage(NETL, 0, 0); c.globalCompositeOperation = 'lighter';
+          P.text(c, NX.t('scene.ai.net'), 28, 37, '#3be8ff', 12); c.drawImage(NETL, 0, 0); c.globalCompositeOperation = 'lighter';
           NODES.forEach((a, k) => { const b = NODES[(k + 3) % 9], q = (t * (.5 + act) + k * .37) % 1; lit(c, a[0] + (b[0] - a[0]) * q - 2.5, a[1] + (b[1] - a[1]) * q - 2.5, 5, 5, k % 2 ? '#ff9ae0' : '#9af6ff'); });
           const k = Math.floor(t * 2) % 9; P.glow(c, NODES[k][0], NODES[k][1], 16, 'rgba(59,232,255,.9)', .8);
-        } else { P.text(c, 'MAP', 28, 37, '#3be8ff', 12); P.text(c, (12 + noise(t * .2, 4) * 3).toFixed(1) + 'K', UW - 50, 37, '#9af6ff', 11, 'right'); K.scrMap(c, 22, 48, UW - 44, UH - 66, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london'] }); }
+        } else { P.text(c, NX.t('scene.ai.map'), 28, 37, '#3be8ff', 12); P.text(c, NX.num(12 + noise(t * .2, 4) * 3, 1) + NX.t('scene.unit.K'), UW - 50, 37, '#9af6ff', 11, 'right'); K.scrMap(c, 22, 48, UW - 44, UH - 66, t, { act, hot: ['kyiv', 'warsaw', 'amsterdam', 'london'] }); }
         c.globalCompositeOperation = 'source-over'; K.glitch(c, UW, UH, t, pg.sw, 1);
-      } else { P.text(c, 'LOG', 28, 37, '#3be8ff', 12); K.scrLog(c, 22, 48, UW - 44, UH - 64, t, { act, size: 8 }); }   // №6: живий журнал подій
+      } else { P.text(c, NX.t('scene.ai.log'), 28, 37, '#3be8ff', 12); K.scrLog(c, 22, 48, UW - 44, UH - 64, t, { act, size: 8 }); }   // №6: живий журнал подій
       c.globalCompositeOperation = 'source-over';
     },
     /** Голо-екран: напівпрозоре блакитне скло з кантом і скан-лініями. */
@@ -312,9 +312,9 @@
     monitor(c, t) {
       this.holo(c, MW, MH, '90,216,255', .9);
       const pg = K.pages(t, 3, 2, 17);                                                  // №6: KPI <-> розпізнавання (обличчя / Рудик / логотип / документ)
-      if (pg.i === 1) { lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, 'VISION', 16, 30, '#9af6ff', 14); K.scrScan(c, 10, 46, MW - 20, MH - 58, t, { id: pg.id, f: pg.f, act: this.active ? 1 : 0 }); K.glitch(c, MW, MH, t, pg.sw, 3); return; }
+      if (pg.i === 1) { lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, NX.t('scene.ai.vision'), 16, 30, '#9af6ff', 14); K.scrScan(c, 10, 46, MW - 20, MH - 58, t, { id: pg.id, f: pg.f, act: this.active ? 1 : 0 }); K.glitch(c, MW, MH, t, pg.sw, 3); return; }
       c.fillStyle = '#2a5cc0'; for (let x = 14; x < MW - 6; x += 30) c.fillRect(x, 48, 1, MH - 60); for (let y = 60; y < MH - 10; y += 30) c.fillRect(8, y, MW - 16, 1);
-      lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, 'KPI', 16, 30, '#9af6ff', 14); P.text(c, '+' + (18 + Math.round(6 * noise(t * .2, 1))) + '%', MW - 16, 30, '#7dff9a', 14, 'right');
+      lit(c, 8, 8, MW - 16, 30, '#1240a0'); P.text(c, NX.t('scene.ai.kpi'), 16, 30, '#9af6ff', 14); P.text(c, '+' + (18 + Math.round(6 * noise(t * .2, 1))) + '%', MW - 16, 30, '#7dff9a', 14, 'right');
       c.globalCompositeOperation = 'lighter'; const b = MH - 14, h = MH - 74;
       for (let x = 0; x < MW - 20; x += 2) { const v1 = .5 + .3 * Math.sin((x + t * 60) * .04) + .12 * Math.sin((x + t * 100) * .11), v2 = .35 + .2 * Math.sin((x + t * 44) * .03 + 2), y1 = b - v1 * h, y2 = b - v2 * h; c.fillStyle = 'rgba(122,240,255,.16)'; c.fillRect(10 + x, y1, 2, b - y1); lit(c, 10 + x, y1, 2, 3, '#e8fdff'); lit(c, 10 + x, y2, 2, 2, '#ff9ae6'); }
       const px = 10 + ((t * 60) % (MW - 20)); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(px, 48, 2, MH - 60); c.globalCompositeOperation = 'source-over';
@@ -322,7 +322,7 @@
     },
     laptop1(c, t) {
       this.holo(c, L1W, L1H, '90,232,255', .8, '12,38,124');                       // темніше скло: на тлі голограми не «біла коробка»
-      if (this.active) { const lines = Math.min(11, Math.floor(this.prog * 26) + 1); for (let i = 0; i < lines; i++) { const w = [96, 70, 88, 50, 80, 62, 92, 40, 74, 58, 86][i]; lit(c, 12, 12 + i * 12, i === lines - 1 ? w * ((t * 3) % 1) : w, 5, i % 2 ? '#ff9ae6' : '#e8fdff'); } if (this.prog > .8) { lit(c, L1W - 46, L1H - 26, 36, 16, '#3bff8a'); P.text(c, 'OK', L1W - 28, L1H - 13, '#0a3a1a', 10, 'center'); } }
+      if (this.active) { const lines = Math.min(11, Math.floor(this.prog * 26) + 1); for (let i = 0; i < lines; i++) { const w = [96, 70, 88, 50, 80, 62, 92, 40, 74, 58, 86][i]; lit(c, 12, 12 + i * 12, i === lines - 1 ? w * ((t * 3) % 1) : w, 5, i % 2 ? '#ff9ae6' : '#e8fdff'); } if (this.prog > .8) { lit(c, L1W - 46, L1H - 26, 36, 16, '#3bff8a'); P.text(c, NX.t('scene.ai.ok'), L1W - 28, L1H - 13, '#0a3a1a', 10, 'center'); } }
       else { const bx = L1W / 2 + Math.sin(t * .7) * 26, by = L1H / 2 + Math.sin(t * 1.1) * 30, a = .7 + .3 * Math.sin(t * 2); ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'].forEach((row, j) => [...row].forEach((ch, i) => ch === 'X' && lit(c, bx - 15 + i * 6, by - 15 + j * 6, 6, 6, rgba('110,226,255', a)))); }
     },
     laptop2(c, t) {

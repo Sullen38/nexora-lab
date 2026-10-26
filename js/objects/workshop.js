@@ -48,7 +48,7 @@ NX.addObject({
         this.orbit(c, t, true);
         const k = Math.sin(t * 2.5) * .5 + .5, y = py - 4 - k * 56;                     // кільце сканера
         c.save(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1.5; c.shadowColor = '#3be8ff'; c.shadowBlur = 8; c.beginPath(); c.ellipse(px, y, 23, 5, 0, 0, Math.PI * 2); c.stroke(); c.restore();
-        P.rect(c, 1040, 296, 34, 13, '#06102ee6'); P.holo(c, 1040, 296, 34, 13, '#3be8ff', t, 1); P.text(c, 'SCAN ' + Math.floor(this.prog * 100) + '%', 1042, 305, '#9af6ff', 3.4);
+        P.rect(c, 1040, 296, 34, 13, '#06102ee6'); P.holo(c, 1040, 296, 34, 13, '#3be8ff', t, 1); const sc = NX.t('scene.scan') + ' ' + Math.floor(this.prog * 100) + '%'; P.text(c, sc, 1042, 305, '#9af6ff', Math.min(3.4, 30.5 / sc.length));
       }
       // маніпулятор (кріплення під куполом капсули)
       const ny = this.nozzleY; P.rect(c, 994, 202, 22, 5, '#3a4070'); P.rect(c, 994, 202, 22, 1, '#7a84c0');
