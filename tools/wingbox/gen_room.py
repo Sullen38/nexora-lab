@@ -1,4 +1,4 @@
-# tools/wingbox/gen_room.py — СХЕМА ОБОХ КРИЛ (сірий макет «по дузі») для js/objects/rwing_box.js
+# tools/wingbox/gen_room.py — РОЗКЛАДКА ОБОХ КРИЛ «по дузі» для js/objects/arc_layout.js (схема rwing_box.js і 3D arc_scene.js)
 # ----------------------------------------------------------------------------------------------------
 # Кімната зверху — пів кола: вікно в найдальшій точці (z = 185), обабіч — коротка пряма стіна до xf, далі стіна
 # загинається дугою (центр C, радіус R) до глядача. Стіни дзеркальні відносно центру вікна x = 774, зони — кожна своя:
@@ -14,7 +14,7 @@
 # Межі вікна беруться з js/core/config.js (NX.cfg.WIN) — стіни крил починаються від відкосів.
 #
 #   python3 tools/wingbox/gen_room.py [out.json] [--params p.json] [--plan plan.png] [--write]
-#     --write — вшити розкладку в js/objects/rwing_box.js;   --plan — план зверху (PNG)
+#     --write — вшити розкладку в js/objects/arc_layout.js;   --plan — план зверху (PNG)
 #   Перевірки друкуються: висоти зон (15%), перетини об'ємів (INTERSECT), що за стіною (BEHIND WALL) — мають бути none.
 import json, math, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
@@ -444,10 +444,10 @@ DEFAULT = {
 }
 
 def write_js(out):
-    """вшити розкладку в js/objects/rwing_box.js (рядок const LAYOUT = {...};)"""
-    p = os.path.join(REPO, 'js', 'objects', 'rwing_box.js'); src = open(p, encoding='utf8').read()
-    new, n = re.subn(r'  const LAYOUT = \{.*?\};( *//[^\n]*)?\n', lambda m: '  const LAYOUT = ' + json.dumps(out, separators=(',', ':'), ensure_ascii=False) + ';   // згенеровано tools/wingbox/gen_room.py\n', src, count=1, flags=re.S)
-    assert n == 1, 'не знайшов const LAYOUT у rwing_box.js'
+    """вшити розкладку в js/objects/arc_layout.js (рядок NX.arcLayout = {...};) — її беруть схема (rwing_box.js) і 3D (arc_scene.js)"""
+    p = os.path.join(REPO, 'js', 'objects', 'arc_layout.js'); src = open(p, encoding='utf8').read()
+    new, n = re.subn(r'NX\.arcLayout = \{.*?\};( *//[^\n]*)?\n', lambda m: 'NX.arcLayout = ' + json.dumps(out, separators=(',', ':'), ensure_ascii=False) + ';   // згенеровано tools/wingbox/gen_room.py\n', src, count=1, flags=re.S)
+    assert n == 1, 'не знайшов NX.arcLayout у arc_layout.js'
     open(p, 'w', encoding='utf8').write(new); print('записано в', os.path.relpath(p, REPO))
 
 if __name__ == '__main__':
@@ -455,7 +455,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='схема обох крил для js/objects/rwing_box.js')
     ap.add_argument('out', nargs='?', default=os.path.join(HERE, 'layout.json'), help='куди записати розкладку (JSON)')
     ap.add_argument('--params', help='JSON з параметрами (за замовчуванням — DEFAULT у цьому файлі)')
-    ap.add_argument('--write', action='store_true', help='також вшити в js/objects/rwing_box.js')
+    ap.add_argument('--write', action='store_true', help='також вшити в js/objects/arc_layout.js')
     ap.add_argument('--plan', help='намалювати план зверху (PNG)')
     a = ap.parse_args()
     prm = json.load(open(a.params)) if a.params else DEFAULT

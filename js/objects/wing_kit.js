@@ -775,5 +775,5 @@ NX.kit = (() => {
   }
 
   const draw = (c, S, R) => { const w = S.x1 - S.x0, h = S.y1 - S.y0; c.imageSmoothingEnabled = R < 3.8; c.drawImage(F.fit(S.cv, w, h, R), S.x0, S.y0, w, h); };
-  return { BRK, SLAB, GREEN, POT, PANEL, brick, panels, surface, panelPat, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, wire, snap, gloss, deskShine, underLive, shadeAt, bbOf, reflectors: [] };
+  return { BRK, SLAB, GREEN, POT, PANEL, ICON, brick, panels, surface, panelPat, booth, desk, plant, sway, sign, gadget, lamp, coreGeom, corePC, coreLive, screenBg, signText, noise, rgba, lit, mix, draw, contact, contacts, sticker, STK, vn, wire, snap, gloss, deskShine, underLive, shadeAt, bbOf, reflectors: [] };
 })();
