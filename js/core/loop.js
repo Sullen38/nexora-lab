@@ -44,7 +44,7 @@ NX.loop = {
     c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
     c.imageSmoothingEnabled = false;
     NX.room.draw(c, t);
-    if (this.frames < 90 || (NX.cam.x < 970 && NX.cam.x + NX.cam.viewW > 534)) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
+    if (this.frames < 90 || (NX.cam.x < NX.cfg.WIN.R && NX.cam.x + NX.cam.viewW > NX.cfg.WIN.L)) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
     const objs = Object.values(NX.objects);
     // ПОЗА ЕКРАНОМ НЕ МАЛЮЄМО: об'єкт зі span [x0, x1] (одиниці кімнати) пропускається, якщо він увесь за межами видимої
     // смуги (телефон бачить ~третину кімнати, а крила малювались завжди). Перші 90 кадрів — малюється все: крила складають

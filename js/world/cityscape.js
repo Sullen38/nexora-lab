@@ -22,17 +22,21 @@
 NX.city = (() => {
   const P = NX.px, F = NX.furn, CK = NX.ckit, SK = NX.citySky, CB = NX.cityBuild, { FAC, NEON } = CB;
   // ---------- геометрія ----------
-  const GL = { x0: 556, y0: 0, x1: 948, y1: 345 }, GW = GL.x1 - GL.x0;               // скло (під відкосами з запасом)
+  const WIN = NX.cfg.WIN, GL = { x0: WIN.L + 22, y0: 0, x1: WIN.R - 22, y1: 345 }, GW = GL.x1 - GL.x0;   // скло (під відкосами з запасом; межі — core/config.js)
+  // Композиція міста складена під давнє скло 556..948 (центр 752). Вікно стало ширшим і стоїть по центру кімнати (774):
+  // MX переносить x-позиції (центри) на нове скло — розсуває пропорційно, розміри будинків не змінює; крайні вежі
+  // прив'язані до країв скла, а горизонти (skyline), машини, зорі й хмари й так займають усю ширину.
+  const MX = x => 774 + (x - 752) * GW / 392, AT = (cx, w) => ({ x0: MX(cx) - w / 2, x1: MX(cx) + w / 2 });
   // що закриваємо кодом: усе вікно картинки до відкосу (машинерія майстерні перед склом — кодом, objects/workshop.js).
   // Точки [2]..[6] колись були «сходинками» навколо машинерії картинки — лишились виродженими (одна точка), щоб maskOut/outside не змінювати.
   const CLIP = [[GL.x0, -2], [GL.x1, -2], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x0, GL.y1]];
   const SOFA_TOP = 252, SOFA = [657, 891];                                           // нижче — диван (для віддзеркалення лишаємо як було)
-  const PL = { x: 754, y: 63, r: 56 }, SUN = [828, 41], RING = { a: 124, e: .19, th: -.26 };
+  const PL = { x: MX(754), y: 63, r: 56 }, SUN = [MX(828), 41], RING = { a: 124, e: .19, th: -.26 };
   const DAY = 240;                                                                   // планета робить оберт за 4 хвилини
   const CLOUDS = [                                                                  // пасма: центр, розмір, тон (як на картинці: рожеві праворуч під кораблем)
     { x: 884, y: 94, w: 128, h: 14, seed: 3, k: .22 }, { x: 842, y: 108, w: 96, h: 7, seed: 4, k: .28 }, { x: 606, y: 101, w: 84, h: 9, seed: 5, k: .14 },
     { x: 732, y: 126, w: 150, h: 7, seed: 8, k: .3 }, { x: 664, y: 38, w: 74, h: 4, seed: 13, k: .12 }, { x: 864, y: 22, w: 58, h: 3.4, seed: 17, k: .08 },
-  ];
+  ].map(cl => ({ ...cl, x: MX(cl.x) }));
   // ---------- МЕГАПОЛІС v3 (NX.cityMega): план за планом, від дальніх до ближніх ----------
   // far2 — бліді силуети в рожевому серпанку; far1 — піраміда-мегаспоруда й щільні квартали; mid — вежі з вивісками;
   // hero — гіганти майбутнього (аркологія за край вікна, «космічна голка», скручена вежа, ворота-арка, голка, кругла
@@ -40,18 +44,18 @@ NX.city = (() => {
   const CM = NX.cityMega, col2 = CK.col;
   let TUBE = null;
   const HEROES = [
-    { x0: 556, x1: 606, top: -6, shape: 'mega', plane: 'hero', tone: 2, decks: [[30, 6, 3], [70, 9, 3.5], [110, 6, 3], [150, 10, 3.5]], glass: true, strip: 7, outline: true, rimI: NEON.cyan, rimO: NEON.pink, lit: .42, lights: ['lav', 'cyan', 'white'], holo: { x: 576, y: 78, w: 26, h: 30, kind: 'nexi' } },
-    { x0: 650, x1: 682, top: 50, shape: 'saucer', stem: 8, pod: { y: 82, a: 16, b: 3.6 }, pod2: { y: 108, a: 9, b: 2 }, plane: 'hero', tone: 2, band: 8, outline: true, ledge: NEON.pinkL, rimI: NEON.cyan, rimO: NEON.pink, lit: .5, lights: ['cyan', 'lav', 'white'] },
-    { x0: 708, x1: 738, top: 96, shape: 'twist', seg: 10, sh: 10, plane: 'hero', tone: 2, glass: true, band: 6, bandC: NEON.cyan, outline: true, rimI: NEON.cyanL, rimO: NEON.violet, lit: .46, lights: ['pink', 'lav', 'warm'], crown: 3 },
-    { x0: 752, x1: 806, top: 104, shape: 'arch', leg: 9, ah: 30, plane: 'hero', tone: 2, strip: 3, stripC: NEON.pink, glass: true, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, lit: .4,
-      sign: { x: 762.75, y: 94.5, text: 'NEXORA', dir: 'h', p: 1.25, c: '#ff3fd0', c2: '#3be8ff', posts: 104.2, spill: .5, spillR: 6 } },   // великий неон «NEXORA» на арці
-    { fx: R => CB.elevatorBase(R, 832, 140, 252, { w: 30 }) },
-    { x0: 874, x1: 900, top: 26, shape: 'needle', k: .5, plane: 'hero', tone: 2, band: 7, outline: true, rimI: NEON.cyan, rimO: NEON.violet, lit: .5, lights: ['warm', 'cyan', 'lav'] },
-    { x0: 900, x1: 952, top: 18, shape: 'round', plane: 'hero', tone: 2, glass: true, strip: 5, stripC: NEON.pink, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, holo: { x: 906, y: 60, w: 12, h: 44, kind: 'tall' }, lit: .4, crown: 4 },
+    { x0: GL.x0, x1: GL.x0 + 50, top: -6, shape: 'mega', plane: 'hero', tone: 2, decks: [[30, 6, 3], [70, 9, 3.5], [110, 6, 3], [150, 10, 3.5]], glass: true, strip: 7, outline: true, rimI: NEON.cyan, rimO: NEON.pink, lit: .42, lights: ['lav', 'cyan', 'white'], holo: { x: GL.x0 + 20, y: 78, w: 26, h: 30, kind: 'nexi' } },
+    { ...AT(666, 32), top: 50, shape: 'saucer', stem: 8, pod: { y: 82, a: 16, b: 3.6 }, pod2: { y: 108, a: 9, b: 2 }, plane: 'hero', tone: 2, band: 8, outline: true, ledge: NEON.pinkL, rimI: NEON.cyan, rimO: NEON.pink, lit: .5, lights: ['cyan', 'lav', 'white'] },
+    { ...AT(723, 30), top: 96, shape: 'twist', seg: 10, sh: 10, plane: 'hero', tone: 2, glass: true, band: 6, bandC: NEON.cyan, outline: true, rimI: NEON.cyanL, rimO: NEON.violet, lit: .46, lights: ['pink', 'lav', 'warm'], crown: 3 },
+    { ...AT(779, 54), top: 104, shape: 'arch', leg: 9, ah: 30, plane: 'hero', tone: 2, strip: 3, stripC: NEON.pink, glass: true, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, lit: .4,
+      sign: { x: MX(779) - 16.25, y: 94.5, text: 'NEXORA', dir: 'h', p: 1.25, c: '#ff3fd0', c2: '#3be8ff', posts: 104.2, spill: .5, spillR: 6 } },   // великий неон «NEXORA» на арці
+    { fx: R => CB.elevatorBase(R, MX(832), 140, 252, { w: 30 }) },
+    { ...AT(887, 26), top: 26, shape: 'needle', k: .5, plane: 'hero', tone: 2, band: 7, outline: true, rimI: NEON.cyan, rimO: NEON.violet, lit: .5, lights: ['warm', 'cyan', 'lav'] },
+    { x0: GL.x1 - 48, x1: GL.x1 + 4, top: 18, shape: 'round', plane: 'hero', tone: 2, glass: true, strip: 5, stripC: NEON.pink, outline: true, rimI: NEON.cyanL, rimO: NEON.pink, holo: { x: GL.x1 - 42, y: 60, w: 12, h: 44, kind: 'tall' }, lit: .4, crown: 4 },
   ];
   const FAR = [                                                                       // дальні плани — растр 2 px/од. (у серпанку дрібниці не потрібні), потім підкладка під BACK
     { skyline: ['far2', 31, { w: [3.5, 9], top: [128, 162], tall: .2, tallBy: 36, lit: [.18, .32], step: .68, antP: .15, shapes: [['box', 5], ['round', 2], ['needle', 2], ['dome', 1], ['setback', 1]] }] },
-    { b: { x0: 744, x1: 920, top: 86, bot: 236, shape: 'pyramid', steps: 22, plane: 'far1', tone: 4, lit: .55, lights: ['amber', 'warm', 'pink'], ledge: col2('#ffcf7a'), ant: [{ x: 832, h: 4 }] } },   // піраміда-мегаспоруда вдалині
+    { b: { ...AT(832, 176), top: 86, bot: 236, shape: 'pyramid', steps: 22, plane: 'far1', tone: 4, lit: .55, lights: ['amber', 'warm', 'pink'], ledge: col2('#ffcf7a'), ant: [{ x: MX(832), h: 4 }] } },   // піраміда-мегаспоруда вдалині
     { haze: [118, 252, '#e070e6', .32] },
     { skyline: ['far1', 47, { w: [5, 12], top: [118, 154], tall: .18, tallBy: 32, lit: [.24, .42], step: .74, antP: .25, signP: .06, shapes: [['box', 6], ['setback', 2], ['round', 2], ['needle', 1], ['dome', 1]] }] },
     { fx: R => CB.skyway(R, 121, 61, { n: 90 }) },
@@ -59,13 +63,13 @@ NX.city = (() => {
     { haze: [138, 252, '#d25ee0', .3] },
   ];
   const BACK = [
-    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, avoid: [[756, 89, 802, 106]], glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
-    { b: { x0: 604, x1: 652, top: 132, plane: 'mid', tone: 1, lit: .3, holo: { x: 608, y: 144, w: 40, h: 11, kind: 'wide' }, ant: [{ x: 640, h: 6 }] } },   // будинок з великим білбордом
+    { skyline: ['mid', 53, { w: [7, 16], top: [108, 150], tall: .22, tallBy: 34, lit: [.26, .52], step: .82, antP: .3, signP: .42, avoid: [[MX(779) - 23, 89, MX(779) + 23, 106]], glassP: .18, mediaP: .14, shapes: [['box', 6], ['setback', 3], ['round', 2], ['needle', 1], ['saucer', 1], ['dome', 1]] }] },
+    { b: { ...AT(628, 48), top: 132, plane: 'mid', tone: 1, lit: .3, holo: { x: MX(628) - 20, y: 144, w: 40, h: 11, kind: 'wide' }, ant: [{ x: MX(628) + 12, h: 6 }] } },   // будинок з великим білбордом
     { fx: R => CB.skyway(R, 150, 9, { n: 120 }) },
     ...HEROES.map(b => (b.fx ? b : { b })),
     { fx: R => CM.mist(R, 164, 6, '#c060e0', .45, 9) },
     { haze: [170, 252, '#ff58d0', .46, 1.7] },                                         // світло вулиць знизу: основи веж тонуть у рожевому сяйві
-    { fx: R => { TUBE = CB.tube(R, [596, 158], [750, 196], [916, 150], { posts: [.3, .7], postTo: 252 }); } },   // скляна труба маглева
+    { fx: R => { TUBE = CB.tube(R, [MX(596), 158], [MX(750), 196], [MX(916), 150], { posts: [.3, .7], postTo: 252 }); } },   // скляна труба маглева
     { fx: R => CB.skyway(R, 172, 19, { n: 130 }) },
   ];
   const FRONT = [
@@ -87,7 +91,9 @@ NX.city = (() => {
     });
     return { R, live };
   }
-  const RAIL = { y: 199.5, posts: [598, 672, 746, 820, 894] }, HWY = { y: 216.5, posts: [612, 690, 768, 846, 924] };   // монорейка й шосе над диваном
+  // монорейка й шосе над диваном: опори з тим самим кроком (74 і 78), симетрично відносно центру вікна, скільки влізе
+  const posts = (step, off) => { const a = []; for (let x = 774 + off - Math.floor((774 + off - GL.x0 - 40) / step) * step; x < GL.x1 - 40; x += step) a.push(x); return a; };
+  const RAIL = { y: 199.5, posts: posts(74, 37) }, HWY = { y: 216.5, posts: posts(78, 39) };
   // ---------- рух ----------
   const LANES = [{ y: 106, s: .55, sp: 16, dir: 1, n: 5, st: 0 }, { y: 146, s: .8, sp: 28, dir: -1, n: 5, st: 1 }, { y: 211, s: 1.15, sp: 44, dir: 1, n: 3, st: 2 }];
   const CARC = ['#ff6ad8', '#45e6ff', '#ffc94d', '#b88aff'];
@@ -167,7 +173,7 @@ NX.city = (() => {
     return L(R);
   }
   // ---------- МАЙБУТНЄ: трос космічного ліфта, літаюча платформа, голограма-кит ----------
-  const ELEV = { x: 832, top: -2, base: 140, st: 22 };
+  const ELEV = { x: MX(832), top: -2, base: 140, st: 22 };
   function elevSprite() {
     const R = CK.Ras(ELEV.x - 14, ELEV.top, ELEV.x + 14, ELEV.base + 1), c = CK.col, x = ELEV.x;
     R.rect(x - 1.5, ELEV.top, x + 1.5, ELEV.base, (i, j, X) => { const d = Math.abs(X - x); return d < .3 ? c('#e8fdff') : d < .8 ? c('#7af0ff') : 0; });
@@ -266,11 +272,10 @@ NX.city = (() => {
     NX.room.pieces = PIECES;                                                         // кімната більше не малює картинку під вікном — там усе кодом
     S.ms = Math.round(performance.now() - t0); if (window.CITY_LOG) console.log("city build ms", S.ms);
   }
-  // що кімната ще малює з картинки: ліворуч (під лівим крилом) і підлогу під вікном до машинерії майстерні (праве крило — кодом, objects/rwing_wall.js)
+  // що кімната ще малює з картинки: ліворуч (під лівим крилом) і підлогу під вікном до правого краю дивана (далі — підлога правого крила)
   const PIECES = [[0, 0, GL.x0, 368], [GL.x0, GL.y1, 891, 368]];
   /** Сяйво міста (bloom): яскраві пікселі нерухомої копії, зменшені й розмиті в 3 масштабах (як у крила),
-   *  ЗАПІКАЄТЬСЯ в небо (skyCache) і в будинки (лише на самі будинки) — щокадру нічого не коштує.
-   *  Ліворуч від x 664 місто світить через сяйво крила (wingGlow бере ту саму копію з містом). */
+   *  ЗАПІКАЄТЬСЯ в небо (skyCache) і в будинки (лише на самі будинки) — щокадру нічого не коштує. На всю ширину скла. */
   function bloom() {
     try {
       const w = Math.round(GW), h = Math.round(GL.y1 + 2), a = document.createElement('canvas'); a.width = w; a.height = h;   // 1 px/од.
@@ -281,7 +286,6 @@ NX.city = (() => {
       bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2);
       const bc = document.createElement('canvas'); bc.width = b1.width; bc.height = b1.height; const cx2 = bc.getContext('2d'); cx2.globalCompositeOperation = 'lighter'; cx2.imageSmoothingEnabled = true;
       [[b1, .14], [b2, .26], [b3, .36]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
-      cx2.globalAlpha = 1; cx2.globalCompositeOperation = 'destination-out'; cx2.fillRect(0, 0, Math.round((664 - GL.x0) / GW * bc.width), bc.height);   // ліворуч від 664 — сяйво крила
       S.bloom = bc;
       // у будинки: сяйво лише поверх самих будинків (маска — їхня непрозорість), додаванням кольору
       const B = S.bld.cv, m = document.createElement('canvas'); m.width = B.width; m.height = B.height; const mx = m.getContext('2d'); mx.imageSmoothingEnabled = true;
@@ -353,7 +357,7 @@ NX.city = (() => {
       CK.glow(c, x, y, 7, '160,240,255', .6); c.fillStyle = '#ffffff'; c.fillRect(x - .75, y - .75, 1.5, 1.5); }
   }
   function ship(c, t) {
-    const sp = S.ship, x = 838 + Math.sin(t / 9) * 6, y = 54 + Math.sin(t * .9) * 1.2, s = 1.25;   // зависає праворуч від планети, перед вежею
+    const sp = S.ship, x = MX(838) + Math.sin(t / 9) * 6, y = 54 + Math.sin(t * .9) * 1.2, s = 1.25;   // зависає праворуч від планети, перед вежею
     c.save(); c.translate(x, y); c.scale(s, s); c.imageSmoothingEnabled = true; c.drawImage(sp.cv, 0, 0, sp.w, sp.h);
     const fl = .6 + .4 * Math.sin(t * 31) * Math.sin(t * 17);                         // полум'я двигуна
     c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(90,232,255,${.75 * fl})`; c.fillRect(45, 5.6, 2.2 + fl * 2, 2.8); c.fillStyle = `rgba(255,120,220,${.5 * fl})`; c.fillRect(47, 6.3, 1.6 + fl * 2.5, 1.4);
@@ -374,7 +378,7 @@ NX.city = (() => {
   function shuttle(c, t) { const x = GL.x0 + ((t / 11) % 1) * (GW + 30) - 15, y = 26; P.rect(c, x, y, 8, 2.4, '#c9b4ff'); P.rect(c, x + 2.4, y - 1.6, 3.2, 1.8, '#8a6ae0'); P.rect(c, x - 2 + (Math.floor(t * 12) % 2) * .6, y + .8, 2, 1, '#ffe27a'); }
   function searchlights(c, t) {
     c.save(); c.beginPath(); c.rect(GL.x0, -2, GW, 200); c.clip(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true; c.globalAlpha = .42;
-    [[688, 176, .4, .35], [872, 178, -.3, .28]].forEach(([bx, by, ph, sp]) => { const a = -Math.PI / 2 + Math.sin(t * sp + ph * 5) * .48, len = 230;
+    [[MX(688), 176, .4, .35], [MX(872), 178, -.3, .28]].forEach(([bx, by, ph, sp]) => { const a = -Math.PI / 2 + Math.sin(t * sp + ph * 5) * .48, len = 230;
       c.save(); c.translate(bx, by); c.rotate(a); c.drawImage(S.beam, 0, -len * .07, len, len * .14); c.restore(); });
     c.restore();
   }
@@ -416,13 +420,13 @@ NX.city = (() => {
   }
   /** Літаюча платформа з куполом і вежкою: погойдується, світиться знизу. */
   function platform(c, t, R) {
-    const A = S.plat, cx = 779, cy = 151 + Math.sin(t * .8) * 1.3; blit(c, { ...A, x: cx + A.ox, y: cy + A.oy }, R);
+    const A = S.plat, cx = MX(779), cy = 151 + Math.sin(t * .8) * 1.3; blit(c, { ...A, x: cx + A.ox, y: cy + A.oy }, R);
     CK.glow(c, cx, cy + 8, 9, '120,240,255', .35 + .12 * Math.sin(t * 2.2));
     for (let k = 0; k < 6; k++) { const on = (Math.floor(t * 3) + k) % 6 < 2; c.fillStyle = on ? '#ff4fd8' : '#4a1a50'; c.fillRect(cx - 15 + k * 6, cy + 1.6, .8, .7); }
     if (Math.sin(t * 4) > 0) { c.fillStyle = '#ff3b3b'; c.fillRect(cx + 4.6, cy - 14.6, .8, .8); }
   }
   function drones(c, t) {
-    for (let i = 0; i < 6; i++) { const a = t * .18 + i * .5, x = 812 + Math.sin(a) * 46 + Math.sin(t * 1.3 + i) * 2, y = 158 + Math.sin(a * 2) * 9 - i * 1.6;
+    for (let i = 0; i < 6; i++) { const a = t * .18 + i * .5, x = MX(812) + Math.sin(a) * 46 + Math.sin(t * 1.3 + i) * 2, y = 158 + Math.sin(a * 2) * 9 - i * 1.6;
       P.rect(c, x, y, 1.8, .7, '#9aa0c0'); P.rect(c, x - .4, y - .3, 2.6, .3, '#5a6090'); if (Math.sin(t * 7 + i) > .3) P.rect(c, x + .6, y + .7, .6, .6, i % 2 ? '#ff3b3b' : '#3bff8a'); }
   }
   function lights(c, t, Lv) {
@@ -477,7 +481,7 @@ NX.city = (() => {
   }
   /** Скло: нерухомі косі відблиски й тінь під верхньою балкою запікаються в небо й будинки (glassStatic),
    *  щокадру — лише відблиск, що зрідка пробігає склом. */
-  const STREAKS = [[598, 22, .045], [632, 2.2, .07], [828, 34, .032], [874, 3, .05]];
+  const STREAKS = [[598, 22, .045], [632, 2.2, .07], [828, 34, .032], [874, 3, .05]].map(([x, w, a]) => [MX(x), w, a]);
   function glassStatic(c, sky) {
     c.save(); STREAKS.forEach(([x, w, a]) => { c.fillStyle = `rgba(220,235,255,${a})`; c.beginPath(); c.moveTo(x, 0); c.lineTo(x + w, 0); c.lineTo(x + w + 150, GL.y1); c.lineTo(x + 150, GL.y1); c.fill(); });
     if (sky) { const hg = c.createLinearGradient(0, 5, 0, 17); hg.addColorStop(0, 'rgba(4,2,20,.5)'); hg.addColorStop(1, 'rgba(4,2,20,0)'); c.fillStyle = hg; c.fillRect(GL.x0, 5, GW, 12); }   // тінь під верхньою балкою
@@ -488,15 +492,14 @@ NX.city = (() => {
     c.save(); c.clip(CLIPP); c.fillStyle = 'rgba(200,240,255,.05)'; c.beginPath(); c.moveTo(gx, 0); c.lineTo(gx + 14, 0); c.lineTo(gx + 164, GL.y1); c.lineTo(gx + 150, GL.y1); c.fill(); c.restore();
   }
 
-  /** Передня підлога-дзеркало для x 664..891 (ліворуч — копія лівого крила, wing_wall.js; праворуч від 891 — копія правого,
-   *  rwing_wall.js): картинка + місто (без частини за диваном — там лишається віддзеркалення дивана) + рама вікна + рослина
-   *  біля дивану. Один раз після старту. */
+  /** Передня підлога-дзеркало на всю ширину скла (GL.x0..GL.x1): картинка + місто (без частини за диваном — там лишається
+   *  віддзеркалення дивана) + рама вікна + рослина біля дивану. Один раз після старту. */
   function patchFloor(t) {
     const img = NX.room.img, RS = NX.room.RS; if (!img.naturalWidth) return;
     const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d');
     x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS); paint(x, t, 'patch', RS);
     ['windowFrame', 'plant'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
-    x.restore(); NX.room.patchFront(cv, 664, 891);
+    x.restore(); NX.room.patchFront(cv, GL.x0, GL.x1);
   }
   let frames = 0;
   return {
@@ -531,5 +534,5 @@ NX.city = (() => {
   };
 })();
 /** Вікно як об'єкт: тап -> Nexi підходить і милується містом (феєрверк). */
-NX.addObject({ id: 'cityWindow', name: 'obj.window', act: 'window', hit: { x: 574, y: 4, w: 356, h: 156 } });
+NX.addObject({ id: 'cityWindow', name: 'obj.window', act: 'window', hit: { x: NX.cfg.WIN.L + 40, y: 4, w: NX.cfg.WIN.R - NX.cfg.WIN.L - 80, h: 156 } });
 NX.i18n.onLang(() => NX.city.relang());                                              // вивіски й реклама міста — новою мовою

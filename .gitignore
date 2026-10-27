@@ -1,3 +1,4 @@
 node_modules/
 .DS_Store
 shot.png
+__pycache__/
