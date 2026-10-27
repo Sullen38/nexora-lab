@@ -1,5 +1,5 @@
 // tools/wingbox/shot.js — знімки сірого макета крил (схеми) з dist/nexora-lab.html
-//   node tools/wingbox/shot.js <префікс> [режими...] [--layout розкладка.json] [--hash rw-box|rw-base|none]
+//   node tools/wingbox/shot.js <префікс> [режими...] [--layout розкладка.json] [--hash rw-box|rw-base|rw-3d|none]
 // Режими: desk — увесь екран 1600×900; roomc — лише кімната (0..1536 × 0..368); zoomR — праве крило; zoomL — ліве;
 //         ph — телефон 390×844 (позиції камери: PHX='[["ph1",930],["ph2",1250]]', за замовчуванням ліве, центр, праве);
 //         ids — список об'єктів кімнати (id, span, які шари малює).
@@ -20,7 +20,9 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push(e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e.message));
     p.on('console', m => { if (m.type() === 'error' && !/fonts|ERR_TUNNEL|net::/.test(m.text())) errs.push(m.text()); });
-    await p.goto(HTML + '#' + (hash === 'none' ? '' : hash + ',') + 'lang-uk'); await p.waitForTimeout(2200); return p;
+    await p.goto(HTML + '#' + (hash === 'none' ? '' : hash + ',') + 'lang-uk'); await p.waitForTimeout(2200);
+    if (hash === 'rw-3d') { await p.waitForFunction(() => NX.arc && NX.arc.built && NX.arc.built.left, null, { timeout: 30000 }); await p.waitForTimeout(600); }   // 3D: дочекатися збірки (по шару за кадр)
+    return p;
   }
   const crop = async (p, x0, y0, x1, y1, file) => {
     const a = await p.evaluate(([x, y]) => NX.cam.toScreen(x, y), [x0, y0]), z = await p.evaluate(([x, y]) => NX.cam.toScreen(x, y), [x1, y1]);

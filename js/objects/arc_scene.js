@@ -3,16 +3,20 @@
  * ----------------------------------------------------------------------------
  * Схема #rw-box (сірий макет) -> справжній піксель-арт у перспективі кімнати. Геометрія — розкладка генератора
  * (objects/arc_layout.js), рушій — core/px3d.js (z-буфер: хто кого закриває — для кожного пікселя), матеріали —
- * objects/arc_kit.js, рослини — objects/arc_plants.js. Диван, підлога кімнати, вікно й рами — свої (не звідси).
+ * objects/arc_kit.js, малюнки граней — arc_paint.js, форми (лампи, крісла, кристали) — arc_shapes.js, рослини —
+ * arc_plants.js, живе — arc_live.js. Диван, підлога кімнати, вікно й рами — свої (не звідси).
  * Кожне крило складається з растрів (шарів), що малюються по черзі (позаду -> попереду):
  *   1. СТІНА Й ПІДЛОГА (2 px/од.) — дуга від відкосу до глядача: ліворуч цегла (домашнє, теплі відсвіти), праворуч
- *      металеві панелі (технологічне); плінтус з неоном, поручень, екран NEXORA AI; глянцева підлога з плиткою;
- *   2. БІЛЯ СТІНИ (4 px/од.) — колони, антресоль (спід, лицьова грань, поруччя), настінні полиці з вазонами, підвіси;
- *   3–5. ЗОНИ (4 px/од.) — дальня, середня, найближча; у кожної — свій z-буфер, контур і віддзеркалення в підлозі
- *      та на глянцевих стільницях.
- * Готові шари зливаються ОДИН раз в одне полотно під масштаб екрана (+ сяйво — bloom); щокадру — один drawImage
- * на крило й живе поверх (екрани, вихор, маніпулятор — objects/arc_live.js). Передня підлога кімнати бере
- * віддзеркалення з цього злиття (NX.room.patchFront). Перебудова — при зміні масштабу екрана або мови.
+ *      металеві панелі (технологічне); плінтус з неоном, поручень, екран NEXORA AI; глянцева підлога з плиткою.
+ *      Стіна — стовпчиками, підлога — рядками (швидко); світло — карта з ламп і екранів розкладки (lightsOf);
+ *   2. БІЛЯ СТІНИ (3 px/од.) — колони, антресоль (спід, лицьова грань, торці, поруччя), настінні полиці з вазонами,
+ *      підвіси (ліани, лампи, китайський ліхтар), оздоби стіни (гірлянда, постери — DECOR);
+ *   3–5. ЗОНИ (3 px/од.) — дальня, середня, найближча; у кожної — свій z-буфер, контур і віддзеркалення в підлозі
+ *      та на глянцевих стільницях; маніпулятор майстерні — у шарі майстерні.
+ * Збірка — по шару за кадр (сторінка не «замерзає»); готові шари зливаються ОДИН раз в одне полотно під масштаб екрана
+ * (+ сяйво — bloom); щокадру — один drawImage на крило й живі екрани поверх (під маскою видимих пікселів). Підлога крила
+ * біля меж плавно переходить у підлогу кімнати (fadeFloor), а передня підлога кімнати бере віддзеркалення з цього злиття
+ * (NX.room.patchFront). Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
  * ========================================================================== */
 (() => {
   if (!/rw-3d/.test(location.hash)) return;
@@ -123,7 +127,9 @@
           else if (paint && paint.sides && paint.sides[Fc.k]) tex = A.texture(B, Fc, TSof(L, Fc), paint.sides[Fc.k]);
           shade = A.shader(B.st, Fc, B, Object.assign({}, o, { tex }));
         }
-        cmd(L, Fc.poly, () => X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, shade, { id, fid: id, n: Fc.n, fl: 0 }));
+        let fid = id;                                                                                            // живий екран: лицьова грань — свій номер (маска видимих пікселів)
+        if (Fc.k === 'front' && NX.arc.LIVE && NX.arc.LIVE[B.id]) { fid = reg.add({ live: B.id }); (L.live || (L.live = [])).push({ id: B.id, B, Fc, fid }); }
+        cmd(L, Fc.poly, () => X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, shade, { id, fid, n: Fc.n, fl: 0 }));
       }
     }
     if (B.plant) {
@@ -184,7 +190,7 @@
   function wallLayer(Ls, side, clipPoly) {
     const W = catmull(Ls.wall, 4), sgn = side === 'right' ? 1 : -1, b = side === 'right' ? [WIN.R - 2, -2, 1547, 478] : [-12, -2, WIN.L + 158, 478];
     const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 }), fidW = wid;
-    const lights = (side === 'left' ? LIGHTS_L : LIGHTS_R);
+    const lights = lightsOf(Ls, side);
     // довжина дуги й точка стіни за відстанню s від відкосу
     const SEG = []; let tot = 0; for (let k = 0; k + 1 < W.length; k++) { const len = Math.hypot(W[k + 1][0] - W[k][0], W[k + 1][1] - W[k][1]); SEG.push([tot, len, W[k], W[k + 1]]); tot += len; }
     const wallPt = sx => { for (const [a, len, p, q] of SEG) if (sx <= a + len || q === W[W.length - 1]) { const u = Math.max(0, Math.min(1, (sx - a) / (len || 1))); return [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u]; } return W[W.length - 1]; };
@@ -256,11 +262,19 @@
       }
     }
   }
-  // світло на стінах (світ): x, y, z, r — радіус, k — сила, c — колір відсвіту
-  const LIGHTS_L = [{ x: 330, y: 250, z: 150, r: 140, k: .22, c: col('#ff4fd8') }, { x: 250, y: 200, z: 60, r: 150, k: .2, c: col('#3be8ff') }, { x: 205, y: 120, z: 95, r: 120, k: .34, c: col('#ffb24a') },
-    { x: 160, y: 60, z: 10, r: 130, k: .3, c: col('#ffb24a') }, { x: 395, y: 100, z: 180, r: 110, k: .28, c: col('#ffd27a') }, { x: 120, y: 300, z: -60, r: 150, k: .18, c: col('#ff4fd8') }];
-  const LIGHTS_R = [{ x: 1215, y: 40, z: 176, r: 160, k: .3, c: col('#3b8aff') }, { x: 1250, y: 300, z: 140, r: 150, k: .26, c: col('#ff4fd8') }, { x: 1350, y: 90, z: 80, r: 130, k: .28, c: col('#ffd27a') },
-    { x: 1400, y: 280, z: 0, r: 160, k: .26, c: col('#9a4aff') }, { x: 1380, y: 180, z: 30, r: 120, k: .2, c: col('#3be8ff') }];
+  /** Світло на стінах і підлозі крила (світ): x, y, z, r — радіус, k — сила, c — колір відсвіту. Береться з розкладки:
+   *  лампи й ліхтарі (теплі), екрани й будки (холодні сині), неон зон (колір зони), підвісні лампи, вікно (фіолет міста). */
+  function lightsOf(Ls, side) {
+    const out = [], ctr = B => { const { P } = A.basis(B); return P(0, B.dep / 2, (B.yt + B.yb) / 2); }, add = (p, r, k, h) => out.push({ x: p[0], y: p[1], z: p[2], r, k, c: col(h) });
+    (Ls.items || []).forEach(B => {
+      if (B.glow) add(ctr(B), Math.max(60, (B.gr || 30) * 2.6), .34, B.st === 'clamp' ? '#3be8ff' : B.st === 'neon' ? '#ff4fd8' : B.st === 'gold' ? '#ffd27a' : '#ffb24a');
+      else if (/_booth$|ai_screen|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
+    });
+    (Ls.hang || []).forEach(h => { if (h.kind !== 'vine') add([h.x, (h.from != null ? h.from : 56) + h.len + 8, h.z], 70, .3, h.kind === 'red' ? '#ff4a3a' : '#ffb24a'); });
+    if (Ls.hub) add([Ls.hub.x, (Ls.hub.y0 + Ls.hub.y1) / 2, Ls.hub.z - 10], 170, .26, '#3b8aff');
+    add([side === 'left' ? 430 : 1118, 120, 180], 210, .16, '#9a4aff');                                       // вікно: фіолетове світло міста
+    return out;
+  }
 
   // ---------- БІЛЯ СТІНИ: колони, антресоль, полиці з вазонами, підвіси ----------
   function backLayer(Ls, side, zclip) {
@@ -268,7 +282,9 @@
     const es = [...UP.map(ext), ...(Ls.cols || []).map(ext)];
     if (Ls.mezz) Ls.mezz.edge.forEach(p => { const a = X.proj([p[0], Ls.mezz.yt - 30, p[1]]), b = X.proj([p[0], Ls.mezz.yb + 4, p[1]]); es.push([a[0] - 30, a[1] - 40, a[0] + 30, b[1] + 40]); });
     (Ls.hang || []).forEach(h => { const y0 = h.from != null ? h.from : (Ls.mezz ? Ls.mezz.yb : 56), a = X.proj([h.x, y0, h.z]), b = X.proj([h.x, y0 + h.len + 30, h.z]); es.push([a[0] - 20, a[1], a[0] + 20, b[1]]); });
+    const DEC = decorOf(Ls, side); DEC.forEach(d => es.push(d.ext));
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + 60)], L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
+    DEC.forEach(d => d.draw(L, reg, byId));
     (Ls.cols || []).forEach(B => drawItem(L, Object.assign({}, B, { zone: side === 'left' ? 'ai' : 'tools' }), reg, side, byId));
     if (Ls.mezz) mezz(L, Ls, reg);
     UP.forEach(B => drawItem(L, B, reg, side, byId));
@@ -277,6 +293,41 @@
     X.outline(L, a => (reg.get(a) || {}).out, 2);
     X.reflect(L, a => reg.get(a) && reg.get(a).sup, { a: .5, h: 60, streak: 1 });
     return { L, reg };
+  }
+  // ---------- ОЗДОБИ СТІНИ (лише в 3D, пласкі — на самій стіні): гірлянда, постери в рамках ----------
+  /** Точка стіни за відстанню s від відкосу (уздовж дуги) і нормаль у кімнату; inset — на скільки від стіни. */
+  function wallAt(Ls, s0, inset = 0) {
+    const W = catmull(Ls.wall, 4); let acc = 0;
+    for (let k = 0; k + 1 < W.length; k++) {
+      const p = W[k], q = W[k + 1], len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      if (s0 <= acc + len || k + 2 === W.length) { const u = Math.max(0, Math.min(1, (s0 - acc) / (len || 1))), x = p[0] + (q[0] - p[0]) * u, z = p[1] + (q[1] - p[1]) * u;
+        let n = [-(q[1] - p[1]) / len, (q[0] - p[0]) / len]; if (n[0] * (774 - x) + n[1] * (60 - z) < 0) n = [-n[0], -n[1]]; return { x: x + n[0] * inset, z: z + n[1] * inset, n }; }
+      acc += len;
+    }
+  }
+  /** Оздоби крила: ліве (домашнє) — тепла гірлянда вздовж стіни, постери «NEXORA» і «МЯУ», ботанічний принт; праве — технічні таблички. */
+  const DECOR = {
+    left: [{ k: 'garland', s0: 8, s1: 452, top: 9, sag: 16, n: 40 }, { k: 'poster', s: 36, w: 44, y0: -22, y1: 50, p: 'poster_nexora' },
+      { k: 'poster', s: 422, w: 36, y0: 34, y1: 90, p: 'poster_meow' }, { k: 'poster', s: 300, w: 24, y0: -16, y1: 18, p: 'poster_leaf' }],
+    right: [{ k: 'poster', s: 262, w: 22, y0: 76, y1: 104, p: 'poster_warn' }, { k: 'garland', s0: 300, s1: 452, y0: 72, sag: 12, n: 16, cool: 1 }],
+  };
+  function decorOf(Ls, side) {
+    return (DECOR[side] || []).map(d => {
+      if (d.k === 'poster') {
+        const w = wallAt(Ls, d.s, 1.2), a = Math.atan2(-w.n[0], -w.n[1]) * 180 / Math.PI, B = { id: d.p, x: w.x, z: w.z, turn: a, w: d.w, dep: 1.2, yt: d.y0, yb: d.y1, st: 'shelf', layer: 'up' };
+        return { ext: ext(B), draw: (L, reg, byId) => drawItem(L, B, reg, side, byId) };
+      }
+      // top — гірлянда йде під верхнім краєм видимої стіни (ближче до глядача стіна видна нижче), провисає між гачками
+      const pts = []; for (let k = 0; k <= d.n; k++) { const u = k / d.n, w = wallAt(Ls, d.s0 + (d.s1 - d.s0) * u, 3), kk = s(w.z), sg = (u * 8) % 1;
+        const y = d.top != null ? 220 + (d.top - 220) / kk + 6 + d.sag * 4 * sg * (1 - sg) : d.y0 + d.sag * 4 * u * (1 - u); pts.push([w.x, y, w.z]); }
+      const e = pts.map(p => X.proj(p)), ex = [Math.min(...e.map(q => q[0])) - 4, Math.min(...e.map(q => q[1])) - 4, Math.max(...e.map(q => q[0])) + 4, Math.max(...e.map(q => q[1])) + 6];
+      const COLS = d.cool ? ['#3be8ff', '#9af6ff', '#ff4fd8'] : ['#ffd27a', '#ff9af0', '#ffb24a', '#9af6ff', '#ffe27a'];
+      return { ext: ex, draw: (L, reg) => {
+        const id = reg.add({ garland: 1, sup: { y: FL, on: 0 }, out: col('#1a0a14') });
+        for (let k = 0; k + 1 < pts.length; k++) X.tube(L, [pts[k][0], pts[k][1] - 1.4, pts[k][2]], [pts[k + 1][0], pts[k + 1][1] - 1.4, pts[k + 1][2]], .55, () => col('#1a1028'), { id, fid: id });
+        pts.forEach((p, k) => { const c0 = col(COLS[k % COLS.length]); X.disc(L, [p[0], p[1] + 1.2, p[2]], 2.1, (u, v) => { X.SH.fl |= X.F_EMIT; return (u - .4) ** 2 + (v - .38) ** 2 < .05 ? col('#ffffff') : c0; }, { id, fid: id }); });
+      } };
+    });
   }
   /** Антресоль: лицьова грань (сегменти дуги), спід до стіни, торець, поруччя з балясинами. */
   function mezz(L, Ls, reg) {
@@ -309,10 +360,10 @@
       X.tube(L, [x0, M.yt - 12, z0], [x1, M.yt - 12, z1], .9, u => ramp(PL.CHROME, .2 + (1 - Math.abs(u - .4) * 2) * .5, 0, 0), { id, fid: id });
       acc += len;
     }
-    // торець (перший край до стіни)
-    const e0 = E[0], w0 = toWall(e0);
-    X.face(L, [[e0[0], M.yt, e0[1]], [w0[0], M.yt, w0[1]], [w0[0], M.yb, w0[1]], [e0[0], M.yb, e0[1]]], [e0[0], M.yt, e0[1]], [w0[0] - e0[0], 0, w0[1] - e0[1]], [0, M.yb - M.yt, 0],
-      (u, v, i, j) => v < .06 ? (X.SH.fl |= X.F_EMIT, A.NEON.pink[1]) : ramp(PL.MET, .38 + (v < .2 ? .1 : 0), i, j), { id, fid: id });
+    // торці (обидва краї плити — до стіни)
+    [E[0], E[E.length - 1]].forEach(e0 => { const w0 = toWall(e0);
+      X.face(L, [[e0[0], M.yt, e0[1]], [w0[0], M.yt, w0[1]], [w0[0], M.yb, w0[1]], [e0[0], M.yb, e0[1]]], [e0[0], M.yt, e0[1]], [w0[0] - e0[0], 0, w0[1] - e0[1]], [0, M.yb - M.yt, 0],
+        (u, v, i, j) => v < .06 ? (X.SH.fl |= X.F_EMIT, A.NEON.pink[1]) : ramp(PL.MET, .38 + (v < .2 ? .1 : 0), i, j), { id, fid: id }); });
   }
   /** Підвіси: ліана (з антресолі або від стелі) або лампа на шнурі. */
   function hang(L, Ls, h, reg) {
@@ -327,15 +378,29 @@
     (h.kind === 'red' ? SHP.hangRed : h.kind === 'gold' ? SHP.hangGold : SHP.hangLamp)(makeG(L, B, lid, 'right'), B);
   }
 
+  /** РОБОТ-МАНІПУЛЯТОР майстерні (розкладка: 4 точки — база на куполі, лікоть, зап'ястя, захват): товсті ланки-трубки зі
+   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником. */
+  function arm(L, pts, reg) {
+    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [12.5, 10, 7];
+    const link = w => (u, v, i, j) => { const q = .28 + (1 - Math.abs(u - .4) * 2.1) * .55; if (Math.abs(u - .5) < .07 && ((v * 9) % 1) < .5) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; } return ramp(PL.MET, q, i, j); };
+    for (let k = 0; k + 1 < pts.length; k++) cmd(L, [pts[k], pts[k + 1]], () => X.tube(L, pts[k], pts[k + 1], W[k] || 4, link(W[k]), o));
+    pts.forEach((p, k) => { const r = k === 0 ? 9 : k === pts.length - 1 ? 4.2 : 8;
+      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; } return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
+    const e = pts[pts.length - 1], b = pts[pts.length - 2], dx = e[0] - b[0], dy = e[1] - b[1], l = Math.hypot(dx, dy) || 1, nx = dx / l, ny = dy / l;
+    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 - ny * sg * 3.4, e[1] + ny * 3 + nx * sg * 3.4, e[2] - 1.5], c2 = [a[0] + nx * 8, a[1] + ny * 8, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
+    const tip = [e[0] + nx * 6, e[1] + ny * 6, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
+  }
+
   // ---------- ЗОНИ ----------
-  function zoneLayer(items, side, zclip) {
+  function zoneLayer(items, side, zclip, Ls, zn) {
     const byId = {}; items.forEach(B => byId[B.id] = B);
-    const b0 = union(items.map(ext), zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
+    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - 9, q[1] - 9, q[0] + 9, q[1] + 9]); });
+    const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
     const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
     order.forEach(B => drawItem(L, B, reg, side, byId));
-    if (NX.arc.extra) NX.arc.extra(L, items, reg, side);
+    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg);                                            // маніпулятор майстерні — у z-буфері зони
     run(L);
     X.outline(L, a => (reg.get(a) || {}).out, 2);
     X.reflect(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 });   // глянець стільниць
@@ -343,22 +408,45 @@
     return { L, reg };
   }
 
+  /** Маска живої грані fid з шару li: видимі пікселі цієї грані в її z-буфері МІНУС те, що закривають шари, які малюються
+   *  пізніше (ближчі зони) — інакше екран дальньої зони «просвічував» би крізь ближчу. -> {cv, x, y, w, h} (одиниці кімнати). */
+  function liveMask(layers, li, fid) {
+    const L = layers[li].L, { W, H, R } = L; let i0 = 1e9, i1 = -1, j0 = 1e9, j1 = -1;
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (L.fid[j * W + i] === fid) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
+    if (i1 < 0) return null;
+    const w = i1 - i0 + 1, h = j1 - j0 + 1, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'), im = x.createImageData(w, h), d = new Uint32Array(im.data.buffer);
+    const later = layers.slice(li + 1).map(l => l.L);
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+      if (L.fid[(j + j0) * W + i + i0] !== fid) continue;
+      const Xr = L.x0 + (i + i0 + .5) / R, Yr = L.y0 + (j + j0 + .5) / R; let hid = false;
+      for (const M of later) { const ii = Math.floor((Xr - M.x0) * M.R), jj = Math.floor((Yr - M.y0) * M.R); if (ii < 0 || jj < 0 || ii >= M.W || jj >= M.H) continue; const q = jj * M.W + ii; if (M.id[q] && !(M.fl[q] & X.F_REFL)) { hid = true; break; } }
+      if (!hid) d[j * w + i] = 0xffffffff;
+    }
+    x.putImageData(im, 0, 0); return { cv, x: L.x0 + i0 / R, y: L.y0 + j0 / R, w: w / R, h: h / R };
+  }
+
   // ---------- ЗЛИТТЯ крила ----------
   const SIDES = {};
-  function buildSide(side) {
+  /** Збірка крила ПО КРОКАХ (генератор): після кожного шару — пауза до наступного кадру, щоб сторінка не «замерзала»
+   *  на кілька секунд (кожен шар — 0.1..0.4 с). Результат: {side, box, live, layers: [{cv, x0, y0, x1, y1}], ms}. */
+  function* buildSide(side) {
     const Ls = ALL[side]; if (!Ls) return null;
-    const t1 = performance.now();
+    let ms = 0;
     const clip = side === 'right' ? [[WIN.R, -2], [1547, -2], [1547, 478], [887.5, 478], [887.5, 346], [WIN.R, 346]] : [[-12, -2], [WIN.L, -2], [WIN.L, 346], [664, 346], [664, 478], [-12, 478]];
     const zclip = side === 'right' ? [860, -2, 1550, 478] : [-12, -2, 688, 478];
-    const tm = [], T = (nm, f) => { const a = performance.now(), r = f(); tm.push(nm + ' ' + (performance.now() - a).toFixed(0) + (r && r.L ? '(' + (r.L.W * r.L.H / 1e6).toFixed(2) + 'MP)' : '')); return r; };
-    const layers = [T('wall', () => wallLayer(Ls, side, clip)), T('back', () => backLayer(Ls, side, zclip))];
+    const tm = [], T = (nm, f) => { const a = performance.now(), r = f(), d = performance.now() - a; ms += d; tm.push(nm + ' ' + d.toFixed(0) + (r && r.L ? '(' + (r.L.W * r.L.H / 1e6).toFixed(2) + 'MP)' : '')); return r; };
+    const layers = [T('wall', () => wallLayer(Ls, side, clip))]; yield;
+    layers.push(T('back', () => backLayer(Ls, side, zclip))); yield;
     const ZN = side === 'right' ? ['workshop', 'tools', 'portal'] : ['marketing', 'analytics', 'ai'];
-    ZN.forEach(z => { const it = (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up'); if (it.length) layers.push(T(z, () => zoneLayer(it, side, zclip))); });
-    if (window.ARC_LOG !== 0) console.log('[arc] ' + side + ': ' + tm.join(', '));
+    for (const z of ZN) { const it = (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up'); if (it.length) { layers.push(T(z, () => zoneLayer(it, side, zclip, Ls, z))); yield; } }
     const box = side === 'right' ? [860, -2, 1547, 478] : [-12, -2, 688, 478];
-    layers.forEach(l => fadeFloor(l.L, side));
-    const out = { side, box, layers: layers.map(l => ({ cv: X.canvas(l.L), x0: l.L.x0, y0: l.L.y0, x1: l.L.x1, y1: l.L.y1, L: l.L, reg: l.reg })), ms: performance.now() - t1 };
-    return out;
+    const live = [], out = T('finish', () => {
+      layers.forEach(l => fadeFloor(l.L, side));
+      layers.forEach((l, li) => (l.L.live || []).forEach(E => { const m = liveMask(layers, li, E.fid); if (m) live.push(Object.assign(E, { mask: m })); }));   // живі екрани: маски з z-буфера
+      return { side, box, live, layers: layers.map(l => ({ cv: X.canvas(l.L), x0: l.L.x0, y0: l.L.y0, x1: l.L.x1, y1: l.L.y1 })) };   // буфери растрів далі не потрібні
+    });
+    if (window.ARC_LOG !== 0) console.log('[arc] ' + side + ': ' + tm.join(', '));
+    out.ms = ms; return out;
   }
   /** Шари -> одне полотно під масштаб Rd (+ сяйво). */
   function compose(S, Rd) {
@@ -388,25 +476,33 @@
     NX.room.patchFront(cv, 0, 664); NX.room.patchFront(cv, 891, 1536);
   }
 
-  let built = false, CK = 0;
-  function ensure() {
-    if (built) return true;
-    if (document.fonts && document.fonts.status !== 'loaded' && performance.now() - t0 < 2500) return false;   // написи — коли шрифт готовий
-    built = true;
-    ['left', 'right'].forEach(sd => { SIDES[sd] = buildSide(sd); });
-    NX.arc.built = SIDES; console.log('[arc] built', Object.values(SIDES).map(S => S && S.side + ' ' + S.ms.toFixed(0) + 'ms').join(', '), NX.arc.prof ? JSON.stringify(NX.arc.prof, (k, v) => typeof v === 'number' ? Math.round(v) : v) : '');
-    return true;
+  // ---------- збірка вразбіг, показ, перебудова ----------
+  // JOB — збірка обох крил кроками (по шару за кадр); поки нова збірка не готова, показується попередня (зміна мови — без блимання)
+  let JOB = null, NEXT = null, want = true;
+  function step() {
+    if (!JOB) {
+      if (!want) return;
+      if (document.fonts && document.fonts.status !== 'loaded' && performance.now() - t0 < 2500) return;   // написи — коли шрифт готовий
+      want = false; NEXT = {}; JOB = (function* () { for (const sd of ['left', 'right']) NEXT[sd] = yield* buildSide(sd); })();
+    }
+    const a = performance.now();
+    while (performance.now() - a < 30) { const r = JOB.next(); if (r.done) {
+      JOB = null; Object.assign(SIDES, NEXT); NEXT = null; NX.arc.built = SIDES;
+      console.log('[arc] built', Object.values(SIDES).map(S => S && S.side + ' ' + S.ms.toFixed(0) + 'ms').join(', '), NX.arc.prof ? JSON.stringify(NX.arc.prof, (k, v) => typeof v === 'number' ? Math.round(v) : v) : '');
+      break; } }
   }
+  let lastFr = -1;
   function draw(c, side) {
     if (!offDone) { off(); offDone = true; }
-    if (!ensure()) return; const S = SIDES[side]; if (!S) return;
+    if (NX.loop.frames !== lastFr) { lastFr = NX.loop.frames; step(); }                                       // один крок збірки на кадр
+    const S = SIDES[side]; if (!S) return;
     const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);
     if (!S.comp || S.Rd !== Rd) { S.comp = compose(S, Rd); S.Rd = Rd; if (side === 'right' || !ALL.right) setTimeout(patchFront, 0); }
     c.save(); c.imageSmoothingEnabled = false; c.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]); c.restore();
     if (NX.arc.live) NX.arc.live(c, side, S, NX.time);
   }
-  NX.i18n.onLang(() => { if (!built) return; built = false; ['left', 'right'].forEach(sd => { if (SIDES[sd]) SIDES[sd].comp = null; }); });
+  NX.i18n.onLang(() => { want = true; });                                                                   // написи новою мовою — нова збірка (стара видна до готовності)
   NX.addObject({ id: 'arcLeft', span: [-12, 688], drawBack(c, t) { if (!c.isRefl) draw(c, 'left'); } });
   NX.addObject({ id: 'arcRight', span: [860, 1547], drawBack(c, t) { if (!c.isRefl) draw(c, 'right'); } });
-  NX.arc.scene = { SIDES, buildSide, compose };
+  NX.arc.scene = { SIDES, compose, rebuild() { want = true; } };
 })();

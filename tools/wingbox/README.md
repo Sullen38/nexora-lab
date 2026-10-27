@@ -1,27 +1,30 @@
 # tools/wingbox — схема крил у 3D (сірий макет)
 
-Інструменти, якими проєктуємо обидва крила кімнати в справжньому 3D у перспективі кімнати, перш ніж малювати
-піксель-артом. Результат — схема в `js/objects/rwing_box.js`, яку видно на сайті лише з адресою:
+Інструменти, якими проєктуємо обидва крила кімнати в справжньому 3D у перспективі кімнати. Розкладка (`js/objects/arc_layout.js`,
+`NX.arcLayout`) — спільна для схеми (`js/objects/rwing_box.js`) і для піксельного 3D (`js/objects/arc_scene.js`, адреса `#rw-3d`).
+На сайті (гілка `rw-arc`) видно лише з адресою:
 
 - `#rw-box` — схема з зонами (коробки, циліндри, листя з квітами, оздоби на гранях, написи з `NX.t`);
-- `#rw-base` — лише основа: стіни й підлога крил по дузі, без зон (видно, що лишається: диван, підлога, вікно, рами).
+- `#rw-base` — лише основа: стіни й підлога крил по дузі, без зон (видно, що лишається: диван, підлога, вікно, рами);
+- `#rw-3d` — те саме в піксельному 3D (рушій `js/core/px3d.js`, матеріали й малюнки — `js/objects/arc_*.js`; див. docs/HANDOFF.md).
 
 ## Файли
 
 | Файл | Що робить |
 |---|---|
-| `gen_room.py` | генератор: зони з частин картинки `assets/room.webp` → 3D по дузі; крок 15%; перевірки; план зверху; `--write` вшиває в `rwing_box.js` |
+| `gen_room.py` | генератор: зони з частин картинки `assets/room.webp` → 3D по дузі; крок 15%; перевірки; план зверху; `--write` пише в `js/objects/arc_layout.js` |
 | `plan.py` | геометрія: проєкція кімнати `P3`, грані `faces`, слід `footprint`, роздільна лінія `sep`, крива `catmull` |
-| `shot.js` | знімки з `dist/nexora-lab.html`: комп'ютер, кімната, ліве / праве крило, телефон 390×844, список об'єктів |
+| `shot.js` | знімки з `dist/nexora-lab.html`: комп'ютер, кімната, ліве / праве крило, телефон 390×844, список об'єктів (`--hash rw-box` / `rw-base` / `rw-3d`) |
 | `layout.json` | остання розкладка (те саме, що вшито в `rwing_box.js`) |
 
 ## Як користуватись
 
 ```bash
-python3 tools/wingbox/gen_room.py --plan /tmp/plan.png --write   # розкладка + план + вшити в rwing_box.js
+python3 tools/wingbox/gen_room.py --plan /tmp/plan.png --write   # розкладка + план + записати в js/objects/arc_layout.js
 python3 tools/build.py                                          # зібрати dist/
 node tools/wingbox/shot.js /tmp/s desk roomc zoomL zoomR ph     # знімки схеми (/tmp/s_desk.png …)
 node tools/wingbox/shot.js /tmp/b roomc --hash rw-base           # лише основа
+node tools/wingbox/shot.js /tmp/p desk zoomL zoomR ph --hash rw-3d   # піксельне 3D (shot.js сам чекає, поки зберуться шари)
 node tools/wingbox/shot.js /tmp/x roomc --layout my.json         # спробувати іншу розкладку без --write і без збірки
 ```
 

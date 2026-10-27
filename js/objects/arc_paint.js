@@ -190,6 +190,44 @@ NX.arc = NX.arc || {};
   ['tl_cabL', 'tl_cabR'].forEach(id => { PAINT[id] = (c, fw, fh) => { drawer(c, fw * .07, fh * .1, fw * .86, fh * .38, { led: '#3be8ff' }); drawer(c, fw * .07, fh * .54, fw * .86, fh * .38); }; });
   PAINT.an_poster = (c, fw, fh) => { c.fillStyle = '#0a0620'; rr(c, 0, 0, fw, fh, 2); c.fill(); A.neonRect(c, 1, 1, fw - 2, fh - 2, '#ff4fd8', .8, 2); icon(c, 'chart', fw / 2, fh / 2, Math.min(fw, fh) * .55, '#7af4ff'); };
 
+  // ---------- ПОСТЕРИ В РАМКАХ (оздоби стіни, objects/arc_scene.js: DECOR) ----------
+  /** «NEXORA» — синтвейв: небо, смугасте сонце, неонова сітка, силует Nexi з антеною. */
+  PAINT.poster_nexora = (c, fw, fh) => {
+    const m = 1.6, x = m, y = m, w = fw - m * 2, h = fh - m * 2, g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#12062e'); g.addColorStop(.55, '#5a1462'); g.addColorStop(.62, '#ff5aa8'); g.addColorStop(.64, '#1a0636'); g.addColorStop(1, '#0a0420');
+    c.fillStyle = g; c.fillRect(x, y, w, h); const cx = x + w / 2, cy = y + h * .6, r = w * .3;
+    c.save(); c.beginPath(); c.rect(x, y, w, h * .6); c.clip(); const sg = c.createLinearGradient(0, cy - r, 0, cy); sg.addColorStop(0, '#ffe27a'); sg.addColorStop(1, '#ff4fa8'); c.fillStyle = sg; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+    c.fillStyle = '#5a1462'; for (let k = 0; k < 4; k++) c.fillRect(x, cy - r * (.15 + k * .17), w, r * (.04 + k * .015)); c.restore();
+    c.strokeStyle = '#3be8ff'; c.lineWidth = .4; for (let k = 1; k < 6; k++) { const yy = cy + (h * .4) * (k / 6) ** 1.6; c.beginPath(); c.moveTo(x, yy); c.lineTo(x + w, yy); c.stroke(); }
+    for (let k = -4; k <= 4; k++) { c.beginPath(); c.moveTo(cx + k * w * .04, cy); c.lineTo(cx + k * w * .3, y + h); c.stroke(); }
+    c.fillStyle = '#0a0420'; c.beginPath(); c.arc(cx, cy - r * .42, r * .34, 0, 7); c.fill(); c.fillRect(cx - r * .3, cy - r * .2, r * .6, r * .2); c.fillRect(cx - .3, cy - r * .95, .6, r * .25); c.beginPath(); c.arc(cx, cy - r * .98, .9, 0, 7); c.fill();
+    c.fillStyle = '#3be8ff'; c.fillRect(cx - r * .17, cy - r * .48, r * .12, r * .1); c.fillRect(cx + r * .05, cy - r * .48, r * .12, r * .1);
+    A.txt(c, 'NEXORA', cx, y + h * .12, w * .8, h * .09, '#ff9af0', { glow: '#ff4fd8' });
+  };
+  /** «МЯУ» — рудий кіт у сонцезахисних окулярах (як Рудик). */
+  PAINT.poster_meow = (c, fw, fh) => {
+    const m = 1.5, x = m, y = m, w = fw - m * 2, h = fh - m * 2, g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#2a0c5a'); g.addColorStop(1, '#8a1a7a'); c.fillStyle = g; c.fillRect(x, y, w, h);
+    const cx = x + w / 2, cy = y + h * .5, r = w * .3;
+    c.fillStyle = '#e8862a'; c.beginPath(); c.moveTo(cx - r * .95, cy - r * .3); c.lineTo(cx - r * .7, cy - r * 1.2); c.lineTo(cx - r * .2, cy - r * .75); c.fill(); c.beginPath(); c.moveTo(cx + r * .95, cy - r * .3); c.lineTo(cx + r * .7, cy - r * 1.2); c.lineTo(cx + r * .2, cy - r * .75); c.fill();
+    c.beginPath(); c.ellipse(cx, cy, r, r * .82, 0, 0, 7); c.fill(); c.fillStyle = '#ffd0a0'; c.beginPath(); c.ellipse(cx, cy + r * .35, r * .45, r * .3, 0, 0, 7); c.fill();
+    c.fillStyle = '#c86418'; for (let k = -1; k <= 1; k++) c.fillRect(cx + k * r * .3 - r * .05, cy - r * .78, r * .1, r * .3);
+    c.fillStyle = '#0a0420'; c.fillRect(cx - r * .8, cy - r * .2, r * .68, r * .34); c.fillRect(cx + r * .12, cy - r * .2, r * .68, r * .34); c.fillRect(cx - r * .12, cy - r * .12, r * .24, r * .08);
+    c.fillStyle = '#7af4ff'; c.fillRect(cx - r * .68, cy - r * .14, r * .2, r * .07); c.fillRect(cx + r * .24, cy - r * .14, r * .2, r * .07); c.fillStyle = '#ff6ab0'; c.fillRect(cx - r * .06, cy + r * .22, r * .12, r * .08);
+    A.txt(c, t('scene.poster.meow'), cx, y + h * .88, w * .8, h * .1, '#ffe27a', { glow: '#ff9a3a' });
+  };
+  /** Ботанічний принт: світлий папір, листок монстери з розрізами, підпис-«латиною» — штрихами. */
+  PAINT.poster_leaf = (c, fw, fh) => {
+    const m = 1.4, x = m, y = m, w = fw - m * 2, h = fh - m * 2; c.fillStyle = '#e8e0d0'; c.fillRect(x, y, w, h);
+    const cx = x + w / 2, cy = y + h * .46, r = Math.min(w, h) * .36; c.fillStyle = '#2f8a54'; c.beginPath(); c.ellipse(cx, cy, r, r * .9, -.3, 0, 7); c.fill();
+    c.strokeStyle = '#e8e0d0'; c.lineWidth = .7; for (let k = 0; k < 5; k++) { const a = -2.4 + k * .55; c.beginPath(); c.moveTo(cx + Math.cos(a) * r * .35, cy + Math.sin(a) * r * .35); c.lineTo(cx + Math.cos(a) * r * 1.1, cy + Math.sin(a) * r); c.stroke(); }
+    c.strokeStyle = '#1a5a34'; c.lineWidth = .4; c.beginPath(); c.moveTo(cx - r * .6, cy + r * .6); c.lineTo(cx + r * .5, cy - r * .5); c.stroke(); c.strokeStyle = '#4a3a2a'; c.beginPath(); c.moveTo(cx - r * .6, cy + r * .6); c.lineTo(cx - r * .8, y + h * .92); c.stroke();
+    c.fillStyle = '#6a5a4a'; c.fillRect(x + w * .2, y + h * .9, w * .6, .5);
+  };
+  /** Технічна табличка (праве крило): жовто-чорні смуги, блискавка. */
+  PAINT.poster_warn = (c, fw, fh) => {
+    c.fillStyle = '#ffd23a'; c.fillRect(1, 1, fw - 2, fh - 2); c.save(); c.beginPath(); c.rect(1, 1, fw - 2, fh * .22); c.rect(1, fh * .78, fw - 2, fh * .22 - 1); c.clip(); c.fillStyle = '#14101e'; for (let k = -6; k < 12; k++) { c.beginPath(); c.moveTo(k * 4, 0); c.lineTo(k * 4 + 2, 0); c.lineTo(k * 4 + 2 + fh, fh); c.lineTo(k * 4 + fh, fh); c.fill(); } c.restore();
+    icon(c, 'bolt', fw / 2, fh / 2, Math.min(fw, fh) * .42, '#14101e');
+  };
+
   // ---------- ПРАВЕ КРИЛО ----------
   /** Екран NEXORA AI: назва, карта світу з пінгами, плитки (чат, пошта, графік, бот), лінія активності. */
   PAINT.hub = (c, fw, fh) => {
@@ -242,4 +280,5 @@ NX.arc = NX.arc || {};
     c.restore();
     arch(); c.strokeStyle = '#bcc5e6'; c.lineWidth = 2.4; c.stroke(); arch(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.stroke(); arch(); c.strokeStyle = '#e4fdff'; c.lineWidth = .35; c.stroke();
   };
+  NX.arc.pt = { glass, bars, lineChart, donut, icon, tile, brain, map, drawer, rr, F, R, IC };   // для живих екранів (objects/arc_live.js)
 })();

@@ -35,9 +35,9 @@ NX.arc = NX.arc || {};
   /** Піксельні квіти на верхніх кінчиках листя спрайта (полотно 4 px/од.). cols — кольори пелюсток. */
   function blooms(cv, cols, seed, n) {
     const c = cv.getContext('2d', { willReadFrequently: true }), w = cv.width, h = cv.height, d = new Uint32Array(c.getImageData(0, 0, w, h).data.buffer), top = [];
-    for (let x = 2; x < w - 2; x++) for (let y = 0; y < h * .72; y++) if ((d[y * w + x] >>> 24) > 100) { top.push([x, y]); break; }
+    for (let x = 4; x < w - 4; x += 2) for (let y = 0; y < h * .8; y++) if ((d[y * w + x] >>> 24) > 100) { top.push([x, y + 2]); break; }
     if (!top.length) return;
-    const k = Math.max(3, Math.round(w / 40)), picks = [];
+    const k = Math.max(5, Math.round(w / 16)), picks = [];                                                     // радіус квітки (px спрайта, 4 px/од.)
     for (let q = 0; q < n * 4 && picks.length < n; q++) {
       const p = top[Math.floor(hash(seed, q) * top.length)]; if (picks.some(o => Math.hypot(o[0] - p[0], o[1] - p[1]) < k * 3.2)) continue; picks.push(p);
     }
