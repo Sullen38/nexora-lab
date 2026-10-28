@@ -18,8 +18,10 @@ NX.cat = {
   FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
   x: 60, y: 397, ground: 397, alt: 0, dir: -1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, desk: null, cv: document.createElement('canvas'), name: 'Рудик',
+  /** Місце на дивані (задане для старого місця дивану — переноситься разом з ним, core/config.js sofaPt) і точка підлоги перед ним. */
+  sofaSpot(k, x, y) { const [sx, sy] = NX.cfg.sofaPt(x, y), [, fy] = NX.cfg.sofaPt(x, 384); return { [k]: { x: sx, y: sy, from: [sx, fy] } }; },
   spots() { const cc = NX.objects.catCorner; return {
-    bed: { x: 60, y: 397 }, platform: { x: 78, y: 368, from: [78, 400] }, sofa: { x: 830, y: 324, from: [830, 384] }, sofaArm: { x: 871, y: 301, from: [871, 384] },
+    bed: { x: 60, y: 397 }, platform: { x: 78, y: 368, from: [78, 400] }, ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301),
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
     beanbag: { x: NX.objects.lounge.pos[0] + 6, y: NX.objects.lounge.pos[1] - 26 * NX.px.depthK(NX.objects.lounge.pos[1]), from: [NX.objects.lounge.pos[0] + 6, NX.objects.lounge.pos[1] + 6] } }; },
 
@@ -121,7 +123,8 @@ NX.cat = {
     }
   },
   layer() {
-    return { y: this.y + (this.alt > 0 ? 6 : 0), refl: true, draw: c => {
+    const onSofa = NX.objects.sofa && NX.objects.sofa.holds(this.x, this.y, this.ground);   // на дивані — поверх нього (диван може стояти ближче до глядача)
+    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, draw: c => {
       const s = NX.room.scaleAt(this.depthY()) * .82, lift = this.riding ? 5 * NX.px.depthK(this.y) : 0, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
       if (this._rt !== NX.time) { this._rt = NX.time; drawCat(this.pose, this.frame, NX.time, this.cv); }
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();

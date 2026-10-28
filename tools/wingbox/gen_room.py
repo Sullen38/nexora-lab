@@ -7,6 +7,10 @@
 #   ліворуч (затишне):       маркетинг (біля вікна) -> аналітика -> AI-центр зі стелажем (полиці, вазони, чайник-лампа);
 #                            настінні полиці вздовж дуги з вазонами, квітами, плющем і книжками, ліани й ліхтар
 # Розміри зон — крок 15%: найближча 100, середня 85, дальня 72 (висота головних частин на екрані: HP, HP·.85, HP·.85²).
+# Розміщення (власник, 28.10: «екрани — ближче до стіни, зони окремо, маркетинг і майстерню — ширше до дивану»):
+#   дальня — спиною до стіни з вікном (far_place: gap до стіни, X — середина на екрані, kx > 1 — ширша, заходить за диван);
+#   середня й найближча — СПИНОЮ ДО ДУГИ (wall_place: a — кут на дузі, gap — до стіни, turn — поворот; менший за a —
+#   фронтальніше, у перспективі кімнати). Звіт: проміжок до стіни (wall gap) і проміжки між зонами на екрані (SEP).
 # Кожна зона зібрана з частин картинки-концепту assets/room.webp: X, Y — прямокутник частини на картинці (пікселі
 # кімнати), v — наскільки частина відступає вглиб від передньої лінії зони, d — її глибина. Частини переносяться в 3D
 # зони: m — од. світу на піксель картинки, kx — стиснення по ширині проти ширококутного розтягу на краях кадру.
@@ -16,6 +20,7 @@
 #   python3 tools/wingbox/gen_room.py [out.json] [--params p.json] [--plan plan.png] [--write]
 #     --write — вшити розкладку в js/objects/arc_layout.js;   --plan — план зверху (PNG)
 #   Перевірки друкуються: висоти зон (15%), перетини об'ємів (INTERSECT), що за стіною (BEHIND WALL) — мають бути none.
+#   На плані диван — там, де він у #rw-3d (NX.cfg.SOFA_Y3D: лінія підлоги на екрані -> глибина в кімнаті).
 import json, math, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, HERE)
@@ -25,6 +30,9 @@ def _win():
     m = re.search(r'WIN:\s*\{\s*L:\s*([\d.]+),\s*R:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read())
     return float(m.group(1)), float(m.group(2))
 WL, WR = _win()                                                                     # зовнішні краї відкосів на екрані
+SOFA_Y3D = float(re.search(r'SOFA_Y3D:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read()).group(1))   # диван у #rw-3d (лінія підлоги на екрані)
+def sofa_k(y):                                                                      # масштаб дивану — як у персонажів (NX.room.scaleAt)
+    sc = lambda v: 1.45 + 1.25 * max(0, min(1, (v - 352) / 330)); return sc(y) / sc(362)
 JAMB_L, JAMB_R = 774 + (WL - 774) * (D + JZ) / D, 774 + (WR - 774) * (D + JZ) / D  # ті самі краї у світі (на глибині JZ)
 SHELF_Y = (34, 69, 123, 183, 226, 258)                                              # дошки стелажа AI-центру (y на картинці)
 def s(z): return D / (D + z)
@@ -66,7 +74,7 @@ def workshop():
     for id_, X0, X1, stp in (('ws_postL', 932, 958, 'ws_stepL'), ('ws_postR', 1052, 1078, 'ws_stepR')):
         Z.add(id_, X0, X1, 212, 316, 10, 28, 'frame', on=stp, deco=[dict(t='l', f=[.5, .08, .5, .92], col=NEON_C, lw=1.4), dict(t='r', f=[.2, .8, .7, .82], fill='#0a0620', line=NEON_P)])
     Z.add('ws_beam', 924, 1086, 180, 212, 8, 30, 'frame', ch=(12, 12), deco=[dict(t='l', f=[.05, .9, .95, .9], col=NEON_P, lw=1.2)])
-    sign(Z, 'ws_sign', 955, 1056, 174, 204, 2, 6, 'nav.workshop', NEON_P)
+    sign(Z, 'ws_sign', 955, 1056, 174, 204, 1.4, 6, 'nav.workshop', NEON_P)
     Z.add('ws_dome', 975, 1035, 160, 180, 14, 22, 'dome', on='ws_beam', cyl=12, band=1)
     Z.add('ws_armMount', 996, 1014, 150, 160, 20, 10, 'dark', on='ws_dome', cyl=10)
     for id_, X0, X1, st in (('ws_wingL', 905, 928, 'ws_stepL'), ('ws_wingR', 1082, 1105, 'ws_stepR')):
@@ -126,7 +134,7 @@ def portal():
     Z.add('pt_pillR', 1458, 1493, 150, 340, 6, 38, 'pframe', on='pt_d2', deco=[dict(t='l', f=[.5, .04, .5, .96], col=NEON_P, lw=1.6)])
     Z.add('pt_beam', 1297, 1493, 97, 150, 4, 40, 'pframe', ch=(26, 16), deco=[dict(t='l', f=[.05, .92, .95, .92], col=NEON_P, lw=1.2)])
     sign(Z, 'pt_sign', 1352, 1468, 116, 150, -.6, 4, 'nav.portal', '#d98aff')
-    Z.add('pt_crys1', 1372, 1392, 296, 340, 26, 8, 'glass', on='pt_d2', ch=(10, 10))
+    Z.add('pt_crys1', 1372, 1392, 296, 340, 25.4, 8, 'glass', on='pt_d2', ch=(10, 10))
     Z.add('pt_crys2', 1396, 1416, 312, 340, 24, 8, 'glass', on='pt_d2', ch=(9, 9))
     Z.plant('pt_gold', 1448, 1480, 306, 340, -14, 16, 44, 28, st='gold', on='pt_d2')
     Z.plant('pt_plantR', 1506, 1530, 312, 360, -34, 22, 58, 62, st='stand')
@@ -135,68 +143,71 @@ def portal():
 # ===================================== ЛІВЕ КРИЛО =====================================
 def marketing():
     Z = Zone('marketing', 585, 337, ('mk_booth', 'mk_deskL'))
+    DD = 10
     bo = (530, 647, 173, 337)
-    Z.add('mk_booth', *bo, 31, 10, 'frame', ch=(6, 6), deco=[dict(t='r', f=F(557, 637, 210, 262, *bo), fill='#0c3a7a', line=NEON_C),
+    Z.add('mk_booth', *bo, 31 + DD, 10, 'frame', ch=(6, 6), deco=[dict(t='r', f=F(557, 637, 210, 262, *bo), fill='#0c3a7a', line=NEON_C),
         dict(t='r', f=F(561, 595, 214, 258, *bo), fill='#1a5ab0', line='#7af4ff'), dict(t='r', f=F(599, 633, 214, 258, *bo), fill='#1a5ab0', line='#7af4ff'),
         dict(t='bars', f=F(564, 592, 230, 256, *bo), n=5, fill='#7af4ff'), dict(t='c', f=[*FP(616, 236, *bo), .08], line='#7af4ff', lw=1)])
-    sign(Z, 'mk_sign', 543, 640, 178, 202, 28.4, 2.5, 'nav.marketing', NEON_P)
+    sign(Z, 'mk_sign', 543, 640, 178, 202, 28.4 + DD, 2.5, 'nav.marketing', NEON_P)
     for id_, X0, X1, dr in (('mk_deskL', 450, 583, (463, 480)), ('mk_deskR', 637, 683, (650, 670))):
         c = (X0, X1, 280, 337)
-        Z.add(id_, *c, 0, 30, 'desk', deco=[dict(t='l', f=[0, .04, 1, .04], col=NEON_P, lw=1.2), dict(t='r', f=F(dr[0], dr[1], 290, 333, *c), fill='#1a1238', line='#6a4ab0'),
+        Z.add(id_, *c, 0, 30 + DD, 'desk', deco=[dict(t='l', f=[0, .04, 1, .04], col=NEON_P, lw=1.2), dict(t='r', f=F(dr[0], dr[1], 290, 333, *c), fill='#1a1238', line='#6a4ab0'),
             *[dict(t='l', f=[*FP(dr[0], y, *c), *FP(dr[1], y, *c)], col='#6a4ab0') for y in (304, 318)]])
     Z.add('mk_chairB', 594, 626, 266, 302, 12.5, 5, 'chair'); Z.add('mk_seat', 590, 630, 300, 309, -10, 22, 'chair'); Z.add('mk_chairBase', 602, 618, 309, 337, -4, 10, 'dark', cyl=8)
-    Z.add('mk_post', 514, 521, 170, 337, 34, 5, 'dark')
-    Z.add('mk_bulb', 503, 533, 136, 170, 30.5, 12, 'lamp', on='mk_post', glow=1, gr=44, cyl=10)
+    Z.add('mk_post', 514, 521, 170, 337, 34 + DD, 5, 'dark')
+    Z.add('mk_bulb', 503, 533, 136, 170, 30.5 + DD, 12, 'lamp', on='mk_post', glow=1, gr=44, cyl=10)
     Z.plant('mk_plant1', 470, 495, 262, 280, 8, 14, 40, 36, on='mk_deskL')
     Z.plant('mk_plant2', 522, 546, 264, 280, 6, 14, 36, 30, on='mk_deskL', bloom=['#ff7ad0', '#ffd27a'])
     Z.add('mk_lampR', 652, 674, 244, 280, 8, 12, 'lamp', on='mk_deskR', glow=1, gr=36)
-    Z.add('mk_stand', 472, 494, 230, 337, 33, 10, 'stand')
-    Z.plant('mk_standPot', 468, 498, 208, 230, 33.5, 9, 54, 46, on='mk_stand')
+    Z.add('mk_stand', 472, 494, 230, 337, 33 + DD, 10, 'stand')
+    Z.plant('mk_standPot', 468, 498, 208, 230, 33.5 + DD, 9, 54, 46, on='mk_stand')
     return Z
 
 def analytics():
     Z = Zone('analytics', 398, 340, ('an_booth', 'an_desk'))
+    DD = 20                                                                        # власник: стільниця більша, екрани — до стіни
     bo = (335, 463, 150, 340)
-    Z.add('an_booth', *bo, 36, 16, 'frame', ch=(8, 8), deco=[dict(t='r', f=F(348, 392, 197, 247, *bo), fill='#0c3a7a', line=NEON_C), dict(t='bars', f=F(352, 388, 205, 243, *bo), n=6, fill='#7af4ff'),
+    Z.add('an_booth', *bo, 36 + DD, 16, 'frame', ch=(8, 8), deco=[dict(t='r', f=F(348, 392, 197, 247, *bo), fill='#0c3a7a', line=NEON_C), dict(t='bars', f=F(352, 388, 205, 243, *bo), n=6, fill='#7af4ff'),
         dict(t='r', f=F(398, 443, 200, 243, *bo), fill='#0c3a7a', line=NEON_C), dict(t='c', f=[*FP(420, 222, *bo), .1], fill='#1a5ab0', line='#7af4ff', lw=1)])
-    sign(Z, 'an_sign', 353, 443, 163, 190, 32.5, 3, 'nav.analytics', NEON_C)
-    Z.plant('an_plantTop', 392, 436, 140, 150, 38, 12, 90, 66, on='an_booth')
-    de = (313, 480, 280, 340)
-    Z.add('an_desk', *de, 0, 34, 'desk', deco=[dict(t='l', f=[0, .04, 1, .04], col=NEON_P, lw=1.2), dict(t='r', f=F(458, 478, 290, 336, *de), fill='#1a1238', line='#6a4ab0'),
+    sign(Z, 'an_sign', 353, 443, 163, 190, 32.5 + DD, 3, 'nav.analytics', NEON_C)
+    Z.plant('an_plantTop', 392, 436, 140, 150, 38 + DD, 12, 90, 66, on='an_booth')
+    de = (322, 476, 280, 340)
+    Z.add('an_desk', *de, 0, 34 + DD, 'desk', deco=[dict(t='l', f=[0, .04, 1, .04], col=NEON_P, lw=1.2), dict(t='r', f=F(458, 478, 290, 336, *de), fill='#1a1238', line='#6a4ab0'),
         dict(t='r', f=F(318, 338, 290, 336, *de), fill='#1a1238', line='#6a4ab0')])
-    Z.add('an_scr', 444, 472, 252, 280, 10, 6, 'screen', on='an_desk', deco=[dict(t='r', f=[.1, .9, .1, .8], fill='#3be8ff')])
-    Z.add('an_mug', 330, 340, 270, 280, 8, 8, 'item', on='an_desk', cyl=8)
-    Z.add('an_chairB', 402, 438, 262, 306, -34, 5, 'chair'); Z.add('an_seat', 398, 442, 300, 310, -28.5, 22, 'chair'); Z.add('an_chairBase', 412, 428, 310, 340, -22, 10, 'dark', cyl=8)
-    Z.plant('an_potL', 282, 310, 304, 340, -22, 22, 52, 48)
-    Z.add('an_poster', 383, 427, 92, 122, 46, 3, 'neon', deco=[dict(t='c', f=[.5, .5, .25], line=NEON_P, lw=1.4)])
+    Z.add('an_scr', 444, 472, 252, 280, 10 + DD * .5, 6, 'screen', on='an_desk', deco=[dict(t='r', f=[.1, .9, .1, .8], fill='#3be8ff')])
+    Z.add('an_mug', 330, 340, 270, 280, 8 + DD * .4, 8, 'item', on='an_desk', cyl=8)
+    Z.add('an_chairB', 402, 438, 262, 306, -28, 5, 'chair'); Z.add('an_seat', 398, 442, 300, 310, -22.5, 22, 'chair'); Z.add('an_chairBase', 412, 428, 310, 340, -16, 10, 'dark', cyl=8)
+    Z.plant('an_potL', 486, 512, 306, 340, -14, 20, 50, 46)                       # вазон — праворуч від стола (ліворуч — AI-центр: зони окремо)
+    Z.add('an_poster', 383, 427, 92, 122, 46 + DD, 3, 'neon', deco=[dict(t='c', f=[.5, .5, .25], line=NEON_P, lw=1.4)])
     return Z
 
 def aicenter():
     Z = Zone('ai', 158, 363, ('ai_screen', 'ai_top'))
-    Z.add('ai_top', 30, 330, 290, 300, -4, 48, 'desk', deco=[dict(t='r', f=[0, 1, 0, .6], fill='#ff7ad0')])
-    Z.add('ai_drawers', 160, 200, 300, 363, 4, 38, 'desk', notop=1, deco=[*[dict(t='r', f=[.1, .9, a, b], fill='#140c30', line='#6a4ab0') for a, b in ((.06, .32), (.38, .64), (.7, .96))]])
-    for id_, X0 in (('ai_legL', 34), ('ai_legR', 318)): Z.add(id_, X0, X0 + 8, 300, 363, 6, 34, 'dark', notop=1)
+    DD = 20                                                                        # власник: стільниця більша, екран і стелаж — до стіни (+DD углиб)
+    Z.add('ai_top', 30, 330, 290, 300, -4, 48 + DD, 'desk', deco=[dict(t='r', f=[0, 1, 0, .6], fill='#ff7ad0')])
+    Z.add('ai_drawers', 160, 200, 300, 363, 4, 38 + DD, 'desk', notop=1, deco=[*[dict(t='r', f=[.1, .9, a, b], fill='#140c30', line='#6a4ab0') for a, b in ((.06, .32), (.38, .64), (.7, .96))]])
+    for id_, X0 in (('ai_legL', 34), ('ai_legR', 318)): Z.add(id_, X0, X0 + 8, 300, 363, 6, 34 + DD, 'dark', notop=1)
     sc = (77, 238, 47, 290)
-    Z.add('ai_screen', *sc, 40, 8, 'neon', ch=(10, 10), deco=[dict(t='r', f=F(85, 230, 55, 282, *sc), fill='#0a1a5a', line=NEON_C),
+    Z.add('ai_screen', *sc, 40 + DD, 8, 'neon', ch=(10, 10), deco=[dict(t='r', f=F(85, 230, 55, 282, *sc), fill='#0a1a5a', line=NEON_C),
         dict(t='bars', f=F(93, 130, 110, 158, *sc), n=6, fill='#3be8ff'), dict(t='bars', f=F(93, 130, 165, 213, *sc), n=6, fill='#3be8ff'),
         dict(t='c', f=[*FP(168, 160, *sc), .2], line='#7af4ff', lw=1.6), dict(t='c', f=[*FP(168, 160, *sc), .12], line='#7af4ff', lw=1),
         dict(t='grid', f=F(203, 230, 120, 267, *sc), nx=1, ny=5, gap=.08, fill='#0e2a6a', line='#7af4ff', icon='#7af4ff')])
-    sign(Z, 'ai_sign', 87, 230, 63, 100, 37.5, 2, 'nav.ai', NEON_C)
-    Z.add('ai_mon', 28, 118, 207, 290, 16, 6, 'screen', on='ai_top', deco=[dict(t='r', f=[.06, .94, .07, .86], fill='#0c3a7a', line=NEON_C), dict(t='bars', f=[.12, .88, .2, .8], n=7, fill='#7af4ff')])
-    Z.add('ai_holoB', 150, 186, 282, 290, 14, 16, 'dark', on='ai_top', cyl=10, band=1)
-    Z.add('ai_holo', 142, 194, 214, 282, 22, 2, 'glass', on='ai_holoB', deco=[dict(t='c', f=[.5, .45, .36], line='#7af4ff', lw=1.6), dict(t='c', f=[.5, .45, .2], line='#9af8ff', lw=1)])
-    Z.add('ai_laptop', 242, 283, 262, 290, 10, 14, 'screen', on='ai_top', deco=[dict(t='r', f=[.1, .9, .1, .9], fill='#1a5ab0', line='#7af4ff')])
-    Z.add('ai_mug', 286, 296, 278, 290, 6, 8, 'item', on='ai_top', cyl=8)
-    Z.add('ai_lampS', 121, 137, 254, 290, 22, 10, 'lamp', on='ai_top', glow=1, cyl=8)
-    Z.add('ai_shelfTop', 53, 213, 34, 44, 42, 8, 'shelf')
-    Z.add('ai_top1', 56, 118, 2, 34, 43, 3, 'screen', on='ai_shelfTop', deco=[dict(t='r', f=[.06, .94, .1, .9], fill='#0c3a7a', line=NEON_C), dict(t='bars', f=[.12, .88, .25, .85], n=6, fill='#7af4ff')])
-    Z.add('ai_top2', 128, 190, 2, 34, 43, 3, 'screen', on='ai_shelfTop', deco=[dict(t='r', f=[.06, .94, .1, .9], fill='#0c3a7a', line=NEON_C)])
-    Z.add('ai_lampO', 196, 210, 12, 34, 43.5, 4, 'lamp', on='ai_shelfTop', glow=1, gr=40)
+    sign(Z, 'ai_sign', 87, 230, 63, 100, 37.5 + DD, 2, 'nav.ai', NEON_C)
+    Z.add('ai_mon', 28, 118, 207, 290, 16 + DD * .5, 6, 'screen', on='ai_top', deco=[dict(t='r', f=[.06, .94, .07, .86], fill='#0c3a7a', line=NEON_C), dict(t='bars', f=[.12, .88, .2, .8], n=7, fill='#7af4ff')])
+    Z.add('ai_holoB', 150, 186, 282, 290, 14 + DD * .5, 16, 'dark', on='ai_top', cyl=10, band=1)
+    Z.add('ai_holo', 142, 194, 214, 282, 22 + DD * .5, 2, 'glass', on='ai_holoB', deco=[dict(t='c', f=[.5, .45, .36], line='#7af4ff', lw=1.6), dict(t='c', f=[.5, .45, .2], line='#9af8ff', lw=1)])
+    Z.add('ai_laptop', 242, 283, 262, 290, 10 + DD * .3, 14, 'screen', on='ai_top', deco=[dict(t='r', f=[.1, .9, .1, .9], fill='#1a5ab0', line='#7af4ff')])
+    Z.add('ai_mug', 286, 296, 278, 290, 6 + DD * .2, 8, 'item', on='ai_top', cyl=8)
+    Z.add('ai_lampS', 121, 137, 254, 290, 22 + DD * .6, 10, 'lamp', on='ai_top', glow=1, cyl=8)
+    Z.add('ai_shelfTop', 53, 213, 34, 44, 42 + DD, 8, 'shelf')
+    Z.add('ai_top1', 56, 118, 2, 34, 43 + DD, 3, 'screen', on='ai_shelfTop', deco=[dict(t='r', f=[.06, .94, .1, .9], fill='#0c3a7a', line=NEON_C), dict(t='bars', f=[.12, .88, .25, .85], n=6, fill='#7af4ff')])
+    Z.add('ai_top2', 128, 190, 2, 34, 43 + DD, 3, 'screen', on='ai_shelfTop', deco=[dict(t='r', f=[.06, .94, .1, .9], fill='#0c3a7a', line=NEON_C)])
+    Z.add('ai_lampO', 196, 210, 12, 34, 43.5 + DD, 4, 'lamp', on='ai_shelfTop', glow=1, gr=40)
     # стелаж (картинка x 240..335, між екраном AI-центру й аналітикою): бокові стінки, задня стінка, 6 дощок і речі на них
-    SV = 36                                                                         # передній край дощок (відступ від лінії зони)
+    SV = 36 + DD                                                                    # передній край дощок (відступ від лінії зони) — в ряд з екраном
     Z.add('sh_postL', 240, 246, 20, 290, SV, 18, 'shelf')
     Z.add('sh_postR', 329, 335, 20, 290, SV, 18, 'shelf')
-    Z.add('sh_back', 246, 329, 20, 290, SV + 16, 2, 'dark')
+    Z.add('sh_back', 246, 329, 20, 290, SV + 16.3, 2, 'dark')
     for i, y in enumerate(SHELF_Y):
         Z.add(f'sh_b{i}', 246.5, 328.5, y, y + 4, SV, 16, 'shelf', deco=[dict(t='l', f=[0, .5, 1, .5], col='#ff7ad0', lw=1)])
     Z.plant('sh_ivy', 252, 268, 22, 34, SV + 4, 9, 26, 46, on='sh_b0', hangs=1)                     # плющ звисає з верхньої полиці
@@ -211,10 +222,10 @@ def aicenter():
     Z.add('sh_books', 252, 288, 238, 258, SV + 3, 11, 'item', on='sh_b5', deco=[dict(t='r', f=[a, a + .13, .05 + (.2 if k % 3 == 1 else 0), 1], fill=col, line='#0a0620') for k, (a, col) in enumerate(((.02, '#c84a8a'), (.17, '#4a8ad0'), (.32, '#d8a030'), (.47, '#6a4ac0'), (.62, '#3aa858'), (.77, '#ff7ad0')))])
     Z.plant('sh_flowers2', 294, 322, 236, 258, SV + 3, 11, 40, 30, on='sh_b5', bloom=['#ff9af0', '#ffd27a'])
     Z.plant('ai_potF', 248, 280, 324, 363, -26, 22, 46, 44, bloom=['#ff7ad0', '#ffd27a'])          # вазон з квітами перед столом
-    Z.add('ai_ped', 44, 78, 238, 363, 48, 10, 'stand')
-    Z.plant('ai_fern', 42, 80, 220, 238, 48.5, 9, 80, 70, on='ai_ped')
+    Z.add('ai_ped', 40, 74, 238, 363, 48 + DD, 10, 'stand')
+    Z.plant('ai_fern', 38, 76, 220, 238, 48.5 + DD, 9, 80, 70, on='ai_ped')
     Z.plant('ai_potBL', 30, 64, 318, 363, -30, 24, 44, 42)
-    Z.plant('ai_potUnder', 210, 238, 340, 363, 8, 18, 34, 22)
+    Z.plant('ai_potUnder', 210, 238, 340, 363, 8 + DD * .5, 18, 34, 22)
     for i, (X0, X1) in enumerate(((70, 96), (102, 126), (132, 156))):
         Z.add(f'ai_stone{i}', X0, X1, 350, 363, -34 + i * 3, 14, 'stone', ch=(5, 5))
     return Z
@@ -258,9 +269,33 @@ def free(Z, q):
     def pos(m, kx=1.):
         uc = (lo + hi) / 2 * m * kx; cx = 774 + (q['X'] - 774) / s(q['z']); return cx - r[0] * uc, q['z'] - r[1] * uc, q['turn']
     return pos
+def wall_place(Z, q, C, R, sgn):
+    """зона СПИНОЮ ДО СТІНИ (власник, 28.10: «екрани — ближче до стіни»): середина її ширини — на радіусі під кутом a від центру
+    дуги C; зону посуваємо до стіни, доки найдальша точка її сліду не опиниться за gap від дуги. turn — поворот (за замовч. —
+    лицем до центру дуги, ±a; менший — фронтальніше, ближче до перспективи кімнати)."""
+    a = q['a']; t = q.get('turn', sgn * a); ta = math.radians(t); f = (-math.sin(ta), -math.cos(ta)); r = (-f[1], f[0])
+    lo, hi = width_extent(Z); dx, dz = sgn * math.sin(math.radians(a)), math.cos(math.radians(a)); g = q.get('gap', 4)
+    def pos(m, kx=1.):
+        uc = (lo + hi) / 2 * m * kx
+        def at(rho): return C[0] + dx * rho - r[0] * uc, C[1] + dz * rho - r[1] * uc
+        a0, a1 = 0., R
+        for _ in range(22):
+            rho = (a0 + a1) / 2; it = place(Z, *at(rho), t, m, kx)
+            if max(math.hypot(px - C[0], pz - C[1]) for i in it for px, pz in fpr(i)) > R - g: a1 = rho
+            else: a0 = rho
+        return (*at(a0), t)
+    return pos
+def far_place(Z, q):
+    """дальня зона біля вікна: прямо, спиною до стіни з вікном (задня грань на z = JZ − gap), середина ширини — на екранному X;
+    kx > 1 — ширша (власник: «маркетинг і майстерню — ширше до дивану»)"""
+    lo, hi = width_extent(Z); vmax = max(c['v'] + c['d'] for c in Z.comps if not c.get('plant'))
+    def pos(m, kx=1.):
+        z = JZ - q.get('gap', 6) - vmax * m; uc = (lo + hi) / 2 * m * kx
+        return 774 + (q['X'] - 774) / s(z) - uc, z, 0
+    return pos
 def solve_m(Z, pos, target, kx=1.):
     lo, hi = .3, 3.
-    for _ in range(36):
+    for _ in range(26):
         m = (lo + hi) / 2; it = place(Z, *pos(m, kx), m, kx); x0, x1, y0, y1 = screen_ext(it, Z.main)
         if y1 - y0 > target: hi = m
         else: lo = m
@@ -306,18 +341,19 @@ def build_side(p, sgn):
     if sgn > 0: far, mid, near = workshop(), tools(), portal(); jamb = JAMB_R
     else: far, mid, near = marketing(), analytics(), aicenter(); jamb = JAMB_L
     q = p['right' if sgn > 0 else 'left']
-    zf = q['far']['z']; sf = s(zf); farX = q['far']['X']
-    fpos = lambda m, kx=1.: (774 + (farX - 774) / sf, zf, 0)                     # дальня зона: Xref -> центр екрана farX, прямо
-    mf = solve_m(far, fpos, HW); it_far = place(far, *fpos(mf), mf)
-    mpos = free(mid, q['mid']); mm, km = fit(mid, mpos, HT, q['mid'].get('aspect')); it_mid = place(mid, *mpos(mm, km), mm, km)
-    npos = free(near, q['near']); mn, kn = fit(near, npos, HP, q['near'].get('aspect')); it_near = place(near, *npos(mn, kn), mn, kn)
+    qf = q['far']; kf = qf.get('kx', 1.)
+    if 'gap' in qf: fpos = far_place(far, qf)                                   # спиною до стіни з вікном
+    else: zf = qf['z']; sf = s(zf); farX = qf['X']; fpos = lambda m, kx=1.: (774 + (farX - 774) / sf, zf, 0)   # (стара схема: Xref -> екранний X)
+    mf = solve_m(far, fpos, HW, kf); it_far = place(far, *fpos(mf, kf), mf, kf)
+    mpos = wall_place(mid, q['mid'], C, R, sgn) if 'a' in q['mid'] else free(mid, q['mid']); mm, km = fit(mid, mpos, HT, q['mid'].get('aspect')); it_mid = place(mid, *mpos(mm, km), mm, km)
+    npos = wall_place(near, q['near'], C, R, sgn) if 'a' in q['near'] else free(near, q['near']); mn, kn = fit(near, npos, HP, q['near'].get('aspect')); it_near = place(near, *npos(mn, kn), mn, kn)
     items = it_far + it_mid + it_near
     wall = [[round(jamb, 1), JZ], [xf, JZ]] + [[round(v, 1) for v in arcpt(C, R, a, sgn)] for a in range(10, 131, 10)]
     cols, up, hang = [], [], []
     def col(id, a, yt, w=24, dep=20, st='col', deco=None):
         x, z = arcpt(C, R - 4 - dep, a, sgn); cols.append(dict(id=id, x=round(x, 1), z=round(z, 1), turn=sgn * a, w=w, dep=dep, yb=FL, yt=yt, st=st, deco=deco or [dict(t='l', f=[.5, .02, .5, .98], col=NEON_C if sgn > 0 else NEON_P, lw=1.4), *[dict(t='r', f=[.1, .9, a_, a_ + .015], fill='#5a4ab0') for a_ in (.2, .45, .7)]]))
-    for i, (a, yt) in enumerate(q['cols']): col(f'col{i}', a, yt)
-    L = dict(wall=wall, items=items, cols=cols, armZone=far.name, scales=dict(far=mf, mid=mm, kmid=km, near=mn, knear=kn))
+    for i, c_ in enumerate(q['cols']): col(f'col{i}', c_[0], c_[1], *(c_[2:3]))                    # [кут, верх, ширина?]
+    L = dict(wall=wall, items=items, cols=cols, armZone=far.name, scales=dict(far=mf, kfar=kf, mid=mm, kmid=km, near=mn, knear=kn))
     if far.arm: L['arm'] = far.armw
     def upbox(id, a, rad, w, dep, yb, h, st, **kw):
         x, z = arcpt(C, rad, a, sgn); up.append(dict(id=id, layer='up', x=round(x, 1), z=round(z, 1), turn=sgn * a, w=w, dep=dep, yb=yb, yt=yb - h, st=st, **kw))
@@ -336,7 +372,7 @@ def build_side(p, sgn):
         for a, ln, k in mz['hang']:
             x, z = arcpt(C, R - 34, a, sgn); hang.append(dict(x=round(x, 1), z=round(z, 1), len=ln, kind=k, turn=sgn * a))
         upbox('mz_fern', mz['fern'], R - 30, 18, 14, mz['yb'] + 50, 12, 'pot', plant=1, fw=64, fh=44, cyl=10)          # під антресоллю біля колони
-        c0 = q['cols'][0]; upbox('mz_lampL', c0[0], R - 34 - 10, 12, 10, mz['yb'] - 4, 22, 'lamp', glow=1, gr=30, cyl=8)          # ліхтар на лиці першої колони
+        c0 = q['cols'][0]; upbox('mz_lampL', c0[0], R - 34 - 10, 12, 10, mz['yb'] + 30, 22, 'lamp', glow=1, gr=30, cyl=8)          # ліхтар на лиці колони-опори (під антресоллю)
     # ---- настінні полиці (ліве крило): дошки вздовж дуги, кронштейни, вазони, плющ, книжки, баночки ----
     for k, sh in enumerate(q.get('shelves', [])):
         y, a0, a1, dep = sh['y'], sh['a0'], sh['a1'], sh['dep']; n = max(1, round((a1 - a0) / 6)); da = (a1 - a0) / n
@@ -364,9 +400,12 @@ def build_side(p, sgn):
             dict(t='c', f=[*FP(1000, 85, *hb), .09], fill='#1a5ad0'), dict(t='c', f=[*FP(1030, 95, *hb), .11], fill='#1a5ad0'), dict(t='c', f=[*FP(1012, 112, *hb), .06], fill='#1a5ad0'),
             dict(t='grid', f=F(1055, 1080, 42, 125, *hb), nx=1, ny=4, gap=.08, fill='#0e2a6a', line='#7af4ff', icon='#7af4ff'),
             dict(t='l', f=[*FP(980, 150, *hb), *FP(1050, 140, *hb)], col='#ff4fd8', lw=1)])
+        if not hq.get('strip'): return finish(L, C, R)                             # стрічки машинерії немає (власник: зони — окремо)
         a0, a1 = hq['strip']; am = (a0 + a1) / 2; x, z = arcpt(C, R - 4, am, sgn); ss = s(z)
         cols.append(dict(id='hub_strip', x=round(x, 1), z=round(z, 1), turn=sgn * am, w=round(chord(R - 3, a1 - a0), 2), dep=3, yb=round(220 + (165 - 220) / ss, 1), yt=round(220 + (10 - 220) / ss, 1), st='dark',
                          deco=[dict(t='grid', f=[.12, .88, .04, .96], nx=1, ny=6, gap=.1, fill='#1a1450', line='#ff4fd8')]))
+    return finish(L, C, R)
+def finish(L, C, R):
     L['C'] = [round(C[0], 1), round(C[1], 1)]; L['R'] = R
     return L
 
@@ -398,6 +437,15 @@ def report(L, name):
     hmax = max(e[3] - e[2] for e in hs.values())
     for k, e in hs.items():
         a = screen_ext(Zi[k]); print(f"  {k:9s} main h {e[3] - e[2]:5.0f} ({(e[3] - e[2]) / hmax * 100:5.1f}%) | all x {a[0]:.0f}..{a[1]:.0f} y {a[2]:.0f}..{a[3]:.0f}")
+    # відстань до стіни (найближча точка сліду зони до дуги) і чи зони окремі на екрані (власник: «зони не мають зливатись»)
+    C = L['C']; Rr = L['R']; ext = {}
+    for k, v in Zi.items():
+        fz = k in ('marketing', 'workshop'); a = screen_ext(v); m = screen_ext(v, MAINS[k]); ext[k] = (a, m)
+        gap = min((JZ - pz) if fz else Rr - math.hypot(px - C[0], pz - C[1]) for it in v for px, pz in fpr(it))   # дальня — до стіни з вікном
+        print(f"  {k:9s} wall gap {gap:5.1f} | main x {m[0]:.0f}..{m[1]:.0f}")
+    ks = sorted(ext, key=lambda k: ext[k][1][0])
+    for a_, b_ in zip(ks, ks[1:]):
+        print(f"  SEP {a_} | {b_}: main {ext[b_][1][0] - ext[a_][1][1]:+.0f}  all {ext[b_][0][0] - ext[a_][0][1]:+.0f}")
     bad, behind = check(L); print('  INTERSECT:', bad if bad else 'none'); print('  BEHIND WALL:', behind if behind else 'none')
     return bad, behind
 
@@ -424,23 +472,27 @@ def plan_png(out, path):
         for zn in {it.get('zone') for it in L['items'] if it.get('zone')}:
             pts = [p for it in L['items'] if it.get('zone') == zn for p in fpr(it)]
             cx = sum(p[0] for p in pts) / len(pts); cz = sum(p[1] for p in pts) / len(pts); d.text(T(cx - 28, cz + 6), zn.upper(), fill=(255, 255, 255))
-    sx0, sx1 = 774 + (657 - 774) / s(150), 774 + (891 - 774) / s(150)
-    d.rectangle([T(sx0, 150), T(sx1, 118)], outline=(160, 120, 220)); d.text(T((sx0 + sx1) / 2 - 14, 140), 'SOFA', fill=(200, 160, 255))
+    # диван (#rw-3d: ближче до глядача — NX.cfg.SOFA_Y3D): передній край на підлозі там, де його лінія на екрані; ширина — як на екрані
+    sy = SOFA_Y3D; sk = sofa_k(sy); zf = D * (FL - 220) / (sy - 220) - D; sw = 234 * sk / s(zf)
+    d.rectangle([T(774 - sw / 2, zf + 45), T(774 + sw / 2, zf)], outline=(160, 120, 220)); d.text(T(774 - 14, zf + 30), 'SOFA', fill=(200, 160, 255))
     d.text((8, H - 16), 'top view: x right, z into the room (window at the top); eye at (774, -520) below the picture', fill=(120, 120, 160))
     im.save(path)
 
 DEFAULT = {
- "R": 225, "xf": 1200, "HP": 250,
- "right": {"far": {"X": 1081, "z": 117}, "mid": {"X": 1240, "z": 10, "turn": 36, "aspect": ["tl_board", 133 / 148]}, "near": {"X": 1405, "z": -30, "turn": 86, "aspect": ["pt_beam", 196 / 53]},
-           "hub": {"x0": WR + 6, "z": 181, "w": 150, "turn": 6, "strip": [25, 31]},
-           "cols": [[40, -240], [58, 64]],
-           "mz": {"w": 70, "phi0": 45, "phi1": 101, "yt": 40, "yb": 64, "bots": [52, 56, 60], "cube": 64.5, "pots": [47.5, 69, 74], "gold": [[79, "lantern"], [84, "g"], [90, "g"]], "fern": 48,
+ # 28.10 (власник): зони СПИНОЮ ДО СТІНИ (a — кут на дузі, gap — до стіни), окремі на екрані (проміжки між зонами — колони);
+ # маркетинг і майстерня ширші (kx) і ближче до дивану (диван — ближче до глядача: NX.cfg.SOFA); середні зони фронтальніші
+ # (turn менший за a — стільниці ближче до перспективи кімнати); усе трохи менше (HP 230), щоб зони не зливались.
+ "R": 225, "xf": 1200, "HP": 230,
+ "right": {"far": {"X": 940, "gap": 6, "kx": 1.15}, "mid": {"a": 34, "gap": 4, "turn": 24, "aspect": ["tl_board", 133 / 148]}, "near": {"a": 90, "gap": 4, "turn": 77, "aspect": ["pt_beam", 196 / 53 * .9]},
+           "hub": {"x0": WR + 6, "z": 181, "w": 112, "turn": 6},                       # стрічку машинерії прибрано: місця між екраном і інструментами немає
+           "cols": [[66.5, 64, 16]],                                                 # колона-опора антресолі — між інструментами й порталом
+           "mz": {"w": 70, "phi0": 45, "phi1": 101, "yt": 40, "yb": 64, "bots": [52, 56, 60], "cube": 64.5, "pots": [47.5, 69, 74], "gold": [[79, "lantern"], [84, "g"], [90, "g"]], "fern": 112,
                   "hang": [[48, 50, "vine"], [53, 30, "lamp"], [63, 44, "vine"], [68, 26, "lamp"], [74, 36, "vine"], [80, 30, "vine"]]}},
- "left": {"far": {"X": 480, "z": 105}, "mid": {"X": 365, "z": 10, "turn": -36, "aspect": ["an_booth", 128 / 190]}, "near": {"X": 204, "z": -30, "turn": -86, "aspect": ["ai_screen", 161 / 243]},
-          "cols": [[45, -240], [70, -240]],
-          "shelves": [{"y": 34, "a0": 12, "a1": 40, "dep": 14, "items": [[15, "trail"], [20.5, "books"], [26, "flower"], [30, "jar"], [33.5, "pot"], [38, "trail"]]},
-                      {"y": 76, "a0": 15, "a1": 37, "dep": 12, "items": [[18, "flower"], [23.5, "lamp"], [29, "trail"], [34, "pot"]]}],
-          "hang": [[78, 30, -60, 90, "vine"], [84, 26, -60, 70, "vine"], [55, 40, -60, 60, "vine"], [60, 40, -40, 70, "red"]]},
+ "left": {"far": {"X": 615, "gap": 6, "kx": 1.15}, "mid": {"a": 28, "gap": 4, "turn": -21, "aspect": ["an_booth", 128 / 190]}, "near": {"a": 90, "gap": 4, "turn": -79, "aspect": ["ai_screen", 161 / 243 * .8]},
+          "cols": [[-3, -240], [62.5, -240]],                                       # колони — у проміжках: маркетинг | аналітика | AI-центр
+          "shelves": [{"y": -10, "a0": 12, "a1": 40, "dep": 14, "items": [[15, "trail"], [20.5, "books"], [26, "flower"], [30, "jar"], [33.5, "pot"], [38, "trail"]]},
+                      {"y": 34, "a0": 15, "a1": 37, "dep": 12, "items": [[18, "flower"], [23.5, "lamp"], [29, "trail"], [34, "pot"]]}],
+          "hang": [[78, 30, -60, 90, "vine"], [86, 26, -60, 70, "vine"], [55, 40, -60, 50, "vine"], [62.5, 40, -40, 60, "red"]]},
 }
 
 def write_js(out):

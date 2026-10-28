@@ -328,7 +328,7 @@ NX.city = (() => {
     S.clouds.forEach(A => { let x = A.x + co; if (x > GL.x1) x -= GW; blit(c, A, R, x - A.x); if (x + A.w > GL.x1) blit(c, A, R, x - A.x - GW); });
   }
   /** Нерухома копія міста в контекст c (координати кімнати): для віддзеркалення в підлозі й сяйва.
-   *  mode 'patch' — без частини за диваном (там віддзеркалення лишається як було). R — роздільність (px/од.). */
+   *  mode 'patch' — без частини за диваном (там віддзеркалення лишається як було), інакше ('full') — усе скло. R — роздільність (px/од.). */
   function paint(c, t, mode, R = (NX.room && NX.room.RS) || 2) {
     if (!S) return;
     c.save(); c.clip(CLIPP); if (mode === 'patch') c.clip(KEEP);
@@ -529,7 +529,7 @@ NX.city = (() => {
       c.save(); c.beginPath(); c.rect(GL.x0, 150, GW, 70); c.clip(); train(c, t, dt); lane(c, t, dt, 2); c.restore();                      // потяг і близькі машини — до самого відкосу
       glass(c, t);
       c.restore();
-      if (++frames === 8 && !c.isRefl) patchFloor(t);
+      if (++frames === 8 && !c.isRefl) { if (NX.arc && NX.arc.patchFront) NX.arc.patchFront(); else patchFloor(t); }   // крила «по дузі» (#rw-3d) латають передню підлогу на всю ширину самі
     },
   };
 })();

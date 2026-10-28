@@ -47,6 +47,10 @@ NX.nexi = {
     if (done && this.task && this.taskOpt && NX.ui.zones.has(this.task.id)) { NX.ui.zones.result(this.task.id, this.taskOpt, this.task.auto); this.taskOpt = null; } if (this.task && done) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
   say(text) { this.speak = { text, t: 0 }; NX.ui.hud.bubble(text); NX.ui.chat && NX.ui.chat.add('b', text); },
   emote(m, d = 2.5) { this.mood = m; this.moodT = NX.time + d; },
+  /** Глибина для масштабу й порядку малювання: на дивані — dy (диван може стояти ближче до глядача, core/config.js SOFA),
+   *  інакше — де стоїть. dy задають стрибки на диван ({hop, dy}); будь-яка хода чи зникнення його скидає. */
+  dy: null,
+  depthY() { return this.dy != null ? this.dy : this.y; },
   hitTest(x, y) { const b = this.box; return b && this.alpha > .3 && x > b[0] && x < b[0] + b[2] && y > b[1] && y < b[1] + b[3]; },
 
   /* ---------------- ВИКОНАННЯ ЧЕРГИ ---------------- */
@@ -61,12 +65,13 @@ NX.nexi = {
     this.moodLife(t);
     NX.nexiPhys.update(this, dt);
     if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie') { this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
-    if (this.cur && (this.cur.fly || this.pose === 'fly' || (this.cur.work && /hover/.test(this.cur.work.pose))) && Math.random() < .7) NX.fx.emit('flame', this.x + (Math.random() < .5 ? -9 : 9) * NX.room.scaleAt(this.y) / 1.45 * (this.dir), this.y + 2);
-    if (this.fxNow && this.fxNow !== 'none' && this.alpha > .5) NX.fx.skin(this.fxNow, this.x, this.y, NX.room.scaleAt(Math.max(this.y, 352)), !!(this.cur && this.cur.walk), this.dir);
+    if (this.cur && (this.cur.fly || this.pose === 'fly' || (this.cur.work && /hover/.test(this.cur.work.pose))) && Math.random() < .7) NX.fx.emit('flame', this.x + (Math.random() < .5 ? -9 : 9) * NX.room.scaleAt(this.depthY()) / 1.45 * (this.dir), this.y + 2);
+    if (this.fxNow && this.fxNow !== 'none' && this.alpha > .5) NX.fx.skin(this.fxNow, this.x, this.y, NX.room.scaleAt(Math.max(this.depthY(), 352)), !!(this.cur && this.cur.walk), this.dir);
   },
   begin(a) {
     if (a.walk) { a.from = [this.x, this.y]; a.run = Math.hypot(a.walk[0] - this.x, a.walk[1] - this.y) > 500; }
-    if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop; a.dur = a.hop ? .45 : Math.max(.5, Math.hypot(to[0] - this.x, to[1] - this.y) / NX.cfg.FLY_SPEED); if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y); }
+    if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop; a.dur = a.hop ? .45 : Math.max(.5, Math.hypot(to[0] - this.x, to[1] - this.y) / NX.cfg.FLY_SPEED); if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
+      if (a.dy !== undefined || this.dy != null) a.dz = [this.depthY(), a.dy !== undefined ? a.dy : to[1]]; }   // глибина на дивані: плавно (dy)
     if (a.face) this.dir = a.face;
     if (a.loc) this.loc = a.loc;
     if (a.do) a.do();
@@ -77,6 +82,7 @@ NX.nexi = {
   },
   step(a, dt) {
     if (a.walk) {
+      this.dy = null;
       const [tx, ty] = a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt * (this.buff && this.buff.type === 'speed' ? 2.2 : 1);
       this.pose = a.run ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
       if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; return true; } this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
@@ -88,12 +94,13 @@ NX.nexi = {
       const to = a.fly || a.hop, k = Math.min(1, (a._t - (a.hop ? .12 : 0)) / a.dur);
       const e = a.hop ? k : (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);   // плавний розгін/гальмування ранця
       this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * (a.hi || 14) : 0);
+      if (a.dz) this.dy = k >= 1 ? (a.dy !== undefined ? a.dy : null) : NX.px.lerp(a.dz[0], a.dz[1], e);
       this.pose = a.hop ? 'hop' : 'fly'; if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
       if (k >= 1) NX.nexiPhys.land(a.hop ? 3.2 : 2.2);
       return k >= 1;
     }
     if (a.wait) { this.pose = 'stand'; return a._t >= a.wait; }
-    if (a.fade) { const f = a.fade, k = Math.min(1, a._t / f.dur); if (f.spin) this.dir = Math.floor(a._t * 14) % 2 ? 1 : -1; this.alpha = NX.px.lerp(a.from.alpha, f.alpha, k); this.zoom = NX.px.lerp(a.from.zoom, f.zoom, k); if (f.y !== undefined) this.y = NX.px.lerp(a.from.y, f.y, k); this.pose = 'walk'; if (Math.random() < .6) NX.fx.list.push({ type: 'portal', x: this.x, y: this.y - 20, orbit: 26, cx: this.x, cy: this.y - 20, a0: Math.random() * 6.3, age: 0, ttl: .8, s: 1.5, col: Math.random() < .5 ? '#d94bff' : '#3be8ff', vx: 0, vy: 0 }); return k >= 1; }
+    if (a.fade) { this.dy = null; const f = a.fade, k = Math.min(1, a._t / f.dur); if (f.spin) this.dir = Math.floor(a._t * 14) % 2 ? 1 : -1; this.alpha = NX.px.lerp(a.from.alpha, f.alpha, k); this.zoom = NX.px.lerp(a.from.zoom, f.zoom, k); if (f.y !== undefined) this.y = NX.px.lerp(a.from.y, f.y, k); this.pose = 'walk'; if (Math.random() < .6) NX.fx.list.push({ type: 'portal', x: this.x, y: this.y - 20, orbit: 26, cx: this.x, cy: this.y - 20, a0: Math.random() * 6.3, age: 0, ttl: .8, s: 1.5, col: Math.random() < .5 ? '#d94bff' : '#3be8ff', vx: 0, vy: 0 }); return k >= 1; }
     if (a.work) {
       const w = a.work; this.pose = w.pose; if (w.face) this.dir = w.face;
       const k = Math.min(1, a._t / w.dur); if (this.task) this.task.prog = k; if (w.obj) NX.objects[w.obj].prog = k;
@@ -176,7 +183,7 @@ NX.nexi = {
 
   /* ---------------- МАЛЮВАННЯ ---------------- */
   layer() {
-    return { y: this.y, refl: true, draw: (c, t) => {
+    return { y: this.depthY(), refl: this.dy == null, draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
       let pname = this.pose || 'stand';
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
@@ -186,7 +193,7 @@ NX.nexi = {
       const lookNow = this.buff && this.buff.theme ? { ...this.look, theme: this.buff.theme } : this.look;
       if (this.buff && this.buff.type === 'dizzy') { p.face = 'sleepy'; p.hx = Math.round(Math.sin(t * 6) * 1.5); }
       if (this._rt !== t) { this._rt = t; renderBot(lookNow, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
-      const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.y, 352)) * this.zoom * SPRITE_K * (this.buff && this.buff.type === 'tiny' ? .55 : 1), w = SW * s, h = SH * s, top = FOOT * s;
+      const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K * (this.buff && this.buff.type === 'tiny' ? .55 : 1), w = SW * s, h = SH * s, top = FOOT * s;
       const X = Math.round(this.x * K) / K, Y = Math.round(this.y * K) / K;
       const shY = p.jet ? this.gy : Y, sr = s / SPRITE_K / 1.45;
       c.save(); c.globalAlpha = .45 * this.alpha * (p.jet ? .6 : 1); c.fillStyle = '#000'; c.beginPath(); c.ellipse(X, shY + 1, 11 * sr * (2 - ph.sq), 2.5 * sr, 0, 0, 7); c.fill(); c.restore();

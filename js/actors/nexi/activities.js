@@ -38,25 +38,25 @@
     coffee: { color: '#ffc94d', route() { const p = P().coffee, m = NX.objects.coffee; return [{ walk: p.stand }, { face: -1 }, line('coffee'),
       { work: { pose: 'press', dur: 3.2, start: () => m.brew = .01 } }, { do: () => { m.brew = 0; m.cup = false; } }, { work: { pose: 'drink', dur: 5 } }]; } },
 
-    sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
+    sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
 
     sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai', 'analytics', 'marketing', 'tools'], z = zs[Math.random() * 4 | 0], task = NX.ui.zones.pick(z);
-      return [{ walk: p.floor }, { hop: p.sit }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofaWork'),
+      return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofaWork'),
         { work: { pose: 'sitTablet', dur: 9, tick: () => Math.random() < .06 && NX.fx.emit('bit', NX.nexi.x + 10, NX.nexi.y - 30, { vy: -30 }) } }, { do: () => { NX.ui.zones.result(z, task, false); NX.nexi.emote('cool', 2); } }]; } },
 
-    bounce: { color: '#ff4fd8', route() { const p = P().sofa, [x, y] = p.stand, s = NX.objects.sofa, L = [{ walk: p.floor }, { hop: [x - 26, y] }, { loc: 'sofaStand' }, { do: () => s.land(x - 26) }, line('bounce')];
-      [8, 34, 4, -22, 10].forEach((dx, i) => L.push({ work: { pose: 'crouch', dur: .12 } }, { hop: [x + dx, y], hi: 26 }, { do: () => { s.land(x + dx, 1.2); NX.nexiPhys.land(3); if (i === 2) NX.nexi.emote('happy', 2); } }));
+    bounce: { color: '#ff4fd8', route() { const p = P().sofa, [x, y] = p.stand, s = NX.objects.sofa, k = NX.cfg.SOFA.k, L = [{ walk: p.floor }, { hop: [x - 26 * k, y], dy: p.dy }, { loc: 'sofaStand' }, { do: () => s.land(x - 26 * k) }, line('bounce')];
+      [8, 34, 4, -22, 10].forEach((dx, i) => L.push({ work: { pose: 'crouch', dur: .12 } }, { hop: [x + dx * k, y], hi: 26 * k, dy: p.dy }, { do: () => { s.land(x + dx * k, 1.2); NX.nexiPhys.land(3); if (i === 2) NX.nexi.emote('happy', 2); } }));
       L.push({ hop: p.floor, hi: 20 }, { do: () => s.land(x, .6) }, { loc: 'floor' }, { spin: .5 }); return L; } },
 
     fluff: { color: '#9ae8c0', route() { const p = P().sofa, s = NX.objects.sofa; return [{ walk: [p.floor[0] + 14, p.floor[1]] }, { face: 1 }, line('fluff'),
       { work: { pose: 'push', dur: 2.6, back: true, start: () => s.puffAll() } }, { do: () => { NX.nexi.back = false; NX.nexi.emote('happy', 2); } }, { work: { pose: 'cheer', dur: 1 } }]; } },
 
-    cuddle: { color: '#ff7a2a', route() { const p = P().sofa, c = NX.cat; return [{ walk: p.floor }, { hop: p.sit }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('cuddle'),
-      { do: () => c.goTo(p.buddy[0], p.buddy[1], () => { c.onSofa = true; NX.objects.sofa.land(p.buddy[0]); c.purr(7); }, [p.buddy[0], 380], true) },
+    cuddle: { color: '#ff7a2a', route() { const p = P().sofa, c = NX.cat; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('cuddle'),
+      { do: () => c.goTo(p.buddy[0], p.buddy[1], () => { c.onSofa = true; NX.objects.sofa.land(p.buddy[0]); c.purr(7); }, p.catFrom, true) },
       { work: { pose: 'sit', dur: 3 } }, { work: { pose: 'sitPet', dur: 6, tick: () => Math.random() < .04 && NX.fx.emit('heart', NX.nexi.x + 14, NX.nexi.y - 36) } },
       { do: () => { NX.nexi.emote('love', 2.5); c.set('sleep', 14); } }]; } },
 
-    sleep: { color: '#7d8cc4', route() { const p = P().sofa; return [{ walk: p.floor }, line('sleep'), { work: { pose: 'stretch', dur: 1.6 } }, { hop: p.lie }, { do: () => NX.objects.sofa.land(p.lie[0], .7) }, { loc: 'sofaLie' }, { rot: -90 }, { face: 1 },
+    sleep: { color: '#7d8cc4', route() { const p = P().sofa; return [{ walk: p.floor }, line('sleep'), { work: { pose: 'stretch', dur: 1.6 } }, { hop: p.lie, dy: p.dy }, { do: () => NX.objects.sofa.land(p.lie[0], .7) }, { loc: 'sofaLie' }, { rot: -90 }, { face: 1 },
       { work: { pose: 'sleep', dur: 9999, tick: () => Math.random() < .02 && NX.fx.emit('z', NX.nexi.x - 14, NX.nexi.y - 16) } }]; } },
 
     petCat: { color: '#ff7a2a', route() { const c = NX.cat, [cx, cg] = c.floorPos(), side = cx > 700 ? -1 : 1, gy = Math.max(cg, 362), [x, y] = NX.room.clampWalk(cx + side * 26, gy); if (c.desk) c.leaveDesk();   // кіт на столі — зістрибне туди, звідки застрибнув (№8)
@@ -85,9 +85,9 @@
 
     lamp: { color: '#ffc94d', route() { const l = NX.objects.lamp, [x, y] = l.pos, k = NX.px.depthK(y); return [{ walk: [x - 18 * k, y + 4] }, { face: 1 }, line('lamp'), { work: { pose: 'press', dur: .8 } }, { do: () => l.toggle() }, { work: { pose: 'wave', dur: 1 } }]; } },
 
-    water: { color: '#3bff8a', route() { return [{ walk: [850, 362] }, { face: 1 }, line('water'), { work: { pose: 'water', dur: 4, tick: () => Math.random() < .5 && NX.fx.emit('rain', NX.nexi.x + 16, NX.nexi.y - 34, { vx: 10, vy: 60, ttl: .5, col: '#7ad0ff' }) } }, { do: () => NX.objects.plant.watered() }, { work: { pose: 'cheer', dur: 1.2 } }]; } },
+    water: { color: '#3bff8a', route() { return [{ walk: NX.cfg.sofaPt(850, 362) }, { face: 1 }, line('water'), { work: { pose: 'water', dur: 4, tick: () => Math.random() < .5 && NX.fx.emit('rain', NX.nexi.x + 16, NX.nexi.y - 34, { vx: 10, vy: 60, ttl: .5, col: '#7ad0ff' }) } }, { do: () => NX.objects.plant.watered() }, { work: { pose: 'cheer', dur: 1.2 } }]; } },
 
-    window: { color: '#7a5cff', route() { return [{ walk: [705, 362] }, { face: 1 }, line('window'), { do: () => NX.city.fireworks(7) }, { work: { pose: 'gaze', dur: 7, back: true } }, { do: () => NX.nexi.emote('happy') }]; } },
+    window: { color: '#7a5cff', route() { return [{ walk: P().window }, { face: 1 }, line('window'), { do: () => NX.city.fireworks(7) }, { work: { pose: 'gaze', dur: 7, back: true } }, { do: () => NX.nexi.emote('happy') }]; } },
 
     kickBall: { color: '#ff4fd8', route() { const b = NX.objects.catCorner.ball, side = b.x > 768 ? 1 : -1; return [{ walk: NX.room.clampWalk(b.x + side * 16, b.y) }, { face: -side }, line('kickBall'),
       { work: { pose: 'jump', dur: .35 } }, { do: () => { NX.objects.catCorner.kick(-side * 220, (Math.random() - .5) * 80); NX.nexiPhys.land(2); NX.cat.goTo(b.x, b.y, () => NX.cat.set('pounce', .5, () => NX.objects.catCorner.kick((Math.random() - .5) * 160, (Math.random() - .5) * 60)), null, true); } }, { work: { pose: 'cheer', dur: 1.5 } }]; } },

@@ -5,8 +5,10 @@
  * ЦІЛИЙ. Стиль — як у кімнаті: глибокий оксамит зі стьобкою "честерфілд",
  * рожеві глянцеві боковини, неонові канти, хром, віддзеркалення в підлозі.
  *
- * Сітка: 1 піксель дивану = 0.5 одиниці кімнати; 468×222 px (234×111 од.),
- * стоїть на підлозі в точці (774, 362) і накриває диван на картинці.
+ * Сітка: 1 піксель дивану = 0.5·k одиниці кімнати; 468×222 px (234×111 од. при k = 1),
+ * стоїть на підлозі в точці NX.cfg.SOFA (x, y; масштаб k — core/config.js): на старому місці (774, 362) накриває
+ * диван на картинці; у кімнаті з крилами «по дузі» (#rw-3d) стоїть ближче до глядача (власник, 28.10) і тоді
+ * персонажі позаду нього ним закриваються (тіло — шар із глибиною, layers()).
  *
  *   NX.art (js/core/pixelart.js) — Raster/shade(): малювання прямо в пікселі,
  *                    об'ємний 8-bit перелив (дизеринг Байєра) + зерно тканини
@@ -15,16 +17,19 @@
  *                    (квадратні, зі смарт-панеллю) завжди ІДЕНТИЧНІ
  *   buildPillow()  — 4 подушки з листям монстери (праві — дзеркальні)
  *   buildRefl()    — віддзеркалення дивану в глянцевій підлозі
- *   drawBack()     — щокадру: віддзеркалення -> тінь -> тіло -> вм'ятина ->
- *                    подушки -> живі неонові деталі (кант спинки з бігучою
- *                    іскрою, канти підлокітників, смарт-панелі, LED-стрічка,
- *                    значок N, підсвітка ніжок); зрідка по глянцю пробігає
- *                    відблиск фар летючої машини з вікна
+ *   drawBack()     — щокадру позаду всіх: віддзеркалення -> тінь контакту
+ *   drawBody()     — шар (глибина SOFA.y − 24): тіло -> вм'ятина -> подушки ->
+ *                    живі неонові деталі (кант спинки з бігучою іскрою, канти
+ *                    підлокітників, смарт-панелі, LED-стрічка, значок N,
+ *                    підсвітка ніжок); зрідка по глянцю пробігає відблиск фар
+ *                    летючої машини з вікна
+ *   holds(x, y, g) — чи стоїть хтось НА дивані (кіт: щоб малювався поверх нього)
  * Тап по дивану -> Nexi САМ вирішує, що робити (pick()).
  * ========================================================================== */
 (() => {
-  const P = NX.px, GW = 468, GH = 222, U = .5, MID = GW / 2;
-  const OX = 774 - GW * U / 2, OY = 362 - GH * U;                    // лівий верх дивану в кімнаті (657, 251)
+  const SF = NX.cfg.SOFA || { x: 774, y: 362, k: 1 }, SX = SF.x, SY = SF.y, SK = SF.k;   // де стоїть і масштаб (core/config.js)
+  const P = NX.px, GW = 468, GH = 222, U = .5 * SK, MID = GW / 2;
+  const OX = SX - GW * U / 2, OY = SY - GH * U;                      // лівий верх дивану в кімнаті (на старому місці — 657, 251)
 
   // ---------- палітра (кольори самої кімнати) ----------
   const V = ['#0b051c', '#120a2c', '#1a0f3e', '#231452', '#2d1a66', '#39217b', '#472a92', '#5a37ab', '#7350c8'];   // оксамит
@@ -141,16 +146,16 @@
     mode: 'idle', flash: 0, waves: [], sq: 1, sqV: 0, sweep: null, nextSweep: 6,
     /** Що Nexi зробить на дивані — вирішує сам (зважений рандом + контекст). */
     pick() {
-      const n = NX.nexi, c = NX.cat, idle = NX.time - n.lastCmd, catNear = Math.abs(c.x - 774) < 360 && !c.riding;
+      const n = NX.nexi, c = NX.cat, idle = NX.time - n.lastCmd, catNear = Math.abs(c.x - SX) < 360 && !c.riding;
       const pool = [['sofa', 2], ['sofaWork', 2], ['bounce', 2], ['fluff', 1.4], ['cuddle', catNear ? 2.4 : 1], ['sleep', idle > 40 ? 2 : .7]].filter(([id]) => !(n.task && n.task.id === id));
       let r = Math.random() * pool.reduce((s, p) => s + p[1], 0); for (const [id, w] of pool) { if ((r -= w) <= 0) return id; } return 'sofa';
     },
     onTap() { NX.nexi.do(this.pick()); return true; },
     /** Хтось приземлився: диван пружинить, подушки підстрибують, пил, спалах LED. */
     land(x, power = 1) {
-      this.flash = 1; this.sqV -= .9 * power; this.waves.push({ x, y: OY + 66, t: 0 });
+      this.flash = 1; this.sqV -= .9 * power; this.waves.push({ x, y: OY + 132 * U, t: 0 });
       PILLOWS.forEach(p => { if (Math.abs(toRoom(p.px, 0)[0] - x) < 70) p.puff = Math.max(p.puff, .5 * power); });
-      for (let i = 0; i < 8; i++) NX.fx.emit('dust', x + (Math.random() - .5) * 34, OY + 64);
+      for (let i = 0; i < 8; i++) NX.fx.emit('dust', x + (Math.random() - .5) * 34 * SK, OY + 128 * U);
     },
     puffAll() { PILLOWS.forEach((p, i) => setTimeout(() => { p.puff = 1; this.feathers(p); }, i * 600)); },
     feathers(p) { const [x, y] = toRoom(p.px, p.py - 20); for (let i = 0; i < 7; i++) NX.fx.emit('spark', x + (Math.random() - .5) * 18, y, { col: Math.random() < .5 ? C.t4 : C.y1, vy: -30 - Math.random() * 20, g: 30, ttl: 1.2, s: 1.5 }); },
@@ -177,16 +182,25 @@
       for (let gx = 86; gx < GW - 86; gx += 4) { const hue = (t * 140 + gx * 1.2) % 360; c.fillStyle = m === 'sleep' ? `rgba(110,150,255,${a})` : busy ? `hsla(${hue},95%,62%,${a})` : `rgba(255,${80 + 40 * Math.sin(t * 2 + gx * .05) | 0},216,${a})`; c.fillRect(gx, 178, 3, 6); }
       const run = 86 + ((t * .6) % 1) * (GW - 172); c.fillStyle = '#ffffff'; c.fillRect(run - 8, 178, 16, 6);
     },
+    /** Позаду всіх: віддзеркалення в глянцевій підлозі й тінь контакту. */
     drawBack(c, t) {
       if (!BODY) { BODY = buildBody(); REFL = buildRefl(BODY); }
       const m = this.mode, busy = m !== 'idle' || NX.cat.onSofa, Kk = NX.cam.k * (NX.loop.dpr || 1);
-      const X = Math.round(774 * Kk) / Kk, Y = Math.round(362 * Kk) / Kk, sx = U * (1 + (1 - this.sq) * .35), sy = U * this.sq;
+      const X = Math.round(SX * Kk) / Kk, Y = Math.round(SY * Kk) / Kk, sx = U * (1 + (1 - this.sq) * .35), sy = U * this.sq;
       c.save(); c.imageSmoothingEnabled = false;
       // --- віддзеркалення в глянцевій підлозі (дзеркально вниз від лінії підлоги)
       c.save(); c.translate(X, Y); c.scale(sx, -sy); c.translate(-MID, -GH); c.globalAlpha = .28; c.drawImage(REFL, 0, 0);
       c.globalCompositeOperation = 'lighter'; c.globalAlpha = .3; this.ledRow(c, t, m, busy); c.restore();
       // --- тінь контакту з підлогою
-      c.fillStyle = 'rgba(4,2,14,.55)'; c.beginPath(); c.ellipse(774, 362, 114, 4, 0, 0, 7); c.fill();
+      c.fillStyle = 'rgba(4,2,14,.55)'; c.beginPath(); c.ellipse(SX, SY, 114 * SK, 4 * SK, 0, 0, 7); c.fill();
+      c.restore();
+    },
+    /** Тіло дивану (шар із глибиною — layers()): хто позаду, того диван закриває; хто на ньому — малюється поверх. */
+    drawBody(c, t) {
+      if (!BODY) return;
+      const m = this.mode, busy = m !== 'idle' || NX.cat.onSofa, Kk = NX.cam.k * (NX.loop.dpr || 1);
+      const X = Math.round(SX * Kk) / Kk, Y = Math.round(SY * Kk) / Kk, sx = U * (1 + (1 - this.sq) * .35), sy = U * this.sq;
+      c.save(); c.imageSmoothingEnabled = false;
       // --- сам диван: одна "пружина" на весь об'єкт
       c.translate(X, Y); c.scale(sx, sy); c.translate(-MID, -GH);
       c.drawImage(this.sweep !== null ? this.sweepFrame() : BODY, 0, 0);
@@ -209,18 +223,25 @@
       c.restore();
       // --- м'яке світіння (поза пружиною)
       c.save(); c.globalCompositeOperation = 'lighter'; const [, ly] = toRoom(MID, 181), [, ty] = toRoom(0, 3);
-      let g = c.createLinearGradient(0, ly - 8, 0, ly + 8); g.addColorStop(0, 'rgba(255,90,220,0)'); g.addColorStop(.5, `rgba(255,90,220,${.25 + this.flash * .3})`); g.addColorStop(1, 'rgba(255,90,220,0)'); c.fillStyle = g; c.fillRect(OX + 40, ly - 8, GW * U - 80, 16);
-      g = c.createLinearGradient(0, ty - 10, 0, ty + 1); g.addColorStop(0, 'rgba(255,79,216,0)'); g.addColorStop(1, 'rgba(255,79,216,.16)'); c.fillStyle = g; c.fillRect(OX + 30, ty - 10, GW * U - 60, 11);   // ореол канту на стіні
+      let g = c.createLinearGradient(0, ly - 8 * SK, 0, ly + 8 * SK); g.addColorStop(0, 'rgba(255,90,220,0)'); g.addColorStop(.5, `rgba(255,90,220,${.25 + this.flash * .3})`); g.addColorStop(1, 'rgba(255,90,220,0)'); c.fillStyle = g; c.fillRect(OX + 40 * SK, ly - 8 * SK, GW * U - 80 * SK, 16 * SK);
+      g = c.createLinearGradient(0, ty - 10 * SK, 0, ty + SK); g.addColorStop(0, 'rgba(255,79,216,0)'); g.addColorStop(1, 'rgba(255,79,216,.16)'); c.fillStyle = g; c.fillRect(OX + 30 * SK, ty - 10 * SK, GW * U - 60 * SK, 11 * SK);   // ореол канту на стіні
       c.restore();
-      P.glow(c, 774, 362, 140, m === 'sleep' ? 'rgba(80,120,255,.6)' : 'rgba(217,75,255,.6)', .22 + .08 * Math.sin(t * 2) + this.flash * .3);
-      this.waves.forEach(w => { c.save(); c.globalAlpha = 1 - w.t / .7; c.strokeStyle = '#ffb0fa'; c.lineWidth = 1.3; c.beginPath(); c.ellipse(w.x, w.y, 9 + w.t * 70, 2 + w.t * 8, 0, 0, 7); c.stroke(); c.restore(); });
+      P.glow(c, SX, SY, 140 * SK, m === 'sleep' ? 'rgba(80,120,255,.6)' : 'rgba(217,75,255,.6)', .22 + .08 * Math.sin(t * 2) + this.flash * .3);
+      this.waves.forEach(w => { c.save(); c.globalAlpha = 1 - w.t / .7; c.strokeStyle = '#ffb0fa'; c.lineWidth = 1.3; c.beginPath(); c.ellipse(w.x, w.y, (9 + w.t * 70) * SK, (2 + w.t * 8) * SK, 0, 0, 7); c.stroke(); c.restore(); });
     },
+    /** Чи стоїть хтось (x, y) НА дивані: над підлогою (ground g — перед диваном) у межах сидіння й підлокітників. */
+    holds(x, y, g) { return Math.abs(x - SX) < GW * U / 2 + 4 && y < SY - 4 && g >= SY - 2; },
+    /** Тіло — шар із глибиною SOFA.y − 24 (хто позаду — закритий, Nexi й кіт на дивані — поверх: nexi.depthY(), cat.layer());
+     *  плед поверх сплячого Nexi — найвищий шар. */
     layers(t) {
-      if (NX.nexi.loc !== 'sofaLie') return [];
-      return [{ y: 1e4, draw: c => {                                                         // плед поверх сплячого Nexi (дихає)
+      const L = [{ y: SY - 24, draw: c => this.drawBody(c, t) }];
+      if (NX.nexi.loc === 'sofaLie') L.push({ y: 1e4, draw: c => {                          // плед поверх сплячого Nexi (дихає); задано для старого місця
+        c.save(); c.translate(SX, SY); c.scale(SK, SK); c.translate(-774, -362);
         const x = 779, y = 309, w = 54, br = Math.sin(t * 1.3) * .7; P.rect(c, x, y + br, w, 15 - br, '#7a2a8a'); P.rect(c, x, y + br, w, 2, '#a84ab8');
         for (let i = 0; i < 6; i++) P.rect(c, x + 4 + i * 9, y + 6 + br, 4, 4, '#5a1a6a'); P.rect(c, x, y + 15, w, 1, '#4a1058');
-      } }];
+        c.restore();
+      } });
+      return L;
     },
   });
   // подушки як тап-зони (менші за диван — мають пріоритет)

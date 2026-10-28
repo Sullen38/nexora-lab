@@ -72,7 +72,11 @@ NX.room = {
 
   /** Де можна ходити (прямокутник підлоги). */
   walkBounds() { return { minX: 26, maxX: NX.cfg.ROOM_W - 26, minY: NX.cfg.FLOOR_Y + 6, maxY: NX.cfg.ROOM_H + NX.cam.front - 24 }; },
-  clampWalk(x, y) { const b = this.walkBounds(); return [NX.px.clamp(x, b.minX, b.maxX), NX.px.clamp(y, b.minY, b.maxY)]; },
+  clampWalk(x, y) {
+    const b = this.walkBounds(), S = NX.cfg.SOFA; x = NX.px.clamp(x, b.minX, b.maxX); y = NX.px.clamp(y, b.minY, b.maxY);
+    if (S && S.y > 362 && Math.abs(x - S.x) < 117 * S.k + 8 && y < S.y + 6) y = S.y + 10;   // диван ближче до глядача: не ставати за ним (сховається)
+    return [x, y];
+  },
   /** Масштаб персонажа залежно від глибини (y): далі — менший. */
   scaleAt(y) { const C = NX.cfg, t = NX.px.clamp((y - C.FLOOR_Y) / 330, 0, 1); return NX.px.lerp(C.NEXI_SCALE_FAR, C.NEXI_SCALE_NEAR, t); },
 };
