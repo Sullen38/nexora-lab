@@ -39,9 +39,9 @@ NX.ui.skinlab = {
     if (c.k !== 'act' && c.k !== 'mood') this.installFx();
     this.grid();
   },
-  /** Ефект встановлення скіна: на платформі майстерні — маніпулятор, деінде — іскри. */
+  /** Ефект встановлення скіна: іскри (маніпулятор майстерні — коли майстерня повернеться). */
   installFx() {
-    const n = NX.nexi; if (n.loc === 'pad') return NX.objects.workshop.install();
+    const n = NX.nexi;
     for (let i = 0; i < 12; i++) NX.fx.emit('spark', n.x + (Math.random() - .5) * 30, n.y - Math.random() * 50); NX.nexiPhys.kick(2); n.emote('surprise', 1.2);
   },
   cycle(d) { const ks = Object.keys(this.cat.items), L = NX.nexi.look, cur = this.cat.k === 'acc' ? ks.findIndex(k => L[ACCS[k].slot] === k) : ks.indexOf(L[this.cat.k]); this.apply(this.cat, ks[(cur + d + ks.length) % ks.length]); },

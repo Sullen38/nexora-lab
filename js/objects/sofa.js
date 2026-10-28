@@ -6,9 +6,9 @@
  * рожеві глянцеві боковини, неонові канти, хром, віддзеркалення в підлозі.
  *
  * Сітка: 1 піксель дивану = 0.5·k одиниці кімнати; 468×222 px (234×111 од. при k = 1),
- * стоїть на підлозі в точці NX.cfg.SOFA (x, y; масштаб k — core/config.js): на старому місці (774, 362) накриває
- * диван на картинці; у кімнаті з крилами «по дузі» (#rw-3d) стоїть ближче до глядача (власник, 28.10) і тоді
- * персонажі позаду нього ним закриваються (тіло — шар із глибиною, layers()).
+ * стоїть на підлозі в точці NX.cfg.SOFA (x, y; масштаб k — core/config.js): ближче до глядача, ніж диван на картинці
+ * (власник, 28.10; той під вікном — його закриває місто кодом), тож персонажі позаду нього ним закриваються (тіло — шар із
+ * глибиною, layers()).
  *
  *   NX.art (js/core/pixelart.js) — Raster/shade(): малювання прямо в пікселі,
  *                    об'ємний 8-bit перелив (дизеринг Байєра) + зерно тканини
@@ -146,7 +146,7 @@
     mode: 'idle', flash: 0, waves: [], sq: 1, sqV: 0, sweep: null, nextSweep: 6,
     /** Що Nexi зробить на дивані — вирішує сам (зважений рандом + контекст). */
     pick() {
-      const n = NX.nexi, c = NX.cat, idle = NX.time - n.lastCmd, catNear = Math.abs(c.x - SX) < 360 && !c.riding;
+      const n = NX.nexi, c = NX.cat, idle = NX.time - n.lastCmd, catNear = Math.abs(c.x - SX) < 360;
       const pool = [['sofa', 2], ['sofaWork', 2], ['bounce', 2], ['fluff', 1.4], ['cuddle', catNear ? 2.4 : 1], ['sleep', idle > 40 ? 2 : .7]].filter(([id]) => !(n.task && n.task.id === id));
       let r = Math.random() * pool.reduce((s, p) => s + p[1], 0); for (const [id, w] of pool) { if ((r -= w) <= 0) return id; } return 'sofa';
     },

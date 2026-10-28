@@ -5,7 +5,7 @@
  *   1) update(dt) усіх модулів (Nexi, кіт, об'єкти, частинки, UI)
  *   2) малювання шарами:
  *        стеля -> картинка кімнати (лише те, що ще не кодом) -> місто за вікном
- *        -> drawBack об'єктів (те, що завжди позаду персонажів; обидва крила — кодом)
+ *        -> drawBack об'єктів (те, що завжди позаду персонажів: стіни й підлога крил у 3D, рама вікна, віддзеркалення)
  *        -> СОРТУВАННЯ ЗА ГЛИБИНОЮ: персонажі + drawFront об'єктів
  *           (хто нижче на екрані — той ближче і малюється пізніше)
  *        -> частинки -> підсвітка наведення
@@ -34,7 +34,7 @@ NX.loop = {
     const now = performance.now() / 1000, dt = Math.min(.1, now - this.last); this.last = now; NX.time += dt;
     const t = NX.time, c = this.c;
     // ---- 1. логіка
-    NX.nexi.update(dt, t); NX.cat.update(dt, t); NX.visitors.update(dt, t);
+    NX.nexi.update(dt, t); NX.cat.update(dt, t);
     Object.values(NX.objects).forEach(o => o.update && o.update(dt, t));
     NX.fx.update(dt); NX.ui.hud.update(dt, t);
     NX.cam.follow(NX.nexi.x, dt);
@@ -47,11 +47,11 @@ NX.loop = {
     if (this.frames < 90 || (NX.cam.x < NX.cfg.WIN.R && NX.cam.x + NX.cam.viewW > NX.cfg.WIN.L)) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
     const objs = Object.values(NX.objects);
     // ПОЗА ЕКРАНОМ НЕ МАЛЮЄМО: об'єкт зі span [x0, x1] (одиниці кімнати) пропускається, якщо він увесь за межами видимої
-    // смуги (телефон бачить ~третину кімнати, а крила малювались завжди). Перші 90 кадрів — малюється все: крила складають
-    // нерухомі копії для підлоги й сяйва (NX.wing.patch / NX.rwing.patch), а растри будуються.
+    // смуги (телефон бачить ~третину кімнати). Перші 90 кадрів — малюється все: будуються растри (обидва крила в 3D —
+    // по шару за кадр) і копія для передньої підлоги-дзеркала.
     const vx0 = NX.cam.x - 24, vx1 = NX.cam.x + NX.cam.viewW + 24, all = ++this.frames < 90;
     objs.forEach(o => { if (!o.drawBack) return; if (!all && o.span && (o.span[1] < vx0 || o.span[0] > vx1)) return; o.drawBack(c, t); });
-    const list = [NX.nexi.layer(), NX.cat.layer(), ...NX.visitors.layers()];
+    const list = [NX.nexi.layer(), NX.cat.layer()];
     objs.forEach(o => o.layers && list.push(...o.layers(t)));
     // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true),
     // малюється ще раз догори дриґом напівпрозоро — предмети "вростають" у стиль картинки

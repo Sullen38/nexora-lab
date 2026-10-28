@@ -6,7 +6,7 @@
  * Пізніше сюди підключається бекенд з мовною моделлю (метод reply()).
  * ========================================================================== */
 NX.ui.chat = {
-  QUICK: [['report', 'analytics'], ['post', 'marketing'], ['integr', 'tools'], ['coffee', 'coffee'], ['cat', 'laser'], ['skin', 'skin']],
+  QUICK: [['work', 'sofaWork'], ['city', 'window'], ['dance', 'dance'], ['cat', 'petCat'], ['skin', 'skin']],   // швидкі команди (лише наявні сценарії)
   /** Ключові слова всіх 4 мов разом (js/i18n/*.js -> kw), щоб розуміти будь-якою. */
   kw() { const out = {}; Object.values(NX.i18n.dict).forEach(d => Object.entries(d.kw || {}).forEach(([k, v]) => { out[k] = out[k] ? out[k] + '|' + v : v; })); return Object.entries(out).map(([k, v]) => [k, new RegExp(v, 'i')]); },
   init() {
@@ -18,7 +18,7 @@ NX.ui.chat = {
   },
   relabel() { document.querySelectorAll('#chips button').forEach(b => b.textContent = NX.t('chat.quick.' + b.dataset.k)); },
   reply(v) {
-    const m = this.kw().find(k => k[1].test(v)); if (m) return m[0] === 'skin' ? NX.ui.skinlab.show() : NX.nexi.do(m[0]);
+    const m = this.kw().find(k => (k[0] === 'skin' || NX.acts[k[0]]) && k[1].test(v)); if (m) return m[0] === 'skin' ? NX.ui.skinlab.show() : NX.nexi.do(m[0]);   // ключі зон, яких ще немає, — пропускаються
     NX.nexi.lastCmd = NX.time; NX.nexi.temp = 'think'; NX.nexi.tempT = NX.time + 3;
     NX.nexi.say(NX.t('chat.fallback'));
   },

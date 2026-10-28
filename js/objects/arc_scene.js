@@ -1,27 +1,26 @@
 /* ============================================================================
- * objects/arc_scene.js — ОБИДВА КРИЛА «ПО ДУЗІ» В ПІКСЕЛЬНОМУ 3D (адреса #rw-3d, гілка rw-arc)
+ * objects/arc_scene.js — СТІНИ Й ПІДЛОГА КРИЛ «ПО ДУЗІ» (+ зони з розкладки) У ПІКСЕЛЬНОМУ 3D
  * ----------------------------------------------------------------------------
- * Схема #rw-box (сірий макет) -> справжній піксель-арт у перспективі кімнати. Геометрія — розкладка генератора
- * (objects/arc_layout.js), рушій — core/px3d.js (z-буфер: хто кого закриває — для кожного пікселя), матеріали —
- * objects/arc_kit.js, малюнки граней — arc_paint.js, форми (лампи, крісла, кристали) — arc_shapes.js, рослини —
- * arc_plants.js, живе — arc_live.js. Диван, підлога кімнати, вікно й рами — свої (не звідси).
+ * Чиста основа (власник, 29.10): стіни й підлога обох крил; зони, полиці, антресоль, підвіси й оздоби з'являються,
+ * коли їх додає розкладка генератора (objects/arc_layout.js <- tools/wingbox/gen_room.py) — по черзі, див. docs/HANDOFF.md.
+ * Рушій — core/px3d.js (z-буфер: хто кого закриває — для кожного пікселя), матеріали — objects/arc_kit.js, малюнки граней
+ * за id предмета — arc_paint.js, живі екрани — arc_live.js. Форми (лампи, крісла) й рослини (NX.arc.shape / NX.arc.plant) —
+ * необов'язкові: їх зараз немає (старі — в історії git, тег zones-v1). Диван, передня підлога кімнати, вікно й рами — свої.
  * Кожне крило складається з растрів (шарів), що малюються по черзі (позаду -> попереду):
  *   1. СТІНА Й ПІДЛОГА (2 px/од.) — дуга від відкосу до глядача: ліворуч цегла (домашнє, теплі відсвіти), праворуч
- *      металеві панелі (технологічне); плінтус з неоном, поручень, екран NEXORA AI; глянцева підлога з плиткою.
+ *      металеві панелі (технологічне); плінтус з неоном, поручень; глянцева підлога з плиткою; екран на стіні (hub), якщо є.
  *      Стіна — стовпчиками, підлога — рядками (швидко); світло — карта з ламп і екранів розкладки (lightsOf);
- *   2. БІЛЯ СТІНИ (3 px/од.) — колони, антресоль (спід, лицьова грань, торці, поруччя), настінні полиці з вазонами,
- *      підвіси (ліани, лампи, китайський ліхтар), оздоби стіни (гірлянда, постери — DECOR);
+ *   2. БІЛЯ СТІНИ (3 px/од.) — колони, антресоль, настінні полиці, підвіси, оздоби (DECOR) — лише якщо є в розкладці;
  *   3–5. ЗОНИ (3 px/од.) — дальня, середня, найближча; у кожної — свій z-буфер, контур і віддзеркалення в підлозі
  *      та на глянцевих стільницях; маніпулятор майстерні — у шарі майстерні.
  * Збірка — по шару за кадр (сторінка не «замерзає»); готові шари зливаються ОДИН раз в одне полотно під масштаб екрана
  * (+ сяйво — bloom); щокадру — один drawImage на крило й живі екрани поверх (під маскою видимих пікселів). Підлоги крил
- * ідуть і під вікно (за диваном: він тепер ближче до глядача, core/config.js SOFA) і сходяться посередині (x 774 ± 10), унизу
- * плавно переходять у передню підлогу кімнати (fadeFloor); дальні зони ширші й заходять за диван. Передня підлога кімнати на
- * всю ширину бере віддзеркалення з картинки, міста, рами вікна й цього злиття (patchFront — замість латки міста).
+ * ідуть і під вікно (за диваном: він ближче до глядача, core/config.js SOFA) і сходяться посередині (x 774 ± 10), унизу
+ * плавно переходять у передню підлогу кімнати (fadeFloor). Передня підлога кімнати на всю ширину бере віддзеркалення з
+ * картинки, міста, рами вікна й цього злиття (patchFront — замість латки міста).
  * Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
  * ========================================================================== */
 (() => {
-  if (!/rw-3d/.test(location.hash)) return;
   const X = NX.px3d, A = NX.arc.kit, K = NX.kit, F = NX.furn, PZ = NX.persp, { col, pal, ramp, mixc, dim, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
@@ -30,15 +29,6 @@
     const PR = NX.arc.prof = {}, wrap = (o, k, nm) => { const f = o[k]; o[k] = function () { const a = performance.now(), r = f.apply(this, arguments); PR[nm] = (PR[nm] || 0) + performance.now() - a; return r; }; };
     wrap(X, 'face', 'face'); wrap(X, 'sprite', 'sprite'); wrap(X, 'outline', 'outline'); wrap(X, 'reflect', 'reflect'); wrap(A, 'texture', 'texture'); wrap(NX.arc, 'plant', 'plant'); wrap(X, 'canvas', 'canvas'); wrap(X, 'tube', 'tube');
   }
-  // ---------- старі крила — вимкнути (як у схемі #rw-box) ----------
-  const OFF = ['workshop', 'tools', 'portal', 'rwingBack', 'rwingMezz', 'rwingFloor', 'rwingPlants', 'rwingAir',
-    'wingBack', 'wingReact', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall', 'wingProps', 'wingFloor', 'wingGlow', 'wingAir', 'analyticsChair', 'marketingChair', 'lwingBox', 'rwingBox',
-    'coffee'];                                                                       // кавомашина: її місце тепер займають столи (повернемо разом з логікою зон)
-  const off = () => Object.values(NX.objects).forEach(o => { if (OFF.includes(o.id) || /^(r[pg]|w[pg])_/.test(o.id)) { o.drawBack = null; o.layers = null; o.draw = () => {}; o.hit = null; if (o.id === 'rwingBack') o.update = null; } });
-  off(); let offDone = false;
-  // передня підлога кімнати: лише плитка (калюжі старих столів тут ні до чого)
-  if (NX.wing && NX.wing.paintTiles) NX.room.frontFx = (c, x0, x1, front) => { const H2 = NX.cfg.ROOM_H; c.save(); c.beginPath(); c.rect(x0, H2, x1 - x0, front + 2); c.clip(); NX.wing.paintTiles(c, H2, H2 + front + 2, 1 / NX.room.FR, x0 >= 664 && x1 <= 891 ? [H2, H2 + 46] : undefined); c.restore(); };
-
   // ---------- дрібниці ----------
   function catmull(pts, n = 6) {
     if (!pts || pts.length < 2) return (pts || []).slice();
@@ -67,7 +57,7 @@
     if (st === 'frame' || st === 'board') o.neon = acc || (st === 'board' ? '#3be8ff' : '#ff4fd8');
     if (st === 'shelf' && side === 'left') { o.pal = PL.WOOD; o.q = .6; }
     if (st === 'neon') { o.neon = '#ff4fd8'; o.nIn = 1.2; o.nW = 2.2; }
-    if (st === 'pot') { const pt = NX.arc.potOf(B); o.pal = pt.pal; o.q = .58; o.topPal = PL.TERRA; }
+    if (st === 'pot' && NX.arc.potOf) { const pt = NX.arc.potOf(B); o.pal = pt.pal; o.q = .58; o.topPal = PL.TERRA; }
     if (st === 'gold' && B.plant) o.topPal = PL.TERRA;
     if (B.band) o.bandC = st === 'fig' ? 'lil' : 'cyan';
     if (st === 'col') o.pal = side === 'left' ? PL.MET : PL.STEEL;
@@ -97,7 +87,8 @@
   function run(L) { if (!L.cmds) return; L.cmds.sort((a, b) => a[0] - b[0]).forEach(c => c[1]()); L.cmds = null; }
   /** Щільність текстури грані: тексель ≈ піксель растра (з урахуванням глибини). */
   const TSof = (L, Fc) => clamp(Math.round(L.R * s(A.centre(Fc)[2]) * 2) / 2, 2, 6);
-  /** Набір для форм (objects/arc_shapes.js): частини-об'єми, трубки, диски в координатах предмета B; усе — один предмет (id). */
+  /** Набір для форм (NX.arc.shape — зараз немає; старі — тег zones-v1, objects/arc_shapes.js): частини-об'єми, трубки, диски
+   *  в координатах предмета B; усе — один предмет (id). */
   function makeG(L, B, id, side) {
     const { P } = A.basis(B), opt = { id, fid: id };
     const faceCmd = (Fc, sh) => cmd(L, Fc.poly, () => X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, sh, { id, fid: id, n: Fc.n }));
@@ -110,9 +101,9 @@
       disc(c, r, shade) { cmd(L, [c], () => X.disc(L, c, r, shade, opt)); },
     };
   }
-  const POTLIKE = B => B.st === 'pot' || (B.plant && B.st === 'gold');
+  const POTLIKE = B => !!NX.arc.potOf && (B.st === 'pot' || (B.plant && B.st === 'gold'));   // вазони — лише з модулем рослин (зараз його немає)
   /** Предмет розкладки -> у растр L: видимі грані з матеріалами, текстура лиця (оздоби / власний малюнок), рослина;
-   *  лампи, ліхтарі, крісла, кристали — формою з objects/arc_shapes.js. */
+   *  предмети з формою (NX.arc.shape[id] або ['st:стиль']) — нею. */
   function drawItem(L, B, reg, side, byId) {
     const id = reg.add({ B, sup: null, out: B.st === 'lamp' ? col('#5a2a0a') : B.st === 'clamp' ? col('#0a3a5a') : A.C.out }); B._id = id;
     const SHP = NX.arc.shape || {}, shp = SHP[B.id] || SHP['st:' + B.st];
@@ -136,7 +127,7 @@
         cmd(L, Fc.poly, () => X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, shade, { id, fid, n: Fc.n, fl: 0 }));
       }
     }
-    if (B.plant) {
+    if (B.plant && NX.arc.plant) {
       const big = !B.on && B.yb >= FL - 1 ? 1.3 : B.on && byId[B.on] && byId[B.on].st === 'stand' ? 1.15 : 1, fw = B.fw * big, fh = B.fh * big;
       const sp = NX.arc.plant(Object.assign({}, B, { fw, fh })), { P } = A.basis(B), top = P(0, B.dep / 2, B.yt), zf = top[2] - B.dep / 2 * .9;
       const pid = reg.add({ B, plant: 1, out: col('#04140f') });
@@ -288,6 +279,7 @@
     if (Ls.mezz) Ls.mezz.edge.forEach(p => { const a = X.proj([p[0], Ls.mezz.yt - 30, p[1]]), b = X.proj([p[0], Ls.mezz.yb + 4, p[1]]); es.push([a[0] - 30, a[1] - 40, a[0] + 30, b[1] + 40]); });
     (Ls.hang || []).forEach(h => { const y0 = h.from != null ? h.from : (Ls.mezz ? Ls.mezz.yb : 56), a = X.proj([h.x, y0, h.z]), b = X.proj([h.x, y0 + h.len + 30, h.z]); es.push([a[0] - 20, a[1], a[0] + 20, b[1]]); });
     const DEC = decorOf(Ls, side); DEC.forEach(d => es.push(d.ext));
+    if (!es.length) return null;                                                       // біля стіни нічого немає (чиста основа) — шару немає
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + 60)], L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
     DEC.forEach(d => d.draw(L, reg, byId));
     (Ls.cols || []).forEach(B => drawItem(L, Object.assign({}, B, { zone: side === 'left' ? 'ai' : 'tools' }), reg, side, byId));
@@ -310,12 +302,10 @@
       acc += len;
     }
   }
-  /** Оздоби крила: ліве (домашнє) — тепла гірлянда вздовж стіни, постери «NEXORA» і «МЯУ», ботанічний принт; праве — технічні таблички. */
-  const DECOR = {
-    left: [{ k: 'garland', s0: 8, s1: 452, top: 9, sag: 16, n: 40 }, { k: 'poster', s: 36, w: 44, y0: -22, y1: 50, p: 'poster_nexora' },
-      { k: 'poster', s: 422, w: 36, y0: 34, y1: 90, p: 'poster_meow' }, { k: 'poster', s: 300, w: 24, y0: -16, y1: 18, p: 'poster_leaf' }],
-    right: [{ k: 'poster', s: 262, w: 22, y0: 76, y1: 104, p: 'poster_warn' }, { k: 'garland', s0: 300, s1: 452, y0: 72, sag: 12, n: 16, cool: 1 }],
-  };
+  /** Оздоби крила (пласкі, на самій стіні). Чиста основа (29.10) — жодних; приклади, як було до неї:
+   *    { k: 'garland', s0: 8, s1: 452, top: 9, sag: 16, n: 40 }        — гірлянда вздовж стіни (s — відстань від відкосу уздовж дуги)
+   *    { k: 'poster', s: 36, w: 44, y0: -22, y1: 50, p: 'poster_nexora' } — постер у рамці (малюнок — NX.arc.paint[p], arc_paint.js) */
+  const DECOR = { left: [], right: [] };
   function decorOf(Ls, side) {
     return (DECOR[side] || []).map(d => {
       if (d.k === 'poster') {
@@ -374,13 +364,14 @@
   function hang(L, Ls, h, reg) {
     const y0 = h.from != null ? h.from : (Ls.mezz ? Ls.mezz.yb : 56), y1 = y0 + h.len, id = reg.add({ hang: 1, sup: { y: FL, on: 0 }, out: col('#04140f') });
     if (h.kind === 'vine') {
+      if (!NX.arc.plant) return;
       const sp = NX.arc.plant({ id: 'hang_' + Math.round(h.x), x: h.x, z: h.z, hangs: 1, fw: 18, fh: h.len, plant: 1 });
       X.sprite(L, sp.img, h.x, y0 - 1, h.z, 18, h.len, { id, fid: id, hang: true }); return;
     }
     X.tube(L, [h.x, y0, h.z], [h.x, y1, h.z], .7, () => col('#0a0612'), { id, fid: id });
     const big = h.kind === 'gold' || h.kind === 'red', B = { id: 'lamp_' + Math.round(h.x), x: h.x, z: h.z - (big ? 7 : 4), turn: h.turn || 0, w: big ? 14 : 8, dep: big ? 14 : 8, yt: y1, yb: y1 + (big ? 22 : 12), st: 'lamp' };
-    const lid = reg.add({ lamp: 1, sup: { y: FL, on: 0 }, out: col('#3a0a06') }), SHP = NX.arc.shape;
-    (h.kind === 'red' ? SHP.hangRed : h.kind === 'gold' ? SHP.hangGold : SHP.hangLamp)(makeG(L, B, lid, 'right'), B);
+    const lid = reg.add({ lamp: 1, sup: { y: FL, on: 0 }, out: col('#3a0a06') }), SHP = NX.arc.shape || {}, f = h.kind === 'red' ? SHP.hangRed : h.kind === 'gold' ? SHP.hangGold : SHP.hangLamp;
+    if (f) f(makeG(L, B, lid, 'right'), B);
   }
 
   /** РОБОТ-МАНІПУЛЯТОР майстерні (розкладка: 4 точки — база на куполі, лікоть, зап'ястя, захват): товсті ланки-трубки зі
@@ -442,7 +433,7 @@
     const zclip = side === 'right' ? [MID - SEAM, -2, 1550, 478] : [-12, -2, MID + SEAM, 478];   // дальні зони ширші — заходять за диван
     const tm = [], T = (nm, f) => { const a = performance.now(), r = f(), d = performance.now() - a; ms += d; tm.push(nm + ' ' + d.toFixed(0) + (r && r.L ? '(' + (r.L.W * r.L.H / 1e6).toFixed(2) + 'MP)' : '')); return r; };
     const layers = [T('wall', () => wallLayer(Ls, side, clip))]; yield;
-    layers.push(T('back', () => backLayer(Ls, side, zclip))); yield;
+    const bk = T('back', () => backLayer(Ls, side, zclip)); if (bk) { layers.push(bk); yield; }
     const ZN = side === 'right' ? ['workshop', 'tools', 'portal'] : ['marketing', 'analytics', 'ai'];
     for (const z of ZN) { const it = (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up'); if (it.length) { layers.push(T(z, () => zoneLayer(it, side, zclip, Ls, z))); yield; } }
     const box = side === 'right' ? [MID - SEAM, -2, 1547, 478] : [-12, -2, MID + SEAM, 478];
@@ -504,7 +495,6 @@
   }
   let lastFr = -1;
   function draw(c, side) {
-    if (!offDone) { off(); offDone = true; }
     if (NX.loop.frames !== lastFr) { lastFr = NX.loop.frames; step(); }                                       // один крок збірки на кадр
     const S = SIDES[side]; if (!S) return;
     const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);

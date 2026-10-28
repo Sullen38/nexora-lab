@@ -7,7 +7,8 @@
  *   NX.px       – піксельні інструменти малювання (core/pixel.js)
  *   NX.cam      – камера, масштаб, перетягування (core/camera.js)
  *   NX.room     – кімната: фон, стеля, передня підлога (world/room.js)
- *   NX.wing / NX.rwing – ліве / праве крило кімнати, намальовані кодом (objects/wing_*.js, objects/rwing_*.js)
+ *   NX.arc      – стіни, підлога й зони обох крил «по дузі» у піксельному 3D (objects/arc_*.js; рушій — NX.px3d core/px3d.js)
+ *   NX.kit      – спільні дрібниці малювання й живі екрани (objects/kit.js, objects/screens.js)
  *   NX.city     – панорамне вікно: місто за склом кодом (world/cityscape.js; інструменти —
  *                 NX.ckit city_kit.js, небо й планета — NX.citySky, хмарочоси — NX.cityBuild)
  *   NX.objects  – інтерактивні об'єкти кімнати (js/objects/*.js)

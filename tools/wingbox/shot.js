@@ -1,10 +1,11 @@
-// tools/wingbox/shot.js — знімки сірого макета крил (схеми) з dist/nexora-lab.html
-//   node tools/wingbox/shot.js <префікс> [режими...] [--layout розкладка.json] [--hash rw-box|rw-base|rw-3d|none]
+// tools/wingbox/shot.js — знімки кімнати (стіни, підлога й зони «по дузі» у 3D) з dist/nexora-lab.html
+//   node tools/wingbox/shot.js <префікс> [режими...] [--layout розкладка.json] [--hash lang-en]
 // Режими: desk — увесь екран 1600×900; roomc — лише кімната (0..1536 × 0..368); zoomR — праве крило; zoomL — ліве;
 //         ph — телефон 390×844 (позиції камери: PHX='[["ph1",930],["ph2",1250]]', за замовчуванням ліве, центр, праве);
 //         ids — список об'єктів кімнати (id, span, які шари малює).
-// --layout підставляє розкладку генератора (window.RWBOX) без перебудови сайту; без нього — та, що вшита в rwing_box.js.
-// Перед знімками: python3 tools/build.py (знімки беруть dist/). Помилки сторінки друкуються в кінці.
+// --layout підставляє розкладку генератора (window.RWBOX) без перебудови сайту; без нього — та, що вшита в arc_layout.js.
+// --hash — додаток до адреси (мова: lang-en / lang-pl / lang-nl; за замовчуванням українська).
+// Перед знімками: python3 tools/build.py (знімки беруть dist/). Знімок — коли 3D зібралось. Помилки сторінки друкуються в кінці.
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
@@ -12,7 +13,7 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
   const args = process.argv.slice(2), opt = {}, rest = [];
   for (let i = 0; i < args.length; i++) if (args[i].startsWith('--')) opt[args[i].slice(2)] = args[++i]; else rest.push(args[i]);
   const [pre = 'shot', ...modes] = rest, W = modes.length ? modes : ['desk'];
-  const L = opt.layout ? JSON.parse(fs.readFileSync(opt.layout, 'utf8')) : null, hash = opt.hash || 'rw-box';
+  const L = opt.layout ? JSON.parse(fs.readFileSync(opt.layout, 'utf8')) : null, hash = opt.hash || 'lang-uk';
   const b = await chromium.launch(), errs = [];
   async function page(w, h, dpr) {
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
@@ -20,8 +21,8 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
     const p = await ctx.newPage();
     p.on('pageerror', e => errs.push(e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e.message));
     p.on('console', m => { if (m.type() === 'error' && !/fonts|ERR_TUNNEL|net::/.test(m.text())) errs.push(m.text()); });
-    await p.goto(HTML + '#' + (hash === 'none' ? '' : hash + ',') + 'lang-uk'); await p.waitForTimeout(2200);
-    if (hash === 'rw-3d') { await p.waitForFunction(() => NX.arc && NX.arc.built && NX.arc.built.left, null, { timeout: 30000 }); await p.waitForTimeout(600); }   // 3D: дочекатися збірки (по шару за кадр)
+    await p.goto(HTML + '#' + hash); await p.waitForTimeout(1500);
+    await p.waitForFunction(() => NX.arc && NX.arc.built && NX.arc.built.left && NX.arc.built.right, null, { timeout: 30000 }); await p.waitForTimeout(600);   // 3D: дочекатися збірки (по шару за кадр)
     return p;
   }
   const crop = async (p, x0, y0, x1, y1, file) => {

@@ -70,20 +70,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 @media(max-width:820px){.logo small{display:none}.hint{display:none}.chat{bottom:76px}.task{bottom:12px;padding:8px 12px}.task span{font-size:12px}.task i{width:60px}}
 @media(prefers-reduced-motion:reduce){.lab,.toast{transition:none}}
 
-/* монетки, меню зони, картка результату */
-.coins{flex:none;display:flex;align-items:center;gap:6px;background:var(--glass);border:2px solid var(--gold);color:var(--gold);padding:6px 9px;font:400 9px var(--f-d)}
-.coins i{width:10px;height:10px;background:var(--gold);box-shadow:inset -2px -2px 0 #c98a1a,inset 2px 2px 0 #fff2a0}
-.coins em{font-style:normal}
-.coins.pop{animation:cpop .35s}
-@keyframes cpop{50%{transform:scale(1.25)}}
-.zmenu{position:fixed;z-index:9;display:none;flex-direction:column;gap:5px;min-width:200px;background:#060a24f0;border:2px solid var(--cyan);box-shadow:0 0 18px #3be8ff66;padding:10px;backdrop-filter:blur(6px)}
-.zmenu b{font:400 8px var(--f-d);color:var(--cyan);margin-bottom:3px}
-.zmenu button{background:#0a1236;color:var(--text);border:2px solid #1b2a66;padding:8px 10px;font:600 12px var(--f-b);text-align:left;cursor:pointer}
-.zmenu button:hover{border-color:var(--pink)}
-.zmenu button.go{color:var(--mute);font-size:11px}
-.result{position:fixed;z-index:7;left:max(14px,env(safe-area-inset-left,0px));top:76px;max-width:min(340px,80vw);background:#060a24f0;border:2px solid var(--cyan);padding:10px 12px;display:flex;flex-direction:column;gap:5px;transform:translateX(-120%);transition:transform .3s}
-.result.show{transform:none}
+/* картка результату задачі (ui/zones.js) */
+.result{position:fixed;z-index:7;left:max(14px,env(safe-area-inset-left,0px));top:76px;max-width:min(340px,80vw);background:#060a24f0;border:2px solid var(--cyan);padding:10px 12px;display:flex;flex-direction:column;gap:5px;transform:translateX(-120%);visibility:hidden;transition:transform .3s,visibility 0s .3s}
+.result.show{transform:none;visibility:visible;transition:transform .3s}   /* схована картка не визирає з-за краю */
 .result b{font:400 7px var(--f-d);color:var(--gold)}
 .result span{font:500 13px/1.4 var(--f-b)}
-@media(prefers-reduced-motion:reduce){.result{transition:none}.coins em{font-style:normal}
-.coins.pop{animation:none}}
+@media(prefers-reduced-motion:reduce){.result{transition:none}}

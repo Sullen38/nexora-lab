@@ -7,7 +7,7 @@
  *   {loc:'..'}    де він зараз (для виходу) {do:fn}    виконати функцію
  *   {say:'..'}    сказати фразу           {wait:сек}   почекати
  *   {work:{pose,dur,obj,start,end}}       працювати в позі з прогресом
- *   {fade:{alpha,zoom,y,dur}}             портал: зменшитись/зникнути
+ *   {fade:{alpha,zoom,y,dur}}             зменшитись/зникнути (портал — коли повернеться)
  *   {rot:градуси}                          лягти (поворот спрайта)
  * Сценарії (з якої дії складається "сісти на диван" тощо) — в activities.js.
  * Тут же автономне життя: якщо довго немає команд, Nexi сам щось робить.
@@ -34,13 +34,8 @@ NX.nexi = {
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };
-    return ({
-      aiDesk: [{ fly: P.aiDesk.floor }],
-      chairA: [{ do: () => { this.seat = null; NX.chairA.roll(NX.chairA.OUT); } }, { hop: [NX.chairA.x + 4, 366] }, { do: () => NX.chairA.roll(0) }],
-      chairM: [{ do: () => { this.seat = null; NX.chairM.roll(NX.chairM.OUT); } }, { hop: [NX.chairM.x + 4, 366] }, { do: () => NX.chairM.roll(0) }],
-      sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }], pad: [{ hop: P.workshop.floor }],
-      hover: [up, { fly: P.tools.floor }], portalStep: [{ walk: P.portal.floor }],
-      beanbag: [{ hop: [NX.objects.lounge.pos[0] + 30 * NX.px.depthK(NX.objects.lounge.pos[1]), NX.objects.lounge.pos[1] + 8] }],
+    return ({                                                                         // місця зон (стіл, крісло, сканер...) — разом із зонами
+      sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
@@ -60,8 +55,6 @@ NX.nexi = {
     if (!this.cur && !this.queue.length && this.task) { this.finishTask(true); }
     if (this.speak) { this.speak.t += dt; this.talking = this.speak.t < this.speak.text.length / 40; if (this.speak.t > this.speak.text.length / 40 + 3.2) { this.speak = null; this.talking = false; NX.ui.hud.bubble(null); } }
     this.autolife(t);
-    if (this.buff && t > this.buff.until) this.buff = null;
-    if (this.buff && this.buff.type === 'dizzy' && Math.random() < .25) NX.fx.emit('spark', this.x + Math.cos(t * 6) * 12, this.y - 52 + Math.sin(t * 6) * 3, { vx: 0, vy: 0, g: 0, ttl: .4, col: '#ffe27a' });
     this.moodLife(t);
     NX.nexiPhys.update(this, dt);
     if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie') { this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
@@ -83,7 +76,7 @@ NX.nexi = {
   step(a, dt) {
     if (a.walk) {
       this.dy = null;
-      const [tx, ty] = a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt * (this.buff && this.buff.type === 'speed' ? 2.2 : 1);
+      const [tx, ty] = a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
       this.pose = a.run ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
       if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; return true; } this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
     }
@@ -111,45 +104,6 @@ NX.nexi = {
   },
   end(a) { if (a.work) { const w = a.work; if (w.obj) { NX.objects[w.obj].active = false; NX.objects[w.obj].done = true; } w.end && w.end(); } },
 
-  /* ---------------- ГОСТІ ПОРТАЛУ ----------------
-   * react(v)        — побачив гостя: дивується й махає
-   * eatMushroom(v)  — біжить до грибочка, з'їдає -> eatEffect() (випадковий)
-   * magic()         — чари Мерліна: випадковий колір корпусу на 12 с
-   * buff            — тимчасовий ефект {type, theme?, until}
-   */
-  buff: null,
-  /** Яблуко Білосніжки: Nexi куштує й засинає на підлозі на кілька секунд. */
-  appleNap() {
-    if (this.cur || this.queue.length || this.loc !== 'floor' && this.loc !== 'dock') { this.emote('love', 2); return; }
-    this.queue = [{ work: { pose: 'drink', dur: 1 } }, { do: () => { this.emote('sleepy', 4); this.rot = -90; } },
-      { work: { pose: 'sleep', dur: 4, tick: () => Math.random() < .05 && NX.fx.emit('z', this.x - 12, this.y - 14) } },
-      { do: () => { this.rot = 0; NX.nexiPhys.kick(2.5); this.emote('surprise', 2); this.say(NX.t('visitors.snowwhite.wake')); } }];
-  },
-  react(v) { this.emote('surprise', 1.6); if (!this.cur && !this.queue.length && this.loc !== 'sofaLie') { this.temp = 'wave'; this.tempT = NX.time + 2; } },
-  eatMushroom(v) {
-    this.lastCmd = NX.time; this.finishTask(false);
-    const [x, y] = NX.room.clampWalk(v.x + 16, Math.max(v.y, 384));
-    this.queue = [...this.exitRoute(), { walk: [x, y] }, { face: -1 }, { work: { pose: 'drink', dur: 1.1 } },
-      { do: () => { v.gone = true; for (let i = 0; i < 14; i++) NX.fx.emit('spark', v.x + (Math.random() - .5) * 14, v.y - Math.random() * 16, { col: Math.random() < .5 ? '#ff7af0' : '#7af0ff' }); this.eatEffect(); } }];
-    this.cur = null; this.task = { id: 'mushroom', title: NX.t('act.mushroom.title'), steps: NX.t('act.mushroom.steps'), color: '#ff7af0', prog: 0 };
-    setTimeout(() => { if (!v.gone) { v.queue = [{ walk: NX.visitors.OUT }, { walk: NX.visitors.STEP }, { vanish: 1 }]; v.cur = null; } }, 16000);
-  },
-  eatEffect() {
-    const type = ['rainbow', 'tiny', 'dizzy', 'sparkle', 'speed'][Math.random() * 5 | 0];
-    this.buff = { type, until: NX.time + 9, theme: type === 'rainbow' ? 'rainbow' : null };
-    if (type === 'sparkle') { this.fxNow = 'sparks'; this.fxUntil = NX.time + 9; }
-    if (type === 'speed') { this.fxNow = 'trail'; this.fxUntil = NX.time + 9; }
-    this.emote({ rainbow: 'love', tiny: 'surprise', dizzy: 'sleepy', sparkle: 'happy', speed: 'cool' }[type], 3);
-    setTimeout(() => this.say(NX.t('act.mushroom.fx.' + type)), 300);
-    if (type === 'dizzy') { this.temp = 'look'; this.tempT = NX.time + 4; }
-  },
-  magic() {
-    const ks = Object.keys(THEMES).filter(k => k !== this.look.theme && k !== 'standard');
-    this.buff = { type: 'theme', theme: ks[Math.random() * ks.length | 0], until: NX.time + 12 };
-    for (let i = 0; i < 20; i++) NX.fx.emit('spark', this.x + (Math.random() - .5) * 30, this.y - Math.random() * 50, { col: '#ffe27a' });
-    NX.nexiPhys.kick(2.5); this.emote('love', 2.5);
-  },
-
   /* ---------------- ВИПАДКОВІ ЕМОЦІЇ ТА "ПОГОДА" ----------------
    * Емоції й ефекти не обираються в скінах — вони трапляються самі:
    *  - кожні 8–16 с Nexi проявляє випадкову емоцію (частіше радість);
@@ -174,9 +128,8 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
-      if (NX.objects.coins.list.length && Math.random() < .7) { this.do('collect', false); return; }
-      if (Math.random() < .35) { const z = ['ai', 'analytics', 'marketing', 'tools'][Math.random() * 4 | 0]; this.do(z, false, { task: NX.ui.zones.pick(z) }); return; }   // сам працює
-      const pool = [NX.objects.sofa.pick(), 'coffee', 'petCat', 'dance', 'home', 'wander', 'fountain', 'beanbag', 'laser', 'window', 'water', 'kickBall', 'selfie', 'laser'];
+      if (Math.random() < .3) { this.do('sofaWork', false); return; }                // сам працює (з дивану; у зонах — коли зони повернуться)
+      const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
   },
@@ -190,10 +143,8 @@ NX.nexi = {
       if (this.back) p.back = 1; if (this.talking && !p.back && !p.talk) p.talk = 1;
       if (this.mood && t < this.moodT) p.face = { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard' }[this.mood];
       const ph = NX.nexiPhys; p.antX = ph.ax; p.antY = ph.ay; p.vel = NX.px.clamp(ph.vx / NX.cfg.RUN_SPEED, -1, 1); p.thrust = Math.min(1, Math.abs(ph.vy) / 80);
-      const lookNow = this.buff && this.buff.theme ? { ...this.look, theme: this.buff.theme } : this.look;
-      if (this.buff && this.buff.type === 'dizzy') { p.face = 'sleepy'; p.hx = Math.round(Math.sin(t * 6) * 1.5); }
-      if (this._rt !== t) { this._rt = t; renderBot(lookNow, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
-      const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K * (this.buff && this.buff.type === 'tiny' ? .55 : 1), w = SW * s, h = SH * s, top = FOOT * s;
+      if (this._rt !== t) { this._rt = t; renderBot(this.look, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
+      const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, w = SW * s, h = SH * s, top = FOOT * s;
       const X = Math.round(this.x * K) / K, Y = Math.round(this.y * K) / K;
       const shY = p.jet ? this.gy : Y, sr = s / SPRITE_K / 1.45;
       c.save(); c.globalAlpha = .45 * this.alpha * (p.jet ? .6 : 1); c.fillStyle = '#000'; c.beginPath(); c.ellipse(X, shY + 1, 11 * sr * (2 - ph.sq), 2.5 * sr, 0, 0, 7); c.fill(); c.restore();

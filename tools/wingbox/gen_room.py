@@ -1,26 +1,26 @@
-# tools/wingbox/gen_room.py — РОЗКЛАДКА ОБОХ КРИЛ «по дузі» для js/objects/arc_layout.js (схема rwing_box.js і 3D arc_scene.js)
+# tools/wingbox/gen_room.py — РОЗКЛАДКА ОБОХ КРИЛ «по дузі» для js/objects/arc_layout.js (її малює 3D objects/arc_scene.js)
 # ----------------------------------------------------------------------------------------------------
 # Кімната зверху — пів кола: вікно в найдальшій точці (z = 185), обабіч — коротка пряма стіна до xf, далі стіна
-# загинається дугою (центр C, радіус R) до глядача. Стіни дзеркальні відносно центру вікна x = 774, зони — кожна своя:
-#   праворуч (технологічне): майстерня (біля вікна, прямо) -> інструменти -> портал (найближче, лицем до центру кімнати);
-#                            екран NEXORA AI на стіні біля вікна, антресоль з ботами, вазонами й золотом, колони
-#   ліворуч (затишне):       маркетинг (біля вікна) -> аналітика -> AI-центр зі стелажем (полиці, вазони, чайник-лампа);
-#                            настінні полиці вздовж дуги з вазонами, квітами, плющем і книжками, ліани й ліхтар
-# Зони — ЛАНЦЮЖКОМ уздовж стіни (власник, 28.10): дальня біля вікна — прямо, спиною до стіни з вікном, її край біля дивану
-# (far_items, X_in); середня й найближча — спиною до дуги й лицем до її центру, кожна впритул до попередньої (chain: gz од. у
-# плані, gs px на екрані), нічого не заходить одне на одне. Усі 6 зон однакові на екрані (спільна висота H; fit_far / fit_chain),
-# кожна — як та, що навпроти; будова однакова (стіл ≈ чверть висоти зони, над ним екран / будка / дошка).
-# Зараз у зонах лише столи й екрани (без вазонів, крісел, ламп і дрібниць). Колони — лише там, де влазять між зонами.
+# загинається дугою (центр C, радіус R) до глядача. Стіни дзеркальні відносно центру вікна x = 774.
+# ЧИСТА ОСНОВА (власник, 29.10): за замовчуванням (DEFAULT) — ЛИШЕ СТІНИ й підлога, без зон. Зони додаються ПО ЧЕРЗІ:
+#   "n" у крила — скільки зон ланцюжка будувати (0..3): праворуч майстерня -> інструменти -> портал, ліворуч маркетинг ->
+#   аналітика -> AI-центр (від вікна до глядача); "H" — висоти головних частин зон на екрані (px), по позиціях
+#   [дальня, середня, найближча] або одне число для всіх. Решта (екран на стіні "hub", антресоль "mz", колони "cols",
+#   настінні полиці "shelves", підвіси "hang") — так само за параметрами, коли знадобляться.
+#   Попередня спроба (28.10: усі 6 зон однакові, H 173) — PRESETS['v1'] (--preset v1), щоб було з чого брати й з чим порівнювати.
+# Зони — ЛАНЦЮЖКОМ уздовж стіни: дальня біля вікна — прямо, спиною до стіни з вікном, її край біля дивану (far_items, X_in);
+# середня й найближча — спиною до дуги й лицем до її центру, кожна впритул до попередньої (chain: gz од. у плані, gs px на
+# екрані), нічого не заходить одне на одне. Масштаб кожної зони підбирається під її висоту H (fit_far / fit_chain).
 # Кожна зона зібрана з частин картинки-концепту assets/room.webp: X, Y — прямокутник частини на картинці (пікселі
 # кімнати), v — наскільки частина відступає вглиб від передньої лінії зони, d — її глибина. Частини переносяться в 3D
 # зони: m — од. світу на піксель картинки (однаковий по ширині й висоті).
 # Перспектива — як у кімнаті (core/persp.js): VP (774, 220), D 520, око (774, 220, -520); підлога y = 372.
 # Межі вікна беруться з js/core/config.js (NX.cfg.WIN) — стіни крил починаються від відкосів.
 #
-#   python3 tools/wingbox/gen_room.py [out.json] [--params p.json] [--plan plan.png] [--write]
+#   python3 tools/wingbox/gen_room.py [out.json] [--params p.json | --preset v1] [--plan plan.png] [--write]
 #     --write — вшити розкладку в js/objects/arc_layout.js;   --plan — план зверху (PNG)
 #   Перевірки друкуються: висоти зон, проміжки (SEP), перетини об'ємів (INTERSECT), що за стіною (BEHIND WALL) — мають бути none.
-#   На плані диван — там, де він у #rw-3d (NX.cfg.SOFA_Y3D: лінія підлоги на екрані -> глибина в кімнаті).
+#   На плані диван — там, де він у кімнаті (NX.cfg.SOFA_Y: лінія підлоги на екрані -> глибина в кімнаті).
 import json, math, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, HERE)
@@ -30,7 +30,7 @@ def _win():
     m = re.search(r'WIN:\s*\{\s*L:\s*([\d.]+),\s*R:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read())
     return float(m.group(1)), float(m.group(2))
 WL, WR = _win()                                                                     # зовнішні краї відкосів на екрані
-SOFA_Y3D = float(re.search(r'SOFA_Y3D:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read()).group(1))   # диван у #rw-3d (лінія підлоги на екрані)
+SOFA_Y = float(re.search(r'SOFA_Y:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read()).group(1))   # диван (лінія підлоги на екрані)
 def sofa_k(y):                                                                      # масштаб дивану — як у персонажів (NX.room.scaleAt)
     sc = lambda v: 1.45 + 1.25 * max(0, min(1, (v - 352) / 330)); return sc(y) / sc(362)
 JAMB_L, JAMB_R = 774 + (WL - 774) * (D + JZ) / D, 774 + (WR - 774) * (D + JZ) / D  # ті самі краї у світі (на глибині JZ)
@@ -58,11 +58,12 @@ def sign(Z, id, X0, X1, Y0, Y1, v, d, key, line, st='dark', icon=True, **kw):
     deco.append(dict(t='txt', f=[(h * 1.05 if icon else 4) / (X1 - X0), .97, .16, .86], key=key, col='#7af4ff'))
     return Z.add(id, *r, v, d, st, deco=deco, **kw)
 
-# ===================================== ЗОНИ: ЛИШЕ СТОЛИ Й ЕКРАНИ =====================================
-# Власник (28.10): «малюй поки тільки столи та екрани, без елементів; усі 6 зон важливі — однакові за розміром, кожна — як та,
-# що навпроти (AI-центр = портал, аналітика = інструменти, маркетинг = майстерня), рівномірно вздовж стін». Тому в кожної
-# зони — однакова будова (стіл ≈ чверть висоти, над ним екран / будка / дошка), а масштаб зони підбирається під СПІЛЬНУ висоту
-# головних частин на екрані H (fit_far / fit_chain): дальня зона в світі більша, ближня — менша, на екрані — однакові.
+# ===================================== ЗОНИ (попередня спроба, 28.10): ЛИШЕ СТОЛИ Й ЕКРАНИ =====================================
+# Тоді власник: «малюй поки тільки столи та екрани, без елементів; усі 6 зон — однакові за розміром, кожна — як та, що навпроти
+# (AI-центр = портал, аналітика = інструменти, маркетинг = майстерня)». Будова однакова (стіл ≈ чверть висоти, над ним екран /
+# будка / дошка), масштаб зони підбирається під висоту головних частин на екрані H (fit_far / fit_chain).
+# 29.10 власник почав з нуля (лише стіни): ці зони — заготовки; нові вимоги (перші — найбільші й найвищі, наступні на ~25%
+# менші; екрани — по центру столів; майстерня — як на картинці: більша, масивніша, ближча) — docs/HANDOFF.md.
 DESK_H, DESK_D = 56, 50
 MS_WS, MS_PT = 1.12, .95
 KB_AN, KB_MK = 1.3, 1.4                                                            # будки аналітики й маркетингу більші — стіл ≈ чверть висоти, як в AI-центрі
@@ -320,27 +321,32 @@ SHK = {
 
 def build_side(p, sgn):
     """sgn = +1 — праве крило, -1 — ліве. Стіни — дзеркальні відносно x = 774, зони — свої (ліве — затишне, праве — технологічне).
-    Зони — ЛАНЦЮЖКОМ: дальня біля вікна (прямо, край — біля дивану), далі середня й найближча — спиною до дуги, кожна впритул
-    до попередньої (проміжок gz од. світу), без заходу одна на одну; колони — лише там, де між зонами біля стіни є місце."""
+    Зони — ЛАНЦЮЖКОМ (перші n з трьох): дальня біля вікна (прямо, край — біля дивану), далі середня й найближча — спиною до дуги,
+    кожна впритул до попередньої (проміжок gz од. світу), без заходу одна на одну; колони — лише там, де між зонами є місце."""
     R = p['R']; xf = p['xf'] if sgn > 0 else 2 * 774 - p['xf']; C = (xf, JZ - R)
-    if sgn > 0: far, mid, near = workshop(), tools(), portal(); jamb = JAMB_R
-    else: far, mid, near = marketing(), analytics(), aicenter(); jamb = JAMB_L
-    q = p['right' if sgn > 0 else 'left']; gz, gw, gs = q.get('gz', 3), q.get('gw', 4), q.get('gs', 2); H = p['H']
-    it_far = fit_far(far, q['far']['X_in'], sgn, q['far'].get('gap', 6), H)        # усі зони — однакові на екрані (H), обидва крила
-    a_mid, it_mid = fit_chain(it_far, mid, C, R, sgn, gz, gw, gs, H)
-    a_near, it_near = fit_chain(it_mid, near, C, R, sgn, gz, gw, gs, H)
-    items = it_far + it_mid + it_near
+    if sgn > 0: builders = (workshop, tools, portal); jamb = JAMB_R
+    else: builders = (marketing, analytics, aicenter); jamb = JAMB_L
+    q = p['right' if sgn > 0 else 'left']; gz, gw, gs = q.get('gz', 3), q.get('gw', 4), q.get('gs', 2)
+    n = max(0, min(3, q.get('n', 3))); H = p.get('H', 173); Hs = list(H) if isinstance(H, (list, tuple)) else [H] * 3
+    zs, zones, angles = [], [], {}
+    for i in range(n):                                                               # дальня -> середня -> найближча
+        Z = builders[i]()
+        if i == 0: it = fit_far(Z, q['far']['X_in'], sgn, q['far'].get('gap', 6), Hs[0])
+        else: a_, it = fit_chain(zones[-1], Z, C, R, sgn, gz, gw, gs, Hs[i]); angles[('mid', 'near')[i - 1]] = round(a_, 2)
+        zs.append(Z); zones.append(it)
+    items = [x for it in zones for x in it]
     wall = [[round(jamb, 1), JZ], [xf, JZ]] + [[round(v, 1) for v in arcpt(C, R, a, sgn)] for a in range(10, 131, 10)]
     cols, up, hang = [], [], []
     def col(id, a, yt, w=24, dep=20, st='col', deco=None):
         x, z = arcpt(C, R - 4 - dep, a, sgn); return dict(id=id, x=round(x, 1), z=round(z, 1), turn=sgn * a, w=w, dep=dep, yb=FL, yt=yt, st=st, deco=deco or [dict(t='l', f=[.5, .02, .5, .98], col=NEON_C if sgn > 0 else NEON_P, lw=1.4), *[dict(t='r', f=[.1, .9, a_, a_ + .015], fill='#5a4ab0') for a_ in (.2, .45, .7)]])
     # колони — у щілині біля стіни між сусідніми зонами (між їхніми задніми кутами); не влазить — колони немає
-    zones = [it_far, it_mid, it_near]; cand = {}
+    cand = {}
     for i, (b, yt, w, *dp) in enumerate(q.get('cols', [])):
+        if b + 1 >= len(zones): continue                                             # такої пари зон ще немає
         A_, B_ = zones[b], zones[b + 1]; ha = [wall_angle(t, C, sgn) for t in zhull(A_)]; hb = [wall_angle(t, C, sgn) for t in zhull(B_)]
         a = (max(ha) + min(hb)) / 2; cand[i] = (a, col(f'col{i}', a, yt, w, *dp))
     col_a = {i: a for i, (a, c_) in cand.items() if not any(hit(c_, it) for it in items)}
-    L = dict(wall=wall, items=items, cols=cols, armZone=far.name, scales=dict(far=far.m, mid=mid.m, near=near.m), angles=dict(mid=round(a_mid, 2), near=round(a_near, 2)))
+    L = dict(wall=wall, items=items, cols=cols, armZone=zs[0].name if zs else None, scales={k: Z.m for k, Z in zip(('far', 'mid', 'near'), zs)}, angles=angles)
     def upbox(id, a, rad, w, dep, yb, h, st, **kw):
         x, z = arcpt(C, rad, a, sgn); up.append(dict(id=id, layer='up', x=round(x, 1), z=round(z, 1), turn=sgn * a, w=w, dep=dep, yb=yb, yt=yb - h, st=st, **kw))
     # ---- антресоль (праве крило) ----
@@ -422,7 +428,10 @@ def report(L, name):
     for it in L['items']:
         if it.get('layer') == 'up': continue
         Zi.setdefault(it['zone'], []).append(it)
-    print(f'== {name}:', {k: round(v, 3) for k, v in L['scales'].items()})
+    print(f'== {name}:', {k: round(v, 3) for k, v in L['scales'].items()} if Zi else 'лише стіни (зон немає)')
+    if not Zi:
+        bad, behind = check(L); print('  INTERSECT:', bad if bad else 'none'); print('  BEHIND WALL:', behind if behind else 'none')
+        return bad, behind
     hs = {k: screen_ext(v, MAINS[k]) for k, v in Zi.items()}
     hmax = max(e[3] - e[2] for e in hs.values())
     for k, e in hs.items():
@@ -462,14 +471,23 @@ def plan_png(out, path):
         for zn in {it.get('zone') for it in L['items'] if it.get('zone')}:
             pts = [p for it in L['items'] if it.get('zone') == zn for p in fpr(it)]
             cx = sum(p[0] for p in pts) / len(pts); cz = sum(p[1] for p in pts) / len(pts); d.text(T(cx - 28, cz + 6), zn.upper(), fill=(255, 255, 255))
-    # диван (#rw-3d: ближче до глядача — NX.cfg.SOFA_Y3D): передній край на підлозі там, де його лінія на екрані; ширина — як на екрані
-    sy = SOFA_Y3D; sk = sofa_k(sy); zf = D * (FL - 220) / (sy - 220) - D; sw = 234 * sk / s(zf)
+    # диван (ближче до глядача — NX.cfg.SOFA_Y): передній край на підлозі там, де його лінія на екрані; ширина — як на екрані
+    sy = SOFA_Y; sk = sofa_k(sy); zf = D * (FL - 220) / (sy - 220) - D; sw = 234 * sk / s(zf)
     d.rectangle([T(774 - sw / 2, zf + 45), T(774 + sw / 2, zf)], outline=(160, 120, 220)); d.text(T(774 - 14, zf + 30), 'SOFA', fill=(200, 160, 255))
     d.text((8, H - 16), 'top view: x right, z into the room (window at the top); eye at (774, -520) below the picture', fill=(120, 120, 160))
     im.save(path)
 
 DEFAULT = {
- # 28.10 (власник): «усі 6 зон важливі — однакові за розміром, кожна — як та, що навпроти; рівномірно, впритул; лише столи й
+ # 29.10 (власник): «починаємо з нуля — лишаємо диван, вікно, віконні рами, підлогу й стіни». Тож зон немає (n 0) — лише стіни
+ # й підлога крил. Зони додаємо по черзі (docs/HANDOFF.md): n — скільки зон ланцюжка (дальня -> середня -> найближча),
+ # H — висоти головних частин зон на екрані по позиціях [дальня, середня, найближча]; far.X_in — край дальньої зони біля дивану
+ # (екранний x), gap — до стіни з вікном; gz / gs — проміжок до попередньої зони (у плані / на екрані), gw — до стіни.
+ "R": 225, "xf": 1200, "H": [173, 173, 173],
+ "right": {"n": 0, "far": {"X_in": 893, "gap": 6}, "gz": 3, "gw": 4, "gs": 2},
+ "left": {"n": 0, "far": {"X_in": 655, "gap": 6}, "gz": 3, "gw": 4, "gs": 2},
+}
+V1 = {
+ # ПОПЕРЕДНЯ СПРОБА (28.10). Тоді власник: «усі 6 зон важливі — однакові за розміром, кожна — як та, що навпроти; рівномірно, впритул; лише столи й
  # екрани». H — СПІЛЬНА висота головних частин кожної зони на екрані (px): масштаб кожної зони підбирається під неї
  # (fit_far / fit_chain); 173 — найбільша, за якої обидва крила вміщаються від дивану до краю кадру. Зони ЛАНЦЮЖКОМ уздовж
  # стіни: дальня біля вікна — прямо, її край біля дивану (X_in — екранний x; за диван — щонайбільше трішки); середня й
@@ -489,8 +507,10 @@ DEFAULT = {
           "hang": [[78, 30, -60, 90, "vine"], [86, 26, -60, 70, "vine"], [55, 40, -60, 50, "vine"], [62.5, 40, -40, 60, "red"]]},
 }
 
+PRESETS = {'base': DEFAULT, 'v1': V1}
+
 def write_js(out):
-    """вшити розкладку в js/objects/arc_layout.js (рядок NX.arcLayout = {...};) — її беруть схема (rwing_box.js) і 3D (arc_scene.js)"""
+    """вшити розкладку в js/objects/arc_layout.js (рядок NX.arcLayout = {...};) — її малює 3D (objects/arc_scene.js)"""
     p = os.path.join(REPO, 'js', 'objects', 'arc_layout.js'); src = open(p, encoding='utf8').read()
     new, n = re.subn(r'NX\.arcLayout = \{.*?\};( *//[^\n]*)?\n', lambda m: 'NX.arcLayout = ' + json.dumps(out, separators=(',', ':'), ensure_ascii=False) + ';   // згенеровано tools/wingbox/gen_room.py\n', src, count=1, flags=re.S)
     assert n == 1, 'не знайшов NX.arcLayout у arc_layout.js'
@@ -498,13 +518,14 @@ def write_js(out):
 
 if __name__ == '__main__':
     import argparse
-    ap = argparse.ArgumentParser(description='схема обох крил для js/objects/rwing_box.js')
+    ap = argparse.ArgumentParser(description='розкладка обох крил «по дузі» для js/objects/arc_layout.js')
     ap.add_argument('out', nargs='?', default=os.path.join(HERE, 'layout.json'), help='куди записати розкладку (JSON)')
     ap.add_argument('--params', help='JSON з параметрами (за замовчуванням — DEFAULT у цьому файлі)')
+    ap.add_argument('--preset', choices=sorted(PRESETS), default='base', help='готові параметри: base — лише стіни (DEFAULT), v1 — попередня спроба з 6 зонами')
     ap.add_argument('--write', action='store_true', help='також вшити в js/objects/arc_layout.js')
     ap.add_argument('--plan', help='намалювати план зверху (PNG)')
     a = ap.parse_args()
-    prm = json.load(open(a.params)) if a.params else DEFAULT
+    prm = json.load(open(a.params)) if a.params else PRESETS[a.preset]
     print(f'вікно {WL:.0f}..{WR:.0f} (відкоси на глибині {JZ}: x світу {JAMB_L:.1f} / {JAMB_R:.1f})')
     out = {}
     for name, sgn in (('right', 1), ('left', -1)):

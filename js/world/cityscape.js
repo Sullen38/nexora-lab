@@ -6,9 +6,8 @@
  * від стелі до підлоги (за диваном теж), а за ним — нічне місто, намальоване кодом:
  *   небо, зорі, зоря-сонце, планета-Земля з кільцем, що обертається, хмари — world/city_sky.js
  *   три плани хмарочосів, вивіски, екрани, естакада монорейки — world/city_build.js
- * Кодом закрито ВСЕ вікно картинки (CLIP) — скло й місто до самого відкосу; машинерія майстерні, що стоїть
- * перед склом праворуч унизу, тепер теж кодом (objects/workshop.js) і малюється поверх міста. Картинку під
- * вікном і праворуч від нього кімната більше не малює взагалі (NX.room.pieces = PIECES).
+ * Кодом закрито ВСЕ вікно картинки (CLIP) — скло й місто до самого відкосу. Картинку під вікном і праворуч від нього
+ * кімната більше не малює взагалі (NX.room.pieces = PIECES).
  * Порядок шарів (далі -> ближче), щокадру — лише живе поверх готових кешів:
  *   НЕБО (кеш: небо, задня половина кільця, сяйво, відблиски скла) -> мерехтливі зорі -> ПЛАНЕТА (кеш раз на
  *   0.25 с) -> кільце (перед), іскри, падаюча зоря -> корабель, дирижабль, човник -> хмари (пливуть)
@@ -17,7 +16,7 @@
  * Растри — 4 px/од. (будуються раз), кеші — точно під масштаб екрана й копіюються 1:1 без згладжування.
  * Швидкодія: жодного clip() за складною формою на великі шари — форма вікна запечена в растри (maskOut).
  * NX.city.fireworks(сек) — феєрверк (коли Nexi дивиться у вікно, сценарій `window`).
- * NX.city.paint(c, t, mode) — нерухома копія міста: для віддзеркалення в підлозі (wing_wall.js, patchFloor) і сяйва.
+ * NX.city.paint(c, t, mode) — нерухома копія міста: для віддзеркалення в передній підлозі (objects/arc_scene.js patchFront).
  * ========================================================================== */
 NX.city = (() => {
   const P = NX.px, F = NX.furn, CK = NX.ckit, SK = NX.citySky, CB = NX.cityBuild, { FAC, NEON } = CB;
@@ -27,10 +26,9 @@ NX.city = (() => {
   // MX переносить x-позиції (центри) на нове скло — розсуває пропорційно, розміри будинків не змінює; крайні вежі
   // прив'язані до країв скла, а горизонти (skyline), машини, зорі й хмари й так займають усю ширину.
   const MX = x => 774 + (x - 752) * GW / 392, AT = (cx, w) => ({ x0: MX(cx) - w / 2, x1: MX(cx) + w / 2 });
-  // що закриваємо кодом: усе вікно картинки до відкосу (машинерія майстерні перед склом — кодом, objects/workshop.js).
+  // що закриваємо кодом: усе вікно картинки до відкосу.
   // Точки [2]..[6] колись були «сходинками» навколо машинерії картинки — лишились виродженими (одна точка), щоб maskOut/outside не змінювати.
   const CLIP = [[GL.x0, -2], [GL.x1, -2], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x1, GL.y1], [GL.x0, GL.y1]];
-  const SOFA_TOP = 252, SOFA = [657, 891];                                           // нижче — диван (для віддзеркалення лишаємо як було)
   const PL = { x: MX(754), y: 63, r: 56 }, SUN = [MX(828), 41], RING = { a: 124, e: .19, th: -.26 };
   const DAY = 240;                                                                   // планета робить оберт за 4 хвилини
   const CLOUDS = [                                                                  // пасма: центр, розмір, тон (як на картинці: рожеві праворуч під кораблем)
@@ -101,7 +99,6 @@ NX.city = (() => {
   let S = null;                                                                      // готові растри й живі точки
   const path = pts => { const p = new Path2D(); pts.forEach(([x, y], i) => i ? p.lineTo(x, y) : p.moveTo(x, y)); p.closePath(); return p; };
   const CLIPP = path(CLIP);
-  const KEEP = (() => { const p = new Path2D(); p.rect(GL.x0, -2, GW, SOFA_TOP + 2); p.rect(GL.x0, SOFA_TOP - 1, SOFA[0] - GL.x0, GL.y1); p.rect(SOFA[1], SOFA_TOP - 1, GL.x1 - SOFA[1], GL.y1); return p; })();
   const L = R => ({ cv: R.canvas(), x: R.x0, y: R.y0, w: R.W * R.U, h: R.H * R.U });
   /** Поза вікном (машинерія майстерні праворуч унизу) — прозоро. CLIP — прямокутні сходинки, тож перевірка проста. */
   const outside = (X, Y) => (Y > CLIP[2][1] && X > CLIP[3][0]) || (Y > CLIP[4][1] && X > CLIP[5][0]);
@@ -282,7 +279,7 @@ NX.city = (() => {
       const x = a.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.translate(-GL.x0, 2); paint(x, 0, 'bloom', 1);
       const down = (src, f) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / f)); o.height = Math.max(1, Math.round(src.height / f)); const ox = o.getContext('2d', { willReadFrequently: true }); ox.imageSmoothingEnabled = true; ox.imageSmoothingQuality = 'high'; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
       const b1 = down(a, 4), bx = b1.getContext('2d', { willReadFrequently: true }), im = bx.getImageData(0, 0, b1.width, b1.height), d = im.data;
-      for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }   // як у крила (wing_wall.js)
+      for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }   // лише яскраве світиться
       bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2);
       const bc = document.createElement('canvas'); bc.width = b1.width; bc.height = b1.height; const cx2 = bc.getContext('2d'); cx2.globalCompositeOperation = 'lighter'; cx2.imageSmoothingEnabled = true;
       [[b1, .14], [b2, .26], [b3, .36]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
@@ -327,11 +324,10 @@ NX.city = (() => {
     const co = (t * .55) % GW;
     S.clouds.forEach(A => { let x = A.x + co; if (x > GL.x1) x -= GW; blit(c, A, R, x - A.x); if (x + A.w > GL.x1) blit(c, A, R, x - A.x - GW); });
   }
-  /** Нерухома копія міста в контекст c (координати кімнати): для віддзеркалення в підлозі й сяйва.
-   *  mode 'patch' — без частини за диваном (там віддзеркалення лишається як було), інакше ('full') — усе скло. R — роздільність (px/од.). */
+  /** Нерухома копія міста в контекст c (координати кімнати): для віддзеркалення в підлозі (усе скло). R — роздільність (px/од.). */
   function paint(c, t, mode, R = (NX.room && NX.room.RS) || 2) {
     if (!S) return;
-    c.save(); c.clip(CLIPP); if (mode === 'patch') c.clip(KEEP);
+    c.save(); c.clip(CLIPP);
     blit(c, S.sky, R); blit(c, S.ringB, R); c.imageSmoothingEnabled = true; c.drawImage(S.planet.cv, S.planet.x, S.planet.y, S.planet.w, S.planet.h); blit(c, S.ringF, R);
     S.clouds.forEach(A => blit(c, A, R)); c.imageSmoothingEnabled = true; c.drawImage(S.bld.cv, S.bld.x, S.bld.y, S.bld.w, S.bld.h);
     c.restore();
@@ -492,15 +488,6 @@ NX.city = (() => {
     c.save(); c.clip(CLIPP); c.fillStyle = 'rgba(200,240,255,.05)'; c.beginPath(); c.moveTo(gx, 0); c.lineTo(gx + 14, 0); c.lineTo(gx + 164, GL.y1); c.lineTo(gx + 150, GL.y1); c.fill(); c.restore();
   }
 
-  /** Передня підлога-дзеркало на всю ширину скла (GL.x0..GL.x1): картинка + місто (без частини за диваном — там лишається
-   *  віддзеркалення дивана) + рама вікна + рослина біля дивану. Один раз після старту. */
-  function patchFloor(t) {
-    const img = NX.room.img, RS = NX.room.RS; if (!img.naturalWidth) return;
-    const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d');
-    x.drawImage(img, 0, 0); x.save(); x.scale(RS, RS); paint(x, t, 'patch', RS);
-    ['windowFrame', 'plant'].forEach(id => { const o = NX.objects[id]; if (o && o.drawBack) o.drawBack(x, t); });
-    x.restore(); NX.room.patchFront(cv, GL.x0, GL.x1);
-  }
   let frames = 0;
   return {
     GL, CLIP, CLIPP,
@@ -529,7 +516,7 @@ NX.city = (() => {
       c.save(); c.beginPath(); c.rect(GL.x0, 150, GW, 70); c.clip(); train(c, t, dt); lane(c, t, dt, 2); c.restore();                      // потяг і близькі машини — до самого відкосу
       glass(c, t);
       c.restore();
-      if (++frames === 8 && !c.isRefl) { if (NX.arc && NX.arc.patchFront) NX.arc.patchFront(); else patchFloor(t); }   // крила «по дузі» (#rw-3d) латають передню підлогу на всю ширину самі
+      if (++frames === 8 && !c.isRefl && NX.arc && NX.arc.patchFront) NX.arc.patchFront();   // передня підлога-дзеркало (місто, рама, крила) — objects/arc_scene.js
     },
   };
 })();

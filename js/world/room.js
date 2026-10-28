@@ -36,11 +36,11 @@ NX.room = {
     }
     // ---------- передня підлога: ПРОДОВЖЕННЯ тієї ж підлоги з картинки ----------
     // 1) останні рядки картинки розтягуємо вниз — кольори й відблиски тягнуться без шву
-    // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) плитка зі швами й калюжі світла (№7) — їх запікає
-    //    сюди objects/wing_floor.js через NX.room.frontFx (щокадру нічого не коштують). Полотно — FR px на одиницю (1).
+    // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) плитка зі швами — її запікає сюди world/floor_tiles.js
+    //    через NX.room.frontFx (щокадру нічого не коштує). Полотно — FR px на одиницю (1).
     this.front = document.createElement('canvas'); this.front.width = W * this.FR; this.front.height = (front + 2) * this.FR;
     this.frontFrom(this.img, 0, W);
-    this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1));                                    // перемальовані зони (напр. AI-центр)
+    this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1));                                    // перемальовані частини (крила в 3D, місто, рама — objects/arc_scene.js)
   },
   patches: [], FR: 1, frontFx: null, pieces: null,                                    // pieces — які частини картинки ще малювати (вікно вже кодом: world/cityscape.js)
                                                                   // FR 2 px/од. подвоював час кадру (велике полотно щокадру) — лишаємо 1
@@ -54,7 +54,7 @@ NX.room = {
     c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(src, 0, (H - ref - 14) * RS, W * RS, ref * RS, 0, -ref, W, ref); c.restore();
     let g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(10,6,34,0)'); g.addColorStop(.18, 'rgba(10,6,34,.35)'); g.addColorStop(.75, 'rgba(6,6,26,.9)'); g.addColorStop(1, 'rgba(4,5,20,1)');
     c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
-    if (this.frontFx) { c.save(); c.translate(0, -H); this.frontFx(c, x0, x1, front); c.restore(); }   // №7: плитка й калюжі світла (у координатах кімнати)
+    if (this.frontFx) { c.save(); c.translate(0, -H); this.frontFx(c, x0, x1, front); c.restore(); }   // плитка (у координатах кімнати)
     c.restore(); c.setTransform(1, 0, 0, 1, 0, 0);
   },
   /** Об'єкт, що перемалював частину кімнати, віддає її копію: передня підлога (продовження й глянцеве

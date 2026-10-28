@@ -5,13 +5,12 @@
  * Меню: кожна кнопка запускає сценарій з actors/nexi/activities.js.
  * ========================================================================== */
 NX.ui.hud = {
-  NAV: ['home', 'ai', 'analytics', 'marketing', 'workshop', 'tools', 'portal'],
+  NAV: ['home'],                // кнопки зон (ai, analytics, marketing, workshop, tools, portal) — разом із зонами
   $: id => document.getElementById(id), typed: null,
   init() {
     const nav = this.$('nav');
-    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); if (id === 'portal') NX.objects.portal.dest = NX.objects.portal.DESTS[Math.random() * 3 | 0]; NX.ui.zones.has(id) ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); }; nav.appendChild(b); });
+    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); NX.ui.zones.has(id) && NX.acts[id] ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); }; nav.appendChild(b); });
     this.$('skinbtn').onclick = () => NX.ui.skinlab.show();
-    this.coins(NX.objects.coins.total);
     this.applyLang();
   },
   /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
@@ -23,12 +22,10 @@ NX.ui.hud = {
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
     // підказки для екранних читачів і title — теж мовою сайту
     [['world', 'ui.room'], ['lab', 'ui.lab'], ['pl', 'ui.prev'], ['pr', 'ui.next']].forEach(([id, k]) => { const el = $(id); if (el) el.setAttribute('aria-label', T(k)); });
-    const sb = document.querySelector('#ask button'); if (sb) sb.setAttribute('aria-label', T('ui.send')); if ($('coins')) $('coins').title = T('ui.coins');
+    const sb = document.querySelector('#ask button'); if (sb) sb.setAttribute('aria-label', T('ui.send'));
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
     if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },
-  /** Лічильник монеток у меню (з "підстрибуванням", коли щось зібрали). */
-  coins(n, pop) { const el = this.$('coins'); if (!el.querySelector('em')) { el.innerHTML = '<i></i><em></em>'; } el.querySelector('em').textContent = n; if (pop) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } },
   setActive(id) { document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === id)); },
   firstTouch() { this.$('hint').style.display = 'none'; },
   toast(m) { const t = this.$('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 1800); },
