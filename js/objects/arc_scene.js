@@ -32,7 +32,8 @@
   }
   // ---------- старі крила — вимкнути (як у схемі #rw-box) ----------
   const OFF = ['workshop', 'tools', 'portal', 'rwingBack', 'rwingMezz', 'rwingFloor', 'rwingPlants', 'rwingAir',
-    'wingBack', 'wingReact', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall', 'wingProps', 'wingFloor', 'wingGlow', 'wingAir', 'analyticsChair', 'marketingChair', 'lwingBox', 'rwingBox'];
+    'wingBack', 'wingReact', 'aiPc', 'analytics', 'marketing', 'wingPlantsWall', 'wingProps', 'wingFloor', 'wingGlow', 'wingAir', 'analyticsChair', 'marketingChair', 'lwingBox', 'rwingBox',
+    'coffee'];                                                                       // кавомашина: її місце тепер займають столи (повернемо разом з логікою зон)
   const off = () => Object.values(NX.objects).forEach(o => { if (OFF.includes(o.id) || /^(r[pg]|w[pg])_/.test(o.id)) { o.drawBack = null; o.layers = null; o.draw = () => {}; o.hit = null; if (o.id === 'rwingBack') o.update = null; } });
   off(); let offDone = false;
   // передня підлога кімнати: лише плитка (калюжі старих столів тут ні до чого)

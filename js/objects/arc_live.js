@@ -54,7 +54,10 @@ NX.arc = NX.arc || {};
     if (R2) { glass(c, R2[0] + R2[2] * .06, R2[1] + R2[3] * .18, R2[2] * .88, R2[3] * .36, PANEL); lineChart(c, R2[0] + R2[2] * .08, R2[1] + R2[3] * .2, R2[2] * .84, R2[3] * .32, 1.3 + t * .4);
       const a = t * .6; c.save(); c.translate(R2[0] + R2[2] * .3, R2[1] + R2[3] * .72); c.rotate(a); donut(c, 0, 0, R2[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); c.restore(); }
   } };
+  LIVE.mk_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .14, fw * .76, fh * .7, PANEL); const o = (t * .5) % 1;
+    for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
   LIVE.an_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .2, fw * .76, fh * .6, PANEL); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9 + t * .5); } };
+  LIVE.an_scr2 = LIVE.an_scr; LIVE.mk_scr2 = LIVE.mk_scr;
   LIVE.mk_booth = { every: 3, draw(c, fw, fh, t, B) {
     const L = Rr(Fd(B, 1), fw, fh), R2 = Rr(Fd(B, 2), fw, fh);
     if (L) {                                                                                                                         // стрічка постів повзе вгору, сердечка спливають

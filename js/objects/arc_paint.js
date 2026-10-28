@@ -162,6 +162,8 @@ NX.arc = NX.arc || {};
     if (Rr) { glass(c, ...Rr, { r: 1.5 }); A.txt(c, t('scene.analytics.trend'), Rr[0] + Rr[2] / 2, Rr[1] + Rr[3] * .1, Rr[2] * .8, Rr[3] * .07, '#bff8ff'); lineChart(c, Rr[0] + Rr[2] * .08, Rr[1] + Rr[3] * .2, Rr[2] * .84, Rr[3] * .32, 1.3); donut(c, Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); A.txt(c, '72%', Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .2, Rr[3] * .05, '#e8feff');
       for (let k = 0; k < 3; k++) { c.fillStyle = ['#3be8ff', '#ff4fd8', '#9a8cff'][k]; c.fillRect(Rr[0] + Rr[2] * .58, Rr[1] + Rr[3] * (.62 + k * .08), 2, 1.4); c.fillStyle = 'rgba(190,240,255,.7)'; c.fillRect(Rr[0] + Rr[2] * .58 + 3, Rr[1] + Rr[3] * (.62 + k * .08) + .2, Rr[2] * .26, 1); } }
   };
+  /** Монітор маркетингу на столі: стрічка постів із сердечками. */
+  PAINT.mk_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); for (let k = 0; k < 3; k++) { const y = fh * (.2 + k * .2); c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); icon(c, 'heart', fw * .78, y + fh * .06, fh * .12, '#ff4fd8'); } };
   PAINT.an_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9); };
   /** Будка маркетингу: ліворуч — стрічка постів з сердечками, праворуч — AI-теги / реклама (мішень, воронка). */
   PAINT.mk_booth = (c, fw, fh, B) => {
@@ -184,6 +186,7 @@ NX.arc = NX.arc || {};
     });
   };
   ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
+  PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
   PAINT.tl_top = PAINT.ai_top;
