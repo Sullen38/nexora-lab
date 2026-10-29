@@ -7559,6 +7559,9 @@ NX.arc.holo = (() => {
  * спинка рівніша й нижча, у спокої — рівно (180°).
  * Правки зон · 1 (власник: «колеса в кріслі з багом — там їх по два на деяких ніжках»): замість подвійних «наклейок» — одне
  * справжнє колесо на промінь; ХРЕСТОВИНА СТОЇТЬ (на газліфті крутиться лише верх, як у справжнього крісла) — BASE_TURN.
+ * Правки зон · 4 (власник: «зроби у крісла спинку більше — вона якась коротка»): спинка вища в ~1.6 раза (HS .82 -> 1.3) —
+ * пропорції справжнього гоночного крісла: підголівник за головою Nexi, коли він сидить лицем до нас; коли працює спиною до
+ * нас — спинка ховає його, над нею видно лише антену; у спокої верх спинки не заходить на лічильники екрана будки.
  * Кадр під кут повороту (через 4°) рендериться в растр (z-буфер, контур) і кешується: повний (R 4) — для кутів спокою,
  * грубший (R 2) — поки крісло крутиться. Растр ділиться на ДВА ШАРИ: спинка (і підлокітник, що ближче до глядача) — поверх
  * Nexi, коли вона між ним і глядачем; решта — під ним.
@@ -7569,8 +7572,9 @@ NX.arc.holo = (() => {
 (() => {
   // власник (29.10, після кроку 3): «прикольне, але якесь криве — ніжки прикольніші, саме крісло більше, трохи рівніше»:
   // K 1.5 -> 2; ФРОНТАЛЬНО, як стіл зони (той самий зсув sh, що й у розкладці: дивимося прямо), спинка рівніша (TILT),
-  // нижча в одиницях крісла (HS — щоб над нею було видно голову Nexi); у спокої стоїть рівно спинкою до нас (180°)
-  const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, K = 2, HS = .82, { ramp, col } = X;
+  // у спокої стоїть рівно спинкою до нас (180°). HS — висота спинки в одиницях крісла (профіль PROF задано для 1): крок 4 —
+  // .82 (нижча, над нею було видно голову Nexi), Правки зон · 4 — 1.3 (власник: «спинка якась коротка»)
+  const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, K = 2, HS = 1.3, { ramp, col } = X;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('marketing'));
   const centre = () => zone().W(589, 337, -24);                                       // вісь крісла (px картинки зони -> світ)
   let SH0; const SH = () => { if (SH0 === undefined) { const it = ((NX.arcLayout && NX.arcLayout.left && NX.arcLayout.left.items) || []).find(i => i.zone === 'marketing' && i.sh); SH0 = it ? it.sh : null; } return SH0; };
@@ -7710,7 +7714,7 @@ NX.arc.holo = (() => {
     const r = lo ? 2 : R, C = centre(), b = A.basis({ x: C[0], z: C[2], turn: key, sh: SH() }), Pt = (u, v, h) => b.P(u * K, v * K, FL - h * K);
     const b0 = A.basis({ x: C[0], z: C[2], turn: key }), b0s = A.basis({ x: C[0], z: C[2], turn: BASE_TURN });   // без зсуву: частини-коробки зсуваються самі (B.sh); b0s — хрестовина (стоїть)
     if (!box) {                                                                        // межі растра — одні на всі кути: найдальша точка крісла від осі ~20.6 од.
-      const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, 41].forEach(h => pts.push(X.proj(shp([C[0] + Math.cos(an) * 22 * K, FL - h * K, C[2] + Math.sin(an) * 22 * K])))); }
+      const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, hS(BH1) + 2.5].forEach(h => pts.push(X.proj(shp([C[0] + Math.cos(an) * 22 * K, FL - h * K, C[2] + Math.sin(an) * 22 * K])))); }   // до верху спинки (hS(BH1)) із запасом
       box = [Math.min(...pts.map(p => p[0])) - 3, Math.min(...pts.map(p => p[1])) - 3, Math.max(...pts.map(p => p[0])) + 3, Math.max(...pts.map(p => p[1])) + 3];
     }
     const L = LS[r] || (LS[r] = X.Layer(box[0], box[1], box[2], box[3], r)); L.c.fill(0); L.dep.fill(Infinity); L.id.fill(0); L.fid.fill(0); L.fl.fill(0);
@@ -7780,7 +7784,7 @@ NX.arc.holo = (() => {
     spin(deg) { this.tgt = this.a + deg; },                                                 // повний оберт (на радощах)
     sitDown() { this.seated = true; }, standUp() { this.seated = false; this.turnTo(180); },
     get span() { const f = zone() && this.floor(); return f ? [f[0] - 56, f[0] + 56] : null; },
-    get hit() { if (!zone()) return null; const f = this.floor(); return { x: f[0] - 32, y: f[1] - 80, w: 64, h: 82 }; },
+    get hit() { if (!zone()) return null; const f = this.floor(), C = centre(), top = X.proj(shp([C[0], FL - (hS(BH1) + 1) * K, C[2] + BV * K]))[1]; return { x: f[0] - 32, y: top, w: 64, h: f[1] + 2 - top }; },   // від підлоги до верху спинки
     update(dt, t) {
       if (!zone()) return;
       if (NX.loop.frames > 120 && !this.warm) { const k = PIN.find(q => !HI.has(q)); if (k === undefined) this.warm = true; else render(k, false); }   // кути спокою — заздалегідь, по одному за кадр
