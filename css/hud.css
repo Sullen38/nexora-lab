@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .stage canvas{height:168px;width:144px;image-rendering:pixelated}
 .stage .ar{position:absolute;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--pink);font:400 20px var(--f-d);cursor:pointer;padding:10px}
 .ar.l{left:4px}.ar.r{right:4px}
-.cats{display:flex;gap:4px;overflow-x:auto;padding:12px 16px 6px;flex:none}
+.cats{display:flex;flex-wrap:wrap;gap:4px;padding:12px 16px 6px;flex:none}
 .cats button{flex:none;background:#0a1236;color:var(--mute);border:2px solid #1b2a66;padding:7px 10px;font:600 11px var(--f-b);cursor:pointer;white-space:nowrap}
 .cats button.on{color:#fff;border-color:var(--pink)}
 .grid{flex:1;overflow:auto;padding:8px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;align-content:start}
@@ -62,6 +62,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .tile canvas{width:72px;height:80px;image-rendering:pixelated}
 .tile:hover{border-color:var(--cyan)}
 .tile.on{border-color:var(--gold);background:#1a1740}
+/* готові скіни: рамка й підпис — колір рідкості (звичайний / рідкісний / епічний / легендарний) */
+.tile.rar{--r:#9ab4d8;border-color:color-mix(in srgb,var(--r) 55%,#17235c);background:linear-gradient(180deg,color-mix(in srgb,var(--r) 18%,#080d2a),#080d2a 70%)}
+.tile.rar small{color:var(--r);font:600 7px var(--f-b);letter-spacing:.6px;opacity:.95}
+.tile.rar-rare{--r:#3b9cff}.tile.rar-epic{--r:#c86aff}.tile.rar-legendary{--r:#ffc94d;box-shadow:inset 0 0 12px #ffc94d33}
+.tile.rar.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),inset 0 0 14px color-mix(in srgb,var(--r) 40%,transparent)}
 .acts{display:flex;gap:8px;padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));flex:none}
 .acts button{flex:1;border:0;padding:12px 6px;font:400 8px var(--f-d);cursor:pointer;background:#16205a;color:var(--text)}
 .acts .save{background:var(--cyan);color:#041030}

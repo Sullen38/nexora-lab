@@ -37,12 +37,14 @@ NX.cat = {
     if (this.alt > 0) { const g = this.ground; this.alt = 0; return this.startJump(this.x + 8 * this.dir, g, () => this.goTo(x, y, done, from, run)); }   // спершу зістрибнути вниз
     if (!from) y = Math.max(y, this.FLOOR);
     this.mode = 'walk'; this.run = !!run; this.then = done;
-    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done); }
+    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done, true); }
     else { [x, y] = NX.room.freeAt(x, y, 'cat'); this.target = { x, y }; this.afterWalk = null; }
     this.path = NX.room.route([this.x, this.y], [this.target.x, this.target.y], 'cat');                // в обхід дивану й крісла (world/room.js)
   },
-  /** Стрибок у точку (висота дуги 26, тривалість .5 с). */
-  startJump(x, y, done) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5 }; this.then = done; },
+  /** Стрибок у точку (висота дуги 26, тривалість .5 с). up — на меблі: там кіт «на висоті», навіть якщо точка на екрані
+   *  нижче лінії підлоги (місце біля Nexi на дивані після того, як диван поставили ближче, — y 374 > FLOOR − 4; до 29.10
+   *  кіт вважав його підлогою і йшов з дивану пішки крізь диван). */
+  startJump(x, y, done, up) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5, up: !!up }; this.then = done; },
   purr(d) { this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.depthY(), 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
   /** Де кіт на підлозі (на висоті — точка, з якої стрибав). */
@@ -64,7 +66,7 @@ NX.cat = {
     } else if (this.mode === 'jump') {
       const j = this.jump; j.t += dt / j.dur; const k = Math.min(1, j.t);
       this.x = NX.px.lerp(j.x0, j.x1, k); this.y = NX.px.lerp(j.y0, j.y1, k) - Math.sin(k * Math.PI) * j.hi; this.pose = 'pounce'; this.dir = Math.sign(j.x1 - j.x0) || this.dir;
-      if (k >= 1) { this.y = j.y1; if (j.y1 >= this.FLOOR - 4) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = j.y0 - j.y1; } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
+      if (k >= 1) { this.y = j.y1; if (!j.up && j.y1 >= this.FLOOR - 4) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = Math.max(1, j.y0 - j.y1); } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
     } else {
       this.timer -= dt;
       if (this.pose === 'sleep' && Math.random() < dt * .4) NX.fx.emit('z', this.x + 6 * this.dir, this.y - 14);

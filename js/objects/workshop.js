@@ -4,8 +4,11 @@
  * Нерухома частина майстерні (платформа, капсула, балка, купол, планшети) — у 3D-розкладці (gen_room.py: workshop(),
  * малюнки граней — objects/ws_paint.js). Тут — те, що живе поверх неї (власник, 29.10: «голограма Nexi з різними скінами;
  * ефекти, фішечки; щоб Nexi міг туди ставати»):
- *   ГОЛОГРАМА NEXI на паді капсули: стоїть у конусі світла, показує скіни по черзі (повний оберт — на ребрі змінює скін,
- *     нові пікселі «збираються» скан-лінією), мерехтить, глітчить, назва скіна на голо-табличці, точки-каруселька;
+ *   ГОЛОГРАМА NEXI на паді капсули: стоїть у конусі світла, показує ГОТОВІ СКІНИ по черзі (повний оберт — на ребрі змінює
+ *     скін, нові пікселі «збираються» скан-лінією), мерехтить, глітчить, назва скіна на голо-табличці в кольорі рідкості;
+ *   РЕЛІКВІЇ (власник, 29.10: «предмети — як реліквії, окремо; три кружляють навколо голограми, після оберту змінюються —
+ *     колекція Nexi»): три предмети з руки летять по еліпсу навколо голограми (позаду — тьмяніші й менші, спереду —
+ *     поверх неї), кожен на правому краю орбіти з іскрами змінюється на наступну реліквію колекції;
  *   МАНІПУЛЯТОР на куполі: дихає в спокої, час від часу сканує голограму променем, а коли Nexi в капсулі міняє скін —
  *     нахиляється й «встановлює» його блискавкою (іскри, спалах);
  *   СКАНУВАННЯ: коли Nexi в капсулі — голограма гасне, кільця сканера бігають по ньому, пад горить яскравіше;
@@ -16,12 +19,10 @@
 (() => {
   const P = NX.px;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('workshop'));
-  // скіни голограми (власник: «голограма Nexi з різними скінами»): тема + 1–2 деталі, що добре видно здалеку; майже кожен —
-  // з предметом у руці (власник: «предмети, які він тримає в руці»: молот, клинок, рукавиця, екскалібур, посох…)
-  const LOOKS = [{ theme: 'neon', ant: 'neon', face: 'happy', hand: 'blade' }, { theme: 'gold', ant: 'crown', body: 'premium', legs: 'gold', hand: 'excalibur' }, { theme: 'space', body: 'cosmos', back: 'wings', hand: 'staff' },
-    { theme: 'fire', ant: 'horns', arms: 'power', hand: 'hammer' }, { theme: 'winter', head: 'hat', legs: 'boots', hand: 'torch' }, { theme: 'techno', body: 'techno', ant: 'techno', head: 'goggles', hand: 'gauntlet' },
-    { theme: 'rainbow', back: 'cape', hand: 'balloon' }, { theme: 'gamer', head: 'phones', legs: 'sneakers', ant: 'gamer', hand: 'magnet' }, { theme: 'forest', back: 'backpack', hand: 'wand' }, { theme: 'water', body: 'holo', arms: 'holo', hand: 'trident' }];
+  // голограма показує готові скіни (actors/nexi/skins.js: SKINS) — без реліквій у руці: реліквії кружляють окремо
+  const PRESETS = Object.keys(SKINS);
   const PERIOD = 3.6, SPIN = .9;                                                           // показ скіна, з них оберт (с)
+  const ORB = 6.5, RX = 40, RY = 9, RH = 30;                                               // оберт реліквії навколо голограми (с), півосі орбіти, висота реліквії
   // маніпулятор (px картинки зони і відступ углиб v): спокій / «сканую голограму» / «встановлюю скін»
   const ARM = { rest: [[1005, 128, 36.5], [1062, 96, 36.5], [1128, 134, 36.5], [1114, 158, 36.5]],
     look: [[1005, 128, 36.5], [1056, 90, 33], [1120, 120, 27], [1100, 142, 22]],
@@ -29,7 +30,49 @@
   const S = { idx: 0, shown: 0, mat: 1, occ: false, holoA: 1, scan: 0, zap: 0, look: 0, lookT: 6, fast: 0, motes: [], bolts: [], last: -1 };
   const botCv = document.createElement('canvas'), holoCv = document.createElement('canvas'); holoCv.width = SW; holoCv.height = SH;
   const hx = holoCv.getContext('2d', { willReadFrequently: true });
-  const look = i => Object.assign({}, DEFAULT_LOOK, LOOKS[((i % LOOKS.length) + LOOKS.length) % LOOKS.length]);
+  const presetOf = i => PRESETS[((i % PRESETS.length) + PRESETS.length) % PRESETS.length], look = i => skinLook(presetOf(i));
+  // реліквії: кадр предмета (sprite.js → renderItem) оновлюється 10 разів за секунду (блискавки, полум'я, відблиски); межі
+  // намальованого — раз, щоб будь-яка реліквія була однакового розміру на орбіті
+  const RCV = {};
+  function relic(id, t) {
+    const f = Math.floor(t * 10), o = RCV[id] || (RCV[id] = { cv: document.createElement('canvas'), f: -1 });
+    if (o.f !== f) { o.f = f; renderItem(id, t, o.cv);
+      if (!o.bb) { const W = o.cv.width, H = o.cv.height, d = o.cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); }
+        o.bb = x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; } }
+    return o;
+  }
+  /** Три реліквії на орбіті: кут, позиція, глибина (спереду / позаду), масштаб (зникає й «вистрибує» на правому краю —
+   *  там змінюється на наступну реліквію колекції: слот k показує HAND_ITEMS[k + 3·оберти]). */
+  function relics(t, cx, cy) {
+    const out = [], w = Math.PI * 2 / ORB;
+    for (let k = 0; k < 3; k++) {
+      const th = t * w + k * Math.PI * 2 / 3, n = Math.floor(th / (Math.PI * 2)), ph = th - n * Math.PI * 2, d = Math.min(ph, Math.PI * 2 - ph);   // d — відстань до точки зміни (0 рад, праворуч)
+      const sn = Math.sin(th), pop = d < .32 ? d / .32 : 1;
+      out.push({ id: HAND_ITEMS[(k + 3 * n) % HAND_ITEMS.length], x: cx + Math.cos(th) * RX, y: cy + sn * RY + Math.sin(t * 2.2 + k * 2) * 1.2, front: sn > 0, k: (.82 + .2 * (sn + 1) / 2) * pop, swap: d < .2 ? 1 - d / .2 : 0, th });
+    }
+    return out;
+  }
+  /** Реліквія на орбіті: темна «підкладка» (щоб предмет читався на яскравій капсулі), сяйво, кільце-п'єдестал, слід позаду,
+   *  сам предмет (позаду — тьмяніший), іскри в мить зміни. Розмір — RH (власник: «щоб було видно їх»). */
+  function drawRelic(c, t, r, a) {
+    const o = relic(r.id, t), [x0, y0, x1, y1] = o.bb, s = Math.min(RH / (y1 - y0), 2) * r.k, hh = (y1 - y0) * s, my = r.y - hh / 2;
+    c.save();
+    const bg = c.createRadialGradient(r.x, my, 0, r.x, my, hh * .6 + 2); bg.addColorStop(0, `rgba(12,4,34,${a * (r.front ? .55 : .35)})`); bg.addColorStop(1, 'rgba(12,4,34,0)');
+    c.fillStyle = bg; c.fillRect(r.x - hh, my - hh, hh * 2, hh * 2);
+    c.globalCompositeOperation = 'lighter';
+    P.glow(c, r.x, my, hh * .55 + 3, r.front ? 'rgba(255,210,140,.8)' : 'rgba(160,200,255,.6)', a * (r.front ? .5 : .28));
+    c.strokeStyle = `rgba(255,230,190,${a * (r.front ? .55 : .25)})`; c.lineWidth = .5; c.beginPath(); c.ellipse(r.x, r.y + .5, 6 * r.k, 1.6 * r.k, 0, 0, 7); c.stroke();   // кільце-«п'єдестал» під реліквією
+    for (let j = 1; j <= 4; j++) { const th = r.th - j * .14, xx = r.x - (Math.cos(r.th) - Math.cos(th)) * RX, yy = r.y - (Math.sin(r.th) - Math.sin(th)) * RY; c.fillStyle = `rgba(255,230,180,${a * .35 / j})`; c.fillRect(xx - .6, yy - .6, 1.2, 1.2); }   // слід
+    if (r.swap > 0) for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2 + t * 5, rr2 = 5 + (1 - r.swap) * 9; c.fillStyle = `rgba(255,240,200,${r.swap * a})`; c.fillRect(r.x + Math.cos(an) * rr2 - .7, my + Math.sin(an) * rr2 - .7, 1.4, 1.4); }
+    c.restore();
+    if (s > .02) { c.save(); c.imageSmoothingEnabled = false; c.globalAlpha = a * (r.front ? 1 : .8); c.drawImage(o.cv, r.x - (x0 + x1) / 2 * s, r.y - y1 * s, o.cv.width * s, o.cv.height * s); c.restore(); }
+  }
+  /** Орбіта реліквій — пунктирний еліпс, що повільно «біжить»: дальня половина (позаду голограми) або ближня. */
+  function orbit(c, t, cx, cy, a, front) {
+    c.save(); c.globalCompositeOperation = 'lighter'; c.setLineDash([2, 2]); c.lineDashOffset = -t * 6; c.lineWidth = .6;
+    c.strokeStyle = `rgba(255,214,150,${a * (front ? .5 : .28)})`; c.beginPath(); c.ellipse(cx, cy, RX, RY, 0, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2); c.stroke(); c.restore();
+  }
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
 
   /** Кадр голограми (48×56): Nexi в скіні -> голографічний відтінок, скан-лінії, «збирання» знизу вгору, глітч. */
@@ -155,24 +198,28 @@
           c.fillStyle = q % 2 ? `rgba(160,240,255,${1 - u * .5})` : `rgba(255,170,240,${1 - u * .5})`; c.fillRect(x - .7, y - .7, 1.4, 1.4); }
       }
       c.restore();
-      // ГОЛОГРАМА
+      // ГОЛОГРАМА (і реліквії на орбіті навколо неї: ті, що позаду, — до голограми, ті, що спереду, — після)
       if (S.holoA > .02) {
         const per = S.fast > 0 ? 1.1 : PERIOD, ph = (t % per) / per, spin = SPIN / per;
         let th = 0; if (ph > 1 - spin) th = ease((ph - (1 - spin)) / spin) * Math.PI * 2;
         const cs = Math.cos(th), back = cs < 0, pose = S.mat < 1 ? 'cheer' : (Math.floor(t / per) % 3 === 1 ? 'wave' : 'stand');
         if (!S.hc || (NX.loop.frames & 1) === 0) S.hc = holoFrame(t, back, pose);                   // кадр голограми — раз на 2 кадри
         const cv = S.hc, hover = 5 + Math.sin(t * 2) * 1.5, w = SW * hs, h = SH * hs, top = FOOT * hs, fl2 = (.86 + .14 * Math.sin(t * 23) * Math.sin(t * 7)) * S.holoA;
+        const oy = py - hover - top * .42, RL = relics(t, px, oy);
+        orbit(c, t, px, oy, S.holoA, false); RL.filter(r => !r.front).forEach(r => drawRelic(c, t, r, S.holoA));
         c.save(); c.imageSmoothingEnabled = false; c.translate(px, py - hover); c.scale(Math.max(.06, Math.abs(cs)), 1);
         c.globalAlpha = .84 * fl2; c.drawImage(cv, -w / 2, -top, w, h);
         c.globalCompositeOperation = 'lighter'; c.globalAlpha = .28 * fl2; c.drawImage(cv, -w / 2 + .8, -top, w, h); c.drawImage(cv, -w / 2 - .8, -top - .6, w, h);
         c.restore();
         if (S.mat < 1) { const yy = py - hover - top + h * .93 * (1 - ease(S.mat)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(220,255,255,.9)'; c.fillRect(px - w * .32, yy, w * .64, .9); P.glow(c, px, yy, 16, 'rgba(160,240,255,.7)', .5); c.restore(); }
-        // голо-табличка: назва скіна, у другій половині показу — назва предмета в руці; каруселька
-        const Lk = look(S.shown), name = (Lk.hand && ph > .45 && ph < 1 - spin ? NX.t('skin.acc.' + Lk.hand) : NX.t('skin.theme.' + Lk.theme)).toUpperCase(), ty = py - hover - top - 9;
-        c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 8);
-        c.fillStyle = 'rgba(6,18,60,.72)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = '#7af4ff'; c.lineWidth = .5; c.strokeRect(px - tw / 2 + .25, ty - 4.75, tw - .5, 7.5);
-        c.fillStyle = '#e8feff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px, ty - .7, tw - 4); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-        for (let k = 0; k < LOOKS.length; k++) { const on = k === ((S.shown % LOOKS.length) + LOOKS.length) % LOOKS.length; c.fillStyle = on ? '#ff9af0' : 'rgba(150,230,255,.45)'; c.fillRect(px - LOOKS.length * 1.6 + k * 3.2, ty + 4.5, on ? 2 : 1.4, on ? 2 : 1.4); }
+        orbit(c, t, px, oy, S.holoA, true); RL.filter(r => r.front).forEach(r => drawRelic(c, t, r, S.holoA));
+        // голо-табличка: назва скіна в рамці кольору рідкості; каруселька скінів
+        const id = presetOf(S.shown), rc = RARITY[SKINS[id].rar], name = NX.t('skin.skin.' + id).toUpperCase(), ty = py - hover - top - 9, N = PRESETS.length, cur = ((S.shown % N) + N) % N;
+        c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 10);
+        c.fillStyle = 'rgba(6,18,60,.78)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = rc; c.lineWidth = .6; c.strokeRect(px - tw / 2 + .3, ty - 4.7, tw - .6, 7.4);
+        c.fillStyle = rc; c.fillRect(px - tw / 2 + 1.6, ty - 1.9, 1.6, 1.6);                                                                                        // вогник рідкості
+        c.fillStyle = '#f4fbff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px + 1, ty - .7, tw - 6); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+        for (let k = 0; k < N; k++) { const on = k === cur; c.fillStyle = on ? rc : 'rgba(150,230,255,.4)'; c.fillRect(px - N * 1.4 + k * 2.8, ty + 4.5, on ? 1.8 : 1.2, on ? 1.8 : 1.2); }
         c.restore();
       }
       // СКАНУВАННЯ Nexi в капсулі: кільця бігають по ньому, з боків — світлові колони

@@ -7,7 +7,7 @@
   await NX.room.load(window.NX_ROOM_SRC || 'assets/room.webp');
   NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
   NX.city.init();
-  try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}')); } catch (e) {}
+  try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
   NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();
   NX.loop.start();
   [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y;

@@ -68,7 +68,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .stage canvas{height:168px;width:144px;image-rendering:pixelated}
 .stage .ar{position:absolute;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--pink);font:400 20px var(--f-d);cursor:pointer;padding:10px}
 .ar.l{left:4px}.ar.r{right:4px}
-.cats{display:flex;gap:4px;overflow-x:auto;padding:12px 16px 6px;flex:none}
+.cats{display:flex;flex-wrap:wrap;gap:4px;padding:12px 16px 6px;flex:none}
 .cats button{flex:none;background:#0a1236;color:var(--mute);border:2px solid #1b2a66;padding:7px 10px;font:600 11px var(--f-b);cursor:pointer;white-space:nowrap}
 .cats button.on{color:#fff;border-color:var(--pink)}
 .grid{flex:1;overflow:auto;padding:8px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;align-content:start}
@@ -76,6 +76,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .tile canvas{width:72px;height:80px;image-rendering:pixelated}
 .tile:hover{border-color:var(--cyan)}
 .tile.on{border-color:var(--gold);background:#1a1740}
+/* готові скіни: рамка й підпис — колір рідкості (звичайний / рідкісний / епічний / легендарний) */
+.tile.rar{--r:#9ab4d8;border-color:color-mix(in srgb,var(--r) 55%,#17235c);background:linear-gradient(180deg,color-mix(in srgb,var(--r) 18%,#080d2a),#080d2a 70%)}
+.tile.rar small{color:var(--r);font:600 7px var(--f-b);letter-spacing:.6px;opacity:.95}
+.tile.rar-rare{--r:#3b9cff}.tile.rar-epic{--r:#c86aff}.tile.rar-legendary{--r:#ffc94d;box-shadow:inset 0 0 12px #ffc94d33}
+.tile.rar.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),inset 0 0 14px color-mix(in srgb,var(--r) 40%,transparent)}
 .acts{display:flex;gap:8px;padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));flex:none}
 .acts button{flex:1;border:0;padding:12px 6px;font:400 8px var(--f-d);cursor:pointer;background:#16205a;color:var(--text)}
 .acts .save{background:var(--cyan);color:#041030}
@@ -196,7 +201,7 @@ NX.num = (v, d = 1) => Number(v).toFixed(d).replace('.', NX.t('scene.dec') === '
 NX.i18n.add('uk', {
   ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ, ДИВАНУ ЧИ ВІКНУ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати', room: 'Кімната Nexi', lab: 'Лабораторія скінів', prev: 'Попередній', next: 'Наступний' },
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
-  cats: { face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
+  cats: { skin: 'Скіни', relic: 'Реліквії', face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   obj: { pillow: 'Подушка', aiPc: "AI-центр · комп'ютер", analytics: 'Аналітика', marketing: 'Маркетинг', sofa: 'Диван', workshop: 'Майстерня', tools: 'Інструменти', portal: 'Портал', catCorner: 'Куток кота', rug: 'Док-станція', ball: "М'ячик", window: 'Вікно в місто', nexiTag: 'NEXI · СКІНИ', catTag: 'РУДИК · ПОГЛАДИТИ' },
   zones: {
     start: 'Беруся: {task}!',
@@ -218,7 +223,7 @@ NX.i18n.add('uk', {
         mood: 'настрій +', cache: 'кеш', invoice: 'рахунок.pdf', tokens: 'токени', backup: 'резервна копія', ping: 'пінг', draft: 'чернетка відповіді', retry: 'повтор 1/3', report: 'звіт.xlsx', langPl: 'мова: pl' } },
     seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
     hub: { online: 'ОНЛАЙН', tasks: 'ЗАДАЧ' },   // екран NEXORA AI на стіні (objects/arc_paint.js: hub)
-    ws: { skins: 'СКІНИ', fit: 'ПРИМІРКА', items: 'ПРЕДМЕТИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
+    ws: { skins: 'СКІНИ', acc: 'АКСЕСУАРИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
     tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/arc_paint.js)
     poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
     unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
@@ -255,13 +260,15 @@ NX.i18n.add('uk', {
     done: ['Готово!', 'Зроблено ✓', 'Є! Що далі?'],
   },
   skin: {
+    skin: { classic: 'Класика', neon: 'Неон', forest: 'Лісовик', winter: 'Зимовий', gamer: 'Геймер', techno: 'Техно', candy: 'Цукерка', astro: 'Астронавт', captain: 'Капітан', samurai: 'Самурай', cyber: 'Кібер', pumpkin: 'Гарбуз', frost: 'Іній', royal: 'Король', lava: 'Лава', cosmos: 'Космос', rainbow: 'Райдуга' },
+    rar: { common: 'Звичайний', rare: 'Рідкісний', epic: 'Епічний', legendary: 'Легендарний' },
     face: { standard: 'Стандарт', happy: 'Щасливий', think: 'Думка', surprised: 'Сюрприз', talk: 'Говорить', serious: 'Серйозний', sleepy: 'Сонний', hearts: 'Сердечка' },
-    ant: { standard: 'Стандарт', techno: 'Техно', holo: 'Голограма', gamer: 'Геймер', premium: 'Преміум', horns: 'Роги', crown: 'Корона', neon: 'Неон' },
-    body: { standard: 'Стандарт', techno: 'Техно', energy: 'Енергія', holo: 'Голограма', camo: 'Камуфляж', premium: 'Преміум', cyborg: 'Кіборг', cosmos: 'Космос' },
+    ant: { standard: 'Стандарт', techno: 'Техно', holo: 'Голограма', gamer: 'Геймер', premium: 'Преміум', horns: 'Роги', crown: 'Корона', neon: 'Неон', halo: 'Німб', flame: 'Полум\'я', stem: 'Хвостик' },
+    body: { standard: 'Стандарт', techno: 'Техно', energy: 'Енергія', holo: 'Голограма', camo: 'Камуфляж', premium: 'Преміум', cyborg: 'Кіборг', cosmos: 'Космос', armor: 'Обладунок', suit: 'Скафандр', crystal: 'Кристал', candy: 'Смужки', pumpkin: 'Гарбуз', circuit: 'Схема', royal: 'Мундир', lava: 'Лава' },
     arms: { base: 'Базові', gloves: 'Рукавиці', tools: 'Інструменти', holo: 'Голограма', armor: 'Броня', power: 'Енергія', neon: 'Неон', gold: 'Золото' },
     legs: { standard: 'Стандарт', boots: 'Черевики', sneakers: 'Кросівки', armor: 'Броня', neon: 'Неон', jet: 'Реактивні', magnet: 'Магнітні', gold: 'Золоті' },
-    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', hammer: 'Громовий молот', blade: 'Неоновий клинок', gauntlet: 'Силова рукавиця', excalibur: 'Екскалібур', staff: 'Кришталевий посох', trident: 'Морський тризуб', wand: 'Зоряна паличка', balloon: 'Кулька', torch: 'Факел', magnet: 'Магніт', shield: 'Щит', sword: 'Меч' },
-    theme: { standard: 'Стандарт', techno: 'Техно', neon: 'Неон', camo: 'Камуфляж', gamer: 'Геймер', space: 'Космос', desert: 'Пустеля', forest: 'Ліс', winter: 'Зима', fire: 'Вогонь', water: 'Вода', gold: 'Золото', evil: 'Злий', shadow: 'Тінь', rainbow: 'Райдуга', military: 'Військовий', premium: 'Преміум' },
+    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', hammer: 'Громовий молот', blade: 'Неоновий клинок', gauntlet: 'Силова рукавиця', excalibur: 'Екскалібур', staff: 'Кришталевий посох', trident: 'Морський тризуб', wand: 'Зоряна паличка', balloon: 'Кулька', torch: 'Факел', magnet: 'Магніт', shield: 'Щит', sword: 'Меч', scarf: 'Шарф', kabuto: 'Шолом самурая', helmet: 'Шолом астронавта', tricorn: 'Капітанка', bandana: 'Пов\'язка', flowers: 'Вінок' },
+    theme: { standard: 'Стандарт', techno: 'Техно', neon: 'Неон', camo: 'Камуфляж', gamer: 'Геймер', space: 'Космос', desert: 'Пустеля', forest: 'Ліс', winter: 'Зима', fire: 'Вогонь', water: 'Вода', gold: 'Золото', evil: 'Злий', shadow: 'Тінь', rainbow: 'Райдуга', military: 'Військовий', premium: 'Преміум', samurai: 'Самурай', astro: 'Астронавт', candy: 'Цукерка', pumpkin: 'Гарбуз', cyber: 'Кібер', royal: 'Королівський', frost: 'Іній', lava: 'Лава' },
     fx: { none: 'Без ефекту', sparks: 'Іскри', energy: 'Енергія', aura: 'Аура', trail: 'Слід', rain: 'Дощ', snow: 'Сніг', fire: 'Вогонь', water: 'Вода', neon: 'Неон' },
     mood: { happy: 'Радість', love: 'Любов', surprise: 'Сюрприз', idea: 'Ідея', sleepy: 'Сон', sad: 'Сум', angry: 'Злість', cool: 'Круто' },
     act: { stand: 'Стоїть', walk: 'Ходить', run: 'Біжить', wave: 'Привіт', think: 'Думає', point: 'Вказує', talk: 'Розповідає', cheer: 'Радіє', spin: 'Оберт', stretch: 'Потягується', look: 'Роззирається', jump: 'Стрибає', work: 'Працює', sleep: 'Сон', dance: 'Танцює', read: 'Читає', meditate: 'Медитує', bye: 'Прощається', drink: "П'є каву", hammer: 'Ремонтує' },
@@ -276,7 +283,7 @@ NX.i18n.add('uk', {
 NX.i18n.add('en', {
   ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
-  cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
+  cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
   zones: {
     start: 'On it: {task}!',
@@ -298,7 +305,7 @@ NX.i18n.add('en', {
         mood: 'sentiment +', cache: 'cache.hit', invoice: 'invoice.pdf', tokens: 'tokens', backup: 'backup', ping: 'ws.ping', draft: 'reply.draft', retry: 'retry 1/3', report: 'report.xlsx', langPl: 'lang: pl' } },
     seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TASKS' },
-    ws: { skins: 'SKINS', fit: 'FITTING', items: 'ITEMS' },
+    ws: { skins: 'SKINS', acc: 'ACCESSORIES' },
     tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO' },
     poster: { meow: 'MEOW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
@@ -335,13 +342,15 @@ NX.i18n.add('en', {
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
   skin: {
+    skin: { classic: 'Classic', neon: 'Neon', forest: 'Forester', winter: 'Winter', gamer: 'Gamer', techno: 'Techno', candy: 'Candy', astro: 'Astronaut', captain: 'Captain', samurai: 'Samurai', cyber: 'Cyber', pumpkin: 'Pumpkin', frost: 'Frost', royal: 'Royal', lava: 'Lava', cosmos: 'Cosmos', rainbow: 'Rainbow' },
+    rar: { common: 'Common', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' },
     face: { standard: 'Standard', happy: 'Happy', think: 'Thinking', surprised: 'Surprised', talk: 'Talking', serious: 'Serious', sleepy: 'Sleepy', hearts: 'Hearts' },
-    ant: { standard: 'Standard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Horns', crown: 'Crown', neon: 'Neon' },
-    body: { standard: 'Standard', techno: 'Techno', energy: 'Energy', holo: 'Hologram', camo: 'Camo', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Cosmos' },
+    ant: { standard: 'Standard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Horns', crown: 'Crown', neon: 'Neon', halo: 'Halo', flame: 'Flame', stem: 'Stem' },
+    body: { standard: 'Standard', techno: 'Techno', energy: 'Energy', holo: 'Hologram', camo: 'Camo', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Cosmos', armor: 'Armor', suit: 'Spacesuit', crystal: 'Crystal', candy: 'Stripes', pumpkin: 'Pumpkin', circuit: 'Circuit', royal: 'Uniform', lava: 'Lava' },
     arms: { base: 'Basic', gloves: 'Gloves', tools: 'Tools', holo: 'Hologram', armor: 'Armor', power: 'Power', neon: 'Neon', gold: 'Gold' },
     legs: { standard: 'Standard', boots: 'Boots', sneakers: 'Sneakers', armor: 'Armor', neon: 'Neon', jet: 'Jet', magnet: 'Magnetic', gold: 'Gold' },
-    acc: { backpack: 'Backpack', cape: 'Cape', wings: 'Wings', hood: 'Hood', hat: 'Beanie', goggles: 'Goggles', phones: 'Headphones', hammer: 'Thunder hammer', blade: 'Neon blade', gauntlet: 'Power gauntlet', excalibur: 'Excalibur', staff: 'Crystal staff', trident: 'Sea trident', wand: 'Star wand', balloon: 'Balloon', torch: 'Torch', magnet: 'Magnet', shield: 'Shield', sword: 'Sword' },
-    theme: { standard: 'Standard', techno: 'Techno', neon: 'Neon', camo: 'Camo', gamer: 'Gamer', space: 'Space', desert: 'Desert', forest: 'Forest', winter: 'Winter', fire: 'Fire', water: 'Water', gold: 'Gold', evil: 'Evil', shadow: 'Shadow', rainbow: 'Rainbow', military: 'Military', premium: 'Premium' },
+    acc: { backpack: 'Backpack', cape: 'Cape', wings: 'Wings', hood: 'Hood', hat: 'Beanie', goggles: 'Goggles', phones: 'Headphones', hammer: 'Thunder hammer', blade: 'Neon blade', gauntlet: 'Power gauntlet', excalibur: 'Excalibur', staff: 'Crystal staff', trident: 'Sea trident', wand: 'Star wand', balloon: 'Balloon', torch: 'Torch', magnet: 'Magnet', shield: 'Shield', sword: 'Sword', scarf: 'Scarf', kabuto: 'Samurai helmet', helmet: 'Space helmet', tricorn: 'Tricorn', bandana: 'Headband', flowers: 'Flower crown' },
+    theme: { standard: 'Standard', techno: 'Techno', neon: 'Neon', camo: 'Camo', gamer: 'Gamer', space: 'Space', desert: 'Desert', forest: 'Forest', winter: 'Winter', fire: 'Fire', water: 'Water', gold: 'Gold', evil: 'Evil', shadow: 'Shadow', rainbow: 'Rainbow', military: 'Military', premium: 'Premium', samurai: 'Samurai', astro: 'Astronaut', candy: 'Candy', pumpkin: 'Pumpkin', cyber: 'Cyber', royal: 'Royal', frost: 'Frost', lava: 'Lava' },
     fx: { none: 'No effect', sparks: 'Sparks', energy: 'Energy', aura: 'Aura', trail: 'Trail', rain: 'Rain', snow: 'Snow', fire: 'Fire', water: 'Water', neon: 'Neon' },
     mood: { happy: 'Joy', love: 'Love', surprise: 'Surprise', idea: 'Idea', sleepy: 'Sleepy', sad: 'Sad', angry: 'Angry', cool: 'Cool' },
     act: { stand: 'Stand', walk: 'Walk', run: 'Run', wave: 'Wave', think: 'Think', point: 'Point', talk: 'Talk', cheer: 'Cheer', spin: 'Spin', stretch: 'Stretch', look: 'Look around', jump: 'Jump', work: 'Work', sleep: 'Sleep', dance: 'Dance', read: 'Read', meditate: 'Meditate', bye: 'Bye', drink: 'Coffee', hammer: 'Repair' },
@@ -356,7 +365,7 @@ NX.i18n.add('en', {
 NX.i18n.add('pl', {
   ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
-  cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
+  cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     start: 'Biorę się: {task}!',
@@ -378,7 +387,7 @@ NX.i18n.add('pl', {
         mood: 'nastrój +', cache: 'cache', invoice: 'faktura.pdf', tokens: 'tokeny', backup: 'kopia zapasowa', ping: 'ping', draft: 'szkic odpowiedzi', retry: 'ponowienie 1/3', report: 'raport.xlsx', langPl: 'język: pl' } },
     seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
     hub: { online: 'ONLINE', tasks: 'ZADAŃ' },
-    ws: { skins: 'SKÓRKI', fit: 'PRZYMIARKA', items: 'PRZEDMIOTY' },
+    ws: { skins: 'SKÓRKI', acc: 'AKCESORIA' },
     tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO' },
     poster: { meow: 'MIAU', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
@@ -415,13 +424,15 @@ NX.i18n.add('pl', {
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
   skin: {
+    skin: { classic: 'Klasyk', neon: 'Neon', forest: 'Leśnik', winter: 'Zimowy', gamer: 'Gracz', techno: 'Techno', candy: 'Cukierek', astro: 'Astronauta', captain: 'Kapitan', samurai: 'Samuraj', cyber: 'Cyber', pumpkin: 'Dynia', frost: 'Szron', royal: 'Król', lava: 'Lawa', cosmos: 'Kosmos', rainbow: 'Tęcza' },
+    rar: { common: 'Zwykły', rare: 'Rzadki', epic: 'Epicki', legendary: 'Legendarny' },
     face: { standard: 'Standard', happy: 'Wesoły', think: 'Myśli', surprised: 'Zdziwiony', talk: 'Mówi', serious: 'Poważny', sleepy: 'Senny', hearts: 'Serduszka' },
-    ant: { standard: 'Standard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Rogi', crown: 'Korona', neon: 'Neon' },
-    body: { standard: 'Standard', techno: 'Techno', energy: 'Energia', holo: 'Hologram', camo: 'Moro', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Kosmos' },
+    ant: { standard: 'Standard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Rogi', crown: 'Korona', neon: 'Neon', halo: 'Aureola', flame: 'Płomień', stem: 'Ogonek' },
+    body: { standard: 'Standard', techno: 'Techno', energy: 'Energia', holo: 'Hologram', camo: 'Moro', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Kosmos', armor: 'Zbroja', suit: 'Skafander', crystal: 'Kryształ', candy: 'Paski', pumpkin: 'Dynia', circuit: 'Obwód', royal: 'Mundur', lava: 'Lawa' },
     arms: { base: 'Podstawowe', gloves: 'Rękawice', tools: 'Narzędzia', holo: 'Hologram', armor: 'Pancerz', power: 'Energia', neon: 'Neon', gold: 'Złote' },
     legs: { standard: 'Standard', boots: 'Buty', sneakers: 'Sneakersy', armor: 'Pancerz', neon: 'Neon', jet: 'Odrzutowe', magnet: 'Magnetyczne', gold: 'Złote' },
-    acc: { backpack: 'Plecak', cape: 'Peleryna', wings: 'Skrzydła', hood: 'Kaptur', hat: 'Czapka', goggles: 'Gogle', phones: 'Słuchawki', hammer: 'Młot gromu', blade: 'Neonowe ostrze', gauntlet: 'Rękawica mocy', excalibur: 'Excalibur', staff: 'Kryształowy kostur', trident: 'Trójząb mórz', wand: 'Gwiezdna różdżka', balloon: 'Balonik', torch: 'Pochodnia', magnet: 'Magnes', shield: 'Tarcza', sword: 'Miecz' },
-    theme: { standard: 'Standard', techno: 'Techno', neon: 'Neon', camo: 'Moro', gamer: 'Gamer', space: 'Kosmos', desert: 'Pustynia', forest: 'Las', winter: 'Zima', fire: 'Ogień', water: 'Woda', gold: 'Złoto', evil: 'Zły', shadow: 'Cień', rainbow: 'Tęcza', military: 'Wojskowy', premium: 'Premium' },
+    acc: { backpack: 'Plecak', cape: 'Peleryna', wings: 'Skrzydła', hood: 'Kaptur', hat: 'Czapka', goggles: 'Gogle', phones: 'Słuchawki', hammer: 'Młot gromu', blade: 'Neonowe ostrze', gauntlet: 'Rękawica mocy', excalibur: 'Excalibur', staff: 'Kryształowy kostur', trident: 'Trójząb mórz', wand: 'Gwiezdna różdżka', balloon: 'Balonik', torch: 'Pochodnia', magnet: 'Magnes', shield: 'Tarcza', sword: 'Miecz', scarf: 'Szalik', kabuto: 'Hełm samuraja', helmet: 'Hełm astronauty', tricorn: 'Kapelusz kapitana', bandana: 'Opaska', flowers: 'Wianek' },
+    theme: { standard: 'Standard', techno: 'Techno', neon: 'Neon', camo: 'Moro', gamer: 'Gamer', space: 'Kosmos', desert: 'Pustynia', forest: 'Las', winter: 'Zima', fire: 'Ogień', water: 'Woda', gold: 'Złoto', evil: 'Zły', shadow: 'Cień', rainbow: 'Tęcza', military: 'Wojskowy', premium: 'Premium', samurai: 'Samuraj', astro: 'Astronauta', candy: 'Cukierek', pumpkin: 'Dynia', cyber: 'Cyber', royal: 'Królewski', frost: 'Szron', lava: 'Lawa' },
     fx: { none: 'Bez efektu', sparks: 'Iskry', energy: 'Energia', aura: 'Aura', trail: 'Ślad', rain: 'Deszcz', snow: 'Śnieg', fire: 'Ogień', water: 'Woda', neon: 'Neon' },
     mood: { happy: 'Radość', love: 'Miłość', surprise: 'Zdziwienie', idea: 'Pomysł', sleepy: 'Senność', sad: 'Smutek', angry: 'Złość', cool: 'Luz' },
     act: { stand: 'Stoi', walk: 'Chodzi', run: 'Biegnie', wave: 'Macha', think: 'Myśli', point: 'Wskazuje', talk: 'Opowiada', cheer: 'Cieszy się', spin: 'Obrót', stretch: 'Przeciąga się', look: 'Rozgląda się', jump: 'Skacze', work: 'Pracuje', sleep: 'Śpi', dance: 'Tańczy', read: 'Czyta', meditate: 'Medytuje', bye: 'Żegna się', drink: 'Pije kawę', hammer: 'Naprawia' },
@@ -436,7 +447,7 @@ NX.i18n.add('pl', {
 NX.i18n.add('nl', {
   ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
-  cats: { face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
+  cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
   zones: {
     start: 'Ik pak het op: {task}!',
@@ -458,7 +469,7 @@ NX.i18n.add('nl', {
         mood: 'sentiment +', cache: 'cache', invoice: 'factuur.pdf', tokens: 'tokens', backup: 'back-up', ping: 'ping', draft: 'concept-antwoord', retry: 'opnieuw 1/3', report: 'rapport.xlsx', langPl: 'taal: pl' } },
     seen: { face: 'GEZICHT', user: 'PERSOON', bot: 'BOT', cat: 'KAT', fox: 'VOS', dog: 'HOND', logo: 'LOGO', icon: 'ICOON', text: 'TEKST', doc: 'DOC', form: 'FORMULIER', photo: 'FOTO', match: 'GEVONDEN', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TAKEN' },
-    ws: { skins: 'SKINS', fit: 'PASSEN', items: 'VOORWERPEN' },
+    ws: { skins: 'SKINS', acc: 'ACCESSOIRES' },
     tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO' },
     poster: { meow: 'MIAUW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: ',',
@@ -495,13 +506,15 @@ NX.i18n.add('nl', {
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },
   skin: {
+    skin: { classic: 'Klassiek', neon: 'Neon', forest: 'Boswachter', winter: 'Winter', gamer: 'Gamer', techno: 'Techno', candy: 'Snoepje', astro: 'Astronaut', captain: 'Kapitein', samurai: 'Samoerai', cyber: 'Cyber', pumpkin: 'Pompoen', frost: 'Vorst', royal: 'Koning', lava: 'Lava', cosmos: 'Kosmos', rainbow: 'Regenboog' },
+    rar: { common: 'Gewoon', rare: 'Zeldzaam', epic: 'Episch', legendary: 'Legendarisch' },
     face: { standard: 'Standaard', happy: 'Blij', think: 'Denkend', surprised: 'Verrast', talk: 'Pratend', serious: 'Serieus', sleepy: 'Slaperig', hearts: 'Hartjes' },
-    ant: { standard: 'Standaard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Hoorns', crown: 'Kroon', neon: 'Neon' },
-    body: { standard: 'Standaard', techno: 'Techno', energy: 'Energie', holo: 'Hologram', camo: 'Camouflage', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Kosmos' },
+    ant: { standard: 'Standaard', techno: 'Techno', holo: 'Hologram', gamer: 'Gamer', premium: 'Premium', horns: 'Hoorns', crown: 'Kroon', neon: 'Neon', halo: 'Aureool', flame: 'Vlam', stem: 'Steeltje' },
+    body: { standard: 'Standaard', techno: 'Techno', energy: 'Energie', holo: 'Hologram', camo: 'Camouflage', premium: 'Premium', cyborg: 'Cyborg', cosmos: 'Kosmos', armor: 'Harnas', suit: 'Ruimtepak', crystal: 'Kristal', candy: 'Strepen', pumpkin: 'Pompoen', circuit: 'Circuit', royal: 'Uniform', lava: 'Lava' },
     arms: { base: 'Basis', gloves: 'Handschoenen', tools: 'Gereedschap', holo: 'Hologram', armor: 'Pantser', power: 'Energie', neon: 'Neon', gold: 'Goud' },
     legs: { standard: 'Standaard', boots: 'Laarzen', sneakers: 'Sneakers', armor: 'Pantser', neon: 'Neon', jet: 'Straalmotor', magnet: 'Magnetisch', gold: 'Goud' },
-    acc: { backpack: 'Rugzak', cape: 'Cape', wings: 'Vleugels', hood: 'Capuchon', hat: 'Muts', goggles: 'Bril', phones: 'Koptelefoon', hammer: 'Donderhamer', blade: 'Neonkling', gauntlet: 'Krachthandschoen', excalibur: 'Excalibur', staff: 'Kristallen staf', trident: 'Zeedrietand', wand: 'Toverstokje', balloon: 'Ballon', torch: 'Fakkel', magnet: 'Magneet', shield: 'Schild', sword: 'Zwaard' },
-    theme: { standard: 'Standaard', techno: 'Techno', neon: 'Neon', camo: 'Camouflage', gamer: 'Gamer', space: 'Ruimte', desert: 'Woestijn', forest: 'Bos', winter: 'Winter', fire: 'Vuur', water: 'Water', gold: 'Goud', evil: 'Kwaad', shadow: 'Schaduw', rainbow: 'Regenboog', military: 'Militair', premium: 'Premium' },
+    acc: { backpack: 'Rugzak', cape: 'Cape', wings: 'Vleugels', hood: 'Capuchon', hat: 'Muts', goggles: 'Bril', phones: 'Koptelefoon', hammer: 'Donderhamer', blade: 'Neonkling', gauntlet: 'Krachthandschoen', excalibur: 'Excalibur', staff: 'Kristallen staf', trident: 'Zeedrietand', wand: 'Toverstokje', balloon: 'Ballon', torch: 'Fakkel', magnet: 'Magneet', shield: 'Schild', sword: 'Zwaard', scarf: 'Sjaal', kabuto: 'Samoeraihelm', helmet: 'Ruimtehelm', tricorn: 'Kapiteinshoed', bandana: 'Hoofdband', flowers: 'Bloemenkrans' },
+    theme: { standard: 'Standaard', techno: 'Techno', neon: 'Neon', camo: 'Camouflage', gamer: 'Gamer', space: 'Ruimte', desert: 'Woestijn', forest: 'Bos', winter: 'Winter', fire: 'Vuur', water: 'Water', gold: 'Goud', evil: 'Kwaad', shadow: 'Schaduw', rainbow: 'Regenboog', military: 'Militair', premium: 'Premium', samurai: 'Samoerai', astro: 'Astronaut', candy: 'Snoepje', pumpkin: 'Pompoen', cyber: 'Cyber', royal: 'Koninklijk', frost: 'Vorst', lava: 'Lava' },
     fx: { none: 'Geen effect', sparks: 'Vonken', energy: 'Energie', aura: 'Aura', trail: 'Spoor', rain: 'Regen', snow: 'Sneeuw', fire: 'Vuur', water: 'Water', neon: 'Neon' },
     mood: { happy: 'Blij', love: 'Liefde', surprise: 'Verrassing', idea: 'Idee', sleepy: 'Slaperig', sad: 'Verdrietig', angry: 'Boos', cool: 'Cool' },
     act: { stand: 'Staan', walk: 'Lopen', run: 'Rennen', wave: 'Zwaaien', think: 'Denken', point: 'Wijzen', talk: 'Vertellen', cheer: 'Juichen', spin: 'Draaien', stretch: 'Rekken', look: 'Rondkijken', jump: 'Springen', work: 'Werken', sleep: 'Slapen', dance: 'Dansen', read: 'Lezen', meditate: 'Mediteren', bye: 'Gedag', drink: 'Koffie', hammer: 'Repareren' },
@@ -2926,10 +2939,14 @@ NX.fx = {
  * actors/nexi/skins.js — КАТАЛОГ СКІНІВ NEXI (тільки дані, без логіки)
  * ----------------------------------------------------------------------------
  * Структура бота незмінна (HD-сітка 48×56 пікселів), змінюються лише скіни:
- *   THEMES  – кольорові теми (весь корпус)      BODIES – тулуб / корпус
+ *   SKINS   – ГОТОВІ СКІНИ (повний образ + рідкість: звичайний / рідкісний / епічний / легендарний) — перша вкладка лабораторії,
+ *             планшет і голограма майстерні
+ *   THEMES  – кольорові теми (весь корпус; hp — візерунок на голові, cape — колір плаща)   BODIES – тулуб / корпус (pat — візерунок)
  *   ARMS    – руки                              LEGS   – ноги
- *   FACES   – екран обличчя                     ANTS   – антени
- *   ACCS    – аксесуари (слоти back/head/hand)  FX     – ефекти частинок
+ *   FACES   – вирази обличчя: їх обирає сам Nexi (емоції, nexi.js moodLife) — у лабораторії їх немає (власник, 29.10)
+ *   ANTS    – антени
+ *   ACCS    – аксесуари (слоти back / head) і РЕЛІКВІЇ (слот hand — предмети в руці; окрема вкладка, кружляють навколо
+ *             голограми в майстерні)                                FX     – ефекти частинок
  *   MOODS   – емоції                            ACTIONS – дії (анімації)
  * Щоб додати скін: додай запис у потрібний словник і, якщо треба, його
  * малювання в actors/nexi/sprite.js. Більше нічого чіпати не треба.
@@ -2954,10 +2971,19 @@ fire:{n:'Вогонь',shell:'#ff9a4a',acc:'#ff3b2e',jnt:'#7a2a1a',eye:'#ffe27a'
 water:{n:'Вода',shell:'#5ab4f0',acc:'#2a6aff',jnt:'#1f3f7a',eye:'#bff4ff'},
 gold:{n:'Золото',shell:'#ffd45a',acc:'#e0902a',jnt:'#8a5a1a',eye:'#fff4b0'},
 evil:{n:'Злий',shell:'#6a2a8a',acc:'#ff2a4a',jnt:'#2a1040',eye:'#ff3b3b'},
-shadow:{n:'Тінь',shell:'#4a5070',acc:'#8a8aff',jnt:'#1a1d33',eye:'#b0a8ff'},
+shadow:{n:'Тінь',shell:'#4a5070',acc:'#8a8aff',jnt:'#1a1d33',eye:'#b0a8ff',cape:'#2a2440'},
 rainbow:{n:'Райдуга',shell:'#ffb0e0',acc:'#7a8aff',jnt:'#5a3a8a',eye:'#ffffff',rb:true},
 military:{n:'Військовий',shell:'#8a8f78',acc:'#c8b45a',jnt:'#3a3d2e',eye:'#9affb0'},
-premium:{n:'Преміум',shell:'#f2e0b0',acc:'#d9a02a',jnt:'#6a4a2a',eye:'#ffe27a'}};
+premium:{n:'Преміум',shell:'#f2e0b0',acc:'#d9a02a',jnt:'#6a4a2a',eye:'#ffe27a'},
+// нові (29.10, «скіни привабливіші»): hp — візерунок на голові (sprite.js → headPat)
+samurai:{n:'Самурай',shell:'#c22e44',acc:'#ffc94d',jnt:'#3a0f18',eye:'#ff9a4a'},
+astro:{n:'Астронавт',shell:'#f4f6fc',acc:'#ff8a2a',jnt:'#56608e',eye:'#ffd27a'},
+candy:{n:'Цукерка',shell:'#ffc8ea',acc:'#4ee0c0',jnt:'#a86aa8',eye:'#ff5ad8',hp:'stripes'},
+pumpkin:{n:'Гарбуз',shell:'#ff8f2e',acc:'#3f8a2a',jnt:'#5a2a0a',eye:'#ffe27a',hp:'ribs',cape:'#5a2a8a'},
+cyber:{n:'Кібер',shell:'#323a4c',acc:'#3bff8a',jnt:'#0e1218',eye:'#3bff8a',hp:'circuit'},
+royal:{n:'Королівський',shell:'#7a46d0',acc:'#ffd45a',jnt:'#2a1050',eye:'#ffe9a0',hp:'trim',cape:'#c0283c'},
+frost:{n:'Іній',shell:'#d6f2ff',acc:'#5ab8ff',jnt:'#4a7ab0',eye:'#e8fcff',hp:'facets'},
+lava:{n:'Лава',shell:'#4a2a2c',acc:'#ff6a1a',jnt:'#1a0808',eye:'#ffb03a',hp:'cracks'}};
 const BODIES={
 standard:{n:'Стандарт'},
 techno:{n:'Техно',shell:'#6ab8d0',acc:'#ff4fd8',pat:'lines'},
@@ -2966,7 +2992,9 @@ holo:{n:'Голограма',shell:'#4ad0ff',acc:'#cffaff',pat:'holo'},
 camo:{n:'Камуфляж',shell:'#6a6a3a',acc:'#e09a3a',pat:'camo'},
 premium:{n:'Преміум',shell:'#e8902a',acc:'#ffe27a',pat:'trim'},
 cyborg:{n:'Кіборг',shell:'#8a3ab8',acc:'#ff5ac8',pat:'lines'},
-cosmos:{n:'Космос',shell:'#1a2a7a',acc:'#6ab0ff',pat:'stars'}};
+cosmos:{n:'Космос',shell:'#1a2a7a',acc:'#6ab0ff',pat:'stars'},
+armor:{n:'Обладунок',pat:'armor'},suit:{n:'Скафандр',pat:'suit'},crystal:{n:'Кристал',pat:'crystal'},candy:{n:'Смужки',pat:'candy'},
+pumpkin:{n:'Гарбуз',pat:'pumpkin'},circuit:{n:'Схема',pat:'circuit'},royal:{n:'Мантія',pat:'royal'},lava:{n:'Лава',shell:'#3a2022',acc:'#ff6a1a',pat:'lava'}};
 const ARMS={
 base:{n:'Базові'},gloves:{n:'Рукавиці',hand:'#ff7a3a'},tools:{n:'Інструменти',hand:'#9aa6c8',claw:1},
 holo:{n:'Голограма',col:'#3be8ff',hand:'#cffaff'},armor:{n:'Броня',col:'#8a93b8',hand:'#5a6590',pad:1},
@@ -2975,17 +3003,46 @@ const LEGS={standard:{n:'Стандарт'},boots:{n:'Черевики',foot:'#7
 armor:{n:'Броня',col:'#8a93b8',pad:'#c3cbea',foot:'#5a6590'},neon:{n:'Неон',glow:'#3be8ff',foot:'#ff4fd8',acc:'#ff9af0'},jet:{n:'Реактивні',foot:'#5a6590',acc:'#ff7a2a',jet:1},
 magnet:{n:'Магнітні',foot:'#d93a4a',acc:'#c3cbea'},gold:{n:'Золоті',col:'#ffd45a',foot:'#e0902a',acc:'#fff0a0'}};
 const FACES={standard:'Стандарт',happy:'Щасливий',think:'Думка',surprised:'Сюрприз',talk:'Говорить',serious:'Серйозний',sleepy:'Сонний',hearts:'Сердечка'};
-const ANTS={standard:'Стандарт',techno:'Техно',holo:'Голограма',gamer:'Геймер',premium:'Преміум',horns:'Роги',crown:'Корона',neon:'Неон'};
-const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'back'},wings:{n:'Крила',slot:'back'},hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},
-// предмети в руках (малюються в sprite.js → drawHandItem; назви — js/i18n/*.js → skin.acc)
+const ANTS={standard:'Стандарт',techno:'Техно',holo:'Голограма',gamer:'Геймер',premium:'Преміум',horns:'Роги',crown:'Корона',neon:'Неон',halo:'Німб',flame:'Полум\'я',stem:'Хвостик'};
+const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'back'},wings:{n:'Крила',slot:'back'},scarf:{n:'Шарф',slot:'back'},
+hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},
+kabuto:{n:'Шолом самурая',slot:'head',noAnt:1},helmet:{n:'Шолом астронавта',slot:'head',noAnt:1},tricorn:{n:'Капітанка',slot:'head',noAnt:1},bandana:{n:'Пов\'язка',slot:'head'},flowers:{n:'Вінок',slot:'head'},
+// РЕЛІКВІЇ — предмети в руках (малюються в sprite.js → drawHandItem; назви — js/i18n/*.js → skin.acc)
 hammer:{n:'Громовий молот',slot:'hand'},blade:{n:'Неоновий клинок',slot:'hand'},gauntlet:{n:'Силова рукавиця',slot:'hand'},excalibur:{n:'Екскалібур',slot:'hand'},
 staff:{n:'Кришталевий посох',slot:'hand'},trident:{n:'Морський тризуб',slot:'hand'},wand:{n:'Зоряна паличка',slot:'hand'},balloon:{n:'Кулька',slot:'hand'},
 torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
-const HAND_ITEMS=Object.keys(ACCS).filter(k=>ACCS[k].slot==='hand');
+const HAND_ITEMS=Object.keys(ACCS).filter(k=>ACCS[k].slot==='hand');            // реліквії
+const WEAR_ACCS=Object.keys(ACCS).filter(k=>ACCS[k].slot!=='hand');              // аксесуари (спина, голова)
+const ACC_ITEMS=Object.fromEntries(WEAR_ACCS.map(k=>[k,ACCS[k]])), RELICS=Object.fromEntries(HAND_ITEMS.map(k=>[k,ACCS[k]]));
+// ГОТОВІ СКІНИ — повний образ і рідкість (власник, 29.10: «скіни привабливіші, додай нові»): лабораторія (перша вкладка),
+// планшет СКІНИ й голограма в майстерні. Реліквію й ефект скін не чіпає.
+const RARITY={common:'#9ab4d8',rare:'#3b9cff',epic:'#c86aff',legendary:'#ffc94d'};
+const SKINS={
+classic:{rar:'common',look:{theme:'standard'}},
+neon:{rar:'common',look:{theme:'neon',ant:'neon',legs:'neon'}},
+forest:{rar:'common',look:{theme:'forest',back:'backpack',legs:'boots'}},
+winter:{rar:'common',look:{theme:'winter',head:'hat',legs:'boots'}},
+gamer:{rar:'rare',look:{theme:'gamer',ant:'gamer',head:'phones',legs:'sneakers'}},
+techno:{rar:'rare',look:{theme:'techno',body:'techno',ant:'techno',head:'goggles'}},
+candy:{rar:'rare',look:{theme:'candy',body:'candy',head:'flowers',legs:'sneakers'}},
+astro:{rar:'rare',look:{theme:'astro',body:'suit',head:'helmet',back:'backpack',legs:'boots'}},
+captain:{rar:'rare',look:{theme:'shadow',body:'royal',head:'tricorn',back:'cape',legs:'boots'}},
+samurai:{rar:'epic',look:{theme:'samurai',body:'armor',head:'kabuto',arms:'armor',legs:'armor'}},
+cyber:{rar:'epic',look:{theme:'cyber',body:'circuit',head:'bandana',back:'scarf',arms:'neon',legs:'neon'}},
+pumpkin:{rar:'epic',look:{theme:'pumpkin',body:'pumpkin',ant:'stem',back:'cape'}},
+frost:{rar:'epic',look:{theme:'frost',body:'crystal',ant:'holo',back:'wings',arms:'holo'}},
+royal:{rar:'legendary',look:{theme:'royal',body:'royal',ant:'crown',back:'cape',arms:'gold',legs:'gold'}},
+lava:{rar:'legendary',look:{theme:'lava',body:'lava',ant:'flame',arms:'power'}},
+cosmos:{rar:'legendary',look:{theme:'space',body:'cosmos',ant:'halo',back:'wings',arms:'holo'}},
+rainbow:{rar:'legendary',look:{theme:'rainbow',body:'holo',ant:'neon',back:'wings',legs:'sneakers'}}};
+/** Повний образ скіна (усі частини: чого скін не задає — стандартне; реліквію й ефект бере з base). */
+const skinLook=(id,base)=>Object.assign({},DEFAULT_LOOK,{hand:base?base.hand:null,fx:base?base.fx:'none'},SKINS[id].look,{face:'standard'});
+/** Який готовий скін зараз на Nexi (або null). */
+const skinOf=L=>Object.keys(SKINS).find(id=>{const s=skinLook(id);return['theme','body','arms','legs','ant','head','back'].every(k=>(s[k]??DEFAULT_LOOK[k])===(L[k]??DEFAULT_LOOK[k]));})||null;
 const FX={none:'Без ефекту',sparks:'Іскри',energy:'Енергія',aura:'Аура',trail:'Слід',rain:'Дощ',snow:'Сніг',fire:'Вогонь',water:'Вода',neon:'Неон'};
 const MOODS={happy:'Радість',love:'Любов',surprise:'Сюрприз',idea:'Ідея',sleepy:'Сон',sad:'Сум',angry:'Злість',cool:'Круто'};
 const ACTIONS={stand:'Стоїть',walk:'Ходить',run:'Біжить',wave:'Привіт',think:'Думає',point:'Вказує',talk:'Розповідає',cheer:'Радіє',spin:'Оберт',stretch:'Потягується',look:'Роззирається',jump:'Стрибає',work:'Працює',sleep:'Сон',dance:'Танцює',read:'Читає',meditate:'Медитує',bye:'Прощається',drink:'П\'є каву',hammer:'Ремонтує'};
-const DEFAULT_LOOK={face:'standard',ant:'standard',body:'standard',arms:'base',theme:'standard',back:null,head:null,hand:null,fx:'none'};
+const DEFAULT_LOOK={face:'standard',ant:'standard',body:'standard',arms:'base',legs:'standard',theme:'standard',back:null,head:null,hand:null,fx:'none'};
 
 
 </script>
@@ -3048,11 +3105,15 @@ function renderBot(look, pose, t, cv) {
   const bx = 13, by = 33 + b, bw = 22, bh = 12, hX = 9 + hxo, hY = 10 + b + hyo;
 
   // ---------- 1. спина: плащ / крила / рюкзак ----------
-  if (look.back === 'cape') for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? '#d93a4a' : '#a82a3a'); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, '#ff6a7a'); }
+  if (look.back === 'cape') { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cl = shade(cc, .35);   // плащ (колір — від теми)
+    for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? cc : cd); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, cl); } }
   if (look.back === 'wings') { const f = Math.round(Math.abs(Math.sin(t * (pose.jet ? 14 : 4.7))) * 3);   // крила: 7 рядів пір'я, махають
     for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const L = 15 - Math.round(i * 1.6), y0 = by - 13 + i * 2 - (i < 4 ? f : f >> 1), xL = s < 0 ? bx + 2 - L : bx + bw - 2;
       P(xL, y0, L, 2, i % 2 ? '#bff2ff' : '#e4d4ff'); P(xL, y0 + 1, L, 1, i % 2 ? '#6ac8f0' : '#a88af0'); P(s < 0 ? xL : xL + L - 1, y0, 1, 2, '#ffffff'); } }
   if (look.back === 'backpack') { BLK(bx - 4, by - 1, bw + 8, 14, 3, '#c9812e'); P(bx - 3, by + 7, 4, 4, '#8a5a1e'); P(bx + bw - 1, by + 7, 4, 4, '#8a5a1e'); }
+  if (look.back === 'scarf') { const sc = shade(acc, -.1);                                    // шарф: два хвости майорять позаду
+    for (const [o, n] of [[0, 13], [3, 10]]) for (let i = 0; i < n; i++) { const w = Math.round(Math.sin(t * 8 - i * .55 + o) * 1.4 * i / n - vel * 4 * i / n), y = by + o + Math.round(i * .3) + w;
+      P(bx + 3 - i, y, 1, 3, i % 4 < 2 ? sc : shade(sc, -.25)); if (i % 4 === 0) P(bx + 3 - i, y, 1, 1, shade(sc, .4)); } }
 
   // ---------- 2. реактивний ранець (у польоті) ----------
   if (pose.jet) for (const jx of [6, 36]) {
@@ -3078,8 +3139,20 @@ function renderBot(look, pose, t, cv) {
   if (bd.pat === 'camo') { [[2, 3, 4, 2], [14, 6, 4, 3], [8, 8, 3, 2], [17, 2, 2, 2]].forEach(r => P(bx + r[0], by + r[1], r[2], r[3], '#3a3a1f')); [[5, 6, 2, 2], [12, 2, 2, 1], [15, 9, 2, 1]].forEach(r => P(bx + r[0], by + r[1], r[2], r[3], '#c9892f')); }
   if (bd.pat === 'stars') [[2, 3], [18, 4], [4, 8], [16, 9], [10, 1], [6, 5]].forEach(([a, c], i) => { if ((i + Math.floor(t * 3)) % 3) P(bx + a, by + c, 1, 1, '#ffffff'); });
   if (bd.pat === 'lines') { P(bx + 1, by + 6, 4, 1, bAcc); P(bx + bw - 5, by + 6, 4, 1, bAcc); P(bx + 4, by + 6, 1, 3, bAcc); P(bx + bw - 5, by + 6, 1, 3, bAcc); P(bx + 4, by + 9, 1, 1, '#fff'); P(bx + bw - 5, by + 9, 1, 1, '#fff'); }
-  if (bd.pat === 'trim') { P(bx + 2, by, bw - 4, 1, bAcc); P(bx + 1, by + bh - 1, bw - 2, 1, bAcc); P(bx, by + 3, 1, 6, bAcc); P(bx + bw - 1, by + 3, 1, 6, bAcc); }
-  if (!pose.back) {                                                   // нагрудний значок з "N"
+  if (bd.pat === 'trim' || bd.pat === 'royal') { P(bx + 2, by, bw - 4, 1, bAcc); P(bx + 1, by + bh - 1, bw - 2, 1, bAcc); P(bx, by + 3, 1, 6, bAcc); P(bx + bw - 1, by + 3, 1, 6, bAcc); }
+  if (bd.pat === 'armor') for (let i = 0; i < 3; i++) { const y = by + 2 + i * 3; P(bx + 2, y, bw - 4, 1, shade(bShell, -.32)); for (let j = 0; j < 5; j++) P(bx + 3 + j * 4, y + 1, 1, 1, bAcc); }   // ламелі з золотою шнурівкою
+  if (bd.pat === 'suit') { RR(bx + 1, by + 2, 5, 7, 1, '#cfd6e6'); [[1, 1, '#ff3b3b'], [3, 1, '#ffe27a'], [1, 3, '#3be8ff'], [3, 3, '#3bff8a']].forEach(([a, c, col]) => P(bx + 1 + a, by + 2 + c, 1, 1, col)); P(bx + 2, by + 7, 3, 1, '#8a93b8');   // пульт
+    RR(bx + bw - 6, by + 2, 5, 5, 2, bAcc); P(bx + bw - 4, by + 4, 1, 1, '#ffffff'); }                                                                                                   // нашивка місії
+  if (bd.pat === 'crystal') { [[2, 2, 5], [7, 1, 4], [15, 2, 5], [18, 6, 3]].forEach(([a, c, n]) => { for (let k = 0; k < n; k++) P(bx + a + k, by + c + k, 1, 1, shade(bShell, .55)); }); const k = Math.floor(t * 2) % 3; if (k < 2) P(bx + (k ? 17 : 5), by + (k ? 7 : 3), 1, 1, '#ffffff'); }
+  if (bd.pat === 'candy') for (let yy = 1; yy < bh - 3; yy++) for (let xx = 2; xx < bw - 2; xx++) if (((xx - yy) % 6 + 6) % 6 < 2) P(bx + xx, by + yy, 1, 1, bAcc);
+  if (bd.pat === 'pumpkin') [4, 9, 12, 17].forEach(xx => { P(bx + xx, by + 1, 1, bh - 4, shade(bShell, -.25)); P(bx + xx + 1, by + 2, 1, bh - 6, shade(bShell, .2)); });
+  if (bd.pat === 'circuit') { const on = Math.floor(t * 4) % 4; [[1, 3, 5, 0], [bw - 6, 3, 5, 1], [2, 7, 3, 2], [bw - 5, 7, 3, 3]].forEach(([a, c, w, k]) => { const e = a + (k % 2 ? w - 1 : 0); P(bx + a, by + c, w, 1, k === on ? '#e0ffe8' : bAcc); P(bx + e, by + c, 1, 3, bAcc); P(bx + e, by + c + 3, 1, 1, '#ffffff'); }); }
+  if (bd.pat === 'lava') { const g = Math.sin(t * 3) > 0 ? '#ffd27a' : '#ff9a3a'; [[2, 2, 1, 1], [3, 3, 2, 1], [5, 4, 1, 2], [16, 1, 1, 2], [17, 3, 2, 1], [19, 4, 1, 2], [9, 8, 3, 1], [12, 7, 1, 1]].forEach(([a, c, w, h], i) => P(bx + a, by + c, w, h, (i + Math.floor(t * 3)) % 4 ? '#ff6a1a' : g)); }
+  if (!pose.back && bd.pat === 'pumpkin') {                           // гарбуз: замість значка — вирізане обличчя, що світиться
+    const gl = Math.floor(t * 6) % 9 ? '#ffc93a' : '#fff0a0', dk = shade(bShell, -.45);
+    P(20, by + 2, 1, 1, gl); P(19, by + 3, 3, 2, gl); P(27, by + 2, 1, 1, gl); P(26, by + 3, 3, 2, gl);                          // очі-трикутники
+    P(18, by + 6, 12, 3, gl); P(18, by + 6, 1, 1, dk); P(29, by + 6, 1, 1, dk); [20, 23, 26].forEach(xx => P(xx, by + 6, 2, 1, dk)); [21, 24, 27].forEach(xx => P(xx, by + 8, 1, 1, dk));   // усмішка з зубцями
+  } else if (!pose.back) {                                            // нагрудний значок з "N"
     RR(18, by + 2, 12, 8, 2, bAcc); RR(19, by + 3, 10, 6, 1, '#0a1236');
     const g = bd.pat === 'core' ? (Math.sin(t * 6) > 0 ? '#ffb0f8' : '#ff4fd8') : '#5ae8ff';
     P(21, by + 4, 1, 4, g); P(26, by + 4, 1, 4, g); P(22, by + 4, 1, 1, g); P(23, by + 5, 1, 1, g); P(24, by + 6, 1, 1, g); P(25, by + 7, 1, 1, g);
@@ -3089,6 +3162,8 @@ function renderBot(look, pose, t, cv) {
   }
   P(bx + 1, by + bh - 3, bw - 2, 2, jnt); P(22, by + bh - 3, 4, 2, bAcc);                     // пояс з пряжкою
   BLK(bx - 3, by + 1, 5, 5, 2, acc); BLK(bx + bw - 2, by + 1, 5, 5, 2, acc);                    // плечові шарніри
+  if (bd.pat === 'armor') [bx - 6, bx + bw - 1].forEach(x0 => { BLK(x0, by, 7, 7, 2, bShell); P(x0 + 1, by + 2, 5, 1, bAcc); P(x0 + 1, by + 4, 5, 1, bAcc); });       // наплічники
+  if (bd.pat === 'royal') [bx - 5, bx + bw - 2].forEach(x0 => { BLK(x0, by, 7, 3, 1, '#ffc94d'); for (let k = 0; k < 4; k++) P(x0 + k * 2, by + 3, 1, 2, '#ffe27a'); });   // еполети з бахромою
 
   // ---------- 5. руки ----------
   const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
@@ -3105,10 +3180,13 @@ function renderBot(look, pose, t, cv) {
   });
   if (pose.book) { BLK(17, by + 3, 14, 9, 1, '#ff7a3a'); P(23, by + 3, 2, 9, '#7a3a14'); P(18, by + 4, 4, 1, '#ffd0a0'); P(26, by + 4, 4, 1, '#ffd0a0'); }
 
+  if (look.back === 'scarf') { const sc = shade(acc, -.1); BLK(bx + 1, by - 2, bw - 2, 4, 2, sc); P(bx + 3, by - 1, bw - 6, 1, shade(sc, .35)); P(bx + 4, by + 1, 3, 4, sc); P(bx + 4, by + 4, 3, 1, shade(sc, -.3)); }   // шарф на шиї
+
   // ---------- 6. голова ----------
   if (look.head === 'hood') BLK(hX - 3, hY - 3, 36, 27, 7, '#2e3470');
   for (const side of [-1, 1]) { const ex = side < 0 ? hX - 4 : hX + 29, eb = Q(pose.earB); BLK(ex, hY + 6 + eb, 5, 10, 2, acc); P(ex + 1, hY + 8 + eb, 3, 6, shade(acc, -.35)); P(ex + 2, hY + 9 + eb, 1, 4, '#ffffff'); }
   BLK(hX, hY, 30, 22, 6, shell); P(hX + 6, hY + 1, 18, 1, shade(shell, .75)); P(hX + 3, hY + 3, 2, 3, shade(shell, .55));
+  if (th.hp) headPat(B, th.hp, hX, hY, shell, acc, t);                                         // візерунок теми на корпусі голови
   if (!pose.back) {
     P(hX + 7, hY + 2, 4, 1, shade(shell, -.3)); P(hX + 19, hY + 2, 4, 1, shade(shell, -.3));                    // "брови" — шви корпусу
     RR(hX + 3, hY + 4, 24, 15, 4, '#16236a'); RR(hX + 4, hY + 5, 22, 13, 3, '#060b2a');                          // візор
@@ -3121,13 +3199,30 @@ function renderBot(look, pose, t, cv) {
   }
 
   // ---------- 7. антена ----------
-  if (look.head !== 'hood' && look.head !== 'hat') drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, Q(pose.antX), Q(pose.antY));
+  if (look.head !== 'hood' && look.head !== 'hat' && !(ACCS[look.head] && ACCS[look.head].noAnt)) drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, Q(pose.antX), Q(pose.antY));
 
   // ---------- 8. аксесуари голови ----------
   if (look.head === 'hood') { P(hX - 1, hY - 2, 32, 3, '#2e3470'); P(hX + 2, hY - 2, 26, 1, '#4a52a0'); }
   if (look.head === 'hat') { BLK(hX + 3, hY - 6, 24, 9, 4, '#d93a4a'); P(hX + 1, hY + 1, 28, 3, '#a82a3a'); P(hX + 1, hY + 1, 28, 1, '#ff6a7a'); BLK(hX + 13, hY - 10, 5, 5, 2, '#ffffff'); }
   if (look.head === 'goggles') { P(hX, hY + 6, 30, 2, '#5a3a1a'); for (const gx of [hX + 5, hX + 16]) { BLK(gx, hY + 5, 10, 8, 2, '#e0902a'); RR(gx + 1, hY + 6, 8, 6, 2, '#5ae8ff'); P(gx + 2, hY + 7, 3, 1, '#ffffff'); } }
   if (look.head === 'phones') { line(hX + 1, hY + 4, hX + 4, hY - 2, '#2a2f6e', 2); line(hX + 4, hY - 3, hX + 26, hY - 3, '#2a2f6e', 2); line(hX + 26, hY - 2, hX + 29, hY + 4, '#2a2f6e', 2); for (const cx of [hX - 6, hX + 29]) { BLK(cx, hY + 5, 7, 11, 2, '#ff4fd8'); P(cx + 2, hY + 8, 3, 5, '#7a1a6a'); } }
+  if (look.head === 'kabuto') { const L = '#2a1a30', G = '#ffc94d';                          // шолом самурая: чаша, заклепки, бічні щитки, золотий гребінь
+    for (const sd of [-1, 1]) { const fx2 = sd < 0 ? hX - 5 : hX + 29; BLK(fx2, hY - 1, 6, 9, 2, L); P(fx2 + 1, hY + 1, 4, 1, G); }
+    BLK(hX - 1, hY - 4, 32, 8, 4, L); P(hX + 3, hY - 3, 24, 1, shade(L, .55)); for (let k = 0; k < 7; k++) P(hX + 3 + k * 4, hY, 1, 1, G);
+    line(hX + 15, hY - 3, hX + 7, hY - 9, G, 2); line(hX + 15, hY - 3, hX + 23, hY - 9, G, 2); P(hX + 6, hY - 10, 2, 1, '#fff2c0'); P(hX + 22, hY - 10, 2, 1, '#fff2c0');
+    RR(hX + 12, hY - 6, 7, 5, 2, G); P(hX + 14, hY - 5, 3, 2, '#d93a4a'); }
+  if (look.head === 'helmet') { const cxh = hX + 15, cyh = hY + 9, rx = 20, ry = 15;          // шолом астронавта: скляна сфера, відблиск, комір
+    x.fillStyle = 'rgba(190,235,255,.12)'; x.beginPath(); x.ellipse(cxh, cyh, rx, ry, 0, 0, 7); x.fill();
+    for (let a = 0; a < 140; a++) { const q = a / 140 * Math.PI * 2; P(Math.round(cxh + Math.cos(q) * rx), Math.round(cyh + Math.sin(q) * ry), 1, 1, q > 3.4 && q < 4.5 ? '#ffffff' : 'rgba(200,240,255,.9)'); }
+    P(cxh - 14, cyh - 8, 2, 1, '#ffffff'); P(cxh - 15, cyh - 6, 1, 3, '#ffffff'); BLK(hX + 2, hY + 21, 26, 3, 1, '#c3cbea'); P(hX + 4, hY + 22, 2, 1, '#ff8a2a'); P(hX + 24, hY + 22, 2, 1, '#ff8a2a'); }
+  if (look.head === 'tricorn') { const K = '#1c1624', G = '#e8c060';                          // капітанка: поля із загнутими кутами, золотий кант і бляха
+    P(hX - 3, hY - 1, 36, 3, K); P(hX - 3, hY - 1, 36, 1, shade(K, .45)); P(hX - 5, hY - 3, 4, 3, K); P(hX + 31, hY - 3, 4, 3, K);
+    BLK(hX + 5, hY - 8, 20, 8, 3, K); P(hX + 6, hY - 2, 18, 1, G); P(hX - 3, hY + 1, 36, 1, G); RR(hX + 13, hY - 6, 4, 4, 1, G); P(hX + 14, hY - 5, 2, 2, '#fff2c0'); }
+  if (look.head === 'bandana') { const C = shade(acc, -.05);                                   // пов'язка: стрічка, металева пластина, кінці майорять
+    P(hX, hY + 1, 30, 3, C); P(hX, hY + 1, 30, 1, shade(C, .35)); RR(hX + 11, hY + 1, 8, 3, 1, '#c3cbea'); P(hX + 12, hY + 2, 6, 1, '#8a93b8');
+    for (let i = 0; i < 9; i++) { const yy = hY + 2 + Math.round(i * .45 + Math.sin(t * 9 - i * .7) * (i / 9) * 1.5); P(hX - 1 - i, yy, 1, 2, C); if (i % 3 === 1) P(hX - 1 - i, yy + 2, 1, 1, shade(C, -.25)); } }
+  if (look.head === 'flowers') [[2, '#ff6ad8'], [8, '#ffe27a'], [14, '#ffffff'], [20, '#ff9af0'], [26, '#7af4ff']].forEach(([dx, c], i) => {   // вінок
+    const fx2 = hX + dx, fy2 = hY - 1 + (i % 2); if (i < 4) P(fx2 + 1, fy2 + 1, 4, 1, '#3f8a2a'); P(fx2 - 1, fy2, 3, 1, c); P(fx2, fy2 - 1, 1, 3, c); P(fx2, fy2, 1, 1, i === 1 ? '#ff8a2a' : '#ffe27a'); });
   if (pose.shades) { P(hX + 5, hY + 8, 20, 5, '#000000'); P(hX + 5, hY + 8, 20, 1, '#2a3a7a'); P(hX + 7, hY + 9, 3, 1, '#ffffff'); }
 
   // ---------- 9. предмети в руках (drawHandItem; поки руки зайняті інструментом пози чи книгою — праву не чіпаємо) ----------
@@ -3252,6 +3347,25 @@ function renderItem(id, t, cv, W = 30, H = 44) {
   pxOutline(x, W, H); return cv;
 }
 
+/** Візерунок теми на корпусі голови (лише всередині заокругленого корпусу 30×22; спереду середину закриває візор, ззаду
+ *  видно весь): ribs — ребра гарбуза, stripes — смужки цукерки, circuit — схема з вогником, trim — золотий кант і камінь,
+ *  facets — грані льоду з бліками, cracks — тріщини лави, що жевріють. */
+function headPat(B, hp, hX, hY, shell, acc, t) {
+  const { P, ins } = B, I = ins(6), inH = (x, y) => { const yy = y - hY; if (yy < 0 || yy > 21) return false; const k = yy < 6 ? I[yy] : yy > 15 ? I[21 - yy] : 0; return x >= hX + k && x <= hX + 29 - k; };
+  const Q = (x, y, c) => { if (inH(x, y)) P(x, y, 1, 1, c); };
+  switch (hp) {
+    case 'ribs': [5, 10, 15, 20, 25].forEach(dx => { for (let y = hY + 1; y < hY + 21; y++) { Q(hX + dx, y, shade(shell, -.22)); if (y % 3) Q(hX + dx + 1, y, shade(shell, .22)); } }); break;
+    case 'stripes': for (let y = hY; y < hY + 22; y++) for (let x = hX; x < hX + 30; x++) if (((x - y) % 7 + 7) % 7 < 2) Q(x, y, shade(acc, .15)); break;
+    case 'circuit': { const on = Math.floor(t * 5) % 6; [[2, 2, 8, 0], [20, 2, 8, 1], [1, 9, 3, 2], [26, 9, 3, 3], [3, 19, 7, 4], [20, 19, 7, 5]].forEach(([a, c, w, k]) => {
+      for (let i = 0; i < w; i++) Q(hX + a + i, hY + c, k === on ? '#e0ffe8' : acc); const e = hX + a + (k % 2 ? w - 1 : 0); Q(e, hY + c + 1, acc); Q(e, hY + c + 2, '#ffffff'); }); break; }
+    case 'trim': for (let y = hY; y < hY + 22; y++) { let x0 = -1, x1 = -1; for (let x = hX; x < hX + 30; x++) if (inH(x, y)) { if (x0 < 0) x0 = x; x1 = x; } if (x0 >= 0) { P(x0 + 1, y, 1, 1, acc); P(x1 - 1, y, 1, 1, acc); } }
+      for (let x = hX + 5; x < hX + 25; x++) Q(x, hY + 1, acc); Q(hX + 14, hY + 2, '#ff3b6a'); Q(hX + 15, hY + 2, '#ff3b6a'); break;
+    case 'facets': [[3, 1, 6], [12, 0, 5], [21, 1, 6], [2, 14, 5], [24, 13, 5]].forEach(([a, c, n]) => { for (let k = 0; k < n; k++) Q(hX + a + k, hY + c + k, shade(shell, -.16)); for (let k = 0; k < n - 1; k++) Q(hX + a + k + 1, hY + c + k, '#ffffff'); }); break;
+    case 'cracks': { const hot = Math.sin(t * 3) > 0 ? '#ffd27a' : '#ff9a3a';
+      [[[4, 2], [6, 3], [7, 3], [8, 5], [10, 6]], [[22, 1], [21, 3], [23, 4], [24, 6]], [[3, 15], [5, 16], [6, 18], [8, 19]], [[25, 14], [23, 16], [24, 18]]].forEach((pts, k) => pts.forEach(([a, c], i) => { Q(hX + a, hY + c, (i + k + Math.floor(t * 4)) % 3 ? '#ff6a1a' : hot); Q(hX + a + 1, hY + c, '#ff6a1a'); })); break; }
+  }
+}
+
 /** Обличчя на візорі. (vx,vy) — лівий верх скла 22×13. */
 function drawFace(P, RR, vx, vy, face, eye, pose, t) {
   const dim = shade(eye, -.55), lk = Math.round(pose.look || 0), blink = pose.blink && !['sleepy', 'happy'].includes(face);
@@ -3296,6 +3410,13 @@ function drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, ax, ay) {
     case 'horns': for (const s of [-1, 1]) { const b0 = s < 0 ? hX + 5 : hX + 24; line(b0, hY + 1, b0 - s * 3 + ax, hY - 6 + ay, '#cfd6f0', 3); line(b0 - s * 3 + ax, hY - 6 + ay, b0 - s * 5 + ax, hY - 10 + ay, '#ffffff', 2); } break;
     case 'crown': BLK(hX + 8, hY - 6, 14, 6, 1, '#ffc94d'); [[hX + 8, 3], [hX + 14, 4], [hX + 20, 3]].forEach(([px, h]) => P(px, hY - 6 - h, 2, h, '#ffc94d')); P(hX + 11, hY - 4, 2, 2, '#ff3b6a'); P(hX + 17, hY - 4, 2, 2, '#3be8ff'); P(hX + 9, hY - 6, 12, 1, '#fff0a0'); break;
     case 'neon': for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; P(Math.round(cx + ax + Math.cos(a) * 10), Math.round(hY - 6 + ay + Math.sin(a) * 2.5), 1, 1, i % 3 ? '#ff4fd8' : '#ffb0f8'); } rod(cx, cx + ax * .5, hY - 4); break;
+    case 'halo': { const y = hY - 8 + ay + Math.round(Math.sin(t * 2.4)), x0 = cx + ax;          // німб: золоте кільце ширяє над головою
+      for (let i = 0; i < 32; i++) { const a = i / 32 * Math.PI * 2; P(Math.round(x0 + Math.cos(a) * 9), Math.round(y + Math.sin(a) * 2.2), 1, 1, Math.sin(a) > 0 ? '#fff4b0' : '#ffc94d'); }
+      if (Math.floor(t * 3) % 4 === 0) P(x0 + 6, y - 3, 1, 1, '#ffffff'); break; }
+    case 'flame': { rod(cx, cx + ax, hY - 4 + ay, '#5a2a1a'); const X0 = cx + ax - 2, Y0 = hY - 11 + ay;   // полум'я на тримачі
+      [['..R..', '.RR..', '.RYR.', 'RYWYR', '.RYR.'], ['...R.', '..RR.', '.RYR.', 'RYWYR', '.RYR.'], ['..R..', '..RR.', '.RYR.', 'RYYYR', '.RYR.']][Math.floor(t * 10) % 3]
+        .forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') P(X0 + i, Y0 + j, 1, 1, ch === 'W' ? '#ffffff' : ch === 'Y' ? '#ffe27a' : '#ff6a1a'); })); break; }
+    case 'stem': P(cx - 1 + ax, hY - 5 + ay, 3, 6, '#6a4a1a'); P(cx - 1 + ax, hY - 5 + ay, 1, 6, '#8a6a2a'); P(cx + 2 + ax, hY - 6 + ay, 4, 2, '#3f8a2a'); P(cx + 5 + ax, hY - 8 + ay, 2, 2, '#5fae6a'); P(cx - 3 + ax, hY - 7 + ay, 2, 1, '#5fae6a'); break;   // хвостик гарбуза з листком
     default: P(cx - 2, hY - 2, 4, 2, '#5a6590'); rod(cx, cx + ax, hY - 9 + ay); RR(cx + ax - 2, hY - 13 + ay, 5, 5, 2, tip); P(cx + ax - 1, hY - 12 + ay, 1, 1, '#ffffff');
   }
 }
@@ -5157,8 +5278,8 @@ NX.arc = NX.arc || {};
  *   ws_wingL/R, ws_postL/R — бічні панелі й стійки капсули (внутрішні грані стійок — світлові панелі)
  *   ws_back   — рожеве скло сканера: сітка, кільця емблеми, іконки скінів
  *   ws_beam   — балка: заклепки, ґратки; знизу — панель світла над капсулою
- *   ws_tabL   — планшет СКІНИ (живий: міні-Nexi в різних скінах, рамка вибору, дві сторінки)
- *   ws_tabR   — планшет ПРЕДМЕТИ (живий: молот, клинок, рукавиця, екскалібур, посох… — те, що Nexi тримає в руці)
+ *   ws_tabL   — планшет СКІНИ (живий: готові скіни на міні-Nexi, рамка кольору рідкості, сторінки)
+ *   ws_tabR   — планшет АКСЕСУАРИ (живий: міні-Nexi в рюкзаку, плащі, крилах, шоломах…; реліквії — на орбіті голограми)
  * c уже масштабоване: 1 = одиниця світу на грані; fw × fh — розмір грані. Усі написи — NX.t (4 мови).
  * ========================================================================== */
 (() => {
@@ -5340,25 +5461,24 @@ NX.arc = NX.arc || {};
     for (let y = fh * .2; y < fh * .82; y += 2.6) for (let x = x0 + 1.4; x < x1 - .5; x += 2.6) { c.fillStyle = (Math.round(x * 3 + y * 7) % 5) ? '#ffd6f6' : '#9af6ff'; c.fillRect(x - .55, y - .55, 1.1, 1.1); }
   } };
 
-  // ---------- ПЛАНШЕТИ: ліворуч — СКІНИ (міні-Nexi в скінах), праворуч — ПРЕДМЕТИ (що він тримає в руці) ----------
-  // Власник (29.10): «з одного боку видно скіни, з іншого — предмети, які він тримає в руці». Обидва гортаються сторінками.
+  // ---------- ПЛАНШЕТИ: ліворуч — СКІНИ (готові скіни з рідкістю), праворуч — АКСЕСУАРИ (те, що він вдягає) ----------
+  // Власник (29.10): «аксесуари й предмети розділи; предмети — це реліквії, вони окремо» — реліквії тепер кружляють навколо
+  // голограми (objects/workshop.js), а планшети показують скіни й аксесуари. Обидва гортаються сторінками.
   const TAB = { [-1]: { title: 'scene.ws.skins', glass: ['#1a62c8', '#0f3a96', '#0a2470'], line: '#7af4ff', glow: '#3be8ff', card: 'rgba(16,40,120,.85)', edge: 'rgba(150,230,255,.5)', hi: '150,240,255' },
-    [1]: { title: 'scene.ws.items', glass: ['#4a1c9a', '#2c1274', '#1a0c52'], line: '#ff9af0', glow: '#ff4fd8', card: 'rgba(44,18,104,.85)', edge: 'rgba(255,180,240,.5)', hi: '255,160,240' } };
-  /** Планшет (нерухоме): корпус, скло з переливом, заголовок, сітка карток 2 × 3; у предметів — світні п'єдестали в картках. */
+    [1]: { title: 'scene.ws.acc', glass: ['#4a1c9a', '#2c1274', '#1a0c52'], line: '#ff9af0', glow: '#ff4fd8', card: 'rgba(44,18,104,.85)', edge: 'rgba(255,180,240,.5)', hi: '255,160,240' } };
+  /** Планшет (нерухоме): корпус, скло з переливом, заголовок, сітка карток 2 × 3. */
   const tablet = side => (c, fw, fh) => {
     const S = TAB[side];
     c.fillStyle = '#0a0a2a'; rr(c, 0, 0, fw, fh, 2.2); c.fill(); c.strokeStyle = '#3b4aa8'; c.lineWidth = .6; rr(c, .4, .4, fw - .8, fh - .8, 2); c.stroke();
     glass(c, fw * .07, fh * .05, fw * .86, fh * .88, { r: 1.4, a: S.glass[0], b: S.glass[1], c: S.glass[2], line: S.line });
     A.txt(c, NX.t(S.title), fw / 2, fh * .1, fw * .6, fh * .045, '#f4fbff', { glow: S.glow });
-    for (let q = 0; q < 6; q++) { const [x, y, w, h] = cell(fw, fh, q); c.fillStyle = S.card; rr(c, x, y, w, h, .8); c.fill(); c.strokeStyle = S.edge; c.lineWidth = .35; rr(c, x, y, w, h, .8); c.stroke();
-      if (side > 0) { const g = c.createRadialGradient(x + w / 2, y + h * .84, 0, x + w / 2, y + h * .84, w * .42); g.addColorStop(0, 'rgba(255,150,240,.55)'); g.addColorStop(1, 'rgba(255,150,240,0)'); c.fillStyle = g; c.fillRect(x, y + h * .6, w, h * .4);
-        c.strokeStyle = 'rgba(255,214,246,.75)'; c.lineWidth = .3; c.beginPath(); c.ellipse(x + w / 2, y + h * .86, w * .28, h * .055, 0, 0, 7); c.stroke(); } }
+    for (let q = 0; q < 6; q++) { const [x, y, w, h] = cell(fw, fh, q); c.fillStyle = S.card; rr(c, x, y, w, h, .8); c.fill(); c.strokeStyle = S.edge; c.lineWidth = .35; rr(c, x, y, w, h, .8); c.stroke(); }
     c.fillStyle = '#05030f'; c.fillRect(fw * .4, fh * .952, fw * .2, fh * .026); led(c, side > 0 ? fw * .15 : fw * .85, fh * .965, '#3bff8a', .55);
   };
   const cell = (fw, fh, q) => [fw * (.13 + (q % 2) * .38), fh * (.17 + Math.floor(q / 2) * .26), fw * .36, fh * .23];
   PAINT.ws_tabL = tablet(-1); PAINT.ws_tabR = tablet(1);
-  /** Гортання: картка підсвічується по черзі (per с), після шести — наступна сторінка: картки «вистрибують» по одній. */
-  const pager = (t, pages, shift = 0) => { const per = 1.6, n = Math.floor(t / per) + shift, page = Math.floor(n / 6) % pages, since = (t + shift * per) - Math.floor(n / 6) * 6 * per; return { page, sel: n % 6, since }; };
+  /** Гортання: картка підсвічується по черзі (per с), після шести — наступна сторінка (по колу: на останній — знову перші). */
+  const pager = (t, n, shift = 0) => { const per = 1.6, k = Math.floor(t / per) + shift, pages = Math.ceil(n / 6), page = Math.floor(k / 6) % pages, since = (t + shift * per) - Math.floor(k / 6) * 6 * per; return { page, pages, sel: k % 6, since }; };
   /** Поява картки q нової сторінки: масштаб з легким «перестрибуванням» (0..1+), спалах на мить. */
   const pop = (since, q) => { const k = Math.max(0, Math.min(1, (since - q * .07) / .32)); if (k >= 1) return [1, 0]; const s = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); return [Math.max(0, s), 1 - k]; };
   /** Рамка вибраної картки, сяйво, крапки сторінок, скан-лінія по екрану. */
@@ -5368,38 +5488,29 @@ NX.arc = NX.arc || {};
     for (let k = 0; k < pages; k++) { c.fillStyle = k === page ? S.line : 'rgba(255,255,255,.3)'; c.fillRect(fw / 2 - pages * 1.6 + k * 3.2 + .4, fh * .96, 1.6, fh * .012); }
     const sy = fh * (.15 + ((t * .25) % 1) * .8); c.fillStyle = `rgba(${S.hi},.2)`; c.fillRect(fw * .08, sy, fw * .84, .6);
   }
-  /** Міні-Nexi для карток: кожен скін малюється раз (renderBot) і береться з кешу. */
-  const MINI = {}, SKINS = [[{ theme: 'neon' }, { theme: 'gold', ant: 'crown' }, { theme: 'space', body: 'cosmos' }, { theme: 'forest', back: 'backpack' }, { theme: 'fire', ant: 'horns' }, { theme: 'winter', head: 'hat' }],
-    [{ theme: 'techno', body: 'techno', ant: 'techno' }, { theme: 'rainbow', back: 'wings' }, { theme: 'gamer', head: 'phones' }, { theme: 'premium', body: 'premium' }, { theme: 'water', body: 'holo' }, { theme: 'shadow', back: 'cape' }]];
+  /** Міні-Nexi для карток: кожен образ малюється раз (renderBot) і береться з кешу. */
+  const MINI = {};
   function mini(look) {
     const k = JSON.stringify(look); if (MINI[k]) return MINI[k];
-    const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', 0, false), 0, cv); return MINI[k] = cv;
+    const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', .5, false), .5, cv); return MINI[k] = cv;   // t .5 — очі відкриті (у t 0 Nexi кліпає)
   }
-  LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) {
-    const { page, sel, since } = pager(t, SKINS.length);
-    SKINS[page].forEach((look, q) => { const [x, y, w, h] = cell(fw, fh, q), cv = mini(look), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0;
+  /** Сторінка карток: міні-Nexi в образі look(id), «вистрибують» при гортанні; frame(id) — колір рамки картки (рідкість). */
+  function cards(c, fw, fh, t, ids, shift, S, look, frame) {
+    const { page, pages, sel, since } = pager(t, ids.length, shift);
+    for (let q = 0; q < 6; q++) {
+      const id = ids[(page * 6 + q) % ids.length], [x, y, w, h] = cell(fw, fh, q), cv = mini(look(id)), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0, col = frame && frame(id);
       c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
+      if (col) { const g = c.createLinearGradient(0, y + h * .55, 0, y + h); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, col + '66'); c.fillStyle = g; c.fillRect(x, y, w, h); }   // сяйво рідкості знизу
       if (s > .01) c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .98 - SH * s * .93 + bob, SW * s, SH * s);
-      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(160,240,255,${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); } c.restore(); });
-    chrome(c, fw, fh, t, TAB[-1], sel, page, SKINS.length);
-  } };
-  // предмети (actors/nexi/sprite.js → renderItem): кадр предмета оновлюється 10 разів за секунду (блискавки, полум'я, відблиски)
-  const ITEMS = [['hammer', 'blade', 'gauntlet', 'excalibur', 'staff', 'trident'], ['wand', 'balloon', 'torch', 'magnet', 'shield', 'sword']], ICV = {};
-  /** Межі намальованого на полотні (щоб предмет будь-якої форми заповнив картку). */
-  const bbox = cv => { const W = cv.width, H = cv.height, d = cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); } return x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; };
-  const itemCv = (id, t) => { const f = Math.floor(t * 10), o = ICV[id] || (ICV[id] = { cv: document.createElement('canvas'), f: -1 }); if (o.f !== f) { o.f = f; renderItem(id, t, o.cv); if (!o.bb) o.bb = bbox(o.cv); } return o; };
-  LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) {
-    const { page, sel, since } = pager(t, ITEMS.length, 3);
-    ITEMS[page].forEach((id, q) => { const [x, y, w, h] = cell(fw, fh, q), o = itemCv(id, t), [bx0, by0, bx1, by1] = o.bb, on = q === sel, bob = on ? Math.sin(t * 5) * .5 - .4 : Math.sin(t * 2 + q) * .25, [k, fl] = pop(since, q);
-      const s = Math.min(w * .8 / (bx1 - bx0), h * .76 / (by1 - by0), h * .76 / 22) * (on ? 1.08 : 1) * k;
-      c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
-      if (s > .01) c.drawImage(o.cv, x + w / 2 - (bx0 + bx1) / 2 * s, y + h * .88 - by1 * s + bob, o.cv.width * s, o.cv.height * s);
-      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,240,${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); c.globalCompositeOperation = 'source-over'; }
-      if (on) { const gx = x + w / 2 + Math.sin(t * 3) * w * .2, gy = y + h * (.3 + .2 * Math.sin(t * 2.2)); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(255,240,255,.8)'; c.fillRect(gx - .2, gy - 1, .4, 2); c.fillRect(gx - 1, gy - .2, 2, .4); }   // іскра на вибраному
-      c.restore(); });
-    chrome(c, fw, fh, t, TAB[1], sel, page, ITEMS.length);
-  } };
+      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); }
+      c.restore();
+      if (col) { c.strokeStyle = col; c.lineWidth = .45; rr(c, x + .2, y + .2, w - .4, h - .4, .8); c.stroke(); c.fillStyle = col; c.fillRect(x + w * .3, y + h - .9, w * .4, .6); }   // рамка й рисочка кольору рідкості
+    }
+    chrome(c, fw, fh, t, S, sel, page, pages);
+  }
+  const PRESETS = Object.keys(SKINS);
+  LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) { cards(c, fw, fh, t, PRESETS, 0, TAB[-1], id => skinLook(id), id => RARITY[SKINS[id].rar]); } };
+  LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) { cards(c, fw, fh, t, WEAR_ACCS, 3, TAB[1], id => ({ [ACCS[id].slot]: id })); } };
 })();
 
 </script>      <!-- майстерня (скіни): платформа, капсула, скло сканера, планшети -->
@@ -5611,8 +5722,11 @@ NX.arc = NX.arc || {};
  * Нерухома частина майстерні (платформа, капсула, балка, купол, планшети) — у 3D-розкладці (gen_room.py: workshop(),
  * малюнки граней — objects/ws_paint.js). Тут — те, що живе поверх неї (власник, 29.10: «голограма Nexi з різними скінами;
  * ефекти, фішечки; щоб Nexi міг туди ставати»):
- *   ГОЛОГРАМА NEXI на паді капсули: стоїть у конусі світла, показує скіни по черзі (повний оберт — на ребрі змінює скін,
- *     нові пікселі «збираються» скан-лінією), мерехтить, глітчить, назва скіна на голо-табличці, точки-каруселька;
+ *   ГОЛОГРАМА NEXI на паді капсули: стоїть у конусі світла, показує ГОТОВІ СКІНИ по черзі (повний оберт — на ребрі змінює
+ *     скін, нові пікселі «збираються» скан-лінією), мерехтить, глітчить, назва скіна на голо-табличці в кольорі рідкості;
+ *   РЕЛІКВІЇ (власник, 29.10: «предмети — як реліквії, окремо; три кружляють навколо голограми, після оберту змінюються —
+ *     колекція Nexi»): три предмети з руки летять по еліпсу навколо голограми (позаду — тьмяніші й менші, спереду —
+ *     поверх неї), кожен на правому краю орбіти з іскрами змінюється на наступну реліквію колекції;
  *   МАНІПУЛЯТОР на куполі: дихає в спокої, час від часу сканує голограму променем, а коли Nexi в капсулі міняє скін —
  *     нахиляється й «встановлює» його блискавкою (іскри, спалах);
  *   СКАНУВАННЯ: коли Nexi в капсулі — голограма гасне, кільця сканера бігають по ньому, пад горить яскравіше;
@@ -5623,12 +5737,10 @@ NX.arc = NX.arc || {};
 (() => {
   const P = NX.px;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('workshop'));
-  // скіни голограми (власник: «голограма Nexi з різними скінами»): тема + 1–2 деталі, що добре видно здалеку; майже кожен —
-  // з предметом у руці (власник: «предмети, які він тримає в руці»: молот, клинок, рукавиця, екскалібур, посох…)
-  const LOOKS = [{ theme: 'neon', ant: 'neon', face: 'happy', hand: 'blade' }, { theme: 'gold', ant: 'crown', body: 'premium', legs: 'gold', hand: 'excalibur' }, { theme: 'space', body: 'cosmos', back: 'wings', hand: 'staff' },
-    { theme: 'fire', ant: 'horns', arms: 'power', hand: 'hammer' }, { theme: 'winter', head: 'hat', legs: 'boots', hand: 'torch' }, { theme: 'techno', body: 'techno', ant: 'techno', head: 'goggles', hand: 'gauntlet' },
-    { theme: 'rainbow', back: 'cape', hand: 'balloon' }, { theme: 'gamer', head: 'phones', legs: 'sneakers', ant: 'gamer', hand: 'magnet' }, { theme: 'forest', back: 'backpack', hand: 'wand' }, { theme: 'water', body: 'holo', arms: 'holo', hand: 'trident' }];
+  // голограма показує готові скіни (actors/nexi/skins.js: SKINS) — без реліквій у руці: реліквії кружляють окремо
+  const PRESETS = Object.keys(SKINS);
   const PERIOD = 3.6, SPIN = .9;                                                           // показ скіна, з них оберт (с)
+  const ORB = 6.5, RX = 40, RY = 9, RH = 30;                                               // оберт реліквії навколо голограми (с), півосі орбіти, висота реліквії
   // маніпулятор (px картинки зони і відступ углиб v): спокій / «сканую голограму» / «встановлюю скін»
   const ARM = { rest: [[1005, 128, 36.5], [1062, 96, 36.5], [1128, 134, 36.5], [1114, 158, 36.5]],
     look: [[1005, 128, 36.5], [1056, 90, 33], [1120, 120, 27], [1100, 142, 22]],
@@ -5636,7 +5748,49 @@ NX.arc = NX.arc || {};
   const S = { idx: 0, shown: 0, mat: 1, occ: false, holoA: 1, scan: 0, zap: 0, look: 0, lookT: 6, fast: 0, motes: [], bolts: [], last: -1 };
   const botCv = document.createElement('canvas'), holoCv = document.createElement('canvas'); holoCv.width = SW; holoCv.height = SH;
   const hx = holoCv.getContext('2d', { willReadFrequently: true });
-  const look = i => Object.assign({}, DEFAULT_LOOK, LOOKS[((i % LOOKS.length) + LOOKS.length) % LOOKS.length]);
+  const presetOf = i => PRESETS[((i % PRESETS.length) + PRESETS.length) % PRESETS.length], look = i => skinLook(presetOf(i));
+  // реліквії: кадр предмета (sprite.js → renderItem) оновлюється 10 разів за секунду (блискавки, полум'я, відблиски); межі
+  // намальованого — раз, щоб будь-яка реліквія була однакового розміру на орбіті
+  const RCV = {};
+  function relic(id, t) {
+    const f = Math.floor(t * 10), o = RCV[id] || (RCV[id] = { cv: document.createElement('canvas'), f: -1 });
+    if (o.f !== f) { o.f = f; renderItem(id, t, o.cv);
+      if (!o.bb) { const W = o.cv.width, H = o.cv.height, d = o.cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); }
+        o.bb = x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; } }
+    return o;
+  }
+  /** Три реліквії на орбіті: кут, позиція, глибина (спереду / позаду), масштаб (зникає й «вистрибує» на правому краю —
+   *  там змінюється на наступну реліквію колекції: слот k показує HAND_ITEMS[k + 3·оберти]). */
+  function relics(t, cx, cy) {
+    const out = [], w = Math.PI * 2 / ORB;
+    for (let k = 0; k < 3; k++) {
+      const th = t * w + k * Math.PI * 2 / 3, n = Math.floor(th / (Math.PI * 2)), ph = th - n * Math.PI * 2, d = Math.min(ph, Math.PI * 2 - ph);   // d — відстань до точки зміни (0 рад, праворуч)
+      const sn = Math.sin(th), pop = d < .32 ? d / .32 : 1;
+      out.push({ id: HAND_ITEMS[(k + 3 * n) % HAND_ITEMS.length], x: cx + Math.cos(th) * RX, y: cy + sn * RY + Math.sin(t * 2.2 + k * 2) * 1.2, front: sn > 0, k: (.82 + .2 * (sn + 1) / 2) * pop, swap: d < .2 ? 1 - d / .2 : 0, th });
+    }
+    return out;
+  }
+  /** Реліквія на орбіті: темна «підкладка» (щоб предмет читався на яскравій капсулі), сяйво, кільце-п'єдестал, слід позаду,
+   *  сам предмет (позаду — тьмяніший), іскри в мить зміни. Розмір — RH (власник: «щоб було видно їх»). */
+  function drawRelic(c, t, r, a) {
+    const o = relic(r.id, t), [x0, y0, x1, y1] = o.bb, s = Math.min(RH / (y1 - y0), 2) * r.k, hh = (y1 - y0) * s, my = r.y - hh / 2;
+    c.save();
+    const bg = c.createRadialGradient(r.x, my, 0, r.x, my, hh * .6 + 2); bg.addColorStop(0, `rgba(12,4,34,${a * (r.front ? .55 : .35)})`); bg.addColorStop(1, 'rgba(12,4,34,0)');
+    c.fillStyle = bg; c.fillRect(r.x - hh, my - hh, hh * 2, hh * 2);
+    c.globalCompositeOperation = 'lighter';
+    P.glow(c, r.x, my, hh * .55 + 3, r.front ? 'rgba(255,210,140,.8)' : 'rgba(160,200,255,.6)', a * (r.front ? .5 : .28));
+    c.strokeStyle = `rgba(255,230,190,${a * (r.front ? .55 : .25)})`; c.lineWidth = .5; c.beginPath(); c.ellipse(r.x, r.y + .5, 6 * r.k, 1.6 * r.k, 0, 0, 7); c.stroke();   // кільце-«п'єдестал» під реліквією
+    for (let j = 1; j <= 4; j++) { const th = r.th - j * .14, xx = r.x - (Math.cos(r.th) - Math.cos(th)) * RX, yy = r.y - (Math.sin(r.th) - Math.sin(th)) * RY; c.fillStyle = `rgba(255,230,180,${a * .35 / j})`; c.fillRect(xx - .6, yy - .6, 1.2, 1.2); }   // слід
+    if (r.swap > 0) for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2 + t * 5, rr2 = 5 + (1 - r.swap) * 9; c.fillStyle = `rgba(255,240,200,${r.swap * a})`; c.fillRect(r.x + Math.cos(an) * rr2 - .7, my + Math.sin(an) * rr2 - .7, 1.4, 1.4); }
+    c.restore();
+    if (s > .02) { c.save(); c.imageSmoothingEnabled = false; c.globalAlpha = a * (r.front ? 1 : .8); c.drawImage(o.cv, r.x - (x0 + x1) / 2 * s, r.y - y1 * s, o.cv.width * s, o.cv.height * s); c.restore(); }
+  }
+  /** Орбіта реліквій — пунктирний еліпс, що повільно «біжить»: дальня половина (позаду голограми) або ближня. */
+  function orbit(c, t, cx, cy, a, front) {
+    c.save(); c.globalCompositeOperation = 'lighter'; c.setLineDash([2, 2]); c.lineDashOffset = -t * 6; c.lineWidth = .6;
+    c.strokeStyle = `rgba(255,214,150,${a * (front ? .5 : .28)})`; c.beginPath(); c.ellipse(cx, cy, RX, RY, 0, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2); c.stroke(); c.restore();
+  }
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
 
   /** Кадр голограми (48×56): Nexi в скіні -> голографічний відтінок, скан-лінії, «збирання» знизу вгору, глітч. */
@@ -5762,24 +5916,28 @@ NX.arc = NX.arc || {};
           c.fillStyle = q % 2 ? `rgba(160,240,255,${1 - u * .5})` : `rgba(255,170,240,${1 - u * .5})`; c.fillRect(x - .7, y - .7, 1.4, 1.4); }
       }
       c.restore();
-      // ГОЛОГРАМА
+      // ГОЛОГРАМА (і реліквії на орбіті навколо неї: ті, що позаду, — до голограми, ті, що спереду, — після)
       if (S.holoA > .02) {
         const per = S.fast > 0 ? 1.1 : PERIOD, ph = (t % per) / per, spin = SPIN / per;
         let th = 0; if (ph > 1 - spin) th = ease((ph - (1 - spin)) / spin) * Math.PI * 2;
         const cs = Math.cos(th), back = cs < 0, pose = S.mat < 1 ? 'cheer' : (Math.floor(t / per) % 3 === 1 ? 'wave' : 'stand');
         if (!S.hc || (NX.loop.frames & 1) === 0) S.hc = holoFrame(t, back, pose);                   // кадр голограми — раз на 2 кадри
         const cv = S.hc, hover = 5 + Math.sin(t * 2) * 1.5, w = SW * hs, h = SH * hs, top = FOOT * hs, fl2 = (.86 + .14 * Math.sin(t * 23) * Math.sin(t * 7)) * S.holoA;
+        const oy = py - hover - top * .42, RL = relics(t, px, oy);
+        orbit(c, t, px, oy, S.holoA, false); RL.filter(r => !r.front).forEach(r => drawRelic(c, t, r, S.holoA));
         c.save(); c.imageSmoothingEnabled = false; c.translate(px, py - hover); c.scale(Math.max(.06, Math.abs(cs)), 1);
         c.globalAlpha = .84 * fl2; c.drawImage(cv, -w / 2, -top, w, h);
         c.globalCompositeOperation = 'lighter'; c.globalAlpha = .28 * fl2; c.drawImage(cv, -w / 2 + .8, -top, w, h); c.drawImage(cv, -w / 2 - .8, -top - .6, w, h);
         c.restore();
         if (S.mat < 1) { const yy = py - hover - top + h * .93 * (1 - ease(S.mat)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(220,255,255,.9)'; c.fillRect(px - w * .32, yy, w * .64, .9); P.glow(c, px, yy, 16, 'rgba(160,240,255,.7)', .5); c.restore(); }
-        // голо-табличка: назва скіна, у другій половині показу — назва предмета в руці; каруселька
-        const Lk = look(S.shown), name = (Lk.hand && ph > .45 && ph < 1 - spin ? NX.t('skin.acc.' + Lk.hand) : NX.t('skin.theme.' + Lk.theme)).toUpperCase(), ty = py - hover - top - 9;
-        c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 8);
-        c.fillStyle = 'rgba(6,18,60,.72)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = '#7af4ff'; c.lineWidth = .5; c.strokeRect(px - tw / 2 + .25, ty - 4.75, tw - .5, 7.5);
-        c.fillStyle = '#e8feff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px, ty - .7, tw - 4); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-        for (let k = 0; k < LOOKS.length; k++) { const on = k === ((S.shown % LOOKS.length) + LOOKS.length) % LOOKS.length; c.fillStyle = on ? '#ff9af0' : 'rgba(150,230,255,.45)'; c.fillRect(px - LOOKS.length * 1.6 + k * 3.2, ty + 4.5, on ? 2 : 1.4, on ? 2 : 1.4); }
+        orbit(c, t, px, oy, S.holoA, true); RL.filter(r => r.front).forEach(r => drawRelic(c, t, r, S.holoA));
+        // голо-табличка: назва скіна в рамці кольору рідкості; каруселька скінів
+        const id = presetOf(S.shown), rc = RARITY[SKINS[id].rar], name = NX.t('skin.skin.' + id).toUpperCase(), ty = py - hover - top - 9, N = PRESETS.length, cur = ((S.shown % N) + N) % N;
+        c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 10);
+        c.fillStyle = 'rgba(6,18,60,.78)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = rc; c.lineWidth = .6; c.strokeRect(px - tw / 2 + .3, ty - 4.7, tw - .6, 7.4);
+        c.fillStyle = rc; c.fillRect(px - tw / 2 + 1.6, ty - 1.9, 1.6, 1.6);                                                                                        // вогник рідкості
+        c.fillStyle = '#f4fbff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px + 1, ty - .7, tw - 6); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+        for (let k = 0; k < N; k++) { const on = k === cur; c.fillStyle = on ? rc : 'rgba(150,230,255,.4)'; c.fillRect(px - N * 1.4 + k * 2.8, ty + 4.5, on ? 1.8 : 1.2, on ? 1.8 : 1.2); }
         c.restore();
       }
       // СКАНУВАННЯ Nexi в капсулі: кільця бігають по ньому, з боків — світлові колони
@@ -5936,17 +6094,26 @@ NX.arc = NX.arc || {};
  *     валики, вишитий N; ззаду — глянцевий корпус, дві рожеві гоночні смуги, неонова емблема N, кант;
  *   СИДІННЯ — платформа, стьобана подушка, високі бокові валики, заокруглений передній край; подушка під шию;
  *   ПІДЛОКІТНИКИ — стійки й м'які накладки з рожевою смугою; механізм, рожеве LED-кільце (світиться);
- *   ОПОРА — газліфт у кожусі, хрестовина з 5 хромованих променів, подвійні коліщатка.
- * Кадр під кут повороту рендериться в растр (z-буфер, контур) і кешується (кілька останніх кутів). Растр ділиться на
- * ДВА ШАРИ: спинка (і підлокітник, що ближче до глядача) — поверх Nexi, коли вона між ним і глядачем; решта — під ним.
+ *   ОПОРА — газліфт у кожусі, LED-кільце й хромовий ковпак на маточині, хрестовина з 5 гранених хромованих променів з
+ *     рожевою LED-смужкою, вилки й подвійні коліщатка з блакитними світними ковпаками.
+ * Крок 4 (власник: «криве — ніжки прикольніші, крісло більше, трохи рівніше»): більше, ФРОНТАЛЬНО (зсув sh — як у стола зони),
+ * спинка рівніша й нижча, у спокої — рівно (180°).
+ * Кадр під кут повороту (через 4°) рендериться в растр (z-буфер, контур) і кешується: повний (R 4) — для кутів спокою,
+ * грубший (R 2) — поки крісло крутиться. Растр ділиться на ДВА ШАРИ: спинка (і підлокітник, що ближче до глядача) — поверх
+ * Nexi, коли вона між ним і глядачем; решта — під ним.
  * API (activities.js -> marketing): ready(), side() — де стати біля крісла, seat() — куди сісти, depth() — глибина Nexi,
  *   turnTo(кут) — повернутись (0 — до глядача, 180 — до екрана, 270 — праворуч), sitDown() / standUp(); foot — слід на
  *   підлозі (Nexi й кіт обходять крісло — world/room.js: route).
  * ========================================================================== */
 (() => {
-  const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, K = 1.5, { ramp, col } = X;
+  // власник (29.10, після кроку 3): «прикольне, але якесь криве — ніжки прикольніші, саме крісло більше, трохи рівніше»:
+  // K 1.5 -> 2; ФРОНТАЛЬНО, як стіл зони (той самий зсув sh, що й у розкладці: дивимося прямо), спинка рівніша (TILT),
+  // нижча в одиницях крісла (HS — щоб над нею було видно голову Nexi); у спокої стоїть рівно спинкою до нас (180°)
+  const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, K = 2, HS = .82, { ramp, col } = X;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('marketing'));
   const centre = () => zone().W(589, 337, -24);                                       // вісь крісла (px картинки зони -> світ)
+  let SH0; const SH = () => { if (SH0 === undefined) { const it = ((NX.arcLayout && NX.arcLayout.left && NX.arcLayout.left.items) || []).find(i => i.zone === 'marketing' && i.sh); SH0 = it ? it.sh : null; } return SH0; };
+  const shp = p => { const sh = SH(); return sh ? [p[0] + sh[0] * (p[2] - sh[1]), p[1], p[2]] : p; };   // фронтальний зсув точки світу
 
   // ---------- СПИНКА: профіль лиця (половина праворуч, знизу вгору; [u, h] в одиницях крісла) ----------
   const PROF = [[11.8, 20], [11.7, 22.5], [11.1, 25.5], [10.8, 27.5], [11.3, 29.6], [12.3, 31.4], [12.9, 33.0], [12.6, 34.2], [11.1, 35.0], [8.4, 35.6],
@@ -5954,10 +6121,11 @@ NX.arc = NX.arc || {};
   const OUT = [...PROF, ...PROF.slice(0, -1).reverse().map(([u, h]) => [-u, h])];   // контур: праворуч угору, ліворуч униз
   const INNER = [[8.2, 20.6], [7.8, 23.5], [7.4, 26.5], [7.7, 29.5], [8.2, 31.7], [7.5, 33.6], [5.6, 34.8], [4.9, 35.9], [4.7, 40.7], [3.8, 41.6], [0, 41.8]];
   const INN = [...INNER, ...INNER.slice(0, -1).reverse().map(([u, h]) => [-u, h])];
-  const BW = 12.9, BH0 = 20, BH1 = 42.7, TILT = .16, BV = 9.4, BD = 5.4;              // межі профілю, нахил назад (на од. висоти), площина лиця, товщина
+  const BW = 12.9, BH0 = 20, BH1 = 42.7, TILT = .07, BV = 9.4, BD = 5.4;              // межі профілю, нахил назад (на од. висоти), площина лиця, товщина
+  const hS = h => BH0 + (h - BH0) * HS;                                                // висота спинки в кріслі (профіль задано до HS)
   const slot = (u, h) => Math.abs(Math.abs(u) - 3.2) < .7 && h > 38.4 && h < 40.8;   // прорізи під ремені — наскрізь
-  // ---------- текстури спинки (полотно в од. світу: x = (u + BW)·K, y = (BH1 − h)·K) ----------
-  const tx = (u, h) => [(u + BW) * K, (BH1 - h) * K];
+  // ---------- текстури спинки (полотно в од. світу: x = (u + BW)·K, y = (BH1 − h)·K·HS) ----------
+  const tx = (u, h) => [(u + BW) * K, (BH1 - h) * K * HS];
   const path = (c, pts, mirror = 1) => { c.beginPath(); pts.forEach(([u, h], k) => { const [x, y] = tx(u * mirror, h); k ? c.lineTo(x, y) : c.moveTo(x, y); }); c.closePath(); };
   /** Лице спинки: рожеві бокові валики (глянець), стьобана «ромбом» середина з кантом і пунктиром-строчкою, поперечна строчка
    *  попереку, темні обідки прорізів, вишитий N між ними. */
@@ -5972,8 +6140,8 @@ NX.arc = NX.arc || {};
     c.restore();
     path(c, INN); c.strokeStyle = '#ff4fd8'; c.lineWidth = .8; c.stroke(); c.setLineDash([.7, .7]); c.strokeStyle = 'rgba(255,214,246,.8)'; c.lineWidth = .3; c.stroke(); c.setLineDash([]);
     const [lx0, ly] = tx(-7.4, 27.4), [lx1] = tx(7.4, 27.4); c.setLineDash([.7, .7]); c.strokeStyle = 'rgba(255,170,240,.6)'; c.lineWidth = .3; c.beginPath(); c.moveTo(lx0, ly); c.lineTo(lx1, ly); c.stroke(); c.setLineDash([]);
-    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3), w = 2.2 * K, h = 3.4 * K; c.fillStyle = '#05030f'; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(255,170,240,.55)'; c.fillRect(x, y + h - .4, w, .4); });   // обідки прорізів
-    const [nx, ny] = tx(-1.25, 41.1), nw = 2.5 * K, nh = 2.1 * K; c.strokeStyle = '#ff9af0'; c.lineWidth = .7; c.lineJoin = 'round'; c.beginPath(); c.moveTo(nx, ny + nh); c.lineTo(nx, ny); c.lineTo(nx + nw, ny + nh); c.lineTo(nx + nw, ny); c.stroke();
+    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3), w = 2.2 * K, h = 3.4 * K * HS; c.fillStyle = '#05030f'; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(255,170,240,.55)'; c.fillRect(x, y + h - .4, w, .4); });   // обідки прорізів
+    const [nx, ny] = tx(-1.25, 41.1), nw = 2.5 * K, nh = 2.1 * K * HS; c.strokeStyle = '#ff9af0'; c.lineWidth = .7; c.lineJoin = 'round'; c.beginPath(); c.moveTo(nx, ny + nh); c.lineTo(nx, ny); c.lineTo(nx + nw, ny + nh); c.lineTo(nx + nw, ny); c.stroke();
     path(c, OUT); c.strokeStyle = 'rgba(255,190,240,.7)'; c.lineWidth = .5; c.stroke();
   };
   /** Спинка ззаду: глянцевий корпус (світліше вгорі, відблиск збоку), дві рожеві гоночні смуги з блакитними нитками,
@@ -5991,7 +6159,7 @@ NX.arc = NX.arc || {};
     c.strokeStyle = '#ff4fd8'; c.lineWidth = 1.1; c.beginPath(); c.arc(ex, ey, r * .82, 0, 7); c.stroke(); c.strokeStyle = '#ffd6f6'; c.lineWidth = .35; c.stroke();
     c.strokeStyle = '#3be8ff'; c.lineWidth = 1.2; c.lineJoin = 'round'; const q = r * .38; c.beginPath(); c.moveTo(ex - q, ey + q); c.lineTo(ex - q, ey - q); c.lineTo(ex + q, ey + q); c.lineTo(ex + q, ey - q); c.stroke(); c.strokeStyle = '#e4fdff'; c.lineWidth = .4; c.stroke();
     c.restore();
-    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3); c.fillStyle = '#05030f'; c.fillRect(x, y, 2.2 * K, 3.4 * K); });
+    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3); c.fillStyle = '#05030f'; c.fillRect(x, y, 2.2 * K, 3.4 * K * HS); });
     path(c, OUT); c.strokeStyle = '#ff4fd8'; c.lineWidth = .9; c.stroke(); c.strokeStyle = 'rgba(255,214,246,.8)'; c.lineWidth = .3; c.stroke();
   };
   /** Стьобана подушка сидіння (зверху): «ромб», кант, строчка. */
@@ -6009,46 +6177,51 @@ NX.arc = NX.arc || {};
     ['slab', 0, -12.4, 26, 24.2, 15, 18.6, 'shell', { ch: 1.2 }], ['cush', 0, -11.2, 16.8, 20.4, 18.6, 20.6, 'cush', { top: quilt }],
     ['bolL', -10.7, -12, 4.8, 22, 18.6, 22.8, 'pink', { ch: 1.7, top: roll }], ['bolR', 10.7, -12, 4.8, 22, 18.6, 22.8, 'pink', { ch: 1.7, top: roll }],
     ['nose', 0, -14.2, 24.6, 3.2, 15.4, 21, 'pink', { ch: 1.4, front: roll }],
-    ['neck', 0, 9.5, 9, 2.8, 34.6, 37.7, 'pinkL', { ch: 1.2, front: roll }],
+    ['neck', 0, BV + (hS(36) - BH0) * TILT - 2.5, 9, 2.8, hS(34.6), hS(37.7), 'pinkL', { ch: 1.2, front: roll }],
     ['postL', -15.4, 1.2, 3.2, 3.4, 15.6, 27.4, 'steel'], ['postR', 15.4, 1.2, 3.2, 3.4, 15.6, 27.4, 'steel'],
     ['brkL', -14, .9, 3.6, 4, 15.4, 17.2, 'steel'], ['brkR', 14, .9, 3.6, 4, 15.4, 17.2, 'steel'],
     ['padL', -15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }], ['padR', 15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }],
     ['mech', 0, -7.2, 14.4, 14.4, 13.3, 15, 'steel'], ['ring', 0, -11.4, 22.8, 22.8, 12.6, 13.4, 'led', { cyl: 28 }],
     ['lift', 0, -2.2, 4.4, 4.4, 7.5, 13.3, 'chrome', { cyl: 16 }], ['cover', 0, -3.3, 6.6, 6.6, 3.4, 8.6, 'dark', { cyl: 16, kt: .78 }],
-    ['hub', 0, -3.8, 7.6, 7.6, 2.6, 4.8, 'dark', { cyl: 18 }],
+    ['hub', 0, -3.8, 7.6, 7.6, 2.6, 4.6, 'dark', { cyl: 18 }], ['hring', 0, -4.4, 8.8, 8.8, 4.6, 5.2, 'led', { cyl: 24 }], ['cap', 0, -3.4, 6.8, 6.8, 5.2, 6.4, 'chrome', { cyl: 18, kt: .8 }],
   ];
   const MAT = { shell: { pal: PL.DESK, q: .5, bev: .8 }, cush: { pal: PL.DESK, q: .56, bev: .7 }, pink: { pal: PL.PINKP, q: .5, bev: 1 }, pinkL: { pal: PL.PINKP, q: .64, bev: .9 },
     arm: { pal: PL.MET, q: .4, bev: .7 }, steel: { pal: PL.STEEL, q: .6, bev: .5 }, chrome: { pal: PL.CHROME, q: .58, metal: 1, bev: 0 }, dark: { pal: PL.DARK, q: .62, bev: .4 },
     led: { pal: PL.PINKP, q: .92, emit: 1, bev: 0 } };
   const BACK_ID = PARTS.length + 1, LEG_ID = BACK_ID + 1, WHEEL_ID = LEG_ID + 1;
-  const cache = new Map(), TX = new Map(); let Lr = null, box = null;
+  // КЕШ КАДРІВ: повний (R = 4) — для кутів, на яких крісло стоїть (180, 270, 0 закріплені — малюються заздалегідь, у спокої),
+  // і грубший (R = 2, учетверо дешевший: ~4 мс замість ~15) — поки крісло обертається (за рухом різниці не видно)
+  const keyOf = a => ((Math.round(a / 4) * 4) % 360 + 360) % 360;                    // кадри — через 4°
+  const HI = new Map(), LO = new Map(), PIN = [180, 270, 0].map(keyOf), TX = new Map(), LS = {}; let box = null;
+  const put = (M, k, v, cap) => { M.set(k, v); if (M.size > cap) for (const q of M.keys()) if (!(M === HI && PIN.includes(q))) { M.delete(q); break; } };
   /** Текстура грані не залежить від кута — малюється раз (ключ — частина й грань). */
   const texOf = (key, B, Fc, paint) => { if (!TX.has(key)) TX.set(key, A.texture(B, Fc, R, paint)); return TX.get(key); };
 
   /** Витягнутий профіль спинки: грані лиця, тилу й боків (k, poly, O, A, B, n, fw, fh) для кута key. */
   function backFaces(b) {
-    const V = (u, h, bk) => b.P(u * K, (BV + (h - BH0) * TILT + (bk ? BD : 0)) * K, FL - h * K);
+    const V = (u, h, bk) => b.P(u * K, (BV + (hS(h) - BH0) * TILT + (bk ? BD : 0)) * K, FL - hS(h) * K);
     const fr = OUT.map(([u, h]) => V(u, h, 0)), bk = OUT.map(([u, h]) => V(u, h, 1)), out = [], sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]];
     const orient = (poly, ref) => { let n = X.newell(poly); const m = poly.reduce((s, p) => [s[0] + p[0] / poly.length, s[1] + p[1] / poly.length, s[2] + p[2] / poly.length], [0, 0, 0]), d = sub(m, ref);
       if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] < 0) n = [-n[0], -n[1], -n[2]]; const l = Math.hypot(...n) || 1; return [n[0] / l, n[1] / l, n[2] / l]; };
     const mid = V(0, 30, 0), cen = [(mid[0] + V(0, 30, 1)[0]) / 2, (mid[1] + V(0, 30, 1)[1]) / 2, (mid[2] + V(0, 30, 1)[2]) / 2];
-    { const O = V(-BW, BH1, 0); out.push({ k: 'front', poly: fr, O, A: sub(V(BW, BH1, 0), O), B: sub(V(-BW, BH0, 0), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K, n: orient(fr, cen), side: 'f' }); }
-    { const O = V(BW, BH1, 1); out.push({ k: 'back', poly: bk.slice().reverse(), O, A: sub(V(-BW, BH1, 1), O), B: sub(V(BW, BH0, 1), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K, n: orient(bk, cen), side: 'b' }); }
+    { const O = V(-BW, BH1, 0); out.push({ k: 'front', poly: fr, O, A: sub(V(BW, BH1, 0), O), B: sub(V(-BW, BH0, 0), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K * HS, n: orient(fr, cen), side: 'f' }); }
+    { const O = V(BW, BH1, 1); out.push({ k: 'back', poly: bk.slice().reverse(), O, A: sub(V(-BW, BH1, 1), O), B: sub(V(BW, BH0, 1), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K * HS, n: orient(bk, cen), side: 'b' }); }
     for (let i = 0; i < OUT.length; i++) { const j = (i + 1) % OUT.length, poly = [fr[i], fr[j], bk[j], bk[i]], len = Math.hypot(...sub(fr[j], fr[i]));
       if (len < .05) continue; out.push({ k: 'left', poly, O: fr[i], A: sub(fr[j], fr[i]), B: sub(bk[i], fr[i]), fw: len, fh: BD * K, n: orient(poly, cen), side: 's' }); }
     return out;
   }
 
-  /** Растр крісла під кут a (градуси): {back, front} — два полотна (позаду / попереду Nexi), x0, y0, w, h (од. кімнати). */
-  function render(a) {
-    const key = ((Math.round(a / 4) * 4) % 360 + 360) % 360; if (cache.has(key)) return cache.get(key);
-    const C = centre(), b = A.basis({ x: C[0], z: C[2], turn: key }), Pt = (u, v, h) => b.P(u * K, v * K, FL - h * K);
-    if (!Lr) {                                                                         // растр — один на всі кути (межі з запасом)
-      const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, 46].forEach(h => pts.push(X.proj([C[0] + Math.cos(an) * 26 * K, FL - h * K, C[2] + Math.sin(an) * 26 * K]))); }
+  /** Растр крісла під кут a (градуси): {back, front} — два полотна (позаду / попереду Nexi), x0, y0, w, h (од. кімнати).
+   *  lo — грубший растр (під час обертання); якщо цей кут уже є в повному — береться він. */
+  function render(a, lo) {
+    const key = keyOf(a); if (HI.has(key)) return HI.get(key); if (lo && LO.has(key)) return LO.get(key);
+    const r = lo ? 2 : R, C = centre(), b = A.basis({ x: C[0], z: C[2], turn: key, sh: SH() }), Pt = (u, v, h) => b.P(u * K, v * K, FL - h * K);
+    const b0 = A.basis({ x: C[0], z: C[2], turn: key });                              // без зсуву: частини-коробки зсуваються самі (B.sh)
+    if (!box) {                                                                        // межі растра — одні на всі кути: найдальша точка крісла від осі ~20.6 од.
+      const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, 41].forEach(h => pts.push(X.proj(shp([C[0] + Math.cos(an) * 22 * K, FL - h * K, C[2] + Math.sin(an) * 22 * K])))); }
       box = [Math.min(...pts.map(p => p[0])) - 3, Math.min(...pts.map(p => p[1])) - 3, Math.max(...pts.map(p => p[0])) + 3, Math.max(...pts.map(p => p[1])) + 3];
-      Lr = X.Layer(box[0], box[1], box[2], box[3], R);
     }
-    const L = Lr; L.c.fill(0); L.dep.fill(Infinity); L.id.fill(0); L.fid.fill(0); L.fl.fill(0);
+    const L = LS[r] || (LS[r] = X.Layer(box[0], box[1], box[2], box[3], r)); L.c.fill(0); L.dep.fill(Infinity); L.id.fill(0); L.fid.fill(0); L.fl.fill(0);
     const front = new Set(), zc = C[2], Bx = { yb: FL - 20 * K };
     // спинка (витягнутий профіль): прорізи — наскрізь; боки — темніша шкіра з рожевим кантом спереду
     const BF = backFaces(b), bmid = Pt(0, BV + BD / 2 + 1.6, 0); if (bmid[2] < zc - 1.5) { front.add(BACK_ID); front.add(PARTS.findIndex(p => p[0] === 'neck') + 1); }
@@ -6059,7 +6232,7 @@ NX.arc = NX.arc || {};
       X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, (u, v, i, j, t) => slot(mir * (-BW + u * 2 * BW), BH1 - v * (BH1 - BH0)) ? 0 : base(u, v, i, j, t), { id: BACK_ID, fid: BACK_ID, n: Fc.n });
     });
     PARTS.forEach(([nm, u, v0, w, d, h0, h1, mat, ex = {}], n) => {
-      const id = n + 1, p0 = Pt(u, v0, 0), B = { x: p0[0], z: p0[2], turn: key, w: w * K, dep: d * K, yb: FL - h0 * K, yt: FL - h1 * K, ch: ex.ch ? [ex.ch * K, ex.ch * K] : null, cyl: ex.cyl, kt: ex.kt, id: 'chair_' + nm };
+      const id = n + 1, p0 = b0.P(u * K, v0 * K, 0), B = { x: p0[0], z: p0[2], turn: key, sh: SH(), w: w * K, dep: d * K, yb: FL - h0 * K, yt: FL - h1 * K, ch: ex.ch ? [ex.ch * K, ex.ch * K] : null, cyl: ex.cyl, kt: ex.kt, id: 'chair_' + nm };
       const mid = Pt(u, v0 + d / 2, 0); if (/^pad|^post/.test(nm) && mid[2] < zc - 7) front.add(id);
       for (const Fc of A.faces(B)) {
         if (!A.visible(Fc)) continue;
@@ -6068,44 +6241,58 @@ NX.arc = NX.arc || {};
         X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, sh, { id, fid: id, n: Fc.n });
       }
     });
-    // хрестовина: 5 хромованих променів (світла грань угорі) з подвійними коліщатками
-    const hub = Pt(0, 0, 3.8);
-    for (let q = 0; q < 5; q++) { const an = q / 5 * Math.PI * 2 + .3, cs = Math.cos(an), sn = Math.sin(an), tip = Pt(cs * 15.6, sn * 15.6, 2.8);
-      X.tube(L, hub, tip, 3 * K, (u0, v0, i, j) => ramp(PL.CHROME, .2 + (1 - Math.abs(u0 - .35) * 2.2) * .62 + (v0 > .9 ? -.15 : 0), i, j), { id: LEG_ID, fid: LEG_ID });
-      X.tube(L, tip, Pt(cs * 16.4, sn * 16.4, 1.6), 1.2 * K, (u0, v0, i, j) => ramp(PL.STEEL, .55, i, j), { id: LEG_ID, fid: LEG_ID });
-      [-.9, .9].forEach(o => { const w = Pt(cs * 16.4 - sn * o, sn * 16.4 + cs * o, 1.5);
-        X.disc(L, w, 1.55 * K, (u0, v0, i, j) => { const dd = Math.hypot(u0 - .5, v0 - .5); return dd > .34 ? ramp(PL.DARK, .45 + (v0 < .4 ? .2 : 0), i, j) : dd > .2 ? ramp(PL.STEEL, .5, i, j) : ramp(PL.CHROME, .7, i, j); }, { id: WHEEL_ID, fid: WHEEL_ID }); });
+    // ХРЕСТОВИНА (власник: «ніжки прикольніше»): 5 гранених хромованих променів, що звужуються до кінця, по верху кожного —
+    // рожева LED-смужка; на кінцях — вилки й подвійні коліщатка з блакитними світними ковпаками
+    const LEG = (u0, v0, i, j, side) => side === 't' ? (u0 > .4 && u0 < .6 && v0 > .08 && v0 < .92 ? (X.SH.fl |= X.F_EMIT, col(u0 > .46 && u0 < .54 ? '#ffd6f6' : '#ff4fd8')) : ramp(PL.CHROME, .42 + (1 - Math.abs(u0 - .5) * 2) * .4 - v0 * .08, i, j))
+      : side === 'c' ? ramp(PL.STEEL, .55, i, j) : ramp(PL.CHROME, .18 + (1 - v0) * .2 + (side === 'a' ? .1 : 0), i, j);
+    const sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]], cen = Pt(0, 0, 3);
+    for (let q = 0; q < 5; q++) {
+      const an = q / 5 * Math.PI * 2 + .3, cs = Math.cos(an), sn = Math.sin(an), V = (r, o, h) => Pt(cs * r - sn * o, sn * r + cs * o, h);
+      const A0t = V(2.6, -1.9, 5), B0t = V(2.6, 1.9, 5), A1t = V(16, -1.15, 3.5), B1t = V(16, 1.15, 3.5), A0b = V(2.6, -1.9, 2.8), B0b = V(2.6, 1.9, 2.8), A1b = V(16, -1.15, 2.4), B1b = V(16, 1.15, 2.4);
+      const mid = V(9, 0, 3.6), fc = (poly, O, Ax, Bx2, side) => { let n = X.newell(poly); const m = poly.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]), d = sub(m, mid); if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] < 0) n = n.map(v => -v); const l = Math.hypot(...n) || 1; n = n.map(v => v / l);
+        const F = { poly, n }; if (A.visible(F)) X.face(L, poly, O, sub(Ax, O), sub(Bx2, O), (u0, v0, i, j) => LEG(u0, v0, i, j, side), { id: LEG_ID, fid: LEG_ID, n }); };
+      fc([A0t, B0t, B1t, A1t], A0t, B0t, A1t, 't'); fc([A0t, A1t, A1b, A0b], A0t, A1t, A0b, 'a'); fc([B0t, B0b, B1b, B1t], B0t, B1t, B0b, 'b'); fc([A1t, B1t, B1b, A1b], A1t, B1t, A1b, 'c');
+      X.tube(L, V(16.2, 0, 2.6), V(16.6, 0, 1.4), 1.3 * K, (u0, v0, i, j) => ramp(PL.STEEL, .5 + (1 - Math.abs(u0 - .5) * 2) * .2, i, j), { id: LEG_ID, fid: LEG_ID });   // вилка
+      [-.95, .95].forEach(o => X.disc(L, V(16.6, o, 1.45), 1.6 * K, (u0, v0, i, j) => { const dd = Math.hypot(u0 - .5, v0 - .5);
+        if (dd > .37) return ramp(PL.DARK, .4 + (v0 < .45 ? .22 : 0), i, j); if (dd > .24) { X.SH.fl |= X.F_EMIT; return col(dd > .31 ? '#3be8ff' : '#bff8ff'); } return ramp(PL.CHROME, .72 - dd, i, j); }, { id: WHEEL_ID, fid: WHEEL_ID }));
     }
-    X.outline(L, () => A.C.out, 2);
-    // ділимо растр на два шари: позаду Nexi (сидіння, опора, …) і попереду (спинка, коли вона між ним і глядачем)
-    const mk = sel => { const cv = document.createElement('canvas'); cv.width = L.W; cv.height = L.H; const x = cv.getContext('2d'), im = x.createImageData(L.W, L.H), d = new Uint32Array(im.data.buffer);
-      for (let k = 0; k < L.c.length; k++) if (L.c[k] && sel(L.id[k])) d[k] = L.c[k]; x.putImageData(im, 0, 0); return cv; };
-    const out = { back: mk(id => !front.has(id)), front: mk(id => front.has(id)), x0: L.x0, y0: L.y0, w: L.W / R, h: L.H / R };
-    cache.set(key, out); if (cache.size > 16) cache.delete(cache.keys().next().value);
+    X.outline(L, () => A.C.out, lo ? 1 : 2);
+    // ділимо растр на два шари: позаду Nexi (сидіння, опора, …) і попереду (спинка, коли вона між ним і глядачем); полотна —
+    // лише розміром з намальоване (менше пам'яті в кеші й менше роботи drawImage щокадру)
+    let i0 = L.W, i1 = -1, j0 = L.H, j1 = -1;
+    for (let j = 0; j < L.H; j++) for (let i = 0, k = j * L.W; i < L.W; i++, k++) if (L.c[k]) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
+    if (i1 < 0) { i0 = j0 = 0; i1 = j1 = 0; }
+    const W2 = i1 - i0 + 1, H2 = j1 - j0 + 1;
+    const mk = sel => { const cv = document.createElement('canvas'); cv.width = W2; cv.height = H2; const x = cv.getContext('2d'), im = x.createImageData(W2, H2), d = new Uint32Array(im.data.buffer);
+      for (let j = j0; j <= j1; j++) for (let i = i0, k = j * L.W + i0, o = (j - j0) * W2; i <= i1; i++, k++, o++) if (L.c[k] && sel(L.id[k])) d[o] = L.c[k];
+      x.putImageData(im, 0, 0); return cv; };
+    const out = { back: mk(id => !front.has(id)), front: mk(id => front.has(id)), x0: L.x0 + i0 / r, y0: L.y0 + j0 / r, w: W2 / r, h: H2 / r };
+    if (lo) put(LO, key, out, 40); else put(HI, key, out, 10);
     return out;
   }
 
   NX.addObject({
     id: 'mkChair', name: 'obj.marketing', act: 'marketing',
-    a: 166, tgt: 166, seated: false, idleT: 4,
+    a: 180, tgt: 180, seated: false, idleT: 4,
     ready() { return !!zone(); },
     /** Точка підлоги під серединою крісла (екран) і глибина — для порядку малювання з Nexi. */
-    floor() { return X.proj(centre()); },
+    floor() { return X.proj(shp(centre())); },
     depth() { return this.floor()[1]; },
-    side() { const f = this.floor(); return [f[0] + 46, Math.max(362, f[1] + 6)]; },
-    seat() { const C = centre(); return X.proj([C[0], FL - 21 * K, C[2] + 2]); },
+    side() { const f = this.floor(), ft = this.foot; return [(ft ? ft[1] : f[0] + 40) + 15, Math.max(362, f[1] + 6)]; },   // праворуч від сліду крісла
+    seat() { const C = centre(); return X.proj(shp([C[0], FL - 21 * K, C[2] + 2])); },
     /** Слід на підлозі (екран): коло хрестовини з коліщатками — Nexi й кіт обходять (world/room.js: route). */
-    get foot() { if (!zone()) return null; if (!this._foot) { const C = centre(), pts = []; for (let q = 0; q < 16; q++) { const an = q / 16 * Math.PI * 2; pts.push(X.proj([C[0] + Math.cos(an) * 17.5 * K, FL, C[2] + Math.sin(an) * 17.5 * K])); }
+    get foot() { if (!zone()) return null; if (!this._foot) { const C = centre(), pts = []; for (let q = 0; q < 16; q++) { const an = q / 16 * Math.PI * 2; pts.push(X.proj(shp([C[0] + Math.cos(an) * 17.5 * K, FL, C[2] + Math.sin(an) * 17.5 * K]))); }
       this._foot = [Math.min(...pts.map(p => p[0])), Math.max(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[1]))]; } return this._foot; },
     turnTo(deg) { let d = deg; while (d - this.a > 180) d -= 360; while (d - this.a < -180) d += 360; this.tgt = d; },
     spin(deg) { this.tgt = this.a + deg; },                                                 // повний оберт (на радощах)
-    sitDown() { this.seated = true; }, standUp() { this.seated = false; this.turnTo(166); },
-    get span() { const f = zone() && this.floor(); return f ? [f[0] - 44, f[0] + 44] : null; },
-    get hit() { if (!zone()) return null; const f = this.floor(); return { x: f[0] - 26, y: f[1] - 64, w: 52, h: 66 }; },
+    sitDown() { this.seated = true; }, standUp() { this.seated = false; this.turnTo(180); },
+    get span() { const f = zone() && this.floor(); return f ? [f[0] - 56, f[0] + 56] : null; },
+    get hit() { if (!zone()) return null; const f = this.floor(); return { x: f[0] - 32, y: f[1] - 80, w: 64, h: 82 }; },
     update(dt, t) {
       if (!zone()) return;
+      if (NX.loop.frames > 120 && !this.warm) { const k = PIN.find(q => !HI.has(q)); if (k === undefined) this.warm = true; else render(k, false); }   // кути спокою — заздалегідь, по одному за кадр
       const d = this.tgt - this.a, sp = (90 + Math.abs(d) * 5) * dt; this.a = Math.abs(d) <= sp ? this.tgt : this.a + Math.sign(d) * sp;
-      if (!this.seated && Math.abs(d) < .5) { this.idleT -= dt; if (this.idleT < 0) { this.idleT = 5 + Math.random() * 6; this.turnTo(166 + (Math.random() - .5) * 26); } }
+      if (!this.seated && Math.abs(d) < .5) { this.idleT -= dt; if (this.idleT < 0) { this.idleT = 6 + Math.random() * 6; this.turnTo(180 + (Math.random() < .5 ? 0 : (Math.random() - .5) * 10)); } }   // у спокої — рівно, лише зрідка ледь повертається
       const n = NX.nexi;
       if (this.seated && n.loc === 'mkChair') {                                             // Nexi їде разом із кріслом: спиною / лицем / боком
         const r = this.a * Math.PI / 180, fx = -Math.sin(r), fz = -Math.cos(r); n.back = fz > .2; if (Math.abs(fx) > .55) n.dir = fx > 0 ? 1 : -1;
@@ -6114,11 +6301,11 @@ NX.arc = NX.arc || {};
     },
     layers(t) {
       if (!zone()) return [];
-      const fr = render(this.a), f = this.floor(), y = f[1], act = NX.objects.marketing && NX.objects.marketing.active, lit = .55 + .25 * Math.sin(t * 2.4) + (act ? .25 : 0);
+      const fr = render(this.a, Math.abs(this.tgt - this.a) > 12), f = this.floor(), y = f[1], act = NX.objects.marketing && NX.objects.marketing.active, lit = .55 + .25 * Math.sin(t * 2.4) + (act ? .25 : 0);
       const draw = cv => c => { c.save(); c.imageSmoothingEnabled = true; c.drawImage(cv, fr.x0, fr.y0, fr.w, fr.h); c.restore(); };
       return [
-        { y: y - .5, draw: c => { c.save(); c.fillStyle = 'rgba(4,2,14,.55)'; c.beginPath(); c.ellipse(f[0], f[1] + .5, 30, 4.4, 0, 0, 7); c.fill(); c.restore();
-          P.glow(c, f[0], f[1] - 5, 34, 'rgba(255,79,216,.8)', lit * .55); draw(fr.back)(c); } },
+        { y: y - .5, draw: c => { c.save(); c.fillStyle = 'rgba(4,2,14,.55)'; c.beginPath(); c.ellipse(f[0], f[1] + .5, 36, 5.2, 0, 0, 7); c.fill(); c.restore();
+          P.glow(c, f[0], f[1] - 5, 40, 'rgba(255,79,216,.8)', lit * .55); P.glow(c, f[0], f[1] + 1, 26, 'rgba(59,232,255,.7)', lit * .3); draw(fr.back)(c); } },
         { y: y + .5, draw: draw(fr.front) },
       ];
     },
@@ -6604,15 +6791,25 @@ NX.nexi = {
   },
   end(a) { if (a.work) { const w = a.work; if (w.obj) { NX.objects[w.obj].active = false; NX.objects[w.obj].done = true; } w.end && w.end(); } },
 
-  /* ---------------- ВИПАДКОВІ ЕМОЦІЇ ТА "ПОГОДА" ----------------
-   * Емоції й ефекти не обираються в скінах — вони трапляються самі:
-   *  - кожні 8–16 с Nexi проявляє випадкову емоцію (частіше радість);
-   *  - кожні 22–40 с над ним "трапляється погода" на 6–9 с: хмаринка з дощем
-   *    (він сумує), сніг (радіє), іскри, аура, вогник, бульбашки, неон...
+  /* ---------------- ЕМОЦІЇ (ВИРАЗ ОБЛИЧЧЯ) ТА "ПОГОДА" ----------------
+   * Обличчя Nexi обирає сам — у лабораторії скінів його немає (власник, 29.10: «він сам має показувати емоції, як забажає»):
+   *  - кожні 4–10 с — нова емоція на 2–4 с, за настроєм хвилини: працює — зосереджений (serious), ідея, радість; іде —
+   *    радість, «круто»; відпочиває — усе підряд (частіше радість), поруч кіт — любов; між емоціями — звичайний вираз;
+   *  - події додають свої (emote: здивування в капсулі, любов з котом, радість після задачі…);
+   *  - кожні 22–40 с над ним "трапляється погода" на 6–9 с: хмаринка з дощем (він сумує), сніг (радіє), іскри, аура…
    */
-  fxNow: 'none', fxUntil: 0, nextFx: 14, nextMood: 6,
+  FACE: { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard', focus: 'serious' },
+  faceOf(m) { return this.FACE[m] || 'standard'; },
+  fxNow: 'none', fxUntil: 0, nextFx: 14, nextMood: 3,
   moodLife(t) {
-    if (t > this.nextMood && !this.mood) { this.nextMood = t + 8 + Math.random() * 8; const m = ['happy', 'happy', 'love', 'idea', 'cool', 'surprise', 'sleepy', 'happy', 'sad'][Math.random() * 9 | 0]; if (this.loc !== 'sofaLie') this.emote(m, 2.2); }
+    if (this.mood && t >= this.moodT) this.mood = null;                                  // емоція минула (раніше не скидалась — і сама більше не з'являлась)
+    if (t > this.nextMood && !this.mood && this.loc !== 'sofaLie') {
+      const st = this.task ? 'work' : (this.cur && this.cur.walk) ? 'walk' : 'idle', catNear = Math.abs(NX.cat.x - this.x) < 70 && Math.abs(NX.cat.y - this.y) < 40;
+      const W = { work: [['focus', 4], ['idea', 3], ['happy', 2], ['cool', 1.2], ['surprise', .6]], walk: [['happy', 4], ['cool', 2.5], ['idea', 1], ['love', 1], ['surprise', .6]],
+        idle: [['happy', 3], ['cool', 2], ['idea', 2], ['love', 1.4], ['surprise', 1], ['sleepy', 1], ['sad', .5], ['angry', .3]] }[st].concat(catNear ? [['love', 4]] : []);
+      let r = Math.random() * W.reduce((a, w) => a + w[1], 0), m = W[0][0]; for (const [k, w] of W) { if ((r -= w) <= 0) { m = k; break; } }
+      this.emote(m, 2 + Math.random() * 2); this.nextMood = t + 4 + Math.random() * 6;
+    }
     if (this.fxNow !== 'none' && t > this.fxUntil) this.fxNow = 'none';
     if (t > this.nextFx && this.fxNow === 'none') {
       this.nextFx = t + 22 + Math.random() * 18; const fx = ['rain', 'snow', 'sparks', 'aura', 'fire', 'water', 'neon', 'energy', 'trail', 'rain'][Math.random() * 10 | 0];
@@ -6644,7 +6841,7 @@ NX.nexi = {
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
       if (this.back) p.back = 1; if (this.talking && !p.back && !p.talk) p.talk = 1;
-      if (this.mood && t < this.moodT) p.face = { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard' }[this.mood];
+      if (this.mood && t < this.moodT) p.face = this.faceOf(this.mood);
       const ph = NX.nexiPhys; p.antX = ph.ax; p.antY = ph.ay; p.vel = NX.px.clamp(ph.vx / NX.cfg.RUN_SPEED, -1, 1); p.thrust = Math.min(1, Math.abs(ph.vy) / 80);
       if (this._rt !== t) { this._rt = t; renderBot(this.look, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
       const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, w = SW * s, h = SH * s, top = FOOT * s;
@@ -6663,7 +6860,7 @@ NX.nexi = {
         if (Math.random() < .5) NX.fx.emit(this.fxNow === 'rain' ? 'rain' : 'snow', cx + (Math.random() - .5) * 22, cy + 9, this.fxNow === 'rain' ? { vy: 120, ttl: (Y - cy - 10) / 120 } : { vy: 16, ttl: (Y - cy - 10) / 16 });
       }
       if (this.fxNow === 'neon') { c.save(); c.globalAlpha = this.alpha; c.strokeStyle = Math.floor(t * 3) % 2 ? '#ff4fd8' : '#3be8ff'; c.lineWidth = 1.2; c.shadowColor = c.strokeStyle; c.shadowBlur = 8; c.strokeRect(X - w * .42, Y - top - 3, w * .84, top + 5); c.restore(); }
-      if (this.mood && t < this.moodT) NX.px.text(c, { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood], X + w * .3, Y - top - 4, '#ffe27a', 6);
+      const gl = this.mood && t < this.moodT && { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood]; if (gl) NX.px.text(c, gl, X + w * .3, Y - top - 4, '#ffe27a', 6);
       this.box = this.rot ? [X - top * .6, Y - w * .5, top * 1.2, w * .6] : [X - w * .4, Y - top, w * .8, top];
       this.headScreen = NX.cam.toScreen(X, Y - (this.rot ? w * .4 : top));
     } };
@@ -6799,12 +6996,14 @@ NX.cat = {
     if (this.alt > 0) { const g = this.ground; this.alt = 0; return this.startJump(this.x + 8 * this.dir, g, () => this.goTo(x, y, done, from, run)); }   // спершу зістрибнути вниз
     if (!from) y = Math.max(y, this.FLOOR);
     this.mode = 'walk'; this.run = !!run; this.then = done;
-    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done); }
+    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done, true); }
     else { [x, y] = NX.room.freeAt(x, y, 'cat'); this.target = { x, y }; this.afterWalk = null; }
     this.path = NX.room.route([this.x, this.y], [this.target.x, this.target.y], 'cat');                // в обхід дивану й крісла (world/room.js)
   },
-  /** Стрибок у точку (висота дуги 26, тривалість .5 с). */
-  startJump(x, y, done) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5 }; this.then = done; },
+  /** Стрибок у точку (висота дуги 26, тривалість .5 с). up — на меблі: там кіт «на висоті», навіть якщо точка на екрані
+   *  нижче лінії підлоги (місце біля Nexi на дивані після того, як диван поставили ближче, — y 374 > FLOOR − 4; до 29.10
+   *  кіт вважав його підлогою і йшов з дивану пішки крізь диван). */
+  startJump(x, y, done, up) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5, up: !!up }; this.then = done; },
   purr(d) { this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.depthY(), 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
   /** Де кіт на підлозі (на висоті — точка, з якої стрибав). */
@@ -6826,7 +7025,7 @@ NX.cat = {
     } else if (this.mode === 'jump') {
       const j = this.jump; j.t += dt / j.dur; const k = Math.min(1, j.t);
       this.x = NX.px.lerp(j.x0, j.x1, k); this.y = NX.px.lerp(j.y0, j.y1, k) - Math.sin(k * Math.PI) * j.hi; this.pose = 'pounce'; this.dir = Math.sign(j.x1 - j.x0) || this.dir;
-      if (k >= 1) { this.y = j.y1; if (j.y1 >= this.FLOOR - 4) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = j.y0 - j.y1; } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
+      if (k >= 1) { this.y = j.y1; if (!j.up && j.y1 >= this.FLOOR - 4) { this.ground = j.y1; this.alt = 0; } else { this.ground = j.y0; this.alt = Math.max(1, j.y0 - j.y1); } this.mode = 'act'; this.pose = 'sit'; this.timer = 0; }
     } else {
       this.timer -= dt;
       if (this.pose === 'sleep' && Math.random() < dt * .4) NX.fx.emit('z', this.x + 6 * this.dir, this.y - 14);
@@ -6944,16 +7143,17 @@ NX.ui.hud = {
 /* ============================================================================
  * ui/skinlab.js — ЛАБОРАТОРІЯ СКІНІВ (відкривається тапом по Nexi або в Майстерні)
  * ----------------------------------------------------------------------------
- * Категорії беруться з actors/nexi/skins.js. Зміни одразу видно на Nexi
- * в кімнаті та на голограмі в Майстерні. "Зберегти" пише вибір у localStorage
+ * Категорії беруться з actors/nexi/skins.js: ГОТОВІ СКІНИ (з рідкістю — кольорова рамка), кольори, антени, тулуб, руки,
+ * ноги, АКСЕСУАРИ (спина, голова) і РЕЛІКВІЇ (предмети в руці) — окремо (власник, 29.10). Обличчя тут немає: вирази Nexi
+ * обирає сам (емоції — nexi.js moodLife). Зміни одразу видно на Nexi в кімнаті. "Зберегти" пише вибір у localStorage
  * (лише в цьому браузері).
  * ========================================================================== */
 NX.ui.skinlab = {
   open: false, cat: null,
   init() {
     const $ = id => document.getElementById(id);
-    this.CATS = [{ k: 'face', items: FACES }, { k: 'ant', items: ANTS }, { k: 'body', items: BODIES }, { k: 'arms', items: ARMS }, { k: 'legs', items: LEGS },
-      { k: 'acc', items: ACCS }, { k: 'theme', items: THEMES }];   // емоції, ефекти й дії — випадкові (nexi.js → moodLife), тут лише СТИЛЬ
+    this.CATS = [{ k: 'skin', items: SKINS }, { k: 'theme', items: THEMES }, { k: 'ant', items: ANTS }, { k: 'body', items: BODIES }, { k: 'arms', items: ARMS },
+      { k: 'legs', items: LEGS }, { k: 'acc', items: ACC_ITEMS }, { k: 'relic', items: RELICS }];   // обличчя, емоції, ефекти й дії — сам Nexi (nexi.js), тут лише СТИЛЬ
     this.cat = this.CATS[0];
     this.CATS.forEach(c => { const b = document.createElement('button'); b.onclick = () => { this.cat = c; this.grid(); }; c.btn = b; $('cats').appendChild(b); });
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key === 'Escape') this.hide(); });
@@ -6961,21 +7161,26 @@ NX.ui.skinlab = {
     $('save').onclick = () => { try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love'); };
     $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
-      NX.nexi.look = { face: p(FACES), ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? ['backpack', 'cape', 'wings'][r() * 3 | 0] : null, head: r() < .3 ? ['hood', 'hat', 'goggles', 'phones'][r() * 4 | 0] : null, hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: r() < .5 ? p(FX) : 'none' };
+      const backs = WEAR_ACCS.filter(k => ACCS[k].slot === 'back'), heads = WEAR_ACCS.filter(k => ACCS[k].slot === 'head');
+      NX.nexi.look = r() < .5 ? skinLook(p(SKINS), { hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: 'none' })   // половина разів — готовий скін
+        : { face: 'standard', ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? backs[r() * backs.length | 0] : null, head: r() < .35 ? heads[r() * heads.length | 0] : null, hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: r() < .5 ? p(FX) : 'none' };
       this.grid(); NX.nexi.emote('surprise', 1.5); };
     this.relabel();
     this.pv = $('pv').getContext('2d'); this.pscr = document.createElement('canvas'); this.tcr = document.createElement('canvas');
-    const loop = () => { if (this.open) { const t = NX.time; renderBot(NX.nexi.look, poseFor(['stand', 'wave', 'dance', 'stand'][Math.floor(t / 2.5) % 4], t, false), t, this.pscr); this.pv.clearRect(0, 0, SW, SH); this.pv.drawImage(this.pscr, 0, 0); } requestAnimationFrame(loop); }; loop();
+    const loop = () => { if (this.open) { const t = NX.time, po = poseFor(['stand', 'wave', 'dance', 'stand'][Math.floor(t / 2.5) % 4], t, false), m = NX.nexi.mood && t < NX.nexi.moodT ? NX.nexi.mood : null;
+      if (m) po.face = NX.nexi.faceOf(m);                                                     // у прев'ю — та сама емоція, що зараз у Nexi
+      renderBot(NX.nexi.look, po, t, this.pscr); this.pv.clearRect(0, 0, SW, SH); this.pv.drawImage(this.pscr, 0, 0); } requestAnimationFrame(loop); }; loop();
   },
   /** Назви категорій і скінів поточною мовою. */
   relabel() { this.CATS.forEach(c => c.btn.textContent = NX.t('cats.' + c.k)); if (this.open) this.grid(); },
-  name(c, id) { return NX.t('skin.' + c.k + '.' + id); },
+  name(c, id) { return NX.t('skin.' + (c.k === 'relic' ? 'acc' : c.k) + '.' + id); },
   show(fromWorkshop) { this.open = true; document.getElementById('lab').classList.add('open'); this.grid(); if (!fromWorkshop) NX.nexi.say(NX.pick('act.skinLab.lines')); },
   hide() { this.open = false; document.getElementById('lab').classList.remove('open'); },
-  isOn(c, id) { const L = NX.nexi.look; if (c.k === 'acc') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return L[c.k] === id; },
+  isOn(c, id) { const L = NX.nexi.look; if (c.k === 'skin') return skinOf(L) === id; if (c.k === 'acc' || c.k === 'relic') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return (L[c.k] ?? DEFAULT_LOOK[c.k]) === id; },
   apply(c, id) {
     const n = NX.nexi, L = n.look; n.lastCmd = NX.time;
-    if (c.k === 'acc') { const s = ACCS[id].slot; L[s] = L[s] === id ? null : id; }
+    if (c.k === 'skin') Object.assign(L, skinLook(id, L));                                     // готовий скін: увесь образ, реліквія й ефект лишаються
+    else if (c.k === 'acc' || c.k === 'relic') { const s = ACCS[id].slot; L[s] = L[s] === id ? null : id; }
     else if (c.k === 'act') { n.temp = id; n.tempT = NX.time + 4; }
     else if (c.k === 'mood') n.emote(id, 3);
     else L[c.k] = id;
@@ -6987,13 +7192,15 @@ NX.ui.skinlab = {
     const n = NX.nexi, W = NX.objects.workshop; if (W && W.install && n.loc === 'wsPad') { W.install(); return; }
     for (let i = 0; i < 12; i++) NX.fx.emit('spark', n.x + (Math.random() - .5) * 30, n.y - Math.random() * 50); NX.nexiPhys.kick(2); n.emote('surprise', 1.2);
   },
-  cycle(d) { const ks = Object.keys(this.cat.items), L = NX.nexi.look, cur = this.cat.k === 'acc' ? ks.findIndex(k => L[ACCS[k].slot] === k) : ks.indexOf(L[this.cat.k]); this.apply(this.cat, ks[(cur + d + ks.length) % ks.length]); },
+  cycle(d) { const ks = Object.keys(this.cat.items), cur = ks.findIndex(k => this.isOn(this.cat, k)); this.apply(this.cat, ks[(cur + d + ks.length) % ks.length]); },
   grid() {
     const g = document.getElementById('grid'), c = this.cat; this.CATS.forEach(x => x.btn.classList.toggle('on', x === c)); g.innerHTML = '';
     Object.keys(c.items).forEach(id => {
-      const b = document.createElement('button'); b.className = 'tile' + (this.isOn(c, id) ? ' on' : ''); const cn = document.createElement('canvas'); cn.width = SW; cn.height = SH; b.append(cn, this.name(c, id));
-      const l = { ...NX.nexi.look }; let po = poseFor('stand', 0, false);
-      if (c.k === 'acc') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard' }[id]; else l[c.k] = id;
+      const b = document.createElement('button'), rar = c.k === 'skin' ? SKINS[id].rar : null; b.className = 'tile' + (this.isOn(c, id) ? ' on' : '') + (rar ? ' rar rar-' + rar : '');
+      const cn = document.createElement('canvas'); cn.width = SW; cn.height = SH; b.append(cn, this.name(c, id));
+      if (rar) { const sm = document.createElement('small'); sm.textContent = NX.t('skin.rar.' + rar); b.append(sm); }   // рідкість готового скіна
+      let l = { ...NX.nexi.look }, po = poseFor('stand', .5, false);                                   // t .5 — очі відкриті (у t 0 — кліп)
+      if (c.k === 'skin') l = skinLook(id, l); else if (c.k === 'acc' || c.k === 'relic') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = NX.nexi.faceOf(id); else l[c.k] = id;
       renderBot(l, po, .5, this.tcr); cn.getContext('2d').drawImage(this.tcr, 0, 0); b.onclick = () => this.apply(c, id); g.appendChild(b);
     });
   },
@@ -7084,7 +7291,7 @@ NX.ui.zones = {
   await NX.room.load(window.NX_ROOM_SRC || 'assets/room.webp');
   NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
   NX.city.init();
-  try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}')); } catch (e) {}
+  try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
   NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();
   NX.loop.start();
   [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y;

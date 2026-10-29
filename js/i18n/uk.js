@@ -2,7 +2,7 @@
 NX.i18n.add('uk', {
   ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ, ДИВАНУ ЧИ ВІКНУ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати', room: 'Кімната Nexi', lab: 'Лабораторія скінів', prev: 'Попередній', next: 'Наступний' },
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
-  cats: { face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
+  cats: { skin: 'Скіни', relic: 'Реліквії', face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   obj: { pillow: 'Подушка', aiPc: "AI-центр · комп'ютер", analytics: 'Аналітика', marketing: 'Маркетинг', sofa: 'Диван', workshop: 'Майстерня', tools: 'Інструменти', portal: 'Портал', catCorner: 'Куток кота', rug: 'Док-станція', ball: "М'ячик", window: 'Вікно в місто', nexiTag: 'NEXI · СКІНИ', catTag: 'РУДИК · ПОГЛАДИТИ' },
   zones: {
     start: 'Беруся: {task}!',
@@ -24,7 +24,7 @@ NX.i18n.add('uk', {
         mood: 'настрій +', cache: 'кеш', invoice: 'рахунок.pdf', tokens: 'токени', backup: 'резервна копія', ping: 'пінг', draft: 'чернетка відповіді', retry: 'повтор 1/3', report: 'звіт.xlsx', langPl: 'мова: pl' } },
     seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
     hub: { online: 'ОНЛАЙН', tasks: 'ЗАДАЧ' },   // екран NEXORA AI на стіні (objects/arc_paint.js: hub)
-    ws: { skins: 'СКІНИ', fit: 'ПРИМІРКА', items: 'ПРЕДМЕТИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
+    ws: { skins: 'СКІНИ', acc: 'АКСЕСУАРИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
     tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/arc_paint.js)
     poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
     unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
@@ -61,13 +61,15 @@ NX.i18n.add('uk', {
     done: ['Готово!', 'Зроблено ✓', 'Є! Що далі?'],
   },
   skin: {
+    skin: { classic: 'Класика', neon: 'Неон', forest: 'Лісовик', winter: 'Зимовий', gamer: 'Геймер', techno: 'Техно', candy: 'Цукерка', astro: 'Астронавт', captain: 'Капітан', samurai: 'Самурай', cyber: 'Кібер', pumpkin: 'Гарбуз', frost: 'Іній', royal: 'Король', lava: 'Лава', cosmos: 'Космос', rainbow: 'Райдуга' },
+    rar: { common: 'Звичайний', rare: 'Рідкісний', epic: 'Епічний', legendary: 'Легендарний' },
     face: { standard: 'Стандарт', happy: 'Щасливий', think: 'Думка', surprised: 'Сюрприз', talk: 'Говорить', serious: 'Серйозний', sleepy: 'Сонний', hearts: 'Сердечка' },
-    ant: { standard: 'Стандарт', techno: 'Техно', holo: 'Голограма', gamer: 'Геймер', premium: 'Преміум', horns: 'Роги', crown: 'Корона', neon: 'Неон' },
-    body: { standard: 'Стандарт', techno: 'Техно', energy: 'Енергія', holo: 'Голограма', camo: 'Камуфляж', premium: 'Преміум', cyborg: 'Кіборг', cosmos: 'Космос' },
+    ant: { standard: 'Стандарт', techno: 'Техно', holo: 'Голограма', gamer: 'Геймер', premium: 'Преміум', horns: 'Роги', crown: 'Корона', neon: 'Неон', halo: 'Німб', flame: 'Полум\'я', stem: 'Хвостик' },
+    body: { standard: 'Стандарт', techno: 'Техно', energy: 'Енергія', holo: 'Голограма', camo: 'Камуфляж', premium: 'Преміум', cyborg: 'Кіборг', cosmos: 'Космос', armor: 'Обладунок', suit: 'Скафандр', crystal: 'Кристал', candy: 'Смужки', pumpkin: 'Гарбуз', circuit: 'Схема', royal: 'Мундир', lava: 'Лава' },
     arms: { base: 'Базові', gloves: 'Рукавиці', tools: 'Інструменти', holo: 'Голограма', armor: 'Броня', power: 'Енергія', neon: 'Неон', gold: 'Золото' },
     legs: { standard: 'Стандарт', boots: 'Черевики', sneakers: 'Кросівки', armor: 'Броня', neon: 'Неон', jet: 'Реактивні', magnet: 'Магнітні', gold: 'Золоті' },
-    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', hammer: 'Громовий молот', blade: 'Неоновий клинок', gauntlet: 'Силова рукавиця', excalibur: 'Екскалібур', staff: 'Кришталевий посох', trident: 'Морський тризуб', wand: 'Зоряна паличка', balloon: 'Кулька', torch: 'Факел', magnet: 'Магніт', shield: 'Щит', sword: 'Меч' },
-    theme: { standard: 'Стандарт', techno: 'Техно', neon: 'Неон', camo: 'Камуфляж', gamer: 'Геймер', space: 'Космос', desert: 'Пустеля', forest: 'Ліс', winter: 'Зима', fire: 'Вогонь', water: 'Вода', gold: 'Золото', evil: 'Злий', shadow: 'Тінь', rainbow: 'Райдуга', military: 'Військовий', premium: 'Преміум' },
+    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', hammer: 'Громовий молот', blade: 'Неоновий клинок', gauntlet: 'Силова рукавиця', excalibur: 'Екскалібур', staff: 'Кришталевий посох', trident: 'Морський тризуб', wand: 'Зоряна паличка', balloon: 'Кулька', torch: 'Факел', magnet: 'Магніт', shield: 'Щит', sword: 'Меч', scarf: 'Шарф', kabuto: 'Шолом самурая', helmet: 'Шолом астронавта', tricorn: 'Капітанка', bandana: 'Пов\'язка', flowers: 'Вінок' },
+    theme: { standard: 'Стандарт', techno: 'Техно', neon: 'Неон', camo: 'Камуфляж', gamer: 'Геймер', space: 'Космос', desert: 'Пустеля', forest: 'Ліс', winter: 'Зима', fire: 'Вогонь', water: 'Вода', gold: 'Золото', evil: 'Злий', shadow: 'Тінь', rainbow: 'Райдуга', military: 'Військовий', premium: 'Преміум', samurai: 'Самурай', astro: 'Астронавт', candy: 'Цукерка', pumpkin: 'Гарбуз', cyber: 'Кібер', royal: 'Королівський', frost: 'Іній', lava: 'Лава' },
     fx: { none: 'Без ефекту', sparks: 'Іскри', energy: 'Енергія', aura: 'Аура', trail: 'Слід', rain: 'Дощ', snow: 'Сніг', fire: 'Вогонь', water: 'Вода', neon: 'Неон' },
     mood: { happy: 'Радість', love: 'Любов', surprise: 'Сюрприз', idea: 'Ідея', sleepy: 'Сон', sad: 'Сум', angry: 'Злість', cool: 'Круто' },
     act: { stand: 'Стоїть', walk: 'Ходить', run: 'Біжить', wave: 'Привіт', think: 'Думає', point: 'Вказує', talk: 'Розповідає', cheer: 'Радіє', spin: 'Оберт', stretch: 'Потягується', look: 'Роззирається', jump: 'Стрибає', work: 'Працює', sleep: 'Сон', dance: 'Танцює', read: 'Читає', meditate: 'Медитує', bye: 'Прощається', drink: "П'є каву", hammer: 'Ремонтує' },

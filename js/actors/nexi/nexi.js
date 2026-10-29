@@ -112,15 +112,25 @@ NX.nexi = {
   },
   end(a) { if (a.work) { const w = a.work; if (w.obj) { NX.objects[w.obj].active = false; NX.objects[w.obj].done = true; } w.end && w.end(); } },
 
-  /* ---------------- ВИПАДКОВІ ЕМОЦІЇ ТА "ПОГОДА" ----------------
-   * Емоції й ефекти не обираються в скінах — вони трапляються самі:
-   *  - кожні 8–16 с Nexi проявляє випадкову емоцію (частіше радість);
-   *  - кожні 22–40 с над ним "трапляється погода" на 6–9 с: хмаринка з дощем
-   *    (він сумує), сніг (радіє), іскри, аура, вогник, бульбашки, неон...
+  /* ---------------- ЕМОЦІЇ (ВИРАЗ ОБЛИЧЧЯ) ТА "ПОГОДА" ----------------
+   * Обличчя Nexi обирає сам — у лабораторії скінів його немає (власник, 29.10: «він сам має показувати емоції, як забажає»):
+   *  - кожні 4–10 с — нова емоція на 2–4 с, за настроєм хвилини: працює — зосереджений (serious), ідея, радість; іде —
+   *    радість, «круто»; відпочиває — усе підряд (частіше радість), поруч кіт — любов; між емоціями — звичайний вираз;
+   *  - події додають свої (emote: здивування в капсулі, любов з котом, радість після задачі…);
+   *  - кожні 22–40 с над ним "трапляється погода" на 6–9 с: хмаринка з дощем (він сумує), сніг (радіє), іскри, аура…
    */
-  fxNow: 'none', fxUntil: 0, nextFx: 14, nextMood: 6,
+  FACE: { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard', focus: 'serious' },
+  faceOf(m) { return this.FACE[m] || 'standard'; },
+  fxNow: 'none', fxUntil: 0, nextFx: 14, nextMood: 3,
   moodLife(t) {
-    if (t > this.nextMood && !this.mood) { this.nextMood = t + 8 + Math.random() * 8; const m = ['happy', 'happy', 'love', 'idea', 'cool', 'surprise', 'sleepy', 'happy', 'sad'][Math.random() * 9 | 0]; if (this.loc !== 'sofaLie') this.emote(m, 2.2); }
+    if (this.mood && t >= this.moodT) this.mood = null;                                  // емоція минула (раніше не скидалась — і сама більше не з'являлась)
+    if (t > this.nextMood && !this.mood && this.loc !== 'sofaLie') {
+      const st = this.task ? 'work' : (this.cur && this.cur.walk) ? 'walk' : 'idle', catNear = Math.abs(NX.cat.x - this.x) < 70 && Math.abs(NX.cat.y - this.y) < 40;
+      const W = { work: [['focus', 4], ['idea', 3], ['happy', 2], ['cool', 1.2], ['surprise', .6]], walk: [['happy', 4], ['cool', 2.5], ['idea', 1], ['love', 1], ['surprise', .6]],
+        idle: [['happy', 3], ['cool', 2], ['idea', 2], ['love', 1.4], ['surprise', 1], ['sleepy', 1], ['sad', .5], ['angry', .3]] }[st].concat(catNear ? [['love', 4]] : []);
+      let r = Math.random() * W.reduce((a, w) => a + w[1], 0), m = W[0][0]; for (const [k, w] of W) { if ((r -= w) <= 0) { m = k; break; } }
+      this.emote(m, 2 + Math.random() * 2); this.nextMood = t + 4 + Math.random() * 6;
+    }
     if (this.fxNow !== 'none' && t > this.fxUntil) this.fxNow = 'none';
     if (t > this.nextFx && this.fxNow === 'none') {
       this.nextFx = t + 22 + Math.random() * 18; const fx = ['rain', 'snow', 'sparks', 'aura', 'fire', 'water', 'neon', 'energy', 'trail', 'rain'][Math.random() * 10 | 0];
@@ -152,7 +162,7 @@ NX.nexi = {
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
       if (this.back) p.back = 1; if (this.talking && !p.back && !p.talk) p.talk = 1;
-      if (this.mood && t < this.moodT) p.face = { happy: 'happy', love: 'hearts', surprise: 'surprised', idea: 'think', sleepy: 'sleepy', sad: 'sad', angry: 'angry', cool: 'standard' }[this.mood];
+      if (this.mood && t < this.moodT) p.face = this.faceOf(this.mood);
       const ph = NX.nexiPhys; p.antX = ph.ax; p.antY = ph.ay; p.vel = NX.px.clamp(ph.vx / NX.cfg.RUN_SPEED, -1, 1); p.thrust = Math.min(1, Math.abs(ph.vy) / 80);
       if (this._rt !== t) { this._rt = t; renderBot(this.look, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
       const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, w = SW * s, h = SH * s, top = FOOT * s;
@@ -171,7 +181,7 @@ NX.nexi = {
         if (Math.random() < .5) NX.fx.emit(this.fxNow === 'rain' ? 'rain' : 'snow', cx + (Math.random() - .5) * 22, cy + 9, this.fxNow === 'rain' ? { vy: 120, ttl: (Y - cy - 10) / 120 } : { vy: 16, ttl: (Y - cy - 10) / 16 });
       }
       if (this.fxNow === 'neon') { c.save(); c.globalAlpha = this.alpha; c.strokeStyle = Math.floor(t * 3) % 2 ? '#ff4fd8' : '#3be8ff'; c.lineWidth = 1.2; c.shadowColor = c.strokeStyle; c.shadowBlur = 8; c.strokeRect(X - w * .42, Y - top - 3, w * .84, top + 5); c.restore(); }
-      if (this.mood && t < this.moodT) NX.px.text(c, { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood], X + w * .3, Y - top - 4, '#ffe27a', 6);
+      const gl = this.mood && t < this.moodT && { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood]; if (gl) NX.px.text(c, gl, X + w * .3, Y - top - 4, '#ffe27a', 6);
       this.box = this.rot ? [X - top * .6, Y - w * .5, top * 1.2, w * .6] : [X - w * .4, Y - top, w * .8, top];
       this.headScreen = NX.cam.toScreen(X, Y - (this.rot ? w * .4 : top));
     } };

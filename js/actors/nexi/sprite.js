@@ -55,11 +55,15 @@ function renderBot(look, pose, t, cv) {
   const bx = 13, by = 33 + b, bw = 22, bh = 12, hX = 9 + hxo, hY = 10 + b + hyo;
 
   // ---------- 1. спина: плащ / крила / рюкзак ----------
-  if (look.back === 'cape') for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? '#d93a4a' : '#a82a3a'); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, '#ff6a7a'); }
+  if (look.back === 'cape') { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cl = shade(cc, .35);   // плащ (колір — від теми)
+    for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? cc : cd); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, cl); } }
   if (look.back === 'wings') { const f = Math.round(Math.abs(Math.sin(t * (pose.jet ? 14 : 4.7))) * 3);   // крила: 7 рядів пір'я, махають
     for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const L = 15 - Math.round(i * 1.6), y0 = by - 13 + i * 2 - (i < 4 ? f : f >> 1), xL = s < 0 ? bx + 2 - L : bx + bw - 2;
       P(xL, y0, L, 2, i % 2 ? '#bff2ff' : '#e4d4ff'); P(xL, y0 + 1, L, 1, i % 2 ? '#6ac8f0' : '#a88af0'); P(s < 0 ? xL : xL + L - 1, y0, 1, 2, '#ffffff'); } }
   if (look.back === 'backpack') { BLK(bx - 4, by - 1, bw + 8, 14, 3, '#c9812e'); P(bx - 3, by + 7, 4, 4, '#8a5a1e'); P(bx + bw - 1, by + 7, 4, 4, '#8a5a1e'); }
+  if (look.back === 'scarf') { const sc = shade(acc, -.1);                                    // шарф: два хвости майорять позаду
+    for (const [o, n] of [[0, 13], [3, 10]]) for (let i = 0; i < n; i++) { const w = Math.round(Math.sin(t * 8 - i * .55 + o) * 1.4 * i / n - vel * 4 * i / n), y = by + o + Math.round(i * .3) + w;
+      P(bx + 3 - i, y, 1, 3, i % 4 < 2 ? sc : shade(sc, -.25)); if (i % 4 === 0) P(bx + 3 - i, y, 1, 1, shade(sc, .4)); } }
 
   // ---------- 2. реактивний ранець (у польоті) ----------
   if (pose.jet) for (const jx of [6, 36]) {
@@ -85,8 +89,20 @@ function renderBot(look, pose, t, cv) {
   if (bd.pat === 'camo') { [[2, 3, 4, 2], [14, 6, 4, 3], [8, 8, 3, 2], [17, 2, 2, 2]].forEach(r => P(bx + r[0], by + r[1], r[2], r[3], '#3a3a1f')); [[5, 6, 2, 2], [12, 2, 2, 1], [15, 9, 2, 1]].forEach(r => P(bx + r[0], by + r[1], r[2], r[3], '#c9892f')); }
   if (bd.pat === 'stars') [[2, 3], [18, 4], [4, 8], [16, 9], [10, 1], [6, 5]].forEach(([a, c], i) => { if ((i + Math.floor(t * 3)) % 3) P(bx + a, by + c, 1, 1, '#ffffff'); });
   if (bd.pat === 'lines') { P(bx + 1, by + 6, 4, 1, bAcc); P(bx + bw - 5, by + 6, 4, 1, bAcc); P(bx + 4, by + 6, 1, 3, bAcc); P(bx + bw - 5, by + 6, 1, 3, bAcc); P(bx + 4, by + 9, 1, 1, '#fff'); P(bx + bw - 5, by + 9, 1, 1, '#fff'); }
-  if (bd.pat === 'trim') { P(bx + 2, by, bw - 4, 1, bAcc); P(bx + 1, by + bh - 1, bw - 2, 1, bAcc); P(bx, by + 3, 1, 6, bAcc); P(bx + bw - 1, by + 3, 1, 6, bAcc); }
-  if (!pose.back) {                                                   // нагрудний значок з "N"
+  if (bd.pat === 'trim' || bd.pat === 'royal') { P(bx + 2, by, bw - 4, 1, bAcc); P(bx + 1, by + bh - 1, bw - 2, 1, bAcc); P(bx, by + 3, 1, 6, bAcc); P(bx + bw - 1, by + 3, 1, 6, bAcc); }
+  if (bd.pat === 'armor') for (let i = 0; i < 3; i++) { const y = by + 2 + i * 3; P(bx + 2, y, bw - 4, 1, shade(bShell, -.32)); for (let j = 0; j < 5; j++) P(bx + 3 + j * 4, y + 1, 1, 1, bAcc); }   // ламелі з золотою шнурівкою
+  if (bd.pat === 'suit') { RR(bx + 1, by + 2, 5, 7, 1, '#cfd6e6'); [[1, 1, '#ff3b3b'], [3, 1, '#ffe27a'], [1, 3, '#3be8ff'], [3, 3, '#3bff8a']].forEach(([a, c, col]) => P(bx + 1 + a, by + 2 + c, 1, 1, col)); P(bx + 2, by + 7, 3, 1, '#8a93b8');   // пульт
+    RR(bx + bw - 6, by + 2, 5, 5, 2, bAcc); P(bx + bw - 4, by + 4, 1, 1, '#ffffff'); }                                                                                                   // нашивка місії
+  if (bd.pat === 'crystal') { [[2, 2, 5], [7, 1, 4], [15, 2, 5], [18, 6, 3]].forEach(([a, c, n]) => { for (let k = 0; k < n; k++) P(bx + a + k, by + c + k, 1, 1, shade(bShell, .55)); }); const k = Math.floor(t * 2) % 3; if (k < 2) P(bx + (k ? 17 : 5), by + (k ? 7 : 3), 1, 1, '#ffffff'); }
+  if (bd.pat === 'candy') for (let yy = 1; yy < bh - 3; yy++) for (let xx = 2; xx < bw - 2; xx++) if (((xx - yy) % 6 + 6) % 6 < 2) P(bx + xx, by + yy, 1, 1, bAcc);
+  if (bd.pat === 'pumpkin') [4, 9, 12, 17].forEach(xx => { P(bx + xx, by + 1, 1, bh - 4, shade(bShell, -.25)); P(bx + xx + 1, by + 2, 1, bh - 6, shade(bShell, .2)); });
+  if (bd.pat === 'circuit') { const on = Math.floor(t * 4) % 4; [[1, 3, 5, 0], [bw - 6, 3, 5, 1], [2, 7, 3, 2], [bw - 5, 7, 3, 3]].forEach(([a, c, w, k]) => { const e = a + (k % 2 ? w - 1 : 0); P(bx + a, by + c, w, 1, k === on ? '#e0ffe8' : bAcc); P(bx + e, by + c, 1, 3, bAcc); P(bx + e, by + c + 3, 1, 1, '#ffffff'); }); }
+  if (bd.pat === 'lava') { const g = Math.sin(t * 3) > 0 ? '#ffd27a' : '#ff9a3a'; [[2, 2, 1, 1], [3, 3, 2, 1], [5, 4, 1, 2], [16, 1, 1, 2], [17, 3, 2, 1], [19, 4, 1, 2], [9, 8, 3, 1], [12, 7, 1, 1]].forEach(([a, c, w, h], i) => P(bx + a, by + c, w, h, (i + Math.floor(t * 3)) % 4 ? '#ff6a1a' : g)); }
+  if (!pose.back && bd.pat === 'pumpkin') {                           // гарбуз: замість значка — вирізане обличчя, що світиться
+    const gl = Math.floor(t * 6) % 9 ? '#ffc93a' : '#fff0a0', dk = shade(bShell, -.45);
+    P(20, by + 2, 1, 1, gl); P(19, by + 3, 3, 2, gl); P(27, by + 2, 1, 1, gl); P(26, by + 3, 3, 2, gl);                          // очі-трикутники
+    P(18, by + 6, 12, 3, gl); P(18, by + 6, 1, 1, dk); P(29, by + 6, 1, 1, dk); [20, 23, 26].forEach(xx => P(xx, by + 6, 2, 1, dk)); [21, 24, 27].forEach(xx => P(xx, by + 8, 1, 1, dk));   // усмішка з зубцями
+  } else if (!pose.back) {                                            // нагрудний значок з "N"
     RR(18, by + 2, 12, 8, 2, bAcc); RR(19, by + 3, 10, 6, 1, '#0a1236');
     const g = bd.pat === 'core' ? (Math.sin(t * 6) > 0 ? '#ffb0f8' : '#ff4fd8') : '#5ae8ff';
     P(21, by + 4, 1, 4, g); P(26, by + 4, 1, 4, g); P(22, by + 4, 1, 1, g); P(23, by + 5, 1, 1, g); P(24, by + 6, 1, 1, g); P(25, by + 7, 1, 1, g);
@@ -96,6 +112,8 @@ function renderBot(look, pose, t, cv) {
   }
   P(bx + 1, by + bh - 3, bw - 2, 2, jnt); P(22, by + bh - 3, 4, 2, bAcc);                     // пояс з пряжкою
   BLK(bx - 3, by + 1, 5, 5, 2, acc); BLK(bx + bw - 2, by + 1, 5, 5, 2, acc);                    // плечові шарніри
+  if (bd.pat === 'armor') [bx - 6, bx + bw - 1].forEach(x0 => { BLK(x0, by, 7, 7, 2, bShell); P(x0 + 1, by + 2, 5, 1, bAcc); P(x0 + 1, by + 4, 5, 1, bAcc); });       // наплічники
+  if (bd.pat === 'royal') [bx - 5, bx + bw - 2].forEach(x0 => { BLK(x0, by, 7, 3, 1, '#ffc94d'); for (let k = 0; k < 4; k++) P(x0 + k * 2, by + 3, 1, 2, '#ffe27a'); });   // еполети з бахромою
 
   // ---------- 5. руки ----------
   const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
@@ -112,10 +130,13 @@ function renderBot(look, pose, t, cv) {
   });
   if (pose.book) { BLK(17, by + 3, 14, 9, 1, '#ff7a3a'); P(23, by + 3, 2, 9, '#7a3a14'); P(18, by + 4, 4, 1, '#ffd0a0'); P(26, by + 4, 4, 1, '#ffd0a0'); }
 
+  if (look.back === 'scarf') { const sc = shade(acc, -.1); BLK(bx + 1, by - 2, bw - 2, 4, 2, sc); P(bx + 3, by - 1, bw - 6, 1, shade(sc, .35)); P(bx + 4, by + 1, 3, 4, sc); P(bx + 4, by + 4, 3, 1, shade(sc, -.3)); }   // шарф на шиї
+
   // ---------- 6. голова ----------
   if (look.head === 'hood') BLK(hX - 3, hY - 3, 36, 27, 7, '#2e3470');
   for (const side of [-1, 1]) { const ex = side < 0 ? hX - 4 : hX + 29, eb = Q(pose.earB); BLK(ex, hY + 6 + eb, 5, 10, 2, acc); P(ex + 1, hY + 8 + eb, 3, 6, shade(acc, -.35)); P(ex + 2, hY + 9 + eb, 1, 4, '#ffffff'); }
   BLK(hX, hY, 30, 22, 6, shell); P(hX + 6, hY + 1, 18, 1, shade(shell, .75)); P(hX + 3, hY + 3, 2, 3, shade(shell, .55));
+  if (th.hp) headPat(B, th.hp, hX, hY, shell, acc, t);                                         // візерунок теми на корпусі голови
   if (!pose.back) {
     P(hX + 7, hY + 2, 4, 1, shade(shell, -.3)); P(hX + 19, hY + 2, 4, 1, shade(shell, -.3));                    // "брови" — шви корпусу
     RR(hX + 3, hY + 4, 24, 15, 4, '#16236a'); RR(hX + 4, hY + 5, 22, 13, 3, '#060b2a');                          // візор
@@ -128,13 +149,30 @@ function renderBot(look, pose, t, cv) {
   }
 
   // ---------- 7. антена ----------
-  if (look.head !== 'hood' && look.head !== 'hat') drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, Q(pose.antX), Q(pose.antY));
+  if (look.head !== 'hood' && look.head !== 'hat' && !(ACCS[look.head] && ACCS[look.head].noAnt)) drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, Q(pose.antX), Q(pose.antY));
 
   // ---------- 8. аксесуари голови ----------
   if (look.head === 'hood') { P(hX - 1, hY - 2, 32, 3, '#2e3470'); P(hX + 2, hY - 2, 26, 1, '#4a52a0'); }
   if (look.head === 'hat') { BLK(hX + 3, hY - 6, 24, 9, 4, '#d93a4a'); P(hX + 1, hY + 1, 28, 3, '#a82a3a'); P(hX + 1, hY + 1, 28, 1, '#ff6a7a'); BLK(hX + 13, hY - 10, 5, 5, 2, '#ffffff'); }
   if (look.head === 'goggles') { P(hX, hY + 6, 30, 2, '#5a3a1a'); for (const gx of [hX + 5, hX + 16]) { BLK(gx, hY + 5, 10, 8, 2, '#e0902a'); RR(gx + 1, hY + 6, 8, 6, 2, '#5ae8ff'); P(gx + 2, hY + 7, 3, 1, '#ffffff'); } }
   if (look.head === 'phones') { line(hX + 1, hY + 4, hX + 4, hY - 2, '#2a2f6e', 2); line(hX + 4, hY - 3, hX + 26, hY - 3, '#2a2f6e', 2); line(hX + 26, hY - 2, hX + 29, hY + 4, '#2a2f6e', 2); for (const cx of [hX - 6, hX + 29]) { BLK(cx, hY + 5, 7, 11, 2, '#ff4fd8'); P(cx + 2, hY + 8, 3, 5, '#7a1a6a'); } }
+  if (look.head === 'kabuto') { const L = '#2a1a30', G = '#ffc94d';                          // шолом самурая: чаша, заклепки, бічні щитки, золотий гребінь
+    for (const sd of [-1, 1]) { const fx2 = sd < 0 ? hX - 5 : hX + 29; BLK(fx2, hY - 1, 6, 9, 2, L); P(fx2 + 1, hY + 1, 4, 1, G); }
+    BLK(hX - 1, hY - 4, 32, 8, 4, L); P(hX + 3, hY - 3, 24, 1, shade(L, .55)); for (let k = 0; k < 7; k++) P(hX + 3 + k * 4, hY, 1, 1, G);
+    line(hX + 15, hY - 3, hX + 7, hY - 9, G, 2); line(hX + 15, hY - 3, hX + 23, hY - 9, G, 2); P(hX + 6, hY - 10, 2, 1, '#fff2c0'); P(hX + 22, hY - 10, 2, 1, '#fff2c0');
+    RR(hX + 12, hY - 6, 7, 5, 2, G); P(hX + 14, hY - 5, 3, 2, '#d93a4a'); }
+  if (look.head === 'helmet') { const cxh = hX + 15, cyh = hY + 9, rx = 20, ry = 15;          // шолом астронавта: скляна сфера, відблиск, комір
+    x.fillStyle = 'rgba(190,235,255,.12)'; x.beginPath(); x.ellipse(cxh, cyh, rx, ry, 0, 0, 7); x.fill();
+    for (let a = 0; a < 140; a++) { const q = a / 140 * Math.PI * 2; P(Math.round(cxh + Math.cos(q) * rx), Math.round(cyh + Math.sin(q) * ry), 1, 1, q > 3.4 && q < 4.5 ? '#ffffff' : 'rgba(200,240,255,.9)'); }
+    P(cxh - 14, cyh - 8, 2, 1, '#ffffff'); P(cxh - 15, cyh - 6, 1, 3, '#ffffff'); BLK(hX + 2, hY + 21, 26, 3, 1, '#c3cbea'); P(hX + 4, hY + 22, 2, 1, '#ff8a2a'); P(hX + 24, hY + 22, 2, 1, '#ff8a2a'); }
+  if (look.head === 'tricorn') { const K = '#1c1624', G = '#e8c060';                          // капітанка: поля із загнутими кутами, золотий кант і бляха
+    P(hX - 3, hY - 1, 36, 3, K); P(hX - 3, hY - 1, 36, 1, shade(K, .45)); P(hX - 5, hY - 3, 4, 3, K); P(hX + 31, hY - 3, 4, 3, K);
+    BLK(hX + 5, hY - 8, 20, 8, 3, K); P(hX + 6, hY - 2, 18, 1, G); P(hX - 3, hY + 1, 36, 1, G); RR(hX + 13, hY - 6, 4, 4, 1, G); P(hX + 14, hY - 5, 2, 2, '#fff2c0'); }
+  if (look.head === 'bandana') { const C = shade(acc, -.05);                                   // пов'язка: стрічка, металева пластина, кінці майорять
+    P(hX, hY + 1, 30, 3, C); P(hX, hY + 1, 30, 1, shade(C, .35)); RR(hX + 11, hY + 1, 8, 3, 1, '#c3cbea'); P(hX + 12, hY + 2, 6, 1, '#8a93b8');
+    for (let i = 0; i < 9; i++) { const yy = hY + 2 + Math.round(i * .45 + Math.sin(t * 9 - i * .7) * (i / 9) * 1.5); P(hX - 1 - i, yy, 1, 2, C); if (i % 3 === 1) P(hX - 1 - i, yy + 2, 1, 1, shade(C, -.25)); } }
+  if (look.head === 'flowers') [[2, '#ff6ad8'], [8, '#ffe27a'], [14, '#ffffff'], [20, '#ff9af0'], [26, '#7af4ff']].forEach(([dx, c], i) => {   // вінок
+    const fx2 = hX + dx, fy2 = hY - 1 + (i % 2); if (i < 4) P(fx2 + 1, fy2 + 1, 4, 1, '#3f8a2a'); P(fx2 - 1, fy2, 3, 1, c); P(fx2, fy2 - 1, 1, 3, c); P(fx2, fy2, 1, 1, i === 1 ? '#ff8a2a' : '#ffe27a'); });
   if (pose.shades) { P(hX + 5, hY + 8, 20, 5, '#000000'); P(hX + 5, hY + 8, 20, 1, '#2a3a7a'); P(hX + 7, hY + 9, 3, 1, '#ffffff'); }
 
   // ---------- 9. предмети в руках (drawHandItem; поки руки зайняті інструментом пози чи книгою — праву не чіпаємо) ----------
@@ -259,6 +297,25 @@ function renderItem(id, t, cv, W = 30, H = 44) {
   pxOutline(x, W, H); return cv;
 }
 
+/** Візерунок теми на корпусі голови (лише всередині заокругленого корпусу 30×22; спереду середину закриває візор, ззаду
+ *  видно весь): ribs — ребра гарбуза, stripes — смужки цукерки, circuit — схема з вогником, trim — золотий кант і камінь,
+ *  facets — грані льоду з бліками, cracks — тріщини лави, що жевріють. */
+function headPat(B, hp, hX, hY, shell, acc, t) {
+  const { P, ins } = B, I = ins(6), inH = (x, y) => { const yy = y - hY; if (yy < 0 || yy > 21) return false; const k = yy < 6 ? I[yy] : yy > 15 ? I[21 - yy] : 0; return x >= hX + k && x <= hX + 29 - k; };
+  const Q = (x, y, c) => { if (inH(x, y)) P(x, y, 1, 1, c); };
+  switch (hp) {
+    case 'ribs': [5, 10, 15, 20, 25].forEach(dx => { for (let y = hY + 1; y < hY + 21; y++) { Q(hX + dx, y, shade(shell, -.22)); if (y % 3) Q(hX + dx + 1, y, shade(shell, .22)); } }); break;
+    case 'stripes': for (let y = hY; y < hY + 22; y++) for (let x = hX; x < hX + 30; x++) if (((x - y) % 7 + 7) % 7 < 2) Q(x, y, shade(acc, .15)); break;
+    case 'circuit': { const on = Math.floor(t * 5) % 6; [[2, 2, 8, 0], [20, 2, 8, 1], [1, 9, 3, 2], [26, 9, 3, 3], [3, 19, 7, 4], [20, 19, 7, 5]].forEach(([a, c, w, k]) => {
+      for (let i = 0; i < w; i++) Q(hX + a + i, hY + c, k === on ? '#e0ffe8' : acc); const e = hX + a + (k % 2 ? w - 1 : 0); Q(e, hY + c + 1, acc); Q(e, hY + c + 2, '#ffffff'); }); break; }
+    case 'trim': for (let y = hY; y < hY + 22; y++) { let x0 = -1, x1 = -1; for (let x = hX; x < hX + 30; x++) if (inH(x, y)) { if (x0 < 0) x0 = x; x1 = x; } if (x0 >= 0) { P(x0 + 1, y, 1, 1, acc); P(x1 - 1, y, 1, 1, acc); } }
+      for (let x = hX + 5; x < hX + 25; x++) Q(x, hY + 1, acc); Q(hX + 14, hY + 2, '#ff3b6a'); Q(hX + 15, hY + 2, '#ff3b6a'); break;
+    case 'facets': [[3, 1, 6], [12, 0, 5], [21, 1, 6], [2, 14, 5], [24, 13, 5]].forEach(([a, c, n]) => { for (let k = 0; k < n; k++) Q(hX + a + k, hY + c + k, shade(shell, -.16)); for (let k = 0; k < n - 1; k++) Q(hX + a + k + 1, hY + c + k, '#ffffff'); }); break;
+    case 'cracks': { const hot = Math.sin(t * 3) > 0 ? '#ffd27a' : '#ff9a3a';
+      [[[4, 2], [6, 3], [7, 3], [8, 5], [10, 6]], [[22, 1], [21, 3], [23, 4], [24, 6]], [[3, 15], [5, 16], [6, 18], [8, 19]], [[25, 14], [23, 16], [24, 18]]].forEach((pts, k) => pts.forEach(([a, c], i) => { Q(hX + a, hY + c, (i + k + Math.floor(t * 4)) % 3 ? '#ff6a1a' : hot); Q(hX + a + 1, hY + c, '#ff6a1a'); })); break; }
+  }
+}
+
 /** Обличчя на візорі. (vx,vy) — лівий верх скла 22×13. */
 function drawFace(P, RR, vx, vy, face, eye, pose, t) {
   const dim = shade(eye, -.55), lk = Math.round(pose.look || 0), blink = pose.blink && !['sleepy', 'happy'].includes(face);
@@ -303,6 +360,13 @@ function drawAnt(P, RR, BLK, line, look, hX, hY, acc, eye, t, ax, ay) {
     case 'horns': for (const s of [-1, 1]) { const b0 = s < 0 ? hX + 5 : hX + 24; line(b0, hY + 1, b0 - s * 3 + ax, hY - 6 + ay, '#cfd6f0', 3); line(b0 - s * 3 + ax, hY - 6 + ay, b0 - s * 5 + ax, hY - 10 + ay, '#ffffff', 2); } break;
     case 'crown': BLK(hX + 8, hY - 6, 14, 6, 1, '#ffc94d'); [[hX + 8, 3], [hX + 14, 4], [hX + 20, 3]].forEach(([px, h]) => P(px, hY - 6 - h, 2, h, '#ffc94d')); P(hX + 11, hY - 4, 2, 2, '#ff3b6a'); P(hX + 17, hY - 4, 2, 2, '#3be8ff'); P(hX + 9, hY - 6, 12, 1, '#fff0a0'); break;
     case 'neon': for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; P(Math.round(cx + ax + Math.cos(a) * 10), Math.round(hY - 6 + ay + Math.sin(a) * 2.5), 1, 1, i % 3 ? '#ff4fd8' : '#ffb0f8'); } rod(cx, cx + ax * .5, hY - 4); break;
+    case 'halo': { const y = hY - 8 + ay + Math.round(Math.sin(t * 2.4)), x0 = cx + ax;          // німб: золоте кільце ширяє над головою
+      for (let i = 0; i < 32; i++) { const a = i / 32 * Math.PI * 2; P(Math.round(x0 + Math.cos(a) * 9), Math.round(y + Math.sin(a) * 2.2), 1, 1, Math.sin(a) > 0 ? '#fff4b0' : '#ffc94d'); }
+      if (Math.floor(t * 3) % 4 === 0) P(x0 + 6, y - 3, 1, 1, '#ffffff'); break; }
+    case 'flame': { rod(cx, cx + ax, hY - 4 + ay, '#5a2a1a'); const X0 = cx + ax - 2, Y0 = hY - 11 + ay;   // полум'я на тримачі
+      [['..R..', '.RR..', '.RYR.', 'RYWYR', '.RYR.'], ['...R.', '..RR.', '.RYR.', 'RYWYR', '.RYR.'], ['..R..', '..RR.', '.RYR.', 'RYYYR', '.RYR.']][Math.floor(t * 10) % 3]
+        .forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') P(X0 + i, Y0 + j, 1, 1, ch === 'W' ? '#ffffff' : ch === 'Y' ? '#ffe27a' : '#ff6a1a'); })); break; }
+    case 'stem': P(cx - 1 + ax, hY - 5 + ay, 3, 6, '#6a4a1a'); P(cx - 1 + ax, hY - 5 + ay, 1, 6, '#8a6a2a'); P(cx + 2 + ax, hY - 6 + ay, 4, 2, '#3f8a2a'); P(cx + 5 + ax, hY - 8 + ay, 2, 2, '#5fae6a'); P(cx - 3 + ax, hY - 7 + ay, 2, 1, '#5fae6a'); break;   // хвостик гарбуза з листком
     default: P(cx - 2, hY - 2, 4, 2, '#5a6590'); rod(cx, cx + ax, hY - 9 + ay); RR(cx + ax - 2, hY - 13 + ay, 5, 5, 2, tip); P(cx + ax - 1, hY - 12 + ay, 1, 1, '#ffffff');
   }
 }
