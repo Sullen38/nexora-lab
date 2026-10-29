@@ -6493,9 +6493,11 @@ NX.arc = NX.arc || {};
  *   СИДІННЯ — платформа, стьобана подушка, високі бокові валики, заокруглений передній край; подушка під шию;
  *   ПІДЛОКІТНИКИ — стійки й м'які накладки з рожевою смугою; механізм, рожеве LED-кільце (світиться);
  *   ОПОРА — газліфт у кожусі, LED-кільце й хромовий ковпак на маточині, хрестовина з 5 гранених хромованих променів з
- *     рожевою LED-смужкою, вилки й подвійні коліщатка з блакитними світними ковпаками.
+ *     рожевою LED-смужкою; під кінцем кожного — шток і ОДНЕ 3D-коліщатко (шина, світне блакитне кільце, хромова маточина).
  * Крок 4 (власник: «криве — ніжки прикольніші, крісло більше, трохи рівніше»): більше, ФРОНТАЛЬНО (зсув sh — як у стола зони),
  * спинка рівніша й нижча, у спокої — рівно (180°).
+ * Правки зон · 1 (власник: «колеса в кріслі з багом — там їх по два на деяких ніжках»): замість подвійних «наклейок» — одне
+ * справжнє колесо на промінь; ХРЕСТОВИНА СТОЇТЬ (на газліфті крутиться лише верх, як у справжнього крісла) — BASE_TURN.
  * Кадр під кут повороту (через 4°) рендериться в растр (z-буфер, контур) і кешується: повний (R 4) — для кутів спокою,
  * грубший (R 2) — поки крісло крутиться. Растр ділиться на ДВА ШАРИ: спинка (і підлокітник, що ближче до глядача) — поверх
  * Nexi, коли вона між ним і глядачем; решта — під ним.
@@ -6580,13 +6582,44 @@ NX.arc = NX.arc || {};
     ['brkL', -14, .9, 3.6, 4, 15.4, 17.2, 'steel'], ['brkR', 14, .9, 3.6, 4, 15.4, 17.2, 'steel'],
     ['padL', -15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }], ['padR', 15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }],
     ['mech', 0, -7.2, 14.4, 14.4, 13.3, 15, 'steel'], ['ring', 0, -11.4, 22.8, 22.8, 12.6, 13.4, 'led', { cyl: 28 }],
-    ['lift', 0, -2.2, 4.4, 4.4, 7.5, 13.3, 'chrome', { cyl: 16 }], ['cover', 0, -3.3, 6.6, 6.6, 3.4, 8.6, 'dark', { cyl: 16, kt: .78 }],
-    ['hub', 0, -3.8, 7.6, 7.6, 2.6, 4.6, 'dark', { cyl: 18 }], ['hring', 0, -4.4, 8.8, 8.8, 4.6, 5.2, 'led', { cyl: 24 }], ['cap', 0, -3.4, 6.8, 6.8, 5.2, 6.4, 'chrome', { cyl: 18, kt: .8 }],
-  ];
+    ['lift', 0, -2.2, 4.4, 4.4, 7.5, 13.3, 'chrome', { cyl: 16 }], ['cover', 0, -3.3, 6.6, 6.6, 3.4, 8.6, 'dark', { cyl: 16, kt: .78, base: 1 }],
+    ['hub', 0, -3.8, 7.6, 7.6, 2.6, 4.6, 'dark', { cyl: 18, base: 1 }], ['hring', 0, -4.4, 8.8, 8.8, 4.6, 5.2, 'led', { cyl: 24, base: 1 }], ['cap', 0, -3.4, 6.8, 6.8, 5.2, 6.4, 'chrome', { cyl: 18, kt: .8, base: 1 }],
+  ];   // base — частина хрестовини: стоїть, не крутиться з сидінням (BASE_TURN)
   const MAT = { shell: { pal: PL.DESK, q: .5, bev: .8 }, cush: { pal: PL.DESK, q: .56, bev: .7 }, pink: { pal: PL.PINKP, q: .5, bev: 1 }, pinkL: { pal: PL.PINKP, q: .64, bev: .9 },
     arm: { pal: PL.MET, q: .4, bev: .7 }, steel: { pal: PL.STEEL, q: .6, bev: .5 }, chrome: { pal: PL.CHROME, q: .58, metal: 1, bev: 0 }, dark: { pal: PL.DARK, q: .62, bev: .4 },
     led: { pal: PL.PINKP, q: .92, emit: 1, bev: 0 } };
   const BACK_ID = PARTS.length + 1, LEG_ID = BACK_ID + 1, WHEEL_ID = LEG_ID + 1;
+
+  // ---------- ХРЕСТОВИНА Й КОЛІЩАТКА ----------
+  // Власник (29.10, після кроку 4): «колеса в кріслі з багом — там їх по два на деяких ніжках». Було подвійне коліщатко: два
+  // плоскі диски лицем до ока обабіч вилки — на променях, що дивляться на нас, вони стояли поруч (два кола), на бічних збігались
+  // (одне), а під час обертання то роз'їжджались, то злипались. Тепер на кожному промені ОДНЕ справжнє 3D-колесо під кінцем
+  // променя, на хромованому штоку. Хрестовина СТОЇТЬ (BASE_TURN), як у справжнього крісла: на газліфті крутиться лише верх —
+  // тож коліщатка завжди однакові й не «мерехтять», коли крісло повертається.
+  const BASE_TURN = 180, LEG0 = .9425;                 // поворот хрестовини (LEG0 — кут першого променя): один промінь — рівно назад, за опорою
+  const TIP = [3.5, 4.4];                              // низ і верх кінця променя (над коліщатком — шток)
+  const WR = 1.6, WW = 1.6, WC = 15.6, WN = 16;         // коліщатко: радіус, ширина, де стоїть на промені, граней по колу
+  const SPLAY = .5;                                    // коліщатка трохи розвернуті назовні (рад): видно й бік, і протектор — об'єм
+  /** Бік колеса (u, v — 0..1 по квадрату довкола кола): шина з відблиском угорі, світне блакитне кільце, хромова маточина з болтом. */
+  const wheelSide = (u, v, i, j) => { const dd = Math.hypot(u - .5, v - .5);
+    if (dd > .4) return ramp(PL.DARK, .34 + (v < .42 ? .22 : 0) + (u < .42 && v < .42 ? .08 : 0), i, j);
+    if (dd > .26) { X.SH.fl |= X.F_EMIT; return col(dd > .33 ? '#3be8ff' : '#bff8ff'); }
+    if (dd < .07) return ramp(PL.DARK, .5, i, j);
+    return ramp(PL.CHROME, .8 - dd * 1.6 + (u < .5 && v < .5 ? .08 : 0), i, j); };
+  /** КОЛІЩАТКО — справжнє 3D-колесо (два боки + протектор з WN граней) на підлозі в точці (cu, cv) крісла; (au, av) — вісь у
+   *  плані (одинична, в осях крісла); P(u, v, h) — точка крісла -> світ. Протектор — темна гума, світліша згори й по середині. */
+  function wheel(L, P, cu, cv, au, av) {
+    const eu = -av, ev = au, pt = (c, s, w) => P(cu + eu * WR * c + au * w, cv + ev * WR * c + av * w, WR * (1 + s));
+    const hub = pt(0, 0, 0), ring = w => Array.from({ length: WN }, (_, k) => { const t = (k + .5) / WN * Math.PI * 2; return pt(Math.cos(t), Math.sin(t), w); });
+    const nOut = poly => { let n = X.newell(poly); const m = poly.reduce((s, p) => [s[0] + p[0], s[1] + p[1], s[2] + p[2]], [0, 0, 0]).map(q => q / poly.length);
+      if (X.dot(n, X.sub(m, hub)) < 0) n = n.map(q => -q); const l = Math.hypot(...n) || 1; return n.map(q => q / l); };
+    const R1 = ring(WW / 2), R0 = ring(-WW / 2);
+    for (const [poly, w] of [[R1, WW / 2], [R0, -WW / 2]]) { const O = pt(-1, 1, w);
+      X.face(L, poly, O, X.sub(pt(1, 1, w), O), X.sub(pt(-1, -1, w), O), wheelSide, { id: WHEEL_ID, fid: WHEEL_ID, n: nOut(poly) }); }
+    for (let k = 0; k < WN; k++) { const poly = [R1[k], R1[(k + 1) % WN], R0[(k + 1) % WN], R0[k]], up = Math.sin((k + 1) / WN * Math.PI * 2);
+      X.face(L, poly, poly[0], X.sub(poly[3], poly[0]), X.sub(poly[1], poly[0]), (u, v, i, j) => ramp(PL.DARK, .3 + up * .28 + (u > .44 && u < .56 ? .12 : 0), i, j),
+        { id: WHEEL_ID, fid: WHEEL_ID, n: nOut(poly) }); }
+  }
   // КЕШ КАДРІВ: повний (R = 4) — для кутів, на яких крісло стоїть (180, 270, 0 закріплені — малюються заздалегідь, у спокої),
   // і грубший (R = 2, учетверо дешевший: ~4 мс замість ~15) — поки крісло обертається (за рухом різниці не видно)
   const keyOf = a => ((Math.round(a / 4) * 4) % 360 + 360) % 360;                    // кадри — через 4°
@@ -6614,7 +6647,7 @@ NX.arc = NX.arc || {};
   function render(a, lo) {
     const key = keyOf(a); if (HI.has(key)) return HI.get(key); if (lo && LO.has(key)) return LO.get(key);
     const r = lo ? 2 : R, C = centre(), b = A.basis({ x: C[0], z: C[2], turn: key, sh: SH() }), Pt = (u, v, h) => b.P(u * K, v * K, FL - h * K);
-    const b0 = A.basis({ x: C[0], z: C[2], turn: key });                              // без зсуву: частини-коробки зсуваються самі (B.sh)
+    const b0 = A.basis({ x: C[0], z: C[2], turn: key }), b0s = A.basis({ x: C[0], z: C[2], turn: BASE_TURN });   // без зсуву: частини-коробки зсуваються самі (B.sh); b0s — хрестовина (стоїть)
     if (!box) {                                                                        // межі растра — одні на всі кути: найдальша точка крісла від осі ~20.6 од.
       const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, 41].forEach(h => pts.push(X.proj(shp([C[0] + Math.cos(an) * 22 * K, FL - h * K, C[2] + Math.sin(an) * 22 * K])))); }
       box = [Math.min(...pts.map(p => p[0])) - 3, Math.min(...pts.map(p => p[1])) - 3, Math.max(...pts.map(p => p[0])) + 3, Math.max(...pts.map(p => p[1])) + 3];
@@ -6630,7 +6663,7 @@ NX.arc = NX.arc || {};
       X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, (u, v, i, j, t) => slot(mir * (-BW + u * 2 * BW), BH1 - v * (BH1 - BH0)) ? 0 : base(u, v, i, j, t), { id: BACK_ID, fid: BACK_ID, n: Fc.n });
     });
     PARTS.forEach(([nm, u, v0, w, d, h0, h1, mat, ex = {}], n) => {
-      const id = n + 1, p0 = b0.P(u * K, v0 * K, 0), B = { x: p0[0], z: p0[2], turn: key, sh: SH(), w: w * K, dep: d * K, yb: FL - h0 * K, yt: FL - h1 * K, ch: ex.ch ? [ex.ch * K, ex.ch * K] : null, cyl: ex.cyl, kt: ex.kt, id: 'chair_' + nm };
+      const id = n + 1, p0 = (ex.base ? b0s : b0).P(u * K, v0 * K, 0), B = { x: p0[0], z: p0[2], turn: ex.base ? BASE_TURN : key, sh: SH(), w: w * K, dep: d * K, yb: FL - h0 * K, yt: FL - h1 * K, ch: ex.ch ? [ex.ch * K, ex.ch * K] : null, cyl: ex.cyl, kt: ex.kt, id: 'chair_' + nm };
       const mid = Pt(u, v0 + d / 2, 0); if (/^pad|^post/.test(nm) && mid[2] < zc - 7) front.add(id);
       for (const Fc of A.faces(B)) {
         if (!A.visible(Fc)) continue;
@@ -6640,19 +6673,20 @@ NX.arc = NX.arc || {};
       }
     });
     // ХРЕСТОВИНА (власник: «ніжки прикольніше»): 5 гранених хромованих променів, що звужуються до кінця, по верху кожного —
-    // рожева LED-смужка; на кінцях — вилки й подвійні коліщатка з блакитними світними ковпаками
+    // рожева LED-смужка; під кінцем кожного — хромований шток і ОДНЕ коліщатко (wheel; вісь — майже на глядача, трохи назовні:
+    // видно бік зі світним кільцем і протектор). Стоїть: базис BASE_TURN, а не кут сидіння
     const LEG = (u0, v0, i, j, side) => side === 't' ? (u0 > .4 && u0 < .6 && v0 > .08 && v0 < .92 ? (X.SH.fl |= X.F_EMIT, col(u0 > .46 && u0 < .54 ? '#ffd6f6' : '#ff4fd8')) : ramp(PL.CHROME, .42 + (1 - Math.abs(u0 - .5) * 2) * .4 - v0 * .08, i, j))
       : side === 'c' ? ramp(PL.STEEL, .55, i, j) : ramp(PL.CHROME, .18 + (1 - v0) * .2 + (side === 'a' ? .1 : 0), i, j);
-    const sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]], cen = Pt(0, 0, 3);
+    const sub = X.sub, bs = A.basis({ x: C[0], z: C[2], turn: BASE_TURN, sh: SH() }), Pb = (u, v, h) => bs.P(u * K, v * K, FL - h * K);
+    const stem = (u0, v0, i, j) => ramp(PL.CHROME, .45 + (1 - Math.abs(u0 - .5) * 2) * .35, i, j);
     for (let q = 0; q < 5; q++) {
-      const an = q / 5 * Math.PI * 2 + .3, cs = Math.cos(an), sn = Math.sin(an), V = (r, o, h) => Pt(cs * r - sn * o, sn * r + cs * o, h);
-      const A0t = V(2.6, -1.9, 5), B0t = V(2.6, 1.9, 5), A1t = V(16, -1.15, 3.5), B1t = V(16, 1.15, 3.5), A0b = V(2.6, -1.9, 2.8), B0b = V(2.6, 1.9, 2.8), A1b = V(16, -1.15, 2.4), B1b = V(16, 1.15, 2.4);
+      const an = q / 5 * Math.PI * 2 + LEG0, cs = Math.cos(an), sn = Math.sin(an), V = (r, o, h) => Pb(cs * r - sn * o, sn * r + cs * o, h);
+      const A0t = V(2.6, -1.9, 5), B0t = V(2.6, 1.9, 5), A1t = V(16, -1.15, TIP[1]), B1t = V(16, 1.15, TIP[1]), A0b = V(2.6, -1.9, 2.8), B0b = V(2.6, 1.9, 2.8), A1b = V(16, -1.15, TIP[0]), B1b = V(16, 1.15, TIP[0]);
       const mid = V(9, 0, 3.6), fc = (poly, O, Ax, Bx2, side) => { let n = X.newell(poly); const m = poly.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]), d = sub(m, mid); if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] < 0) n = n.map(v => -v); const l = Math.hypot(...n) || 1; n = n.map(v => v / l);
         const F = { poly, n }; if (A.visible(F)) X.face(L, poly, O, sub(Ax, O), sub(Bx2, O), (u0, v0, i, j) => LEG(u0, v0, i, j, side), { id: LEG_ID, fid: LEG_ID, n }); };
       fc([A0t, B0t, B1t, A1t], A0t, B0t, A1t, 't'); fc([A0t, A1t, A1b, A0b], A0t, A1t, A0b, 'a'); fc([B0t, B0b, B1b, B1t], B0t, B1t, B0b, 'b'); fc([A1t, B1t, B1b, A1b], A1t, B1t, A1b, 'c');
-      X.tube(L, V(16.2, 0, 2.6), V(16.6, 0, 1.4), 1.3 * K, (u0, v0, i, j) => ramp(PL.STEEL, .5 + (1 - Math.abs(u0 - .5) * 2) * .2, i, j), { id: LEG_ID, fid: LEG_ID });   // вилка
-      [-.95, .95].forEach(o => X.disc(L, V(16.6, o, 1.45), 1.6 * K, (u0, v0, i, j) => { const dd = Math.hypot(u0 - .5, v0 - .5);
-        if (dd > .37) return ramp(PL.DARK, .4 + (v0 < .45 ? .22 : 0), i, j); if (dd > .24) { X.SH.fl |= X.F_EMIT; return col(dd > .31 ? '#3be8ff' : '#bff8ff'); } return ramp(PL.CHROME, .72 - dd, i, j); }, { id: WHEEL_ID, fid: WHEEL_ID }));
+      X.tube(L, V(WC, 0, TIP[0] + .3), V(WC, 0, 2 * WR - .2), .75 * K, stem, { id: LEG_ID, fid: LEG_ID });   // шток: з кінця променя в колесо
+      wheel(L, Pb, cs * WC, sn * WC, -Math.sign(cs) * Math.sin(SPLAY), Math.cos(SPLAY));                       // вісь — майже на глядача (у базисі BASE_TURN +v дивиться на нас; +u — ліворуч на екрані)
     }
     X.outline(L, () => A.C.out, lo ? 1 : 2);
     // ділимо растр на два шари: позаду Nexi (сидіння, опора, …) і попереду (спинка, коли вона між ним і глядачем); полотна —
