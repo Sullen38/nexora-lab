@@ -38,7 +38,7 @@
     const anch = Object.assign({}, ALL.right && ALL.right.anchors, ALL.left && ALL.left.anchors);
     const a = (Z.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]];   // як basis у arc_kit.js
     const W = (Xi, Yi, v = 0) => { const u = (Xi - Z.Xref) * Z.m, d = v * Z.m; let x = Z.ax + r[0] * u - f[0] * d; const z = Z.az + r[1] * u - f[1] * d; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
-    const item = id => ['right', 'left'].map(sd => ALL[sd] && (ALL[sd].items || []).find(i => i.id === id)).find(Boolean);   // предмет розкладки (уже зі зсувом vcenter)
+    const item = id => ['right', 'left'].map(sd => ALL[sd] && (ALL[sd].items || []).find(i => i.id === id)).find(Boolean);   // предмет розкладки (уже зі зсувом vcenter; і привид ghost)
     return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az, Yf: Z.Yf, Xref: Z.Xref, item };
   };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
@@ -128,7 +128,7 @@
   /** Предмет розкладки -> у растр L: видимі грані з матеріалами, текстура лиця (оздоби / власний малюнок), рослина;
    *  предмети з формою (NX.arc.shape[id] або ['st:стиль']) — нею. */
   function drawItem(L, B, reg, side, byId) {
-    const id = reg.add({ B, sup: null, out: B.st === 'lamp' ? col('#5a2a0a') : B.st === 'clamp' ? col('#0a3a5a') : A.C.out }); B._id = id;
+    const id = reg.add({ B, sup: null, out: B.st === 'lamp' ? col('#5a2a0a') : B.st === 'clamp' || B.st === 'halo' ? col('#0a3a5a') : A.C.out }); B._id = id;
     const SHP = NX.arc.shape || {}, shp = SHP[B.id] || SHP['st:' + B.st];
     if (shp) shp(makeG(L, B, id, side), B);
     else {
@@ -476,7 +476,7 @@
     const clip = side === 'right' ? [[WIN.R, -2], [1547, -2], [1547, 478], [MID - SEAM, 478], [MID - SEAM, 346], [WIN.R, 346]] : [[-12, -2], [WIN.L, -2], [WIN.L, 346], [MID + SEAM, 346], [MID + SEAM, 478], [-12, 478]];
     const zclip = side === 'right' ? [MID - SEAM, -2, 1550, 478] : [-12, -2, MID + SEAM, 478];   // дальні зони ширші — заходять за диван
     const ZN = side === 'right' ? ['workshop', 'tools', 'portal'] : ['marketing', 'analytics', 'ai'];
-    const zs = ZN.map(z => [z, (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up')]).filter(e => e[1].length);
+    const zs = ZN.map(z => [z, (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up' && !B.ghost)]).filter(e => e[1].length);   // ghost — привид для живого шару (не малюється)
     // частки прогресу крила: стіна й підлога .3, біля стіни .06, зони — порівну .5, фініш .14
     note('wall', side); const layers = [yield* sub(timed('wall', wallLayerG(Ls, side, clip), acc), 0, .3)];
     note('back', side); const bk = yield* sub(timed('back', backLayerG(Ls, side, zclip), acc), .3, .36); if (bk) layers.push(bk);
@@ -579,7 +579,7 @@
    *  підлозі (власник, крок 3: «щоб не ходив по верху об'єктів»). Дальні зони (маркетинг, майстерня) стоять за межею
    *  підлоги — сліду не треба (до них Nexi підходить спереду: крісло, пад). */
   ['right', 'left'].forEach(sd => {
-    const by = {}; ((ALL[sd] || {}).items || []).forEach(B => { if (B.zone && B.layer !== 'up' && !B.on && B.yb >= FL - 1) (by[B.zone] || (by[B.zone] = [])).push(B); });
+    const by = {}; ((ALL[sd] || {}).items || []).forEach(B => { if (B.zone && B.layer !== 'up' && !B.on && !B.ghost && B.yb >= FL - 1) (by[B.zone] || (by[B.zone] = [])).push(B); });
     Object.entries(by).forEach(([zn, list]) => {
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
       list.forEach(B => A.faces(B).forEach(Fc => { if (Fc.k === 'bottom') Fc.poly.forEach(q => { const p = X.proj(q); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); }));

@@ -1,42 +1,52 @@
 /* ============================================================================
  * objects/tools.js — ІНСТРУМЕНТИ («МАЙСТЕРНЯ ІНТЕГРАЦІЙ»): ЖИВИЙ ОБ'ЄКТ
  * ----------------------------------------------------------------------------
- * Нерухома частина (верстак на козлах з розпірками, полиця з ящиком і бухтою кабелю, хаб, лещата, панель з перфодошкою) —
- * у 3D-розкладці (gen_room.py: tools(); грані, живі грані й форма розпірок — objects/tl_paint.js). Тут — те, що живе поверх
- * (крок 9, власник: «екрани — пласкі, зрідка глючать; більше фішок; вклади душу»):
- *   ГОЛО-КАРТКИ ПОШТА · КАЛЕНДАР · CRM (по черзі синхронізуються) і АВТО · API — пласкі, без рамки, бурштинові, перед
- *     перфодошкою (NX.arc.holo.pane; вміст — NX.arc.tlPane); глючить ОДНА за раз і рідко (раз на 15–28 с);
+ * Нерухома частина (верстак на козлах з розпірками, полиця з ящиком і бухтою кабелю, хаб, лещата; козловий підйомник — балка
+ * на тонких стійках, кабелі, прожектори, вивіска на тягах; перфодошка внизу) — у 3D-розкладці (gen_room.py: tools(); грані,
+ * живі грані, форми розпірок і кабелів — objects/tl_paint.js). Тут — те, що живе поверх (крок 9, власник: «екрани — пласкі,
+ * зрідка глючать; більше фішок; вклади душу»; крок 10: «екрани громосткі в профіль; треба інноваційні, футуристичні, кіберпанк»):
+ *   ГОЛО-КАРТКИ ПОШТА · КАЛЕНДАР · CRM (по черзі синхронізуються) і АВТО · API — пласкі восьмикутні кіберпанк-картки з
+ *     бурштиновим кантом, висять між стійками (NX.arc.holo.pane, crisp; вміст — NX.arc.tlPane; базис — привид tl_scr із
+ *     розкладки, вирівняний по центру верстака); на них світять прожектори з кінців балки; по кабелях біжать імпульси;
+ *     глючить ОДНА картка за раз і рідко (раз на 15–28 с);
  *   ПОТІК ДАНИХ: поки картка синхронізується, з хаба на верстаку до неї летять пакети;
  *   АНТЕНА хаба з вогником (коли синхронізація — розходяться радіохвилі);
- *   МАЯЧОК на шапці: бурштиновий, крутиться; коли картка готова — розганяється й спалахує;
+ *   МАЯЧОК посередині балки: бурштиновий, крутиться; коли картка готова — розганяється й спалахує;
  *   ЛЕЩАТА: раз на 5–9 с (коли Nexi працює — частіше) — сніп іскор, що відскакують від стільниці.
  * Стан для карток і Nexi (наступний крок): active / prog (nexi.js: work.obj = 'tools'); синхронізація — NX.arc.tlSync.
  * ========================================================================== */
 (() => {
   const P = NX.px, proj = NX.px3d.proj, hash = NX.art.hash, D = NX.persp.D, sc = z => D / (D + z);
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('tools'));
-  const CARDS = [{ kind: 'mail', X: [1141, 1197], Y: [141, 199] }, { kind: 'cal', X: [1202, 1258], Y: [141, 199] }, { kind: 'crm', X: [1263, 1319], Y: [141, 199] },
-    { kind: 'auto', X: [1141, 1227], Y: [207, 277] }, { kind: 'api', X: [1233, 1319], Y: [207, 277] }];
+  const CARDS = [{ kind: 'mail', X: [1141, 1197], Y: [136, 192] }, { kind: 'cal', X: [1202, 1258], Y: [136, 192] }, { kind: 'crm', X: [1263, 1319], Y: [136, 192] },
+    { kind: 'auto', X: [1141, 1227], Y: [199, 268] }, { kind: 'api', X: [1233, 1319], Y: [199, 268] }];
   let cards = null;
-  const mk = () => cards || (cards = CARDS.map((p, n) => NX.arc.holo.pane({ zone: 'tools', item: 'tl_back', Xc: 1230, X: p.X, Y: p.Y, dv: 7, rgb: '255,180,110', seed: n + 3, lagMin: 0, shade: .5,
+  const mk = () => cards || (cards = CARDS.map((p, n) => NX.arc.holo.pane({ zone: 'tools', item: 'tl_scr', Xc: 1230, X: p.X, Y: p.Y, v: 0, rgb: '255,180,110', seed: n + 3, lagMin: 0, crisp: true, shade: .55,
     paint: (c, fw, fh, t) => NX.arc.tlPane(p.kind, c, fw, fh, t) })));
   const FX = { sparks: [], nextLag: 11 + Math.random() * 10, nextSpark: 4 + Math.random() * 3, spin: 0, flash: 0, lastK: -1 };
 
-  /** «Жили» перфодошки живуть — дешево, поверх нерухомого злиття й ПІД картками: імпульси біжать з-за хаба вгору серединою,
-   *  щілиною між рядами — до картки, що синхронізується; коли вона готова — коротко спалахують усі жили (крім нижнього ряду
-   *  гнізд: його закривають хаб і стільниця). */
-  let VB = null;
-  function veins(c, t, s, act) {
-    const W = VB || (VB = NX.arc.holo.at('tools', 'tl_back', 1230, .3)), V = NX.arc.tlVeins; if (!W || !V) return;
+  /** Промені прожекторів з кінців балки на картки (ПІД картками): тьмяний бурштиновий клин від лінзи до верху крайніх карток,
+   *  у ньому пилинки. */
+  let POD = null, CARD = null, CAB = null;
+  function cones(c, t) {
+    const L = POD || (POD = ['tl_podL', 'tl_podR'].map((id, n) => NX.arc.holo.at('tools', id, n ? 1329 : 1131, .3))), Q = CARD || (CARD = NX.arc.holo.at('tools', 'tl_scr', 1230, 0));
+    if (!L[0] || !L[1] || !Q) { POD = CARD = null; return; }
     c.save(); c.globalCompositeOperation = 'lighter';
-    if (s.f > .82) { const k = 1 - (s.f - .82) / .18; c.strokeStyle = `rgba(255,190,110,${.6 * k})`; c.lineWidth = 1.1; c.lineCap = 'round'; c.beginPath();
-      V.all.forEach(([a, b]) => { if (a[1] > 272 && b[1] > 272) return; const p = W(a[0], Math.min(272, a[1])), q = W(b[0], Math.min(272, b[1])); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); }); c.stroke(); }
-    else {
-      const pts = V.path(s.k).map(([X, Y]) => W(X, Y)), seg = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1])), len = seg.reduce((x, y) => x + y, 0);
-      for (let q = 0; q < 3; q++) { let d = ((t * (act ? .9 : .45) + q / 3) % 1) * len, i = 0; while (i < seg.length - 1 && d > seg[i]) d -= seg[i++];
-        const u = seg[i] ? Math.min(1, d / seg[i]) : 0, x = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * u, y = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * u;
-        P.glow(c, x, y, 3.4, 'rgba(255,170,80,.8)', .8); c.fillStyle = 'rgba(255,245,220,.95)'; c.fillRect(x - .6, y - .6, 1.2, 1.2); }
-    }
+    [[0, 1131, [1141, 1206]], [1, 1329, [1254, 1319]]].forEach(([n, X, [xa, xb]]) => {
+      const p = L[n](X, 79.5), a = Q(xa, 137), b = Q(xb, 137), fl = .8 + .2 * Math.sin(t * 9 + n * 2) * Math.sin(t * 2.3 + n);
+      const g = c.createLinearGradient(0, p[1], 0, a[1] + 26); g.addColorStop(0, `rgba(255,200,120,${.3 * fl})`); g.addColorStop(1, 'rgba(255,170,80,0)'); c.fillStyle = g;
+      c.beginPath(); c.moveTo(p[0] - 1.6, p[1]); c.lineTo(p[0] + 1.6, p[1]); c.lineTo(b[0], b[1] + 26); c.lineTo(a[0], a[1] + 26); c.closePath(); c.fill();
+      P.glow(c, p[0], p[1], 6, 'rgba(255,190,100,.9)', .7 * fl);
+      for (let k = 0; k < 5; k++) { const q = (t * .12 + hash(k, n + 7)) % 1, u = hash(k, n + 3), x = p[0] + ((a[0] + (b[0] - a[0]) * u) - p[0]) * q, y = p[1] + (a[1] + 26 - p[1]) * q;
+        c.fillStyle = `rgba(255,230,190,${.6 * Math.sin(q * Math.PI)})`; c.fillRect(x - .4, y - .4, .8, .8); } });
+    c.restore();
+  }
+  /** Імпульси по кабелях уздовж стійок: від балки донизу біжать світлі краплі (ПІД картками). */
+  function cableRun(c, t, act) {
+    const W = CAB || (CAB = ['tl_cblL', 'tl_cblR'].map((id, n) => NX.arc.holo.at('tools', id, n ? 1322 : 1138, -1.1))); if (!W[0] || !W[1]) { CAB = null; return; }
+    c.save(); c.globalCompositeOperation = 'lighter';
+    ['tl_cblL', 'tl_cblR'].forEach((id, n) => { for (let k = 0; k < (act ? 3 : 2); k++) { const q = (t * (act ? .5 : .22) + k / (act ? 3 : 2) + n * .4) % 1, [X, Y] = NX.arc.tlCable(id, q, 0), p = W[n](X, Y);
+      P.glow(c, p[0], p[1], 3.2, 'rgba(255,160,70,.85)', .8); c.fillStyle = '#fff1dc'; c.fillRect(p[0] - .5, p[1] - .5, 1, 1); } });
     c.restore();
   }
   /** Пакети з хаба до картки, що синхронізується: дуга вгору-назад, світлі точки біжать по ній. */
@@ -59,7 +69,7 @@
     if (busy) { c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 3; i++) { const ph = (t * 1.2 + i / 3) % 1, r = (2 + ph * 10) * k; c.strokeStyle = `rgba(255,190,110,${(1 - ph) * .6})`; c.lineWidth = .5;
       [-1, 1].forEach(sd => { c.beginPath(); c.arc(tp[0], tp[1], r, sd > 0 ? -.7 : Math.PI - .7, sd > 0 ? .1 : Math.PI + .1); c.stroke(); }); } c.restore(); }
   }
-  /** Маячок на шапці: темна основа, бурштиновий ковпак, усередині обертається лампа; промені віялом по боках, коли лампа
+  /** Маячок посередині балки: темна основа, бурштиновий ковпак, усередині обертається лампа; промені віялом по боках, коли лампа
    *  дивиться на глядача — спалах. Коли картка готова — крутиться втричі швидше. */
   function beacon(c, z, t, dt) {
     const A0 = z.anchor('tlBeacon'); if (!A0) return; const b = proj(A0), k = sc(A0[2]) * 1.6;
@@ -110,7 +120,7 @@
     drawBack(c, t) {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
       const s = NX.arc.tlSync(t), act = !!this.active;
-      veins(c, t, s, act); cards.forEach(p => p.draw(c, t));
+      cones(c, t); cableRun(c, t, act); cards.forEach(p => p.draw(c, t));   // те, що за картками, — спершу
       stream(c, z, t, s, act); antenna(c, z, t, s); beacon(c, z, t, this._dt || 0); sparks(c);
     },
   });

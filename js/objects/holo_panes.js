@@ -14,7 +14,10 @@
  *     кількома панелями глючить ОДНА за раз і рідко (власник: «іноді баги, але не часто»); мікро-глітч (одна смуга на 1/8 с) —
  *     ще рідше.
  * Де панель: прямокутник у px картинки зони (X, Y) перед лицем предмета розкладки item (його середина — Xc) на відстані dv
- * од. до глядача — береться з розкладки вже зі зсувом vcenter, тож панелі завжди по центру свого стола.
+ * од. до глядача — береться з розкладки вже зі зсувом vcenter, тож панелі завжди по центру свого стола (крок 10: item — привид
+ * ghost, якого розкладка не малює, але вирівнює по центру стола). o.face — лицем до глядача (знято поворот зони: кокпіт
+ * аналітики на екрані симетричний); o.hinge = {X, a} — КРИЛО: панель повернута на a° навколо вертикалі X до глядача; o.crisp —
+ * чіткий обрис (кіберпанк-панель зі зрізаними кутами малює вміст), темна підкладка — за обрисом вмісту, без розчинених країв.
  *   const p = NX.arc.holo.pane({ zone, item, Xc, X: [x0, x1], Y: [y0, y1], dv, rgb, seed, paint(c, fw, fh, t) });
  *   p.draw(c, t) — у шарі кімнати (координати кімнати); p.quad() — чотирикутник на екрані (або null); p.kick(t, dur, kind).
  *   NX.arc.holo.at(zone, item, Xc, dv) -> (X, Y) => точка екрана на лиці предмета (для дешевих живих дрібниць поверх стіни).
@@ -46,8 +49,16 @@ NX.arc.holo = (() => {
     function geom() {
       if (P.q) return P;
       const Z = NX.arc.zone && NX.arc.zone(o.zone), B = Z && Z.item(o.item); if (!B) return null;
-      const m = Z.m, bp = A.basis(B).P, y = Y => FL - (Z.Yf - Y) * m, u = X => (X - o.Xc) * m, v = -(o.dv || 6);
-      const tl = proj(bp(u(o.X[0]), v, y(o.Y[0]))), tr = proj(bp(u(o.X[1]), v, y(o.Y[0]))), br = proj(bp(u(o.X[1]), v, y(o.Y[1]))), bl = proj(bp(u(o.X[0]), v, y(o.Y[1])));
+      const m = Z.m, bp = A.basis(B).P, y = Y => FL - (Z.Yf - Y) * m, v0 = o.v != null ? o.v * m : -(o.dv || 6), h = o.hinge, ha = h ? h.a * Math.PI / 180 : 0;   // o.v — углиб від лиця предмета (px картинки)
+      // крило (o.hinge = {X, a}): панель повернута на a° навколо вертикалі X — дальній від петлі край ближче до глядача.
+      // o.face — КОКПІТ ЛИЦЕМ ДО ГЛЯДАЧА, симетричний на екрані: вісь (Xc, v) лишається там, де її поставила розкладка (по центру
+      // стола), а точки кладуться прямо на екран навколо неї — бічний зсув × масштаб перспективи своєї глибини (ближче —
+      // більше); так «фронтальний» зсув зони (sh, fv 1.25) не перекошує крила, що виходять уперед
+      const PZ = NX.persp, axis = o.face ? bp(0, v0, y(o.Y[0])) : null, ax = axis && proj(axis)[0];
+      const pt = (X, Y) => { let d = (X - o.Xc) * m, fw = 0; if (h) { const dh = (X - h.X) * m; d = (h.X - o.Xc) * m + dh * Math.cos(ha); fw = Math.abs(dh) * Math.sin(ha); }
+        if (axis) { const k = PZ.D / (PZ.D + axis[2] - fw); return [ax + d * k, PZ.VP[1] + (y(Y) - PZ.VP[1]) * k]; }
+        return proj(bp(d, v0 - fw, y(Y))); };
+      const tl = pt(o.X[0], o.Y[0]), tr = pt(o.X[1], o.Y[0]), br = pt(o.X[1], o.Y[1]), bl = pt(o.X[0], o.Y[1]);
       P.q = [[tl[0], tl[1]], [tr[0], tr[1]], [tr[0], br[1]], [tl[0], bl[1]]];                   // боки вертикальні: x — з верхніх кутів
       P.box = [tl[0], Math.min(tl[1], tr[1]), tr[0], Math.max(bl[1], br[1])];
       P.fw = (o.X[1] - o.X[0]) * m; P.fh = (o.Y[1] - o.Y[0]) * m;
@@ -63,9 +74,10 @@ NX.arc.holo = (() => {
       x.globalCompositeOperation = 'source-atop'; const g = x.createLinearGradient(0, 0, 0, H);
       g.addColorStop(0, `rgba(${o.rgb},.1)`); g.addColorStop(.5, `rgba(${o.rgb},.03)`); g.addColorStop(1, `rgba(${o.rgb},.1)`); x.fillStyle = g; x.fillRect(0, 0, W, H);
       x.fillStyle = 'rgba(2,0,24,.2)'; for (let yy = (Math.floor(t * 18) & 1) * sl; yy < H; yy += sl * 2) x.fillRect(0, yy, W, sl);       // скан-лінії — темні смуги
-      x.globalCompositeOperation = 'destination-in'; x.drawImage(feather(W, H), 0, 0); x.globalCompositeOperation = 'source-over';
+      if (!o.crisp) { x.globalCompositeOperation = 'destination-in'; x.drawImage(feather(W, H), 0, 0); }                    // розчинені краї (o.crisp — чіткий обрис малює вміст сам)
+      x.globalCompositeOperation = 'source-over';
       const k = P.k.getContext('2d'); k.setTransform(1, 0, 0, 1, 0, 0); k.globalCompositeOperation = 'source-over'; k.globalAlpha = 1; k.clearRect(0, 0, W, H);
-      k.globalAlpha = o.shade == null ? .58 : o.shade; k.drawImage(feather(W, H), 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = 'rgb(4,3,24)'; k.fillRect(0, 0, W, H);   // темна підкладка з розчиненими краями
+      k.globalAlpha = o.shade == null ? .58 : o.shade; k.drawImage(o.crisp ? P.cv : feather(W, H), 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = 'rgb(4,3,24)'; k.fillRect(0, 0, W, H);   // темна підкладка: розчинена або за обрисом вмісту
       k.globalCompositeOperation = 'source-over'; k.globalAlpha = 1; k.drawImage(P.cv, 0, 0);
       k.globalCompositeOperation = 'lighter'; k.globalAlpha = .38; const oo = P.hr * .7; k.drawImage(P.cv, oo * .6, -oo * .4);   // сяйво (одна зсунута копія)
       k.globalCompositeOperation = 'source-over'; k.globalAlpha = 1;

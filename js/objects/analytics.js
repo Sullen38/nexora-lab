@@ -1,14 +1,17 @@
 /* ============================================================================
  * objects/analytics.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): ЖИВИЙ ОБ'ЄКТ
  * ----------------------------------------------------------------------------
- * Нерухома частина (скляний стіл із заокругленим кінцем, тумба, серверна стійка, «труба даних» у просторі для ніг, рамка
- * зі «стіною даних») — у 3D-розкладці (gen_room.py: analytics(); грані й живі грані — objects/an_paint.js). Тут — те, що
- * живе поверх (крок 9, власник: «екрани — пласкі, зрідка глючать; більше графіки, фішок; вклади душу»):
- *   ГОЛО-ПАНЕЛІ ВІДВІДУВАЧІ й ВИРУЧКА — пласкі, без рамки, перед «стіною даних» (NX.arc.holo.pane; вміст — NX.arc.anPane);
- *     глючить ОДНА за раз і рідко (раз на 16–32 с);
+ * Нерухома частина (скляний стіл із заокругленим кінцем, тумба, серверна стійка, «труба даних» у просторі для ніг, планка-
+ * емітер, гало-кільце з вивіскою) — у 3D-розкладці (gen_room.py: analytics(); грані й живі грані — objects/an_paint.js). Тут —
+ * те, що живе поверх (крок 9, власник: «екрани — пласкі, зрідка глючать; більше графіки, фішок; вклади душу»; крок 10: «екрани
+ * громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк»):
+ *   ГОЛО-КОКПІТ — три пласкі кіберпанк-панелі дугою над столом: ВИРУЧКА по центру, крила ВІДВІДУВАЧІ й КОНВЕРСІЯ повернуті на
+ *     28° до глядача (NX.arc.holo.pane: hinge, crisp; вміст — NX.arc.anPane); базис — привид an_scr із розкладки (вирівняний
+ *     по центру стола); з лінз планки-емітера до кожної панелі б'є світлова завіса; по гало-кільцю біжать вогники;
+ *     глючить ОДНА панель за раз і рідко (раз на 16–32 с);
  *   ГОЛО-ДІАГРАМА над проєктором на столі: стовпчики по колу повільно обертаються в справжній перспективі кімнати, кільце-
  *     основа, промінь з лінзи; з панелей у лінзу «стікають» дані; зрідка над діаграмою спливає знахідка «▲ +N%»;
- *   РАДАР-ТАРІЛКА на шапці: повертається туди-сюди, з антени розходяться хвилі;
+ *   РАДАР-ТАРІЛКА на гало-кільці: повертається туди-сюди, з антени розходяться хвилі;
  *   ПАРА над чашкою кави.
  * Стан для екранів і Nexi (наступний крок): active / prog (задача, nexi.js: work.obj = 'analytics') — коли Nexi працює,
  * усе біжить швидше. Координати — px картинки зони -> світ -> екран (NX.arc.zone, якорі розкладки).
@@ -16,10 +19,14 @@
 (() => {
   const P = NX.px, T = NX.arc.pt, proj = NX.px3d.proj, hash = NX.art.hash, D = NX.persp.D, sc = z => D / (D + z);
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('analytics'));
-  const PANES = [{ kind: 'visitors', X: [312, 395], seed: 1 }, { kind: 'revenue', X: [403, 486], seed: 2 }];
+  // кокпіт (px картинки зони): привид an_scr — вісь кокпіту (X 399, v 42), вирівняна по центру стола; кокпіт ЛИЦЕМ ДО ГЛЯДАЧА
+  // (face: знято поворот зони — на екрані симетричний), крила — на петлях біля країв центру, повернуті на 30° до глядача;
+  // лінзи емітера — під серединами панелей
+  const PANES = [{ kind: 'visitors', X: [298, 347], Y: [130, 232], hinge: { X: 347, a: 30 }, lens: 335, seed: 1 },
+    { kind: 'revenue', X: [349, 449], Y: [124, 236], lens: 399, seed: 2 }, { kind: 'conv', X: [451, 500], Y: [130, 232], hinge: { X: 451, a: 30 }, lens: 463, seed: 3 }];
   let panes = null;
-  const mk = () => panes || (panes = PANES.map(p => NX.arc.holo.pane({ zone: 'analytics', item: 'an_back', Xc: 399, X: p.X, Y: [120, 252], dv: 7, rgb: '150,240,255', seed: p.seed, lagMin: 0,
-    paint: (c, fw, fh, t) => NX.arc.anPane(p.kind, c, fw, fh, t) })));
+  const mk = () => panes || (panes = PANES.map(p => NX.arc.holo.pane({ zone: 'analytics', item: 'an_scr', Xc: 399, X: p.X, Y: p.Y, v: 0, face: true, hinge: p.hinge, rgb: '150,240,255', seed: p.seed,
+    lagMin: 0, crisp: true, shade: .55, paint: (c, fw, fh, t) => NX.arc.anPane(p.kind, c, fw, fh, t) })));
   const FX = { pops: [], nextLag: 14 + Math.random() * 10, nextPop: 4 };
   const val = (k, t, act) => .5 + .3 * Math.sin(t * (act ? 2.1 : .8) + k * 1.9) + .18 * Math.sin(t * .37 + k * .7);   // висота стовпчика 0..1
 
@@ -59,11 +66,12 @@
         const x = x0 + (lens[0] - x0) * ph * ph, y = y0 + (lens[1] - y0) * ph, a = Math.sin(ph * Math.PI); c.fillStyle = `rgba(${i % 3 ? '170,250,255' : '255,170,240'},${a * .9})`; c.fillRect(x - .5, y - .5, 1, 1); } });
     c.restore();
   }
-  /** РАДАР-ТАРІЛКА на шапці: стійка, тарілка (повертається — еліпс звужується), опромінювач з вогником, хвилі в небо. */
+  /** РАДАР-ТАРІЛКА на гало-кільці (ліворуч, ПІД панелями — вона за ними): стійка, тарілка (повертається — еліпс звужується),
+   *  опромінювач з вогником, хвилі в небо. */
   function dish(c, z, t, act) {
     const A0 = z.anchor('anDish'); if (!A0) return; const b = proj(A0), k = sc(A0[2]) * 1.45, a = Math.sin(t * (act ? .8 : .3)) * 1.15, ca = Math.cos(a), sa = Math.sin(a);
     c.fillStyle = '#05030f'; c.fillRect(b[0] - 1.6 * k, b[1] - 6 * k, 3.2 * k, 6 * k); c.fillStyle = '#5a5aa0'; c.fillRect(b[0] - 1.1 * k, b[1] - 6 * k, 2.2 * k, 6 * k); c.fillStyle = '#c8d0f0'; c.fillRect(b[0] - 1.1 * k, b[1] - 6 * k, .6 * k, 6 * k);
-    c.fillStyle = '#1a1840'; rrect(c, b[0] - 3 * k, b[1] - 1.6 * k, 6 * k, 1.6 * k);                                // основа на шапці
+    c.fillStyle = '#1a1840'; rrect(c, b[0] - 3 * k, b[1] - 1.6 * k, 6 * k, 1.6 * k);                                // хомут на кільці
     const cx = b[0] + sa * 1.2 * k, cy = b[1] - 10 * k, rx = Math.max(.9, 6.6 * Math.abs(ca)) * k, ry = 6.6 * k;
     c.fillStyle = '#0a0a24'; c.beginPath(); c.ellipse(cx, cy, rx + .7 * k, ry + .7 * k, 0, 0, 7); c.fill();
     const g = c.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry); g.addColorStop(0, ca > 0 ? '#e8ecff' : '#4a4a86'); g.addColorStop(.6, '#8a8ec8'); g.addColorStop(1, '#2a2a5a');
@@ -86,15 +94,28 @@
       for (let s = 0; s <= 10; s++) { const q = s / 10, y = b[1] - 1 - q * hgt * (.5 + ph * .6), x = x0 + Math.sin(q * 5 + t * 1.6 + i * 2) * 1.6 * k * q; s ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); }
     c.restore();
   }
-  /** Стіна даних живе — дешево, поверх нерухомого злиття й ПІД панелями: рейка голо-проєкторів під ними «дихає», щілиною між
-   *  панелями вгору біжать імпульси (раніше — велика жива грань за панелями: її однаково майже не видно, а кадрів коштувала). */
-  let WALL = null;
-  function wall(c, t, act) {
-    const W = WALL || (WALL = NX.arc.holo.at('analytics', 'an_back', 399, .3)); if (!W) return;
-    const a = W(310, 256), b = W(488, 256), p = .5 + .5 * Math.sin(t * 2.2);
-    c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = `rgba(120,240,255,${.18 + .28 * p})`; c.lineWidth = 1.4; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
-    for (let q = 0; q < (act ? 4 : 2); q++) { const ph = (t * (act ? .7 : .35) + q / (act ? 4 : 2)) % 1, s = W(399, 252 - ph * 128), al = Math.sin(ph * Math.PI);
-      c.fillStyle = `rgba(170,250,255,${al * .9})`; c.fillRect(s[0] - .5, s[1] - 3, 1, 6); c.fillStyle = `rgba(255,255,255,${al})`; c.fillRect(s[0] - .5, s[1] - 3, 1, 1.2); }
+  /** Світлові завіси: з лінзи планки-емітера на столі до нижнього краю кожної панелі — тьмяний клин світла, по ньому вгору
+   *  пробігає світліша смуга (ПІД панелями: панель лягає зверху). */
+  function sheets(c, z, t, act) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    panes.forEach((p, n) => { const q = p.quad(); if (!q) return; const L = proj(z.W(PANES[n].lens, 262.4, 48)), bl = q[3], br = q[2], k = sc(z.W(PANES[n].lens, 262.4, 48)[2]);
+      const g = c.createLinearGradient(0, L[1], 0, Math.min(bl[1], br[1])); g.addColorStop(0, 'rgba(120,240,255,.34)'); g.addColorStop(1, 'rgba(120,240,255,.05)'); c.fillStyle = g;
+      c.beginPath(); c.moveTo(L[0] - 3 * k, L[1]); c.lineTo(L[0] + 3 * k, L[1]); c.lineTo(br[0] - 1, br[1]); c.lineTo(bl[0] + 1, bl[1]); c.closePath(); c.fill();
+      const ph = (t * (act ? .9 : .4) + n * .33) % 1, y = L[1] + (Math.min(bl[1], br[1]) - L[1]) * ph, w = (3 * k) + ((br[0] - bl[0]) / 2 - 3 * k) * ph, xm = L[0] + ((bl[0] + br[0]) / 2 - L[0]) * ph;
+      c.fillStyle = `rgba(200,250,255,${.35 * Math.sin(ph * Math.PI)})`; c.fillRect(xm - w, y - .4, w * 2, .8); });
+    c.restore();
+  }
+  /** Вогники по гало-кільцю: три «комети» з хвостами біжать колом (ПІД панелями; там, де кільце за столом чи за вивіскою, — не
+   *  малюємо). */
+  let HALO = null;
+  function haloRun(c, t, act) {
+    const W = HALO || (HALO = NX.arc.holo.at('analytics', 'an_halo', 399, -2.2)); if (!W) return;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let q = 0; q < 3; q++) for (let s = 0; s < 6; s++) {
+      const a = (t * (act ? .45 : .16) + q / 3) * Math.PI * 2 - s * .045, X = 399 + Math.cos(a) * 106, Y = 179.5 - Math.sin(a) * 120.5;
+      if (Y > 258 || (Y < 101 && Math.abs(X - 399) < 92)) continue;
+      const p = W(X, Y), al = 1 - s / 6; if (!s) P.glow(c, p[0], p[1], 4.5, 'rgba(150,245,255,.9)', .8);
+      c.fillStyle = s ? `rgba(120,240,255,${al * .8})` : '#ffffff'; c.fillRect(p[0] - .7, p[1] - .7, 1.4, 1.4); }
     c.restore();
   }
   function rrect(c, x, y, w, h) { c.beginPath(); c.rect(x, y, w, h); c.fill(); }
@@ -122,9 +143,9 @@
     drawBack(c, t) {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
       const act = !!this.active;
-      wall(c, t, act); panes.forEach(p => p.draw(c, t));
+      haloRun(c, t, act); dish(c, z, t, act); sheets(c, z, t, act); panes.forEach(p => p.draw(c, t));   // те, що за панелями, — спершу
       const ch = chart(c, z, t, act); if (ch) { this._top = ch.top; bits(c, ch.lens, t, act); }
-      dish(c, z, t, act); steam(c, z, t); pops(c);
+      steam(c, z, t); pops(c);
     },
   });
 })();
