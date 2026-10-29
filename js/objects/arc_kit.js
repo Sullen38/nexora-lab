@@ -111,10 +111,10 @@ NX.arc.kit = (() => {
   /** Стиль -> налаштування: pal — палітра, q — базовий тон, bev — фаска (од.), ins — вставка-шов (од. від краю),
    *  neon — кант (колір), nIn/nW — де й якої ширини, bolts — болти в кутах, emit — увесь світиться, gloss — верх-глянець. */
   const STY = {
-    frame: { pal: PAL.MET, q: .5, bev: 1.4, ins: 4.2, neon: '#ff4fd8', nIn: 1.5, nW: 1.1, bolts: 1 },
+    frame: { pal: PAL.MET, q: .58, bev: 1.4, ins: 4.2, neon: '#ff4fd8', nIn: 1.5, nW: 1.1, bolts: 1 },
     pframe: { pal: PAL.PFR, q: .52, bev: 1.6, ins: 5, neon: '#d98aff', nIn: 1.7, nW: 1.2, bolts: 1 },
     base: { pal: PAL.STEEL, q: .56, bev: 1.2, ins: 3 }, dais: { pal: PAL.PFR, q: .5, bev: 1.2, ins: 0 },
-    dome: { pal: PAL.MET, q: .62, bev: .8, ins: 0 }, mach: { pal: PAL.MACH, q: .5, bev: 1, ins: 2.6, bolts: 1 },
+    dome: { pal: PAL.MET, q: .72, bev: .8, ins: 0, spec: 1 }, mach: { pal: PAL.MACH, q: .5, bev: 1, ins: 2.6, bolts: 1 },
     term: { pal: PAL.NAVY, q: .55, bev: 1, ins: 2.4 }, tablet: { pal: PAL.NAVY, q: .45, bev: .8, ins: 0 },
     board: { pal: PAL.NAVY, q: .5, bev: 1.4, ins: 4, neon: '#3be8ff', nIn: 1.4, nW: 1, bolts: 1 },
     bench: { pal: PAL.DESK, q: .5, bev: .8, ins: 0, gloss: 1 }, desk: { pal: PAL.DESK, q: .5, bev: 1, ins: 0, gloss: 1 },
@@ -140,9 +140,10 @@ NX.arc.kit = (() => {
     const q0 = S.q * L, bolts = S.bolts && front && fw > 14 && fh > 14, fog = o.fog == null ? 1 : o.fog;
     // циліндр: тон за кутом грані (світліше з боку світла), смуга-обідок (band)
     const cylK = cylS ? (.78 + .3 * Math.max(-.6, Math.cos(F.ang - Math.PI * 1.5 - .5))) : 1;
+    const spec = cylS && S.spec ? Math.pow(Math.max(0, Math.cos(F.ang - Math.PI * 1.5 + .55)), 10) * .5 : 0;   // глянцевий блік (купол): вузька світла смуга зліва-спереду
     return (u, v, i, j, t) => {
       const x = u * fw, y = v * fh;
-      let q = q0 * cylK + (.5 - v) * (top ? .06 : .14);
+      let q = q0 * cylK + spec + (.5 - v) * (top ? .06 : .14);
       if (glossTop) { X.SH.fl |= X.F_GLOSS; q = .3 + (1 - v) * .3 + (((i + j * 2) % 29) < 2 ? .2 : 0); }      // темне скло зверху: світліше до краю, глянець (віддзеркалення)
       if (!cylS) {
         const e = Math.min(x, fw - x, y, fh - y);

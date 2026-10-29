@@ -62,6 +62,7 @@
     if (B.band) o.bandC = st === 'fig' ? 'lil' : 'cyan';
     if (st === 'col') o.pal = side === 'left' ? PL.MET : PL.STEEL;
     if (st === 'chair') o.q = .44;
+    if (B.sty) Object.assign(o, B.sty);                                                // розкладка: товщі фаска, шов і неоновий кант великих частин (од. світу)
     return o;
   }
   /** Чи стоїть предмет на глянцевій стільниці (тоді відбивається в ній) — інакше в підлозі. */
@@ -375,28 +376,39 @@
   }
 
   /** РОБОТ-МАНІПУЛЯТОР майстерні (розкладка: 4 точки — база на куполі, лікоть, зап'ястя, захват): товсті ланки-трубки зі
-   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником. */
-  function arm(L, pts, reg) {
-    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [12.5, 10, 7];
-    const link = w => (u, v, i, j) => { const q = .28 + (1 - Math.abs(u - .4) * 2.1) * .55; if (Math.abs(u - .5) < .07 && ((v * 9) % 1) < .5) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; } return ramp(PL.MET, q, i, j); };
-    for (let k = 0; k + 1 < pts.length; k++) cmd(L, [pts[k], pts[k + 1]], () => X.tube(L, pts[k], pts[k + 1], W[k] || 4, link(W[k]), o));
-    pts.forEach((p, k) => { const r = k === 0 ? 9 : k === pts.length - 1 ? 4.2 : 8;
-      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; } return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
+   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником.
+   *  k — товщина під масштаб зони (розкладка: armk = масштаб зони / 1.2; більша майстерня — товща рука). */
+  function arm(L, pts, reg, k = 1) {
+    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [17 * k, 14 * k, 9.5 * k];
+    // ланка: фіолетова сталь з об'ємом — світла смуга зверху-ліворуч (стеля), темні краї; вузька неонова пунктирна смуга
+    // вздовж і сталеві хомути на кінцях (як на картинці)
+    const link = flip => (u0, v, i, j) => { const u = flip ? 1 - u0 : u0;                                     // u 0 — верхній край ланки
+      if (v < .05 || v > .95) return ramp(PL.CHROME, .2 + (1 - Math.abs(u - .36) * 1.8) * .55, i, j);
+      if (u < .07 || u > .93) return ramp(PL.MET, .1, i, j);
+      if (Math.abs(u - .62) < .05 && ((v * 11) % 1) < .55) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; }
+      return ramp(PL.MET, .3 + (1 - Math.abs(u - .3) * 1.9) * .6 + (Math.abs(u - .24) < .05 ? .16 : 0), i, j); };
+    const upSide = (a, b) => { const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], p = X.cross([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [X.VX - m[0], X.VY - m[1], X.EZ - m[2]]); return p[1] > 0; };   // X.tube: u 0 — бік +p
+    for (let n = 0; n + 1 < pts.length; n++) cmd(L, [pts[n], pts[n + 1]], () => X.tube(L, pts[n], pts[n + 1], W[n] || 4 * k, link(upSide(pts[n], pts[n + 1])), o));
+    // суглоби: сталевий диск з блакитним обідком і темною віссю (як на картинці — «око» в суглобі)
+    pts.forEach((p, n) => { const r = (n === 0 ? 11 : n === pts.length - 1 ? 5.5 : 10.5) * k;
+      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; }
+        if (n && n < pts.length - 1 && d < .26) return d < .14 ? (X.SH.fl |= X.F_EMIT, A.NEON.cyan[2]) : ramp(PL.DARK, .3, i, j); return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
+    // захват: два пальці й помаранчевий вогник між ними
     const e = pts[pts.length - 1], b = pts[pts.length - 2], dx = e[0] - b[0], dy = e[1] - b[1], l = Math.hypot(dx, dy) || 1, nx = dx / l, ny = dy / l;
-    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 - ny * sg * 3.4, e[1] + ny * 3 + nx * sg * 3.4, e[2] - 1.5], c2 = [a[0] + nx * 8, a[1] + ny * 8, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
-    const tip = [e[0] + nx * 6, e[1] + ny * 6, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
+    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 * k - ny * sg * 3.4 * k, e[1] + ny * 3 * k + nx * sg * 3.4 * k, e[2] - 1.5], c2 = [a[0] + nx * 8 * k, a[1] + ny * 8 * k, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2 * k, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
+    const tip = [e[0] + nx * 6 * k, e[1] + ny * 6 * k, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2 * k, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
   }
 
   // ---------- ЗОНИ ----------
   function zoneLayer(items, side, zclip, Ls, zn) {
     const byId = {}; items.forEach(B => byId[B.id] = B);
-    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - 9, q[1] - 9, q[0] + 9, q[1] + 9]); });
+    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) { const pad = 12 * (Ls.armk || 1); Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - pad, q[1] - pad, q[0] + pad, q[1] + pad]); }); }
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
     const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
     order.forEach(B => drawItem(L, B, reg, side, byId));
-    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg);                                            // маніпулятор майстерні — у z-буфері зони
+    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg, Ls.armk || 1);                              // маніпулятор майстерні — у z-буфері зони
     run(L);
     X.outline(L, a => (reg.get(a) || {}).out, 2);
     X.reflect(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 });   // глянець стільниць

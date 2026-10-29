@@ -185,7 +185,7 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
+  ['mk_desk', 'mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
   PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
@@ -253,6 +253,20 @@ NX.arc = NX.arc || {};
     ['ai', 'heart', 'bolt', 'gear'].forEach((ic, n) => icon(c, ic, x + w * (.14 + n * .24), y + h * .62 + (n % 2) * 4, w * .09, 'rgba(255,200,245,.85)'));
     c.fillStyle = 'rgba(255,220,250,.6)'; c.fillRect(x, y + h * .5, w, .8); c.restore();
     c.strokeStyle = '#ff7af0'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y + k); c.lineTo(x + k, y); c.lineTo(x + w - k, y); c.lineTo(x + w, y + k); c.lineTo(x + w, y + h); c.stroke();
+  };
+  /** Платформа майстерні (фасад, як на картинці): рожева неонова кромка, панелі зі швами, бічні блоки з ґратками вентиляції,
+   *  посередині — помаранчева світна щілина в темній ніші (з ґраткою й світлою серцевиною), блакитні LED. Решта — матеріал. */
+  PAINT.ws_base = (c, fw, fh) => {
+    A.neon(c, 0, fh * .05 + .6, fw, fh * .05 + .6, '#ff4fd8', 1.3);
+    const seam = x => { c.fillStyle = 'rgba(3,2,14,.9)'; c.fillRect(x - .5, fh * .16, 1, fh * .8); c.fillStyle = 'rgba(160,140,255,.22)'; c.fillRect(x + .5, fh * .16, .5, fh * .8); };
+    [.17, .3, .7, .83].forEach(f => seam(fw * f));
+    [[.05, .14], [.86, .95]].forEach(([a, b]) => { for (let k = 0; k < 4; k++) { const y = fh * (.36 + k * .13); c.fillStyle = 'rgba(3,2,14,.85)'; rr(c, fw * a, y, fw * (b - a), fh * .06, .4); c.fill(); c.fillStyle = 'rgba(160,140,255,.18)'; c.fillRect(fw * a, y + fh * .06, fw * (b - a), .35); } });
+    const sw = fw * .2, sh = fh * .2, sx = fw / 2 - sw / 2, sy = fh * .46;                      // щілина
+    c.fillStyle = '#07030e'; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.fill(); c.strokeStyle = 'rgba(170,150,255,.35)'; c.lineWidth = .4; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.stroke();
+    const g = c.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#fff0c8'); g.addColorStop(.3, '#ffbe5a'); g.addColorStop(.75, '#ff8a2a'); g.addColorStop(1, '#b8460a'); c.fillStyle = g; rr(c, sx, sy, sw, sh, 1); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(sx + 1.2, sy + sh * .22, sw - 2.4, .6);
+    c.fillStyle = 'rgba(120,40,4,.45)'; for (let x = sx + 2.2; x < sx + sw - 1; x += 2.4) c.fillRect(x, sy + .4, .55, sh - .8);
+    [.22, .245, .755, .78].forEach(f => { c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw * f, fh * .56, .95, 0, 7); c.fill(); c.fillStyle = '#e4fdff'; c.fillRect(fw * f - .3, fh * .56 - .3, .6, .6); });
   };
   ['ws_tabL', 'ws_tabR'].forEach((id, n) => { PAINT[id] = (c, fw, fh) => { glass(c, fw * .08, fh * .05, fw * .84, fh * .9, { r: 1, a: '#1a62c8', b: '#0f3a96', c: '#0a2470' }); A.txt(c, t('scene.ws.skins'), fw / 2, fh * .12, fw * .7, fh * .05, '#bff8ff');
     for (let q = 0; q < 6; q++) { const cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.fillStyle = 'rgba(30,80,180,.8)'; rr(c, cx - fw * .15, cy - fh * .1, fw * .3, fh * .2, .6); c.fill(); icon(c, 'bot', cx, cy, fw * .18, ['#9af8ff', '#ff9af0', '#ffd27a', '#3bff8a', '#c8a0ff', '#ffffff'][(q + n * 2) % 6]); } }; });

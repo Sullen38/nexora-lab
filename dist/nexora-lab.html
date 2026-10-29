@@ -3728,7 +3728,7 @@ NX.floorTiles = (() => {
  * Предмет: {id, zone, x, z — середина лиця на підлозі, turn — поворот (°), w, dep — ширина й глибина, yt..yb — висота,
  *   st — стиль (матеріал), on — на чому стоїть, cyl — циліндр, plant/fw/fh/bloom/hangs — рослина, deco — оздоби лиця}.
  * ========================================================================== */
-NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[],"cols":[],"armZone":null,"scales":{},"angles":{},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[],"cols":[],"armZone":null,"scales":{},"angles":{},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
+NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1083.63,"z":65.48,"turn":0,"w":304.78,"dep":101.59,"yb":372.0,"yt":331.36,"st":"base","deco":[{"t":"l","f":[0,0.05,1,0.05],"col":"#ff4fd8","lw":1.3}]},{"id":"ws_dais","zone":"workshop","x":1083.63,"z":75.64,"turn":0,"w":240.92,"dep":81.28,"yb":331.36,"yt":316.85,"st":"base","on":"ws_base","deco":[{"t":"l","f":[0.02,0.34,0.98,0.34],"col":"#3be8ff","lw":1.1}]},{"id":"ws_wingL","zone":"workshop","x":947.2,"z":87.25,"turn":0,"w":31.93,"dep":66.76,"yb":331.36,"yt":180.42,"st":"frame","on":"ws_base","deco":[{"t":"l","f":[0.36,0.1,0.36,0.92],"col":"#ff4fd8","lw":1.3},{"t":"r","f":[0.56,0.86,0.16,0.34],"fill":"#0a0620","line":"#3be8ff"}],"ch":[13.06,0.0],"sty":{"bev":2.32,"ins":5.52,"nIn":2.03,"nW":1.45}},{"id":"ws_wingR","zone":"workshop","x":1220.05,"z":87.25,"turn":0,"w":31.93,"dep":66.76,"yb":331.36,"yt":180.42,"st":"frame","on":"ws_base","deco":[{"t":"l","f":[0.64,0.1,0.64,0.92],"col":"#ff4fd8","lw":1.3},{"t":"r","f":[0.14,0.44,0.16,0.34],"fill":"#0a0620","line":"#3be8ff"}],"ch":[0.0,13.06],"sty":{"bev":2.32,"ins":5.52,"nIn":2.03,"nW":1.45}},{"id":"ws_postL","zone":"workshop","x":987.84,"z":81.45,"turn":0,"w":49.35,"dep":71.12,"yb":316.85,"yt":157.2,"st":"frame","on":"ws_dais","deco":[{"t":"l","f":[0.8,0.07,0.8,0.93],"col":"#3be8ff","lw":1.5},{"t":"r","f":[0.18,0.58,0.62,0.7],"fill":"#0a0620","line":"#ff4fd8"},{"t":"r","f":[0.18,0.58,0.74,0.82],"fill":"#0a0620","line":"#6a4ab0"}],"sty":{"bev":2.32,"ins":5.52,"nIn":2.03,"nW":1.45}},{"id":"ws_postR","zone":"workshop","x":1179.41,"z":81.45,"turn":0,"w":49.35,"dep":71.12,"yb":316.85,"yt":157.2,"st":"frame","on":"ws_dais","deco":[{"t":"l","f":[0.2,0.07,0.2,0.93],"col":"#3be8ff","lw":1.5},{"t":"r","f":[0.42,0.82,0.62,0.7],"fill":"#0a0620","line":"#ff4fd8"},{"t":"r","f":[0.42,0.82,0.74,0.82],"fill":"#0a0620","line":"#6a4ab0"}],"sty":{"bev":2.32,"ins":5.52,"nIn":2.03,"nW":1.45}},{"id":"ws_back","zone":"workshop","x":1083.63,"z":94.51,"turn":0,"w":142.23,"dep":11.61,"yb":316.85,"yt":157.2,"st":"frame","on":"ws_dais","deco":[{"t":"ch","f":[0.0204,0.9796,0.0182,0.9909],"k":0.12,"fill":"#a0208a","line":"#ff7af0","lw":1.1}]},{"id":"ws_beam","zone":"workshop","x":1083.63,"z":78.54,"turn":0,"w":269.95,"dep":76.92,"yb":157.2,"yt":99.15,"st":"frame","deco":[{"t":"l","f":[0.08,0.86,0.92,0.86],"col":"#ff4fd8","lw":1.2}],"ch":[26.12,26.12],"sty":{"bev":2.32,"ins":5.52,"nIn":2.03,"nW":1.45}},{"id":"ws_sign","zone":"workshop","x":1083.63,"z":76.22,"turn":0,"w":165.45,"dep":2.18,"yb":145.59,"yt":96.24,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}]},{"id":"ws_dome","zone":"workshop","x":1083.63,"z":85.07,"turn":0,"w":127.72,"dep":63.86,"yb":99.15,"yt":75.92,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1},{"id":"ws_dome2","zone":"workshop","x":1083.63,"z":90.15,"turn":0,"w":107.4,"dep":53.7,"yb":75.92,"yt":61.41,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7},{"id":"ws_cap","zone":"workshop","x":1083.63,"z":98.14,"turn":0,"w":75.47,"dep":37.74,"yb":61.41,"yt":52.7,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62},{"id":"ws_mount","zone":"workshop","x":1083.63,"z":103.94,"turn":0,"w":31.93,"dep":26.12,"yb":52.7,"yt":35.29,"st":"dark","on":"ws_cap","cyl":14},{"id":"ws_tabLs","zone":"workshop","x":970.42,"z":68.38,"turn":0,"w":14.51,"dep":7.26,"yb":331.36,"yt":293.63,"st":"dark","on":"ws_base"},{"id":"ws_tabL","zone":"workshop","x":970.42,"z":67.22,"turn":0,"w":58.05,"dep":6.68,"yb":293.63,"yt":206.55,"st":"tablet","on":"ws_tabLs","deco":[{"t":"r","f":[0.08,0.92,0.05,0.95],"fill":"#0c4a8a","line":"#7af4ff"}]},{"id":"ws_tabRs","zone":"workshop","x":1196.83,"z":68.38,"turn":0,"w":14.51,"dep":7.26,"yb":331.36,"yt":293.63,"st":"dark","on":"ws_base"},{"id":"ws_tabR","zone":"workshop","x":1196.83,"z":67.22,"turn":0,"w":58.05,"dep":6.68,"yb":293.63,"yt":206.55,"st":"tablet","on":"ws_tabRs","deco":[{"t":"r","f":[0.08,0.92,0.05,0.95],"fill":"#0c4a8a","line":"#7af4ff"}]}],"cols":[],"armZone":"workshop","scales":{"far":1.4513525027484113},"angles":{},"mains":{"workshop":["ws_base","ws_beam","ws_postL"]},"arm":[[1083.63,38.19,117.0],[1166.35,-8.25,117.0],[1262.14,46.9,117.0],[1241.82,81.73,117.0]],"armk":1.209,"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":464.81,"z":94.77,"turn":0,"w":308.78,"dep":61.64,"yb":372.0,"yt":302.96,"st":"desk","deco":[{"t":"l","f":[0,0.04,1,0.04],"col":"#ff4fd8","lw":1.2},{"t":"r","f":[0.0285,0.1667,0.1818,0.9273],"fill":"#1a1238","line":"#6a4ab0"},{"t":"l","f":[0.0285,0.4,0.1667,0.4],"col":"#6a4ab0"},{"t":"l","f":[0.0285,0.6545,0.1667,0.6545],"col":"#6a4ab0"},{"t":"r","f":[0.8333,0.9715,0.1818,0.9273],"fill":"#1a1238","line":"#6a4ab0"},{"t":"l","f":[0.8333,0.4,0.9715,0.4],"col":"#6a4ab0"},{"t":"l","f":[0.8333,0.6545,0.9715,0.6545],"col":"#6a4ab0"}]},{"id":"mk_booth","zone":"marketing","x":432.55,"z":158.92,"turn":0,"w":215.9,"dep":20.08,"yb":372.0,"yt":74.51,"st":"frame","deco":[{"t":"r","f":[0.07,0.93,0.2,0.72],"fill":"#0c3a7a","line":"#3be8ff"},{"t":"r","f":[0.1,0.486,0.235,0.69],"fill":"#1a5ab0","line":"#7af4ff"},{"t":"r","f":[0.514,0.9,0.235,0.69],"fill":"#1a5ab0","line":"#7af4ff"}],"ch":[12.55,12.55],"sty":{"bev":2.01,"ins":4.77,"nIn":1.76,"nW":1.26,"neon":"#3be8ff"}},{"id":"mk_sign","zone":"marketing","x":432.7,"z":155.65,"turn":0,"w":185.77,"dep":3.14,"yb":123.47,"yt":83.3,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.11891891891891893,0.5,0.05621621621621622],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.22702702702702704,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}]},{"id":"mk_scr2","zone":"marketing","x":333.14,"z":116.96,"turn":0,"w":47.7,"dep":7.53,"yb":302.96,"yt":257.78,"st":"screen","on":"mk_desk","deco":[{"t":"r","f":[0.1,0.9,0.1,0.8],"fill":"#3be8ff"}]},{"id":"mk_scr","zone":"marketing","x":574.15,"z":116.96,"turn":0,"w":47.7,"dep":7.53,"yb":302.96,"yt":257.78,"st":"screen","on":"mk_desk","deco":[{"t":"r","f":[0.1,0.9,0.1,0.8],"fill":"#3be8ff"}]}],"cols":[],"armZone":"marketing","scales":{"far":1.255213464534666},"angles":{},"mains":{"marketing":["mk_booth","mk_desk"]},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
 
 </script>    <!-- розкладка крил «по дузі» (генерує tools/wingbox/gen_room.py) -->
 <!-- КРИЛА «ПО ДУЗІ» В ПІКСЕЛЬНОМУ 3D: матеріали -> малюнки граней -> сцена (стіни, підлога, зони) -> живі екрани -->
@@ -3847,10 +3847,10 @@ NX.arc.kit = (() => {
   /** Стиль -> налаштування: pal — палітра, q — базовий тон, bev — фаска (од.), ins — вставка-шов (од. від краю),
    *  neon — кант (колір), nIn/nW — де й якої ширини, bolts — болти в кутах, emit — увесь світиться, gloss — верх-глянець. */
   const STY = {
-    frame: { pal: PAL.MET, q: .5, bev: 1.4, ins: 4.2, neon: '#ff4fd8', nIn: 1.5, nW: 1.1, bolts: 1 },
+    frame: { pal: PAL.MET, q: .58, bev: 1.4, ins: 4.2, neon: '#ff4fd8', nIn: 1.5, nW: 1.1, bolts: 1 },
     pframe: { pal: PAL.PFR, q: .52, bev: 1.6, ins: 5, neon: '#d98aff', nIn: 1.7, nW: 1.2, bolts: 1 },
     base: { pal: PAL.STEEL, q: .56, bev: 1.2, ins: 3 }, dais: { pal: PAL.PFR, q: .5, bev: 1.2, ins: 0 },
-    dome: { pal: PAL.MET, q: .62, bev: .8, ins: 0 }, mach: { pal: PAL.MACH, q: .5, bev: 1, ins: 2.6, bolts: 1 },
+    dome: { pal: PAL.MET, q: .72, bev: .8, ins: 0, spec: 1 }, mach: { pal: PAL.MACH, q: .5, bev: 1, ins: 2.6, bolts: 1 },
     term: { pal: PAL.NAVY, q: .55, bev: 1, ins: 2.4 }, tablet: { pal: PAL.NAVY, q: .45, bev: .8, ins: 0 },
     board: { pal: PAL.NAVY, q: .5, bev: 1.4, ins: 4, neon: '#3be8ff', nIn: 1.4, nW: 1, bolts: 1 },
     bench: { pal: PAL.DESK, q: .5, bev: .8, ins: 0, gloss: 1 }, desk: { pal: PAL.DESK, q: .5, bev: 1, ins: 0, gloss: 1 },
@@ -3876,9 +3876,10 @@ NX.arc.kit = (() => {
     const q0 = S.q * L, bolts = S.bolts && front && fw > 14 && fh > 14, fog = o.fog == null ? 1 : o.fog;
     // циліндр: тон за кутом грані (світліше з боку світла), смуга-обідок (band)
     const cylK = cylS ? (.78 + .3 * Math.max(-.6, Math.cos(F.ang - Math.PI * 1.5 - .5))) : 1;
+    const spec = cylS && S.spec ? Math.pow(Math.max(0, Math.cos(F.ang - Math.PI * 1.5 + .55)), 10) * .5 : 0;   // глянцевий блік (купол): вузька світла смуга зліва-спереду
     return (u, v, i, j, t) => {
       const x = u * fw, y = v * fh;
-      let q = q0 * cylK + (.5 - v) * (top ? .06 : .14);
+      let q = q0 * cylK + spec + (.5 - v) * (top ? .06 : .14);
       if (glossTop) { X.SH.fl |= X.F_GLOSS; q = .3 + (1 - v) * .3 + (((i + j * 2) % 29) < 2 ? .2 : 0); }      // темне скло зверху: світліше до краю, глянець (віддзеркалення)
       if (!cylS) {
         const e = Math.min(x, fw - x, y, fh - y);
@@ -4198,7 +4199,7 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
+  ['mk_desk', 'mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
   PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
@@ -4266,6 +4267,20 @@ NX.arc = NX.arc || {};
     ['ai', 'heart', 'bolt', 'gear'].forEach((ic, n) => icon(c, ic, x + w * (.14 + n * .24), y + h * .62 + (n % 2) * 4, w * .09, 'rgba(255,200,245,.85)'));
     c.fillStyle = 'rgba(255,220,250,.6)'; c.fillRect(x, y + h * .5, w, .8); c.restore();
     c.strokeStyle = '#ff7af0'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y + k); c.lineTo(x + k, y); c.lineTo(x + w - k, y); c.lineTo(x + w, y + k); c.lineTo(x + w, y + h); c.stroke();
+  };
+  /** Платформа майстерні (фасад, як на картинці): рожева неонова кромка, панелі зі швами, бічні блоки з ґратками вентиляції,
+   *  посередині — помаранчева світна щілина в темній ніші (з ґраткою й світлою серцевиною), блакитні LED. Решта — матеріал. */
+  PAINT.ws_base = (c, fw, fh) => {
+    A.neon(c, 0, fh * .05 + .6, fw, fh * .05 + .6, '#ff4fd8', 1.3);
+    const seam = x => { c.fillStyle = 'rgba(3,2,14,.9)'; c.fillRect(x - .5, fh * .16, 1, fh * .8); c.fillStyle = 'rgba(160,140,255,.22)'; c.fillRect(x + .5, fh * .16, .5, fh * .8); };
+    [.17, .3, .7, .83].forEach(f => seam(fw * f));
+    [[.05, .14], [.86, .95]].forEach(([a, b]) => { for (let k = 0; k < 4; k++) { const y = fh * (.36 + k * .13); c.fillStyle = 'rgba(3,2,14,.85)'; rr(c, fw * a, y, fw * (b - a), fh * .06, .4); c.fill(); c.fillStyle = 'rgba(160,140,255,.18)'; c.fillRect(fw * a, y + fh * .06, fw * (b - a), .35); } });
+    const sw = fw * .2, sh = fh * .2, sx = fw / 2 - sw / 2, sy = fh * .46;                      // щілина
+    c.fillStyle = '#07030e'; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.fill(); c.strokeStyle = 'rgba(170,150,255,.35)'; c.lineWidth = .4; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.stroke();
+    const g = c.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#fff0c8'); g.addColorStop(.3, '#ffbe5a'); g.addColorStop(.75, '#ff8a2a'); g.addColorStop(1, '#b8460a'); c.fillStyle = g; rr(c, sx, sy, sw, sh, 1); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(sx + 1.2, sy + sh * .22, sw - 2.4, .6);
+    c.fillStyle = 'rgba(120,40,4,.45)'; for (let x = sx + 2.2; x < sx + sw - 1; x += 2.4) c.fillRect(x, sy + .4, .55, sh - .8);
+    [.22, .245, .755, .78].forEach(f => { c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw * f, fh * .56, .95, 0, 7); c.fill(); c.fillStyle = '#e4fdff'; c.fillRect(fw * f - .3, fh * .56 - .3, .6, .6); });
   };
   ['ws_tabL', 'ws_tabR'].forEach((id, n) => { PAINT[id] = (c, fw, fh) => { glass(c, fw * .08, fh * .05, fw * .84, fh * .9, { r: 1, a: '#1a62c8', b: '#0f3a96', c: '#0a2470' }); A.txt(c, t('scene.ws.skins'), fw / 2, fh * .12, fw * .7, fh * .05, '#bff8ff');
     for (let q = 0; q < 6; q++) { const cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.fillStyle = 'rgba(30,80,180,.8)'; rr(c, cx - fw * .15, cy - fh * .1, fw * .3, fh * .2, .6); c.fill(); icon(c, 'bot', cx, cy, fw * .18, ['#9af8ff', '#ff9af0', '#ffd27a', '#3bff8a', '#c8a0ff', '#ffffff'][(q + n * 2) % 6]); } }; });
@@ -4366,6 +4381,7 @@ NX.arc = NX.arc || {};
     if (B.band) o.bandC = st === 'fig' ? 'lil' : 'cyan';
     if (st === 'col') o.pal = side === 'left' ? PL.MET : PL.STEEL;
     if (st === 'chair') o.q = .44;
+    if (B.sty) Object.assign(o, B.sty);                                                // розкладка: товщі фаска, шов і неоновий кант великих частин (од. світу)
     return o;
   }
   /** Чи стоїть предмет на глянцевій стільниці (тоді відбивається в ній) — інакше в підлозі. */
@@ -4679,28 +4695,39 @@ NX.arc = NX.arc || {};
   }
 
   /** РОБОТ-МАНІПУЛЯТОР майстерні (розкладка: 4 точки — база на куполі, лікоть, зап'ястя, захват): товсті ланки-трубки зі
-   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником. */
-  function arm(L, pts, reg) {
-    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [12.5, 10, 7];
-    const link = w => (u, v, i, j) => { const q = .28 + (1 - Math.abs(u - .4) * 2.1) * .55; if (Math.abs(u - .5) < .07 && ((v * 9) % 1) < .5) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; } return ramp(PL.MET, q, i, j); };
-    for (let k = 0; k + 1 < pts.length; k++) cmd(L, [pts[k], pts[k + 1]], () => X.tube(L, pts[k], pts[k + 1], W[k] || 4, link(W[k]), o));
-    pts.forEach((p, k) => { const r = k === 0 ? 9 : k === pts.length - 1 ? 4.2 : 8;
-      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; } return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
+   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником.
+   *  k — товщина під масштаб зони (розкладка: armk = масштаб зони / 1.2; більша майстерня — товща рука). */
+  function arm(L, pts, reg, k = 1) {
+    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [17 * k, 14 * k, 9.5 * k];
+    // ланка: фіолетова сталь з об'ємом — світла смуга зверху-ліворуч (стеля), темні краї; вузька неонова пунктирна смуга
+    // вздовж і сталеві хомути на кінцях (як на картинці)
+    const link = flip => (u0, v, i, j) => { const u = flip ? 1 - u0 : u0;                                     // u 0 — верхній край ланки
+      if (v < .05 || v > .95) return ramp(PL.CHROME, .2 + (1 - Math.abs(u - .36) * 1.8) * .55, i, j);
+      if (u < .07 || u > .93) return ramp(PL.MET, .1, i, j);
+      if (Math.abs(u - .62) < .05 && ((v * 11) % 1) < .55) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; }
+      return ramp(PL.MET, .3 + (1 - Math.abs(u - .3) * 1.9) * .6 + (Math.abs(u - .24) < .05 ? .16 : 0), i, j); };
+    const upSide = (a, b) => { const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], p = X.cross([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [X.VX - m[0], X.VY - m[1], X.EZ - m[2]]); return p[1] > 0; };   // X.tube: u 0 — бік +p
+    for (let n = 0; n + 1 < pts.length; n++) cmd(L, [pts[n], pts[n + 1]], () => X.tube(L, pts[n], pts[n + 1], W[n] || 4 * k, link(upSide(pts[n], pts[n + 1])), o));
+    // суглоби: сталевий диск з блакитним обідком і темною віссю (як на картинці — «око» в суглобі)
+    pts.forEach((p, n) => { const r = (n === 0 ? 11 : n === pts.length - 1 ? 5.5 : 10.5) * k;
+      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; }
+        if (n && n < pts.length - 1 && d < .26) return d < .14 ? (X.SH.fl |= X.F_EMIT, A.NEON.cyan[2]) : ramp(PL.DARK, .3, i, j); return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
+    // захват: два пальці й помаранчевий вогник між ними
     const e = pts[pts.length - 1], b = pts[pts.length - 2], dx = e[0] - b[0], dy = e[1] - b[1], l = Math.hypot(dx, dy) || 1, nx = dx / l, ny = dy / l;
-    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 - ny * sg * 3.4, e[1] + ny * 3 + nx * sg * 3.4, e[2] - 1.5], c2 = [a[0] + nx * 8, a[1] + ny * 8, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
-    const tip = [e[0] + nx * 6, e[1] + ny * 6, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
+    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 * k - ny * sg * 3.4 * k, e[1] + ny * 3 * k + nx * sg * 3.4 * k, e[2] - 1.5], c2 = [a[0] + nx * 8 * k, a[1] + ny * 8 * k, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2 * k, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
+    const tip = [e[0] + nx * 6 * k, e[1] + ny * 6 * k, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2 * k, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
   }
 
   // ---------- ЗОНИ ----------
   function zoneLayer(items, side, zclip, Ls, zn) {
     const byId = {}; items.forEach(B => byId[B.id] = B);
-    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - 9, q[1] - 9, q[0] + 9, q[1] + 9]); });
+    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) { const pad = 12 * (Ls.armk || 1); Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - pad, q[1] - pad, q[0] + pad, q[1] + pad]); }); }
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
     const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
     order.forEach(B => drawItem(L, B, reg, side, byId));
-    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg);                                            // маніпулятор майстерні — у z-буфері зони
+    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg, Ls.armk || 1);                              // маніпулятор майстерні — у z-буфері зони
     run(L);
     X.outline(L, a => (reg.get(a) || {}).out, 2);
     X.reflect(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 });   // глянець стільниць

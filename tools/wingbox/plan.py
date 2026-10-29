@@ -33,9 +33,9 @@ def sep(A, B):
     for poly, other in ((A, B), (B, A)):
         n = len(poly); cx = sum(p[0] for p in poly) / n; cz = sum(p[1] for p in poly) / n
         for i in range(n):
-            a, b = poly[i], poly[(i + 1) % n]; nx, nz = b[1] - a[1], -(b[0] - a[0])
-            if nx * (cx - a[0]) + nz * (cz - a[1]) > 0: nx, nz = -nx, -nz          # нормаль назовні
-            if all(nx * (q[0] - a[0]) + nz * (q[1] - a[1]) >= -0.01 for q in other): return True, (a, (nx, nz)), poly
+            a, b = poly[i], poly[(i + 1) % n]; nx, nz = b[1] - a[1], -(b[0] - a[0]); l = math.hypot(nx, nz) or 1; nx, nz = nx / l, nz / l
+            if nx * (cx - a[0]) + nz * (cz - a[1]) > 0: nx, nz = -nx, -nz          # нормаль назовні (одинична)
+            if all(nx * (q[0] - a[0]) + nz * (q[1] - a[1]) >= -0.02 for q in other): return True, (a, (nx, nz)), poly   # впритул (до 0.02 од.) — окремо
     return False, None, None
 # ---------- стіна: гладка крива через опорні точки (Catmull-Rom) ----------
 def catmull(pts, n=8):
