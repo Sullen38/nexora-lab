@@ -218,8 +218,10 @@
   // Тут — лише вміст на прозорому полотні (легка завіса світла, заголовок, картки 2 × 3, крапки сторінок): NX.arc.wsPane;
   // голографічність (напівпрозорість, розчинені краї, сяйво, скан-лінії, мерехтіння, глітч, промінь з проєктора) додає
   // objects/workshop.js. Обидві гортаються сторінками, картки «вистрибують».
-  const TAB = { [-1]: { title: 'scene.ws.skins', tint: '70,190,255', line: '#7af4ff', glow: '#3be8ff', hi: '150,240,255' },
-    [1]: { title: 'scene.ws.acc', tint: '200,110,255', line: '#ff9af0', glow: '#ff4fd8', hi: '255,160,240' } };
+  // Правки зон · 3 (власник: «зроби менш прозорі; хай будуть більш насичені»): завіса й картки — щільні насичені кольори
+  // (СКІНИ — електрично-синій і блакитний, АКСЕСУАРИ — пурпурово-рожевий), тонка сітка-текстура світла.
+  const TAB = { [-1]: { title: 'scene.ws.skins', bg: ['24,120,255', '12,64,200', '34,160,255'], tile: ['50,170,255', '18,86,220'], line: '#7af4ff', glow: '#3be8ff', hi: '150,240,255' },
+    [1]: { title: 'scene.ws.acc', bg: ['196,44,255', '112,18,196', '255,64,222'], tile: ['214,84,255', '124,26,206'], line: '#ff9af0', glow: '#ff4fd8', hi: '255,160,240' } };
   const cell = (fw, fh, q) => [fw * (.07 + (q % 2) * .45), fh * (.15 + Math.floor(q / 2) * .265), fw * .41, fh * .24];
   /** Гортання: картка підсвічується по черзі (per с), після шести — наступна сторінка (по колу: на останній — знову перші). */
   const pager = (t, n, shift = 0) => { const per = 1.6, k = Math.floor(t / per) + shift, pages = Math.ceil(n / 6), page = Math.floor(k / 6) % pages, since = (t + shift * per) - Math.floor(k / 6) * 6 * per; return { page, pages, sel: k % 6, since }; };
@@ -246,9 +248,10 @@
     for (let q = 0; q < 6; q++) {
       const id = ids[(page * 6 + q) % ids.length], [x, y, w, h] = cell(fw, fh, q), cv = mini(look(id)), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.2 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0, col = frame && frame(id);
       c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
-      const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, `rgba(${S.tint},.1)`); g.addColorStop(1, `rgba(${S.tint},.26)`); c.fillStyle = g; rr(c, x, y, w, h, 1); c.fill();
+      const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, `rgba(${S.tile[0]},.5)`); g.addColorStop(1, `rgba(${S.tile[1]},.72)`); c.fillStyle = g; rr(c, x, y, w, h, 1); c.fill();
+      c.fillStyle = `rgba(${S.hi},.22)`; c.fillRect(x + .6, y + .5, w - 1.2, .45);                                   // світла губа зверху картки
       if (col) { const g2 = c.createLinearGradient(0, y + h * .5, 0, y + h); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, col + '77'); c.fillStyle = g2; c.fillRect(x, y, w, h); }   // сяйво рідкості знизу
-      c.fillStyle = `rgba(${S.hi},.35)`; c.beginPath(); c.ellipse(x + w / 2, y + h * .93, w * .32, h * .05, 0, 0, 7); c.fill();   // світлий «п'єдестал» під міні-Nexi
+      c.fillStyle = `rgba(${S.hi},.5)`; c.beginPath(); c.ellipse(x + w / 2, y + h * .93, w * .32, h * .05, 0, 0, 7); c.fill();   // світлий «п'єдестал» під міні-Nexi
       if (s > .01) c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .97 - SH * s * .93 + bob, SW * s, SH * s);
       if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${fl * .5})`; rr(c, x, y, w, h, 1); c.fill(); }
       c.restore();
@@ -257,12 +260,17 @@
     chrome(c, fw, fh, t, S, sel, page, pages);
   }
   const PRESETS = Object.keys(SKINS);
+  /** Скільки секунд минуло від гортання сторінки панелі side (картки «вистрибують» зі спалахом перші ~0.7 с) — щоб «лаг»
+   *  (objects/workshop.js) не заморожував цей спалах білими плямами. */
+  NX.arc.wsPaneFlip = (side, t) => side < 0 ? pager(t, PRESETS.length, 0).since : pager(t, WEAR_ACCS.length, 3).since;
   /** ВМІСТ ГОЛО-ПАНЕЛІ (side: −1 — СКІНИ, 1 — АКСЕСУАРИ) на прозорому полотні; c — у од. світу, fw × fh — розмір панелі.
-   *  Легка завіса світла (краї розчиняє workshop.js), заголовок зі світлою рискою, картки, крапки сторінок. */
+   *  Щільна насичена завіса світла з тонкою сіткою (краї розчиняє workshop.js), заголовок зі світлою рискою, картки, крапки
+   *  сторінок. */
   NX.arc.wsPane = (side, c, fw, fh, t) => {
     const S = TAB[side], g = c.createLinearGradient(0, 0, 0, fh);
-    g.addColorStop(0, `rgba(${S.tint},.26)`); g.addColorStop(.55, `rgba(${S.tint},.11)`); g.addColorStop(1, `rgba(${S.tint},.3)`); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
-    const hg = c.createRadialGradient(fw / 2, fh * .066, 0, fw / 2, fh * .066, fw * .42); hg.addColorStop(0, `rgba(${S.tint},.45)`); hg.addColorStop(1, `rgba(${S.tint},0)`);
+    g.addColorStop(0, `rgba(${S.bg[0]},.66)`); g.addColorStop(.5, `rgba(${S.bg[1]},.56)`); g.addColorStop(1, `rgba(${S.bg[2]},.7)`); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    c.fillStyle = `rgba(${S.hi},.07)`; for (let x = fw * .05; x < fw; x += 3.2) c.fillRect(x, 0, .3, fh); for (let y = fh * .03; y < fh; y += 3.2) c.fillRect(0, y, fw, .3);   // сітка-текстура світла
+    const hg = c.createRadialGradient(fw / 2, fh * .066, 0, fw / 2, fh * .066, fw * .42); hg.addColorStop(0, `rgba(${S.hi},.4)`); hg.addColorStop(1, `rgba(${S.hi},0)`);
     c.fillStyle = hg; c.fillRect(0, 0, fw, fh * .14);                                                                // сяйво під заголовком
     A.txt(c, NX.t(S.title), fw / 2, fh * .064, fw * .88, fh * .062, '#ffffff', { glow: S.glow });
     const ln = c.createLinearGradient(fw * .08, 0, fw * .92, 0); ln.addColorStop(0, `rgba(${S.hi},0)`); ln.addColorStop(.5, `rgba(${S.hi},.95)`); ln.addColorStop(1, `rgba(${S.hi},0)`);
