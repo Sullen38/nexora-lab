@@ -122,6 +122,9 @@
       partF(Pi, mk) { for (const Fc of A.faces(Pi)) { if (!A.visible(Fc)) continue; const sh = mk(Fc, Pi); if (sh) faceCmd(Fc, sh); } },
       tube(a, b, w, shade) { cmd(L, [a, b], () => X.tube(L, a, b, w, shade, opt)); },
       disc(c, r, shade) { cmd(L, [c], () => X.disc(L, c, r, shade, opt)); },
+      /** Довільна пласка грань-многокутник (точки світу; O, Au, Bv — параметризація u, v: P = O + u·Au + v·Bv; n — зовнішня
+       *  нормаль): арка купола аналітики (крок 11). */
+      face(poly, O, Au, Bv, shade, n) { cmd(L, poly, () => X.face(L, poly, O, Au, Bv, shade, { id, fid: id, n })); },
     };
   }
   const POTLIKE = B => !!NX.arc.potOf && (B.st === 'pot' || (B.plant && B.st === 'gold'));   // вазони — лише з модулем рослин (зараз його немає)

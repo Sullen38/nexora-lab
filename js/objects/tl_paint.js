@@ -18,7 +18,7 @@
  * tl_podL/R (прожектори-проєктори на кінцях балки), tl_cblL/R (кабелі вздовж стійок — форма st:cable, NX.arc.tlCable);
  *   tl_back    — перфодошка внизу, за верстаком: дірочки, ряд гнізд над стільницею, інструменти на гачках (видно крізь
  *                простір для ніг); голо-картки — восьмикутні кіберпанк-картки з бурштиновим кантом (NX.arc.tlPane)
- * Коли Nexi працює в зоні (NX.objects.tools.active — наступний крок), усе біжить швидше. Написи — NX.t (4 мови):
+ * Коли Nexi працює в зоні (NX.objects.tools.active, крок 11), усе біжить швидше, а картка його задачі підключається за його роботою (tlSync). Написи — NX.t (4 мови):
  * scene.tools.*; без перекладу — CRM, API, AI (правило словників).
  * ========================================================================== */
 (() => {
@@ -235,9 +235,13 @@
   };
 
   // ---------- ВМІСТ ГОЛО-КАРТОК (objects/tools.js -> NX.arc.holo.pane) ----------
-  /** Стан синхронізації: яка картка зараз «підключається» і наскільки (k — номер, f — 0..1; f > 0.82 — готово, спалах),
-   *  коли Nexi працює — швидше. Одна для всіх (картки, жили дошки, хаб, маячок). */
-  const tlSync = t => { const p = t * (TL().active ? .45 : .16), k = Math.floor(p) % 3; return { k, f: p - Math.floor(p) }; };
+  /** Стан синхронізації: яка картка зараз «підключається» і наскільки (k — номер, f — 0..1; f > 0.82 — готово, спалах).
+   *  Сама по собі — по черзі; крок 11: коли Nexi підключає ПОШТУ / КАЛЕНДАР / CRM (focus 0..2), прогрес цієї картки йде за його
+   *  роботою (prog), а по завершенні (doneT) — ✓ і спалах ~2 с; АВТО (focus 3) — цикл просто швидший. Одна для всіх (картки,
+   *  хаб, маячок). */
+  const tlSync = t => {
+    const o = TL(); if (o.focus != null && o.focus < 3) { if (o.active) return { k: o.focus, f: Math.min(.8, (o.prog || 0) * .86) }; const dn = t - (o.doneT == null ? -99 : o.doneT); if (dn >= 0 && dn < 2.2) return { k: o.focus, f: .83 + .17 * dn / 2.2 }; }
+    const p = t * (o.active ? .45 : .16), k = Math.floor(p) % 3; return { k, f: p - Math.floor(p) }; };
   NX.arc.tlSync = tlSync;
   /** КІБЕРПАНК-КАРТКА (крок 10): восьмикутний обрис із виїмкою-«підвісом» угорі посередині, тепле темне скло з квадратною
    *  сіткою, бурштиновий неоновий кант з розщепленням кольорів (помаранчевий / жовтий), заклепки в кутах; шапка (title) —
@@ -290,6 +294,9 @@
   const NODES = [['doc', .18], ['bot', .39], ['crm', .61], ['mail', .82]];
   function auto(c, fw, fh, t) {
     cardBase(c, fw, fh, t_('scene.tools.auto'), t);
+    const o = TL(), foc = o.focus === 3, dn = t - (o.doneT == null ? -99 : o.doneT);                  // задача Nexi «автоматизація»: картка світиться, по завершенні — зелений спалах
+    if (foc && o.active) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,90,${.1 + .08 * Math.sin(t * 6)})`; c.fillRect(0, 0, fw, fh); c.restore(); }
+    else if (foc && dn >= 0 && dn < 2.2) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,255,170,${.35 * (1 - dn / 2.2)})`; c.fillRect(0, 0, fw, fh); c.restore(); }
     const y = fh * .5, sp = TL().active ? .9 : .38, r = fh * .1;
     c.strokeStyle = 'rgba(255,190,120,.4)'; c.lineWidth = .6; c.setLineDash([1.2, 1]); c.beginPath(); c.moveTo(fw * .18, y); c.lineTo(fw * .82, y); c.stroke(); c.setLineDash([]);
     NODES.forEach(([ic, f], k) => { const hit = Math.abs(((t * sp * 4) % 4) - k) < .25; c.fillStyle = hit ? 'rgba(255,170,90,.45)' : 'rgba(8,26,72,.9)'; rr(c, fw * f - r, y - r, r * 2, r * 2, 1.2); c.fill();

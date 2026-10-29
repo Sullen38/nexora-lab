@@ -252,7 +252,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / відсотки етапу, data-raw — текст як є (NEXI);
   data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
   для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
-<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="59" data-room="">
+<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="60" data-room="">
  <i class="sp-stars"></i>
  <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
  <!-- A · ДОК-СТАНЦІЯ -->
@@ -515,7 +515,7 @@ NX.i18n.add('uk', {
   scene: {   // НАПИСИ В КІМНАТІ (намальовані на екранах і табличках зон): objects/arc_paint.js, arc_live.js, screens.js. Великими літерами — як на екранах
     ai: { live: 'НАЖИВО', neuro: 'НЕЙРО', net: 'МЕРЕЖА', map: 'КАРТА', log: 'ЖУРНАЛ', vision: 'ЗІР', kpi: 'KPI', ok: 'ОК' },
     analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД', visitors: 'ВІДВІДУВАЧІ', today: 'СЬОГОДНІ', revenue: 'ВИРУЧКА', conv: 'КОНВЕРСІЯ', sales: 'ПРОДАЖІ',
-      days: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'НД'] },   // аналітика: екрани ВІДВІДУВАЧІ й ВИРУЧКА, стрічка ПРОДАЖІ на столі (objects/an_paint.js)
+      days: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'НД'], forecast: 'ПРОГНОЗ', ready: 'ЗВІТ ГОТОВИЙ' },   // аналітика: голо-екран у куполі (огляд, продажі, відвідувачі, прогноз, «звіт готовий»), стрічка ПРОДАЖІ на столі (objects/an_paint.js)
     marketing: { tags: 'AI-ТЕГИ', ads: 'РЕКЛАМА', live: 'НАЖИВО', reach: 'ОХОПЛЕННЯ', likes: 'ЛАЙКИ', clicks: 'КЛІКИ' },
     wallChat: ['AI', 'ЧАТ'], core: 'ЯДРО', scan: 'СКАН', coffee: { brew: 'ВАРЮ', done: 'ГОТОВО' },
     log: { tags: { OK: 'ОК', AI: 'AI', NET: 'МЕРЕЖА', WARN: 'УВАГА', ERR: 'ЗБІЙ' },   // журнал подій на екранах (objects/screens.js)
@@ -532,16 +532,16 @@ NX.i18n.add('uk', {
     go: { projects: 'Летимо до проєктів! Перевірю дедлайни.', team: 'Зазирну до команди — хто що робить.', clients: 'Лечу до клієнтів, зберу нові повідомлення.' },
     res: { projects: 'Проєкти: 3 активні, один дедлайн завтра. Я все записав.', team: 'Команда: 4 людини онлайн, двоє чекають на твою відповідь.', clients: 'Клієнти: 3 нові звернення, на два я вже відповів.' } },
   chat: { quick: { work: 'Робота', city: 'Місто', dance: 'Танець', cat: 'Кіт', skin: 'Скін' },
-    fallback: 'Поки я вмію: працювати в маркетингу за своїм столом, міняти скіни в майстерні, відпочивати на дивані, дивитись на місто, танцювати й гратися з Рудиком. Інші зони — скоро! Що робимо?',
+    fallback: 'Поки я вмію: працювати в маркетингу й аналітиці за своїми столами, підключати сервіси в інструментах, міняти скіни в майстерні, відпочивати на дивані, дивитись на місто, танцювати й гратися з Рудиком. Інші зони — скоро! Що робимо?',
     greet: 'Привіт! Я Nexi. Натисни на зону, диван чи вікно — і я піду туди. Натисни на мене, щоб змінити скін.' },
   act: {
     home: { title: 'Док-станція', steps: ['Повертаюсь на док', 'Заряджаюсь'], lines: ['Привіт! Я Nexi, твій AI-помічник для бізнесу. Натисни на зону, диван чи вікно — і я піду туди.', 'Я вдома, на зарядці. Чим займемось?'] },
     ai: { title: 'AI-центр: відповідь клієнту', steps: ['Злітаю на стіл', 'Читаю запит клієнта', 'Пишу відповідь', 'Надіслано ✓'], lines: ['AI-центр: відповідаю клієнтам, пишу листи й підсумки зустрічей.', 'Читаю ваші документи і за секунди знаходжу потрібне.', 'Генерую ідеї для акцій та назв. Опиши задачу, і я візьмусь.'] },
-    analytics: { title: 'Аналітика: звіт продажів', steps: ['Сідаю за екрани', 'Збираю дані', 'Будую графік', 'Звіт готовий ✓'], lines: ['Аналітика: збираю продажі, трафік і витрати в один звіт.', 'Бачу, де падає конверсія, і підкажу, що виправити.'] },
+    analytics: { title: 'Аналітика: звіт продажів', steps: ['Сідаю в крісло', 'Збираю дані', 'Будую графік', 'Звіт готовий ✓'], lines: ['Аналітика: збираю продажі, трафік і витрати в один звіт.', 'Бачу, де падає конверсія, і підкажу, що виправити.'] },
     marketing: { title: 'Маркетинг: кампанія', steps: ['Сідаю в крісло', 'Пишу пост', 'Запускаю рекламу', 'Охоплення росте ✓'], lines: ['Маркетинг: пишу пости, розсилки та рекламу у вашому стилі.', 'Підберу аудиторію і заплануюю кампанії на тиждень.'] },
     workshop: { title: 'Майстерня: новий скін', steps: ['Злітаю в капсулу', 'Сканую корпус', 'Обирай скін ✓'], lines: ['Майстерня! Обирай скін праворуч — маніпулятор його встановить.', 'Сканую корпус... Готовий до нового вигляду!'] },
     wsLook: { lines: ['Яка голограма! Оцей скін мені личить.', 'Скільки скінів… Тапни по майстерні — і я приміряю новий!'] },   // вільний час: милується голограмою
-    tools: { title: 'Інструменти: інтеграції', steps: ['Злітаю до панелі', 'Підключаю пошту', 'Підключаю календар', 'Підключаю CRM ✓'], lines: ['Інструменти: підключаю CRM, пошту, месенджери й календар.', 'Автоматизую рутину: нагадування, рахунки, заявки з сайту.'] },
+    tools: { title: 'Інструменти: інтеграції', steps: ['Злітаю до верстака', 'Підключаю сервіс', 'Синхронізую дані', 'Працює ✓'], lines: ['Інструменти: підключаю CRM, пошту, месенджери й календар.', 'Автоматизую рутину: нагадування, рахунки, заявки з сайту.'] },
     portal: { title: 'Портал: бізнес-простір', steps: ['Налаштовую пульт', 'Заряджаю портал', 'Подорож', 'Повернувся ✓'] },
     sofa: { title: 'Відпочинок на дивані', steps: ['Сідаю на диван', 'Читаю новини'], lines: ['Трохи відпочину й почитаю бізнес-новини.', 'Диван — найкраще місце для нових ідей.'] },
     sleep: { title: 'Сон на дивані', steps: ['Лягаю', 'Zzz...'], lines: ['Щось я втомився... Розбуди, коли буду потрібен.'] },
@@ -603,7 +603,7 @@ NX.i18n.add('en', {
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', today: 'TODAY', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
-      days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] },
+      days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'], forecast: 'FORECAST', ready: 'REPORT READY' },
     marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
     wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
@@ -620,7 +620,7 @@ NX.i18n.add('en', {
     go: { projects: 'Off to the projects! I will check the deadlines.', team: "I'll drop by the team and see who's doing what.", clients: 'Flying to the clients to collect new messages.' },
     res: { projects: 'Projects: 3 active, one deadline tomorrow. Noted everything.', team: 'Team: 4 people online, two are waiting for your reply.', clients: 'Clients: 3 new requests, I already answered two.' } },
   chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', skin: 'Skin' },
-    fallback: 'Right now I can: work in marketing at my desk, change skins in the workshop, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
+    fallback: 'Right now I can: work in marketing and analytics at my desks, connect services in tools, change skins in the workshop, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
     greet: "Hi! I'm Nexi. Tap a zone, the sofa or the window and I'll go there. Tap me to change my skin." },
   act: {
     home: { title: 'Charging dock', steps: ['Heading to the dock', 'Charging'], lines: ["Hi! I'm Nexi, your AI business assistant. Tap a zone, the sofa or the window and I'll go there.", "I'm home, charging. What's next?"] },
@@ -629,7 +629,7 @@ NX.i18n.add('en', {
     marketing: { title: 'Marketing: campaign', steps: ['Taking my chair', 'Writing a post', 'Launching ads', 'Reach is growing ✓'], lines: ['Marketing: I write posts, newsletters and ads in your style.', "I'll find the audience and plan the week's campaigns."] },
     wsLook: { lines: ['What a hologram! That skin suits me.', 'So many skins… Tap the workshop and I will try a new one!'] },
     workshop: { title: 'Workshop: new skin', steps: ['Flying into the capsule', 'Scanning body', 'Pick a skin ✓'], lines: ['Workshop! Pick a skin on the right and the arm will install it.', 'Scanning body... Ready for a new look!'] },
-    tools: { title: 'Tools: integrations', steps: ['Flying to the panel', 'Connecting email', 'Connecting calendar', 'Connecting CRM ✓'], lines: ['Tools: I connect your CRM, email, messengers and calendar.', 'I automate routine: reminders, invoices, website leads.'] },
+    tools: { title: 'Tools: integrations', steps: ['Flying to the workbench', 'Connecting the service', 'Syncing data', 'It works ✓'], lines: ['Tools: I connect your CRM, email, messengers and calendar.', 'I automate routine: reminders, invoices, website leads.'] },
     portal: { title: 'Portal: business space', steps: ['Setting the console', 'Charging the portal', 'Travelling', 'Back ✓'] },
     sofa: { title: 'Rest on the sofa', steps: ['Sitting down', 'Reading the news'], lines: ["I'll rest a bit and read business news.", 'The sofa is the best place for new ideas.'] },
     sleep: { title: 'Nap on the sofa', steps: ['Lying down', 'Zzz...'], lines: ["I'm a bit tired... Wake me up when you need me."] },
@@ -691,7 +691,7 @@ NX.i18n.add('pl', {
   scene: {
     ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', today: 'DZIŚ', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
-      days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'] },
+      days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'], forecast: 'PROGNOZA', ready: 'RAPORT GOTOWY' },
     marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
     wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
@@ -708,16 +708,16 @@ NX.i18n.add('pl', {
     go: { projects: 'Lecę do projektów! Sprawdzę terminy.', team: 'Zajrzę do zespołu — kto co robi.', clients: 'Lecę do klientów po nowe wiadomości.' },
     res: { projects: 'Projekty: 3 aktywne, jeden termin jutro. Wszystko zapisałem.', team: 'Zespół: 4 osoby online, dwie czekają na Twoją odpowiedź.', clients: 'Klienci: 3 nowe zgłoszenia, na dwa już odpowiedziałem.' } },
   chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', skin: 'Skórka' },
-    fallback: 'Na razie umiem: pracować w marketingu przy swoim biurku, zmieniać skórki w warsztacie, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
+    fallback: 'Na razie umiem: pracować w marketingu i analityce przy swoich biurkach, podłączać usługi w narzędziach, zmieniać skórki w warsztacie, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
     greet: 'Cześć! Jestem Nexi. Dotknij strefy, kanapy lub okna, a pójdę tam. Dotknij mnie, aby zmienić skórkę.' },
   act: {
     home: { title: 'Stacja dokująca', steps: ['Wracam do stacji', 'Ładuję się'], lines: ['Cześć! Jestem Nexi, Twój asystent AI dla biznesu. Dotknij strefy, kanapy lub okna, a pójdę tam.', 'Jestem w domu, ładuję się. Co robimy?'] },
     ai: { title: 'Centrum AI: odpowiedź klientowi', steps: ['Lecę na biurko', 'Czytam zapytanie', 'Piszę odpowiedź', 'Wysłane ✓'], lines: ['Centrum AI: odpowiadam klientom, piszę maile i podsumowania spotkań.', 'Czytam Twoje dokumenty i w sekundę znajduję to, czego trzeba.', 'Wymyślam pomysły na promocje i nazwy. Opisz zadanie, a się nim zajmę.'] },
-    analytics: { title: 'Analityka: raport sprzedaży', steps: ['Siadam przy ekranach', 'Zbieram dane', 'Rysuję wykres', 'Raport gotowy ✓'], lines: ['Analityka: zbieram sprzedaż, ruch i koszty w jeden raport.', 'Widzę, gdzie spada konwersja, i podpowiem, co poprawić.'] },
+    analytics: { title: 'Analityka: raport sprzedaży', steps: ['Siadam w fotelu', 'Zbieram dane', 'Rysuję wykres', 'Raport gotowy ✓'], lines: ['Analityka: zbieram sprzedaż, ruch i koszty w jeden raport.', 'Widzę, gdzie spada konwersja, i podpowiem, co poprawić.'] },
     marketing: { title: 'Marketing: kampania', steps: ['Siadam w fotelu', 'Piszę post', 'Uruchamiam reklamę', 'Zasięg rośnie ✓'], lines: ['Marketing: piszę posty, newslettery i reklamy w Twoim stylu.', 'Dobiorę odbiorców i zaplanuję kampanie na tydzień.'] },
     wsLook: { lines: ['Co za hologram! Ta skórka mi pasuje.', 'Tyle skórek… Dotknij warsztatu, a przymierzę nową!'] },
     workshop: { title: 'Warsztat: nowa skórka', steps: ['Wlatuję do kapsuły', 'Skanuję korpus', 'Wybierz skórkę ✓'], lines: ['Warsztat! Wybierz skórkę po prawej, a ramię ją zamontuje.', 'Skanuję korpus... Gotowy na nowy wygląd!'] },
-    tools: { title: 'Narzędzia: integracje', steps: ['Lecę do panelu', 'Podłączam pocztę', 'Podłączam kalendarz', 'Podłączam CRM ✓'], lines: ['Narzędzia: podłączam CRM, pocztę, komunikatory i kalendarz.', 'Automatyzuję rutynę: przypomnienia, faktury, zgłoszenia ze strony.'] },
+    tools: { title: 'Narzędzia: integracje', steps: ['Lecę do stołu roboczego', 'Podłączam usługę', 'Synchronizuję dane', 'Działa ✓'], lines: ['Narzędzia: podłączam CRM, pocztę, komunikatory i kalendarz.', 'Automatyzuję rutynę: przypomnienia, faktury, zgłoszenia ze strony.'] },
     portal: { title: 'Portal: przestrzeń firmy', steps: ['Ustawiam konsolę', 'Ładuję portal', 'Podróż', 'Wróciłem ✓'] },
     sofa: { title: 'Odpoczynek na kanapie', steps: ['Siadam na kanapie', 'Czytam wiadomości'], lines: ['Odpocznę chwilę i poczytam wiadomości biznesowe.', 'Kanapa to najlepsze miejsce na nowe pomysły.'] },
     sleep: { title: 'Drzemka na kanapie', steps: ['Kładę się', 'Zzz...'], lines: ['Coś się zmęczyłem... Obudź mnie, gdy będę potrzebny.'] },
@@ -779,7 +779,7 @@ NX.i18n.add('nl', {
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', today: 'VANDAAG', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
-      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'] },
+      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'], forecast: 'PROGNOSE', ready: 'RAPPORT KLAAR' },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
     wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
@@ -796,7 +796,7 @@ NX.i18n.add('nl', {
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },
     res: { projects: 'Projecten: 3 actief, één deadline morgen. Alles genoteerd.', team: 'Team: 4 mensen online, twee wachten op je antwoord.', clients: 'Klanten: 3 nieuwe aanvragen, twee heb ik al beantwoord.' } },
   chat: { quick: { work: 'Werk', city: 'Stad', dance: 'Dans', cat: 'Kat', skin: 'Skin' },
-    fallback: 'Ik kan nu: werken bij marketing aan mijn bureau, skins wisselen in de werkplaats, uitrusten op de bank, naar de stad kijken, dansen en spelen met Gember. Meer zones komen eraan! Wat gaan we doen?',
+    fallback: 'Ik kan nu: werken bij marketing en analyse aan mijn bureaus, diensten koppelen bij tools, skins wisselen in de werkplaats, uitrusten op de bank, naar de stad kijken, dansen en spelen met Gember. Meer zones komen eraan! Wat gaan we doen?',
     greet: 'Hoi! Ik ben Nexi. Tik op een zone, de bank of het raam en ik ga erheen. Tik op mij om mijn skin te wijzigen.' },
   act: {
     home: { title: 'Laadstation', steps: ['Terug naar het station', 'Opladen'], lines: ['Hoi! Ik ben Nexi, je AI-assistent voor je bedrijf. Tik op een zone, de bank of het raam en ik ga erheen.', 'Ik ben thuis aan het opladen. Wat gaan we doen?'] },
@@ -805,7 +805,7 @@ NX.i18n.add('nl', {
     marketing: { title: 'Marketing: campagne', steps: ['In mijn stoel', 'Post schrijven', 'Advertentie starten', 'Bereik groeit ✓'], lines: ['Marketing: ik schrijf posts, nieuwsbrieven en advertenties in jouw stijl.', 'Ik kies de doelgroep en plan de campagnes voor de week.'] },
     wsLook: { lines: ['Wat een hologram! Die skin staat me goed.', 'Zoveel skins… Tik op de werkplaats en ik pas een nieuwe!'] },
     workshop: { title: 'Werkplaats: nieuwe skin', steps: ['De capsule in vliegen', 'Romp scannen', 'Kies een skin ✓'], lines: ['Werkplaats! Kies rechts een skin en de robotarm installeert hem.', 'Romp scannen... Klaar voor een nieuwe look!'] },
-    tools: { title: 'Tools: integraties', steps: ['Naar het paneel vliegen', 'E-mail koppelen', 'Agenda koppelen', 'CRM koppelen ✓'], lines: ['Tools: ik koppel je CRM, e-mail, chat-apps en agenda.', 'Ik automatiseer routine: herinneringen, facturen, aanvragen via de site.'] },
+    tools: { title: 'Tools: integraties', steps: ['Naar de werkbank vliegen', 'Dienst koppelen', 'Data synchroniseren', 'Het werkt ✓'], lines: ['Tools: ik koppel je CRM, e-mail, chat-apps en agenda.', 'Ik automatiseer routine: herinneringen, facturen, aanvragen via de site.'] },
     portal: { title: 'Portaal: bedrijfsruimte', steps: ['Console instellen', 'Portaal opladen', 'Reizen', 'Terug ✓'] },
     sofa: { title: 'Rust op de bank', steps: ['Gaan zitten', 'Nieuws lezen'], lines: ['Even rusten en zakelijk nieuws lezen.', 'De bank is de beste plek voor nieuwe ideeën.'] },
     sleep: { title: 'Dutje op de bank', steps: ['Gaan liggen', 'Zzz...'], lines: ['Ik ben een beetje moe... Maak me wakker als je me nodig hebt.'] },
@@ -1917,12 +1917,15 @@ NX.room = {
     }
     return out;
   },
-  /** Якщо точка всередині сліду — на найближчу його сторону (ліву, праву, передню; задню — якщо вона на підлозі). */
+  /** Якщо точка всередині сліду — на найближчу його сторону (ліву, праву, передню; задню — якщо вона на підлозі). Сторона, що
+   *  потрапляє в ІНШИЙ слід, — в останню чергу (крок 11: крісло аналітики стоїть впритул перед слідом стола — інакше точку
+   *  перед столом кидало то з крісла в стіл, то зі стола в крісло, і Nexi міг стати всередині сліду стола). */
   freeAt(x, y, who) {
     const b = this.walkBounds(), R = this.obstacles(who), ok = (p, q) => p >= b.minX && p <= b.maxX && q >= b.minY && q <= b.maxY;
+    const inAny = (p, q) => R.some(r => p > r[0] && p < r[1] && q > r[2] && q < r[3]) ? 1 : 0;
     for (let it = 0; it < 4; it++) {
       const r = R.find(r => x > r[0] && x < r[1] && y > r[2] && y < r[3]); if (!r) break;
-      const c = [[r[0] - .5, y, x - r[0]], [r[1] + .5, y, r[1] - x], [x, r[3] + .5, (r[3] - y) * .8], [x, r[2] - .5, y - r[2]]].filter(p => ok(p[0], p[1])).sort((a, b2) => a[2] - b2[2])[0];
+      const c = [[r[0] - .5, y, x - r[0]], [r[1] + .5, y, r[1] - x], [x, r[3] + .5, (r[3] - y) * .8], [x, r[2] - .5, y - r[2]]].filter(p => ok(p[0], p[1])).sort((a, b2) => (inAny(a[0], a[1]) - inAny(b2[0], b2[1])) || a[2] - b2[2])[0];
       if (!c) break; x = c[0]; y = c[1];
     }
     return [x, y];
@@ -4614,7 +4617,7 @@ NX.floorTiles = (() => {
  * Предмет: {id, zone, x, z — середина лиця на підлозі, turn — поворот (°), w, dep — ширина й глибина, yt..yb — висота,
  *   st — стиль (матеріал), on — на чому стоїть, cyl — циліндр, plant/fw/fh/bloom/hangs — рослина, deco — оздоби лиця}.
  * ========================================================================== */
-NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1062.36,"z":65.48,"turn":0,"w":308.76,"dep":107.64,"yb":372.0,"yt":329.51,"st":"base","sh":[0.492526,65.481]},{"id":"ws_dais","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":240.78,"dep":90.65,"yb":329.51,"yt":318.18,"st":"base","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_pad","zone":"workshop","x":1062.36,"z":82.48,"turn":0,"w":62.32,"dep":45.32,"yb":318.18,"yt":312.51,"st":"dark","on":"ws_dais","cyl":24,"band":1,"sh":[0.492526,65.481]},{"id":"ws_wingL","zone":"workshop","x":924.98,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[14.16,0.0],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_wingR","zone":"workshop","x":1199.75,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[0.0,14.16],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postL","zone":"workshop","x":968.89,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postR","zone":"workshop","x":1155.84,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_back","zone":"workshop","x":1062.36,"z":130.63,"turn":0,"w":133.14,"dep":11.33,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sh":[0.492526,65.481]},{"id":"ws_beam","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":274.77,"dep":82.15,"yb":156.72,"yt":100.06,"st":"frame","ch":[22.66,22.66],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_sign","zone":"workshop","x":1062.36,"z":70.3,"turn":0,"w":170.279,"dep":3.4,"yb":144.0,"yt":109.95,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}],"sh":[0.492526,65.481]},{"id":"ws_dome","zone":"workshop","x":1062.36,"z":86.02,"turn":0,"w":118.97,"dep":62.32,"yb":100.06,"yt":80.23,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1,"sh":[0.492526,65.481]},{"id":"ws_dome2","zone":"workshop","x":1062.36,"z":90.98,"turn":0,"w":99.14,"dep":52.4,"yb":80.23,"yt":66.07,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7,"sh":[0.492526,65.481]},{"id":"ws_cap","zone":"workshop","x":1062.36,"z":98.77,"turn":0,"w":70.82,"dep":36.82,"yb":66.07,"yt":57.57,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62,"sh":[0.492526,65.481]},{"id":"ws_mount","zone":"workshop","x":1062.36,"z":104.43,"turn":0,"w":28.33,"dep":25.49,"yb":57.57,"yt":40.58,"st":"dark","on":"ws_cap","cyl":14,"sh":[0.492526,65.481]},{"id":"ws_projL","zone":"workshop","x":946.23,"z":66.33,"turn":0,"w":45.32,"dep":7.08,"yb":329.51,"yt":323.84,"st":"dark","on":"ws_base","ch":[2.83,2.83],"sh":[0.492526,65.481]},{"id":"ws_projR","zone":"workshop","x":1178.5,"z":66.33,"turn":0,"w":45.32,"dep":7.08,"yb":329.51,"yt":323.84,"st":"dark","on":"ws_base","ch":[2.83,2.83],"sh":[0.492526,65.481]},{"id":"tl_top","zone":"tools","x":1229.33,"z":-33.12,"turn":20,"w":227.14,"dep":59.54,"yb":305.84,"yt":292.61,"st":"brushed","sh":[1.165988,-31.049]},{"id":"tl_legFL","zone":"tools","x":1133.07,"z":5.44,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legFR","zone":"tools","x":1327.86,"z":-65.46,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legBL","zone":"tools","x":1148.53,"z":47.92,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legBR","zone":"tools","x":1343.32,"z":-22.98,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_brR","zone":"tools","x":1330.12,"z":-59.24,"turn":20,"w":8.82,"dep":38.59,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_brL","zone":"tools","x":1135.34,"z":11.65,"turn":20,"w":8.82,"dep":38.59,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_brB","zone":"tools","x":1246.68,"z":14.54,"turn":20,"w":196.26,"dep":2.21,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_shelf","zone":"tools","x":1231.22,"z":-27.94,"turn":20,"w":196.26,"dep":50.72,"yb":345.54,"yt":341.13,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_box","zone":"tools","x":1176.87,"z":0.05,"turn":20,"w":55.13,"dep":24.26,"yb":341.13,"yt":322.38,"st":"toolbox","on":"tl_shelf","sh":[1.165988,-31.049]},{"id":"tl_coil","zone":"tools","x":1284.63,"z":-39.17,"turn":20,"w":37.49,"dep":30.87,"yb":341.13,"yt":329.0,"st":"dark","on":"tl_shelf","cyl":22,"band":1,"sh":[1.165988,-31.049]},{"id":"tl_hub","zone":"tools","x":1234.61,"z":-18.62,"turn":20,"w":74.98,"dep":24.26,"yb":292.61,"yt":279.38,"st":"term","on":"tl_top","sh":[1.165988,-31.049]},{"id":"tl_viseB","zone":"tools","x":1316.28,"z":-55.38,"turn":20,"w":28.67,"dep":22.05,"yb":292.61,"yt":286.0,"st":"col","on":"tl_top","sh":[1.165988,-31.049]},{"id":"tl_viseJ","zone":"tools","x":1317.03,"z":-53.31,"turn":20,"w":24.26,"dep":13.23,"yb":286.0,"yt":276.07,"st":"chrome","on":"tl_viseB","sh":[1.165988,-31.049]},{"id":"tl_beam","zone":"tools","x":1217.157,"z":45.228,"turn":20,"w":242.57,"dep":11.03,"yb":83.12,"yt":69.89,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_postL","zone":"tools","x":1115.337,"z":84.638,"turn":20,"w":6.62,"dep":6.62,"yb":372.0,"yt":83.12,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_postR","zone":"tools","x":1320.487,"z":9.968,"turn":20,"w":6.62,"dep":6.62,"yb":372.0,"yt":83.12,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_back","zone":"tools","x":1219.427,"z":51.448,"turn":20,"w":205.08,"dep":3.31,"yb":372.0,"yt":288.2,"st":"board","sh":[1.165988,-31.049]},{"id":"tl_cblL","zone":"tools","x":1122.597,"z":81.998,"turn":20,"w":6.62,"dep":2.21,"yb":278.28,"yt":84.22,"st":"cable","sh":[1.165988,-31.049]},{"id":"tl_cblR","zone":"tools","x":1313.237,"z":12.608,"turn":20,"w":6.62,"dep":2.21,"yb":278.28,"yt":84.22,"st":"cable","sh":[1.165988,-31.049]},{"id":"tl_podL","zone":"tools","x":1114.207,"z":81.528,"turn":20,"w":17.64,"dep":7.72,"yb":69.89,"yt":61.07,"st":"pod","on":"tl_beam","sh":[1.165988,-31.049]},{"id":"tl_podR","zone":"tools","x":1319.357,"z":6.858,"turn":20,"w":17.64,"dep":7.72,"yb":69.89,"yt":61.07,"st":"pod","on":"tl_beam","sh":[1.165988,-31.049]},{"id":"tl_hangL","zone":"tools","x":1167.797,"z":62.61,"turn":20,"w":2.21,"dep":2.21,"yb":97.45,"yt":83.12,"st":"chrome","cyl":8,"sh":[1.165988,-31.049]},{"id":"tl_hangR","zone":"tools","x":1277.627,"z":22.64,"turn":20,"w":2.21,"dep":2.21,"yb":97.45,"yt":83.12,"st":"chrome","cyl":8,"sh":[1.165988,-31.049]},{"id":"tl_sign","zone":"tools","x":1221.617,"z":39.62,"turn":20,"w":186.057,"dep":2.65,"yb":123.52,"yt":91.23,"st":"board","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07944444444444444,0.5,0.03755555555555556],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.15166666666666667,0.97,0.16,0.86],"key":"nav.tools","col":"#7af4ff"}],"sh":[1.165988,-31.049]},{"id":"tl_scr","zone":"tools","x":1223.331,"z":32.427,"turn":20,"w":196.26,"dep":1.1,"yb":271.66,"yt":126.12,"st":"dark","ghost":1,"sh":[1.165988,-31.049]}],"cols":[],"armZone":"workshop","scales":{"far":1.416340556452093,"mid":1.1026005419674538},"angles":{"mid":"front"},"mains":{"workshop":["ws_base","ws_beam","ws_postL"],"tools":["tl_beam","tl_legFL"]},"anchors":{"wsPad":[1081.89,312.51,105.14],"wsFront":[1056.08,372.0,52.73],"wsArm":[1087.82,41.99,117.18],"wsBeamBot":[1083.29,156.72,107.97],"wsTabL":[948.32,257.28,69.73],"wsTabR":[1180.59,257.28,69.73],"wsProjL":[948.39,323.84,69.87],"wsProjR":[1180.66,323.84,69.87],"tlFront":[1211.07,372.0,-43.48],"tlBenchTop":[1230.09,292.61,-31.05],"tlTiles":[1297.34,156.99,32.43],"tlHub":[1266.54,279.38,-7.22],"tlAnt":[1288.78,279.38,-11.09],"tlVise":[1300.59,276.07,-47.09],"tlBeacon":[1307.69,69.89,46.27]},"zoneXf":{"workshop":{"ax":1062.365,"az":65.481,"m":1.41634,"Xref":1005,"Yf":358,"sh":[0.492526,65.481]},"tools":{"ax":1230.089,"az":-31.049,"m":1.1026,"Xref":1230,"Yf":357,"sh":[1.165988,-31.049],"turn":20}},"zoneBox":{"workshop":[893.0,1167.2,70.6,355.0],"tools":[1161.2,1393.0,62.2,394.6]},"armRig":{"pts":[[1087.82,46.24,117.18],[1168.56,0.92,117.18],[1262.03,54.74,117.18],[1242.21,88.73,117.18]],"k":1.18,"zone":"workshop"},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":477.2,"z":88.5,"turn":0,"w":315.08,"dep":59.97,"yb":372.0,"yt":304.83,"st":"desk","sh":[-0.487751,88.497]},{"id":"mk_booth","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":229.6,"dep":26.87,"yb":133.86,"yt":77.68,"st":"frame","ch":[14.66,14.66],"sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpL","zone":"marketing","x":370.96,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpR","zone":"marketing","x":583.45,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bb","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":195.4,"dep":26.87,"yb":372.0,"yt":292.62,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_screen","zone":"marketing","x":477.2,"z":163.12,"turn":0,"w":195.4,"dep":7.33,"yb":292.62,"yt":133.86,"st":"screen","sh":[-0.487751,88.497]},{"id":"mk_sign","zone":"marketing","x":477.2,"z":149.2,"turn":0,"w":193.038,"dep":2.93,"yb":125.07,"yt":86.47,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.127536231884058,0.5,0.06028985507246377],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.24347826086956523,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}],"sh":[-0.487751,88.497]},{"id":"mk_projL","zone":"marketing","x":355.08,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"mk_projR","zone":"marketing","x":599.33,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"an_top","zone":"analytics","x":309.85,"z":-0.16,"turn":-20,"w":215.53,"dep":60.35,"yb":307.34,"yt":292.25,"st":"desk","grp":"an_top","sh":[-1.15895,-3.3]},{"id":"an_topR","zone":"analytics","x":208.59,"z":-37.02,"turn":-20,"w":30.17,"dep":60.35,"yb":307.34,"yt":292.31,"st":"desk","cyl":28,"grp":"an_top","sh":[-1.15895,-3.3]},{"id":"an_pedL","zone":"analytics","x":233.44,"z":-23.39,"turn":-20,"w":51.73,"dep":49.57,"yb":372.0,"yt":307.34,"st":"desk","sh":[-1.15895,-3.3]},{"id":"an_pedR","zone":"analytics","x":379.26,"z":29.69,"turn":-20,"w":51.73,"dep":49.57,"yb":372.0,"yt":307.34,"st":"term","sh":[-1.15895,-3.3]},{"id":"an_knee","zone":"analytics","x":292.34,"z":41.63,"turn":-20,"w":103.45,"dep":4.31,"yb":365.53,"yt":309.5,"st":"dark","sh":[-1.15895,-3.3]},{"id":"an_kick","zone":"analytics","x":302.66,"z":13.28,"turn":-20,"w":103.45,"dep":5.39,"yb":361.22,"yt":356.91,"st":"chrome","sh":[-1.15895,-3.3]},{"id":"an_glow","zone":"analytics","x":308.1,"z":1.49,"turn":-20,"w":209.06,"dep":1.72,"yb":309.07,"yt":307.34,"st":"clamp","glow":1,"gr":48,"sh":[-1.15895,-3.3]},{"id":"an_puck","zone":"analytics","x":300.45,"z":19.35,"turn":-20,"w":38.79,"dep":28.02,"yb":292.25,"yt":286.87,"st":"dark","on":"an_top","cyl":20,"band":1,"sh":[-1.15895,-3.3]},{"id":"an_mug","zone":"analytics","x":216.31,"z":-20.45,"turn":-20,"w":12.93,"dep":12.93,"yb":292.25,"yt":279.32,"st":"mug","on":"an_top","cyl":14,"sh":[-1.15895,-3.3]},{"id":"an_emit","zone":"analytics","x":278.35,"z":42.27,"turn":-20,"w":163.8,"dep":7.54,"yb":292.25,"yt":287.94,"st":"dark","on":"an_top","sh":[-1.15895,-3.3]},{"id":"an_halo","zone":"analytics","x":320.819,"z":87.544,"turn":-20,"w":228.46,"dep":4.31,"yb":328.89,"yt":69.18,"st":"halo","sh":[-1.15895,-3.3]},{"id":"an_scr","zone":"analytics","x":305.285,"z":48.629,"turn":-20,"w":2.16,"dep":1.08,"yb":259.93,"yt":139.23,"st":"dark","ghost":1,"sh":[-1.15895,-3.3]},{"id":"an_sign","zone":"analytics","x":316.231,"z":75.549,"turn":-20,"w":199.41,"dep":2.59,"yb":112.23,"yt":77.87,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07944444444444444,0.5,0.03755555555555556],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.15166666666666667,0.97,0.16,0.86],"key":"nav.analytics","col":"#7af4ff"}],"sh":[-1.15895,-3.3]}],"cols":[],"armZone":"marketing","scales":{"far":1.2212518450367364,"mid":1.0776368797470612},"angles":{"mid":"front"},"mains":{"marketing":["mk_booth","mk_desk"],"analytics":["an_halo","an_pedL"]},"anchors":{"mkChair":[491.49,372.0,59.19],"mkKeys":[471.84,304.83,99.49],"mkProjL":[339.52,297.5,120.4],"mkProjR":[583.77,297.5,120.4],"mkScreen":[440.8,213.24,163.12],"mkDeskTop":[477.2,304.83,88.5],"anChair":[331.94,372.0,-27.6],"anDeskTop":[294.94,292.25,-3.3],"anScreen":[245.1,199.58,48.63],"anPuck":[254.15,286.87,32.52],"anMug":[226.93,279.32,-14.37],"anEmit":[220.9,287.94,45.31],"anDish":[155.07,150.01,53.44]},"zoneXf":{"marketing":{"ax":477.205,"az":88.497,"m":1.22125,"Xref":589,"Yf":337,"sh":[-0.487751,88.497]},"analytics":{"ax":294.936,"az":-3.3,"m":1.07764,"Xref":399,"Yf":340,"sh":[-1.15895,-3.3],"turn":-20}},"zoneBox":{"marketing":[385.7,655.0,109.9,349.9],"analytics":[170.0,391.7,82.0,382.0]},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
+NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1062.36,"z":65.48,"turn":0,"w":308.76,"dep":107.64,"yb":372.0,"yt":329.51,"st":"base","sh":[0.492526,65.481]},{"id":"ws_dais","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":240.78,"dep":90.65,"yb":329.51,"yt":318.18,"st":"base","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_pad","zone":"workshop","x":1062.36,"z":82.48,"turn":0,"w":62.32,"dep":45.32,"yb":318.18,"yt":312.51,"st":"dark","on":"ws_dais","cyl":24,"band":1,"sh":[0.492526,65.481]},{"id":"ws_wingL","zone":"workshop","x":924.98,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[14.16,0.0],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_wingR","zone":"workshop","x":1199.75,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[0.0,14.16],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postL","zone":"workshop","x":968.89,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postR","zone":"workshop","x":1155.84,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_back","zone":"workshop","x":1062.36,"z":130.63,"turn":0,"w":133.14,"dep":11.33,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sh":[0.492526,65.481]},{"id":"ws_beam","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":274.77,"dep":82.15,"yb":156.72,"yt":100.06,"st":"frame","ch":[22.66,22.66],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_sign","zone":"workshop","x":1062.36,"z":70.3,"turn":0,"w":170.279,"dep":3.4,"yb":144.0,"yt":109.95,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}],"sh":[0.492526,65.481]},{"id":"ws_dome","zone":"workshop","x":1062.36,"z":86.02,"turn":0,"w":118.97,"dep":62.32,"yb":100.06,"yt":80.23,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1,"sh":[0.492526,65.481]},{"id":"ws_dome2","zone":"workshop","x":1062.36,"z":90.98,"turn":0,"w":99.14,"dep":52.4,"yb":80.23,"yt":66.07,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7,"sh":[0.492526,65.481]},{"id":"ws_cap","zone":"workshop","x":1062.36,"z":98.77,"turn":0,"w":70.82,"dep":36.82,"yb":66.07,"yt":57.57,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62,"sh":[0.492526,65.481]},{"id":"ws_mount","zone":"workshop","x":1062.36,"z":104.43,"turn":0,"w":28.33,"dep":25.49,"yb":57.57,"yt":40.58,"st":"dark","on":"ws_cap","cyl":14,"sh":[0.492526,65.481]},{"id":"ws_projL","zone":"workshop","x":946.23,"z":66.33,"turn":0,"w":45.32,"dep":7.08,"yb":329.51,"yt":323.84,"st":"dark","on":"ws_base","ch":[2.83,2.83],"sh":[0.492526,65.481]},{"id":"ws_projR","zone":"workshop","x":1178.5,"z":66.33,"turn":0,"w":45.32,"dep":7.08,"yb":329.51,"yt":323.84,"st":"dark","on":"ws_base","ch":[2.83,2.83],"sh":[0.492526,65.481]},{"id":"tl_top","zone":"tools","x":1229.33,"z":-33.12,"turn":20,"w":227.14,"dep":59.54,"yb":305.84,"yt":292.61,"st":"brushed","sh":[1.165988,-31.049]},{"id":"tl_legFL","zone":"tools","x":1133.07,"z":5.44,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legFR","zone":"tools","x":1327.86,"z":-65.46,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legBL","zone":"tools","x":1148.53,"z":47.92,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_legBR","zone":"tools","x":1343.32,"z":-22.98,"turn":20,"w":11.03,"dep":6.62,"yb":372.0,"yt":305.84,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_brR","zone":"tools","x":1330.12,"z":-59.24,"turn":20,"w":8.82,"dep":38.59,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_brL","zone":"tools","x":1135.34,"z":11.65,"turn":20,"w":8.82,"dep":38.59,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_brB","zone":"tools","x":1246.68,"z":14.54,"turn":20,"w":196.26,"dep":2.21,"yb":341.13,"yt":309.15,"st":"brace","sh":[1.165988,-31.049]},{"id":"tl_shelf","zone":"tools","x":1231.22,"z":-27.94,"turn":20,"w":196.26,"dep":50.72,"yb":345.54,"yt":341.13,"st":"col","sh":[1.165988,-31.049]},{"id":"tl_box","zone":"tools","x":1176.87,"z":0.05,"turn":20,"w":55.13,"dep":24.26,"yb":341.13,"yt":322.38,"st":"toolbox","on":"tl_shelf","sh":[1.165988,-31.049]},{"id":"tl_coil","zone":"tools","x":1284.63,"z":-39.17,"turn":20,"w":37.49,"dep":30.87,"yb":341.13,"yt":329.0,"st":"dark","on":"tl_shelf","cyl":22,"band":1,"sh":[1.165988,-31.049]},{"id":"tl_hub","zone":"tools","x":1234.61,"z":-18.62,"turn":20,"w":74.98,"dep":24.26,"yb":292.61,"yt":279.38,"st":"term","on":"tl_top","sh":[1.165988,-31.049]},{"id":"tl_viseB","zone":"tools","x":1316.28,"z":-55.38,"turn":20,"w":28.67,"dep":22.05,"yb":292.61,"yt":286.0,"st":"col","on":"tl_top","sh":[1.165988,-31.049]},{"id":"tl_viseJ","zone":"tools","x":1317.03,"z":-53.31,"turn":20,"w":24.26,"dep":13.23,"yb":286.0,"yt":276.07,"st":"chrome","on":"tl_viseB","sh":[1.165988,-31.049]},{"id":"tl_beam","zone":"tools","x":1217.157,"z":45.228,"turn":20,"w":242.57,"dep":11.03,"yb":83.12,"yt":69.89,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_postL","zone":"tools","x":1115.337,"z":84.638,"turn":20,"w":6.62,"dep":6.62,"yb":372.0,"yt":83.12,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_postR","zone":"tools","x":1320.487,"z":9.968,"turn":20,"w":6.62,"dep":6.62,"yb":372.0,"yt":83.12,"st":"gantry","sh":[1.165988,-31.049]},{"id":"tl_back","zone":"tools","x":1219.427,"z":51.448,"turn":20,"w":205.08,"dep":3.31,"yb":372.0,"yt":288.2,"st":"board","sh":[1.165988,-31.049]},{"id":"tl_cblL","zone":"tools","x":1122.597,"z":81.998,"turn":20,"w":6.62,"dep":2.21,"yb":278.28,"yt":84.22,"st":"cable","sh":[1.165988,-31.049]},{"id":"tl_cblR","zone":"tools","x":1313.237,"z":12.608,"turn":20,"w":6.62,"dep":2.21,"yb":278.28,"yt":84.22,"st":"cable","sh":[1.165988,-31.049]},{"id":"tl_podL","zone":"tools","x":1114.207,"z":81.528,"turn":20,"w":17.64,"dep":7.72,"yb":69.89,"yt":61.07,"st":"pod","on":"tl_beam","sh":[1.165988,-31.049]},{"id":"tl_podR","zone":"tools","x":1319.357,"z":6.858,"turn":20,"w":17.64,"dep":7.72,"yb":69.89,"yt":61.07,"st":"pod","on":"tl_beam","sh":[1.165988,-31.049]},{"id":"tl_hangL","zone":"tools","x":1167.797,"z":62.61,"turn":20,"w":2.21,"dep":2.21,"yb":97.45,"yt":83.12,"st":"chrome","cyl":8,"sh":[1.165988,-31.049]},{"id":"tl_hangR","zone":"tools","x":1277.627,"z":22.64,"turn":20,"w":2.21,"dep":2.21,"yb":97.45,"yt":83.12,"st":"chrome","cyl":8,"sh":[1.165988,-31.049]},{"id":"tl_sign","zone":"tools","x":1221.617,"z":39.62,"turn":20,"w":186.057,"dep":2.65,"yb":123.52,"yt":91.23,"st":"board","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07944444444444444,0.5,0.03755555555555556],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.15166666666666667,0.97,0.16,0.86],"key":"nav.tools","col":"#7af4ff"}],"sh":[1.165988,-31.049]},{"id":"tl_scr","zone":"tools","x":1223.331,"z":32.427,"turn":20,"w":196.26,"dep":1.1,"yb":271.66,"yt":126.12,"st":"dark","ghost":1,"sh":[1.165988,-31.049]}],"cols":[],"armZone":"workshop","scales":{"far":1.416340556452093,"mid":1.1026005419674538},"angles":{"mid":"front"},"mains":{"workshop":["ws_base","ws_beam","ws_postL"],"tools":["tl_beam","tl_legFL"]},"anchors":{"wsPad":[1081.89,312.51,105.14],"wsFront":[1056.08,372.0,52.73],"wsArm":[1087.82,41.99,117.18],"wsBeamBot":[1083.29,156.72,107.97],"wsTabL":[948.32,257.28,69.73],"wsTabR":[1180.59,257.28,69.73],"wsProjL":[948.39,323.84,69.87],"wsProjR":[1180.66,323.84,69.87],"tlFront":[1211.07,372.0,-43.48],"tlBenchTop":[1230.09,292.61,-31.05],"tlTiles":[1297.34,156.99,32.43],"tlHub":[1266.54,279.38,-7.22],"tlAnt":[1288.78,279.38,-11.09],"tlVise":[1300.59,276.07,-47.09],"tlBeacon":[1307.69,69.89,46.27]},"zoneXf":{"workshop":{"ax":1062.365,"az":65.481,"m":1.41634,"Xref":1005,"Yf":358,"sh":[0.492526,65.481]},"tools":{"ax":1230.089,"az":-31.049,"m":1.1026,"Xref":1230,"Yf":357,"sh":[1.165988,-31.049],"turn":20}},"zoneBox":{"workshop":[893.0,1167.2,70.6,355.0],"tools":[1161.2,1393.0,62.2,394.6]},"armRig":{"pts":[[1087.82,46.24,117.18],[1168.56,0.92,117.18],[1262.03,54.74,117.18],[1242.21,88.73,117.18]],"k":1.18,"zone":"workshop"},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":477.2,"z":88.5,"turn":0,"w":315.08,"dep":59.97,"yb":372.0,"yt":304.83,"st":"desk","sh":[-0.487751,88.497]},{"id":"mk_booth","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":229.6,"dep":26.87,"yb":133.86,"yt":77.68,"st":"frame","ch":[14.66,14.66],"sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpL","zone":"marketing","x":370.96,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpR","zone":"marketing","x":583.45,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bb","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":195.4,"dep":26.87,"yb":372.0,"yt":292.62,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_screen","zone":"marketing","x":477.2,"z":163.12,"turn":0,"w":195.4,"dep":7.33,"yb":292.62,"yt":133.86,"st":"screen","sh":[-0.487751,88.497]},{"id":"mk_sign","zone":"marketing","x":477.2,"z":149.2,"turn":0,"w":193.038,"dep":2.93,"yb":125.07,"yt":86.47,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.127536231884058,0.5,0.06028985507246377],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.24347826086956523,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}],"sh":[-0.487751,88.497]},{"id":"mk_projL","zone":"marketing","x":355.08,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"mk_projR","zone":"marketing","x":599.33,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"an_top","zone":"analytics","x":309.06,"z":0.9,"turn":-20,"w":215.46,"dep":60.33,"yb":307.36,"yt":292.28,"st":"desk","grp":"an_top","sh":[-1.158445,-2.232]},{"id":"an_topR","zone":"analytics","x":207.83,"z":-35.94,"turn":-20,"w":30.16,"dep":60.33,"yb":307.36,"yt":292.33,"st":"desk","cyl":28,"grp":"an_top","sh":[-1.158445,-2.232]},{"id":"an_pedL","zone":"analytics","x":232.68,"z":-22.31,"turn":-20,"w":51.71,"dep":49.56,"yb":372.0,"yt":307.36,"st":"desk","sh":[-1.158445,-2.232]},{"id":"an_pedR","zone":"analytics","x":378.45,"z":30.74,"turn":-20,"w":51.71,"dep":49.56,"yb":372.0,"yt":307.36,"st":"term","sh":[-1.158445,-2.232]},{"id":"an_knee","zone":"analytics","x":291.57,"z":42.68,"turn":-20,"w":103.42,"dep":4.31,"yb":365.54,"yt":309.52,"st":"dark","sh":[-1.158445,-2.232]},{"id":"an_kick","zone":"analytics","x":301.88,"z":14.34,"turn":-20,"w":103.42,"dep":5.39,"yb":361.23,"yt":356.92,"st":"chrome","sh":[-1.158445,-2.232]},{"id":"an_glow","zone":"analytics","x":307.32,"z":2.56,"turn":-20,"w":209.0,"dep":1.72,"yb":309.09,"yt":307.36,"st":"clamp","glow":1,"gr":48,"sh":[-1.158445,-2.232]},{"id":"an_puck","zone":"analytics","x":362.44,"z":43.26,"turn":-20,"w":38.78,"dep":28.01,"yb":292.28,"yt":286.89,"st":"dark","on":"an_top","cyl":20,"band":1,"sh":[-1.158445,-2.232]},{"id":"an_mug","zone":"analytics","x":215.56,"z":-19.37,"turn":-20,"w":12.93,"dep":12.93,"yb":292.28,"yt":279.35,"st":"mug","on":"an_top","cyl":14,"sh":[-1.158445,-2.232]},{"id":"an_dome","zone":"analytics","x":320.101,"z":89.752,"turn":-20,"w":228.39,"dep":2.69,"yb":320.29,"yt":68.2,"st":"dome","sh":[-1.158445,-2.232]},{"id":"an_sign","zone":"analytics","x":321.211,"z":86.722,"turn":-20,"w":203.59,"dep":2.59,"yb":149.27,"yt":114.26,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07944444444444444,0.5,0.03755555555555556],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.15166666666666667,0.97,0.16,0.86],"key":"nav.analytics","col":"#7af4ff"}],"sh":[-1.158445,-2.232]},{"id":"an_scr","zone":"analytics","x":310.219,"z":74.691,"turn":-20,"w":2.15,"dep":1.08,"yb":264.27,"yt":156.54,"st":"dark","ghost":1,"sh":[-1.158445,-2.232]}],"cols":[],"armZone":"marketing","scales":{"far":1.2212518450367364,"mid":1.0773009394354516},"angles":{"mid":"front"},"mains":{"marketing":["mk_booth","mk_desk"],"analytics":["an_dome","an_pedL"]},"anchors":{"mkChair":[491.49,372.0,59.19],"mkKeys":[471.84,304.83,99.49],"mkProjL":[339.52,297.5,120.4],"mkProjR":[583.77,297.5,120.4],"mkScreen":[440.8,213.24,163.12],"mkDeskTop":[477.2,304.83,88.5],"anChair":[324.16,372.0,-46.79],"anDeskTop":[274.83,292.28,-14.39],"anScreen":[221.1,210.4,74.69],"anPuck":[289.7,286.89,56.42],"anMug":[226.17,279.35,-13.3]},"zoneXf":{"marketing":{"ax":477.205,"az":88.497,"m":1.22125,"Xref":589,"Yf":337,"sh":[-0.487751,88.497]},"analytics":{"ax":294.155,"az":-2.232,"m":1.0773,"Xref":399,"Yf":340,"sh":[-1.158445,-2.232],"turn":-20}},"zoneBox":{"marketing":[385.7,655.0,109.9,349.9],"analytics":[170.5,391.7,81.7,381.7]},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
 
 </script>    <!-- розкладка крил «по дузі» (генерує tools/wingbox/gen_room.py) -->
 <!-- КРИЛА «ПО ДУЗІ» В ПІКСЕЛЬНОМУ 3D: матеріали -> малюнки граней -> сцена (стіни, підлога, зони) -> живі екрани -->
@@ -5296,6 +5299,9 @@ NX.arc = NX.arc || {};
       partF(Pi, mk) { for (const Fc of A.faces(Pi)) { if (!A.visible(Fc)) continue; const sh = mk(Fc, Pi); if (sh) faceCmd(Fc, sh); } },
       tube(a, b, w, shade) { cmd(L, [a, b], () => X.tube(L, a, b, w, shade, opt)); },
       disc(c, r, shade) { cmd(L, [c], () => X.disc(L, c, r, shade, opt)); },
+      /** Довільна пласка грань-многокутник (точки світу; O, Au, Bv — параметризація u, v: P = O + u·Au + v·Bv; n — зовнішня
+       *  нормаль): арка купола аналітики (крок 11). */
+      face(poly, O, Au, Bv, shade, n) { cmd(L, poly, () => X.face(L, poly, O, Au, Bv, shade, { id, fid: id, n })); },
     };
   }
   const POTLIKE = B => !!NX.arc.potOf && (B.st === 'pot' || (B.plant && B.st === 'gold'));   // вазони — лише з модулем рослин (зараз його немає)
@@ -6369,11 +6375,11 @@ NX.arc = NX.arc || {};
 <script>
 /* ---- js/objects/an_paint.js ---- */
 /* ============================================================================
- * objects/an_paint.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): МАЛЮНКИ ГРАНЕЙ, ЖИВІ ГРАНІ, ВМІСТ ГОЛО-ПАНЕЛЕЙ
+ * objects/an_paint.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): МАЛЮНКИ ГРАНЕЙ, ЖИВІ ГРАНІ, КУПОЛ, ВМІСТ ГОЛО-ЕКРАНА
  * ----------------------------------------------------------------------------
  * Розкладка частин — tools/wingbox/gen_room.py: analytics() (id an_*). Тут — як виглядають їхні грані (NX.arc.paint[id], пласкі
- * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id]). Голо-панелі, 3D-діаграма, радар, пара над
- * кавою — живий об'єкт objects/analytics.js (вміст панелей — NX.arc.anPane нижче).
+ * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id]). Голо-екран, 3D-діаграма, голо-клавіатура, пара
+ * над кавою — живий об'єкт objects/analytics.js (вміст екрана — NX.arc.anScreen нижче); крісло — objects/an_chair.js.
  * Крок 9 (власник: «вклади душу: більше графіки, унікальності, фішок; простір для ніг між тумбочками, унікальні краї; столи не
  * однакові; екрани — пласкі, зрідка глючать»). Характер зони: спокійна наукова обсерваторія — холодний блакитний і фіолет,
  * теплі латунні акценти (ручки шухляд, кава), скло й плавні форми.
@@ -6382,15 +6388,16 @@ NX.arc = NX.arc || {};
  *   an_pedL    — тумба з трьома шухлядами: латунні ручки, картки-мітки, замок; збоку (видно) — панель з неоновою смугою
  *   an_pedR    — серверна стійка: ґратка, чотири блоки з вогниками й лотками дисків, смуга навантаження (живі)
  *   an_knee    — у глибині простору для ніг: скляна «труба даних» на кріпленнях, кабелі (по трубі біжать імпульси — живі)
- *   an_mug, an_puck — верх чашки (кава з сердечком) і лінза проєктора
- * Крок 10 (власник: «екрани громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк»): шафу-рамку (шапка,
- * стовпи, «стіна даних») прибрано — ГОЛО-КОКПІТ:
- *   an_emit    — тонка планка-емітер на задньому краї стільниці (три лінзи під панелями; промені — живі)
- *   an_halo    — тонке неонове гало-кільце за панелями (форма NX.arc.shape['st:halo']: блакитна й рожева трубки, шкала, вузли)
- *   вміст трьох панелей кокпіту (NX.arc.anPane: visitors / revenue / conv) — кіберпанк-обрис зі зрізаними кутами, розщеплення
- *   кольорів на канті, шапка-вкладка, «дощ даних», шкала, штрих-код.
- * Нові матеріали (NX.arc.kit.STY): chrome — хром (підставка для ніг), mug — світла кераміка.
- * Коли Nexi працює в зоні (NX.objects.analytics.active — наступний крок), дані біжать швидше. Написи — NX.t (4 мови).
+ *   an_mug, an_puck — верх чашки (кава з сердечком) і лінза проєктора (крок 11 — на правому краї стільниці)
+ * Крок 10 — голо-кокпіт (три кіберпанк-панелі, гало-кільце, планка-емітер). Крок 11 (власник: «з екраном аналітики перебор —
+ * треба простіше; або хоч якийсь фон, бо дуже цегляну стіну видно; спробуй ще щось»): кокпіт прибрано —
+ *   an_dome    — КУПОЛ ОБСЕРВАТОРІЇ на стіні (форма NX.arc.shape['st:dome']): тонка плита темного скла з аркою вгорі, ледь
+ *                видимі ребра купола й зорі, неоновий кант по арці, хромовані вузли; ховає цеглу за екраном
+ *   вміст ОДНОГО широкого голо-екрана (NX.arc.anScreen): скло з тонким кантом, шапка (назва, ● НАЖИВО, смужка прогресу, коли
+ *   Nexi працює), ліворуч — головне число, праворуч — графік, унизу — три показники; вигляд — за задачею Nexi: огляд виручки,
+ *   ПРОДАЖІ за тиждень (стовпчики по днях), ВІДВІДУВАЧІ (карта з пінгами), ПРОГНОЗ (пунктир у майбутнє); по завершенні —
+ *   печатка «ЗВІТ ГОТОВИЙ ✓».
+ * Матеріали (NX.arc.kit.STY): chrome — хром (підставка для ніг), mug — світла кераміка, dome — темне скло купола. Написи — NX.t (4 мови).
  * ========================================================================== */
 (() => {
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k), K = NX.kit;
@@ -6414,7 +6421,7 @@ NX.arc = NX.arc || {};
   /** Стільниця зверху: темне скло (глянець — матеріал), ледь видима сітка, світний «килимок» під проєктором. */
   PAINT.an_top.sides = { top: (c, fw, fh) => {
     c.strokeStyle = 'rgba(90,200,255,.09)'; c.lineWidth = .3; for (let x = 6; x < fw; x += 7) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, fh); c.stroke(); } for (let y = 5; y < fh; y += 7) { c.beginPath(); c.moveTo(0, y); c.lineTo(fw, y); c.stroke(); }
-    const cx = fw * .49, cy = fh * .59; [[30, .3], [25, .18]].forEach(([r, a]) => { c.strokeStyle = `rgba(59,232,255,${a})`; c.lineWidth = .7; c.beginPath(); c.ellipse(cx, cy, r, r * .72, 0, 0, 7); c.stroke(); });   // «килимок» під проєктором (an_puck)
+    const cx = fw * .8, cy = fh * .59; [[26, .3], [21, .18]].forEach(([r, a]) => { c.strokeStyle = `rgba(59,232,255,${a})`; c.lineWidth = .7; c.beginPath(); c.ellipse(cx, cy, r, r * .72, 0, 0, 7); c.stroke(); });   // «килимок» під проєктором (an_puck — на правому краї)
     c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(0, 0, fw, .6);
   } };
   /** Заокруглений зовнішній кінець стільниці (циліндр, пів-еліпс у плані): бік — та сама кромка, що й спереду (світла губа,
@@ -6522,159 +6529,157 @@ NX.arc = NX.arc || {};
 
   LIVE.an_sign = NX.arc.glint(7.4, 2.1);
 
-  // ---------- ГОЛО-КОКПІТ (крок 10): тонкі емітер і гало-кільце замість шафи-рамки ----------
-  // Власник: «екрани громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк». Шапки, стовпів і «стіни даних»
-  // більше немає: над столом висять три пласкі голо-панелі дугою (objects/analytics.js), їх «проєктує» тонка планка-емітер
-  // на задньому краї стільниці, за ними — тонке неонове гало-кільце, на ньому вивіска й радар.
-  const SHP = NX.arc.shape = NX.arc.shape || {}, NE = A.NEON;
-  /** ГАЛО-КІЛЬЦЕ (форма st:halo): еліпс у площині предмета — товста блакитна неонова трубка, ближче — тонка рожева, риски-
-   *  шкала назовні (як лімб телескопа), хромовані вузли з блакитним «оком»; низ ховається за столом (z-буфер). */
-  SHP['st:halo'] = (G, B) => {
-    const P = G.P, rx = B.w / 2, ry = (B.yb - B.yt) / 2, yc = (B.yt + B.yb) / 2, v = B.dep / 2, n = 96, TAU = Math.PI * 2;
-    const at = (a, k = 1, dv = 0) => P(Math.cos(a) * rx * k, v + dv, yc - Math.sin(a) * ry * k);
-    const tube = pal => (u, vv, i, j) => { X3.SH.fl |= X3.F_EMIT; return Math.abs(u - .5) < .22 ? pal[2] : pal[1]; };
-    const cyan = tube(NE.cyan), pink = tube(NE.pink);
-    for (let i = 0; i < n; i++) G.tube(at(i / n * TAU), at((i + 1) / n * TAU), 1.8, cyan);
-    for (let i = 0; i < n / 2; i++) G.tube(at(i / (n / 2) * TAU, .955, -1.6), at((i + 1) / (n / 2) * TAU, .955, -1.6), .7, pink);
-    const steel = (u, vv, i, j) => X3.ramp(PL.CHROME, .3 + (1 - Math.abs(u - .5) * 2) * .55, i, j);
-    for (let k = 0; k < 60; k++) { const a = k / 60 * TAU, long = k % 5 === 0; G.tube(at(a, 1.04), at(a, long ? 1.095 : 1.065), long ? .7 : .45, steel); }   // шкала
-    [25, 155, 205, 335].forEach(d => { const p = at(d * Math.PI / 180, 1, -.9);
-      G.disc([p[0], p[1], p[2] - .3], 2.3, (u, vv, i, j) => { const r = Math.hypot(u - .5, vv - .5); if (r < .17) { X3.SH.fl |= X3.F_EMIT; return NE.cyan[2]; } return X3.ramp(PL.CHROME, .9 - r * 1.2 + (u < .45 && vv < .45 ? .15 : 0), i, j); }); });
+  // ---------- КУПОЛ ОБСЕРВАТОРІЇ (крок 11): фон за екраном — замість гало-кільця й цегли ----------
+  // Власник: «з екраном аналітики перебор — треба простіше; або хоч якийсь фон, бо дуже цегляну стіну видно». Купол — тонка
+  // (2.5 px) плита темного скла на стіні: прямі боки й полога арка вгорі (як вікно обсерваторії); усередині ледь видимі ребра купола й
+  // зорі, по арці — неоновий кант, на п'ятах арки й угорі — хромовані вузли. Низ — за столом.
+  const SHP = NX.arc.shape = NX.arc.shape || {}, X3s = NX.px3d;
+  A.STY.dome = A.STY.dome || { pal: PL.NAVY, q: .3, bev: 0, ins: 0 };
+  /** Обрис купола в текстурі (fw × fh, од. світу): k — відступ усередину. Арка — пів-еліпс заввишки rise над прямими боками. */
+  const domeRise = (fw, fh) => Math.min(fw / 2 * .62, fh * .48);                                   // арка пологіша за півколо: вивіска вгорі вміщається між п'ятами арки
+  function arch(c, fw, fh, k = 0) { const a = fw / 2, rise = domeRise(fw, fh); c.beginPath(); c.moveTo(k, fh + 1); c.lineTo(k, rise); c.ellipse(a, rise, a - k, rise - k, 0, Math.PI, 0); c.lineTo(fw - k, fh + 1); c.closePath(); }
+  /** Скло купола: темно-синій перелив, ледь видимі ребра й паралелі купола, зорі (кілька яскравіших з хрестиком), темна
+   *  фаска всередині краю, неоновий кант по арці, хромовані вузли. */
+  function domeArt(c, fw, fh) {
+    const a = fw / 2, rise = domeRise(fw, fh);
+    let g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#040720'); g.addColorStop(.45, '#070e2e'); g.addColorStop(1, '#0a1238'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    g = c.createRadialGradient(a * .62, rise * .5, 0, a * .62, rise * .5, a * .75); g.addColorStop(0, 'rgba(110,80,220,.12)'); g.addColorStop(1, 'rgba(110,80,220,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    g = c.createRadialGradient(a * 1.4, rise * .9, 0, a * 1.4, rise * .9, a * .6); g.addColorStop(0, 'rgba(40,150,255,.09)'); g.addColorStop(1, 'rgba(40,150,255,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    c.save(); arch(c, fw, fh); c.clip();
+    c.strokeStyle = 'rgba(120,190,255,.075)'; c.lineWidth = .35;                                                   // ребра купола й паралелі
+    [.36, .7].forEach(k => { c.beginPath(); c.ellipse(a, rise, a * k, rise, 0, Math.PI, 0); c.stroke(); [-1, 1].forEach(sd => { c.beginPath(); c.moveTo(a + sd * a * k, rise); c.lineTo(a + sd * a * k, fh); c.stroke(); }); });
+    c.beginPath(); c.moveTo(a, 0); c.lineTo(a, fh); c.stroke();
+    [.4, .74].forEach(k => { const y = rise * (1 - k), hw = a * Math.sqrt(1 - k * k); c.beginPath(); c.moveTo(a - hw, y); c.lineTo(a + hw, y); c.stroke(); });
+    for (let i = 0; i < 150; i++) {                                                                             // зорі (гущі вгорі)
+      const x = hash(i, 71) * fw, y = Math.pow(hash(i, 73), 1.7) * fh * .92, s = hash(i, 75), big = s > .94, r = big ? .65 : .22 + s * .28;
+      c.fillStyle = big ? 'rgba(235,250,255,.95)' : `rgba(${s > .5 ? '200,232,255' : '168,184,255'},${.16 + s * .32})`; c.fillRect(x - r, y - r, r * 2, r * 2);
+      if (big) { c.fillStyle = 'rgba(190,236,255,.35)'; c.fillRect(x - 2.4, y - .15, 4.8, .3); c.fillRect(x - .15, y - 2.4, .3, 4.8); } }
+    c.strokeStyle = 'rgba(0,0,12,.6)'; c.lineWidth = 6; arch(c, fw, fh); c.stroke();                               // темна фаска всередині краю
+    c.restore();
+    [['rgba(10,40,90,.9)', 2.6], ['#3be8ff', 1.1], ['#d8fcff', .38]].forEach(([st, w]) => { c.strokeStyle = st; c.lineWidth = w; arch(c, fw, fh, 1.7); c.stroke(); });   // неоновий кант
+    c.strokeStyle = 'rgba(190,225,255,.4)'; c.lineWidth = .45; arch(c, fw, fh, .25); c.stroke();                   // край скла
+    [[1.7, rise], [fw - 1.7, rise], [a, 1.7]].forEach(([x, y]) => { const gg = c.createRadialGradient(x - .6, y - .6, 0, x, y, 2.6); gg.addColorStop(0, '#ffffff'); gg.addColorStop(.4, '#aeb8e6'); gg.addColorStop(1, '#2a2f5e');
+      c.fillStyle = gg; c.beginPath(); c.arc(x, y, 2.6, 0, 7); c.fill(); c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(x, y, .8, 0, 7); c.fill(); });   // хромовані вузли
+  }
+  /** КУПОЛ (форма st:dome): лицьова грань — многокутник (прямі боки + арка з 48 відрізків) з текстурою domeArt; торець по обрису —
+   *  тонка хромована смужка (видно збоку). Предмет B: w — ширина, yt..yb — від верху арки до низу, dep — товщина. */
+  SHP['st:dome'] = (G, B) => {
+    const Pp = G.P, a = B.w / 2, H = B.yb - B.yt, rise = domeRise(B.w, H), ys = B.yt + rise, n = 48, sub = X3s.sub, dot = X3s.dot;
+    const outl = [[-a, B.yb], [-a, ys]]; for (let i = 1; i < n; i++) { const th = Math.PI - i / n * Math.PI; outl.push([a * Math.cos(th), ys - rise * Math.sin(th)]); } outl.push([a, ys], [a, B.yb]);
+    const Fr = outl.map(([u, y]) => Pp(u, 0, y)), Bk = outl.map(([u, y]) => Pp(u, B.dep, y));
+    const unit = v => { const l = Math.hypot(...v) || 1; return v.map(q => q / l); };
+    let nF = X3s.newell(Fr); if (dot(nF, sub(Pp(0, -10, ys), Pp(0, 0, ys))) < 0) nF = nF.map(q => -q); nF = unit(nF);
+    const O = Pp(-a, 0, B.yt), Fc = { k: 'front', poly: Fr, n: nF, fw: B.w, fh: H, O, A: sub(Pp(a, 0, B.yt), O), B: sub(Pp(-a, 0, B.yb), O) };
+    G.face(Fr, Fc.O, Fc.A, Fc.B, A.shader('dome', Fc, B, { tex: A.texture(B, Fc, 3.5, domeArt), fog: 0 }), nF);
+    const cen = Pp(0, B.dep / 2, ys), rim = (u, v, i, j) => v < .3 ? X3s.ramp(PL.CHROME, .7 - v, i, j) : X3s.ramp(PL.STEEL, .5, i, j);
+    for (let i = 0; i < outl.length - 1; i++) {
+      const poly = [Fr[i], Fr[i + 1], Bk[i + 1], Bk[i]], m = poly.reduce((s2, p) => [s2[0] + p[0] / 4, s2[1] + p[1] / 4, s2[2] + p[2] / 4], [0, 0, 0]);
+      let nn = X3s.newell(poly); if (dot(nn, sub(m, cen)) < 0) nn = nn.map(q => -q); nn = unit(nn);
+      G.face(poly, Fr[i], sub(Fr[i + 1], Fr[i]), sub(Bk[i], Fr[i]), rim, nn);
+    }
   };
-  /** Планка-емітер на задньому краї стільниці: темний корпус зі світлою губою, блакитна неонова щілина, три лінзи — під
-   *  кожною панеллю (промені до панелей — живі, objects/analytics.js). */
-  const LENS = [.08, .5, .92];
-  PAINT.an_emit = (c, fw, fh) => {
-    c.fillStyle = 'rgba(4,6,20,.88)'; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(200,240,255,.4)'; c.fillRect(0, 0, fw, fh * .16);
-    A.neon(c, fw * .02, fh * .66, fw * .98, fh * .66, CY, .6);
-    LENS.forEach(f => { c.fillStyle = '#05030f'; rr(c, fw * f - 4.5, fh * .14, 9, fh * .7, .8); c.fill();
-      const g = c.createRadialGradient(fw * f, fh * .48, 0, fw * f, fh * .48, 4.2); g.addColorStop(0, '#ffffff'); g.addColorStop(.35, '#9af6ff'); g.addColorStop(1, 'rgba(59,232,255,0)'); c.fillStyle = g; c.fillRect(fw * f - 4.5, fh * .1, 9, fh * .8); });
-  };
-  PAINT.an_emit.sides = { top: (c, fw, fh) => { c.fillStyle = 'rgba(4,6,20,.6)'; c.fillRect(0, 0, fw, fh); A.neon(c, fw * .03, fh * .55, fw * .97, fh * .55, CY, 1.2);
-    LENS.forEach(f => { c.fillStyle = '#ffffff'; c.fillRect(fw * f - 2.5, fh * .55 - .5, 5, 1); }); } };
 
-  // ---------- ВМІСТ ГОЛО-ПАНЕЛЕЙ КОКПІТУ (objects/analytics.js -> NX.arc.holo.pane, crisp) ----------
-  /** КІБЕРПАНК-ПАНЕЛЬ: обрис зі зрізаними кутами (ліворуч угорі й праворуч унизу), темне скло з тонкою сіткою й «дощем даних»,
-   *  шапка-вкладка з назвою й іконкою, неоновий кант з розщепленням кольорів (блакитний / рожевий), білі кутові скоби, риски-
-   *  шкала по лівому краю, штрих-код і вогник стану. Повертає k — розмір зрізу (вміст — від шапки вниз). */
-  function cyber(c, fw, fh, title, ic, t, seed = 0) {
-    const e = .8, k = Math.min(fw, fh) * .14, hh = fh * .095;
-    const path = (dx = 0) => { c.beginPath(); c.moveTo(k + e + dx, e); c.lineTo(fw - e + dx, e); c.lineTo(fw - e + dx, fh - k - e); c.lineTo(fw - k - e + dx, fh - e); c.lineTo(e + dx, fh - e); c.lineTo(e + dx, k + e); c.closePath(); };
-    const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, 'rgba(14,34,96,.84)'); g.addColorStop(.55, 'rgba(10,18,66,.8)'); g.addColorStop(1, 'rgba(34,12,74,.86)');
-    path(); c.fillStyle = g; c.fill();
-    c.save(); path(); c.clip();
-    c.strokeStyle = 'rgba(90,200,255,.07)'; c.lineWidth = .25; c.beginPath(); for (let x = 3; x < fw; x += 4) { c.moveTo(x, 0); c.lineTo(x, fh); } for (let y = 3; y < fh; y += 4) { c.moveTo(0, y); c.lineTo(fw, y); } c.stroke();   // сітка
-    for (let i = 0; i < 7; i++) { const x = fw * (.07 + i * .14), sp = 6 + 9 * hash(i, seed + 3);                   // «дощ даних»
-      for (let q = 0; q < 5; q++) { const y = ((t * sp + hash(i, q + seed) * fh + q * fh * .21) % (fh * 1.1)) - fh * .05; c.fillStyle = q === 0 ? 'rgba(200,250,255,.22)' : `rgba(90,220,255,${.1 - q * .015})`; c.fillRect(x, y, 1.1, .8); } }
+  // ---------- ГОЛО-ЕКРАН У КУПОЛІ (крок 11; objects/analytics.js -> NX.arc.holo.pane, crisp) ----------
+  // Один широкий екран замість трьох панелей: спокійне скло, тонкий кант, шапка, головне число, графік, три показники. Що
+  // показує — за задачею Nexi (S.view): огляд виручки (у спокої), продажі за тиждень, відвідувачі, прогноз; S.prog — поступ
+  // задачі (стовпчики, пінги, пунктир ростуть), S.done — печатка «ЗВІТ ГОТОВИЙ ✓» після задачі (0..1 — проявлення/згасання).
+  const VIEW = { overview: ['scene.analytics.revenue', 'chart'], sales: ['scene.analytics.sales', 'chart'], traffic: ['scene.analytics.visitors', 'user'], forecast: ['scene.analytics.forecast', 'target'] };
+  const DAYV = [.52, .64, .58, .74, .92, .46, .38], BEST = 4;                                                       // продажі по днях: п'ятниця — найкраща
+  const kpi = (c, x, y, w, h, ic, label, value, col, t, seed) => {
+    c.fillStyle = 'rgba(10,30,84,.9)'; rr(c, x, y, w, h, 1.4); c.fill(); c.strokeStyle = 'rgba(120,220,255,.28)'; c.lineWidth = .3; rr(c, x, y, w, h, 1.4); c.stroke();
+    icon(c, ic, x + h * .42, y + h * .5, h * .42, col);
+    A.txt(c, label, x + h * .8, y + h * .3, w - h * .9, h * .24, 'rgba(190,225,255,.85)', { align: 'left' });
+    A.txt(c, value, x + h * .8, y + h * .68, w * .5, h * .34, '#e8feff', { align: 'left' });
+    c.strokeStyle = col; c.lineWidth = .45; c.beginPath();                                                       // міні-графік
+    for (let i = 0; i <= 8; i++) { const xx = x + w * (.66 + .3 * i / 8), yy = y + h * (.78 - .5 * wave(Math.floor(t * .8) + i, seed)); i ? c.lineTo(xx, yy) : c.moveTo(xx, yy); } c.stroke();
+  };
+  function anScreen(c, fw, fh, t, S = {}) {
+    const view = VIEW[S.view] ? S.view : 'overview', act = !!S.act, prog = S.prog || 0, r = 3.2, e = .6;
+    // скло й кант
+    let g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, 'rgba(12,30,82,.97)'); g.addColorStop(.55, 'rgba(7,17,54,.97)'); g.addColorStop(1, 'rgba(9,13,46,.97)');
+    rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.fillStyle = g; c.fill();
+    c.save(); rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.clip();
+    c.strokeStyle = 'rgba(90,200,255,.05)'; c.lineWidth = .25; c.beginPath(); for (let x = 6; x < fw; x += 6) { c.moveTo(x, 0); c.lineTo(x, fh); } for (let y = 6; y < fh; y += 6) { c.moveTo(0, y); c.lineTo(fw, y); } c.stroke();
+    g = c.createLinearGradient(0, 0, fw, fh); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.42, 'rgba(255,255,255,0)'); g.addColorStop(.47, 'rgba(200,240,255,.05)'); g.addColorStop(.55, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);   // відблиск по склу
     c.restore();
-    c.beginPath(); c.moveTo(k + e + .6, e + .6); c.lineTo(fw * .74, e + .6); c.lineTo(fw * .74 - hh * .6, hh); c.lineTo(e + .6 + k * .4, hh); c.closePath();   // шапка-вкладка
-    c.fillStyle = 'rgba(59,232,255,.2)'; c.fill();
-    A.txt(c, title, k + e + 1.6, hh * .55, fw * .74 - k - hh * .7 - 2.6, hh * .58, '#e8feff', { align: 'left', glow: CY });
-    icon(c, ic, fw * .84, hh * .55, hh * .55, 'rgba(190,240,255,.9)');
-    c.fillStyle = Math.sin(t * 5 + seed) > 0 ? '#ff4f6a' : '#7a1a2a'; c.beginPath(); c.arc(fw * .94, hh * .55, hh * .13, 0, 7); c.fill();
-    c.fillStyle = 'rgba(120,230,255,.55)'; c.fillRect(e + 1, hh + 1, fw - 2 * e - 2, .3); c.fillStyle = '#e8feff'; c.fillRect(e + 1, hh + .9, fw * .16, .5);
-    for (let y = hh + 3; y < fh - k; y += 2.6) { const L = Math.round((y - hh) / 2.6) % 4 === 0; c.fillStyle = L ? 'rgba(150,240,255,.6)' : 'rgba(150,240,255,.3)'; c.fillRect(e + .9, y, L ? 1.6 : .9, .25); }   // шкала
-    for (let i = 0, x = fw * .5; i < 14 && x < fw - k - 2; i++) { const w = .25 + .55 * hash(i, seed + 9); c.fillStyle = 'rgba(190,240,255,.5)'; c.fillRect(x, fh - e - 2.8, w, 1.6); x += w + .35 + .4 * hash(i, seed + 4); }   // штрих-код
-    c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = .5;
-    c.strokeStyle = 'rgba(255,60,210,.55)'; path(.5); c.stroke(); c.strokeStyle = 'rgba(60,220,255,.5)'; path(-.5); c.stroke(); c.restore();   // розщеплення кольорів
-    c.strokeStyle = '#8af4ff'; c.lineWidth = .55; path(); c.stroke();
-    const L = Math.min(fw, fh) * .1; c.strokeStyle = '#ffffff'; c.lineWidth = 1; c.beginPath();
-    c.moveTo(fw - e - L, e + .5); c.lineTo(fw - e - .5, e + .5); c.lineTo(fw - e - .5, e + L); c.moveTo(e + .5, fh - e - L); c.lineTo(e + .5, fh - e - .5); c.lineTo(e + L, fh - e - .5); c.stroke();   // скоби
-    c.strokeStyle = 'rgba(255,90,220,.9)'; c.lineWidth = .5; c.beginPath(); c.moveTo(e + 1.6, k + e - .2); c.lineTo(k + e - .2, e + 1.6); c.moveTo(fw - k - e + .2, fh - e - 1.6); c.lineTo(fw - e - 1.6, fh - k - e + .2); c.stroke();   // кант зрізів
-    return { k, hh };
-  }
-  /** Скан-смуга по панелі. */
-  function sheen(c, fw, fh, t, seed) {
-    c.save(); c.globalCompositeOperation = 'lighter';
-    const ry = (((t + seed) * .11) % 1.3 - .15) * fh, g = c.createLinearGradient(0, ry - fh * .06, 0, ry + fh * .06);
-    g.addColorStop(0, 'rgba(150,230,255,0)'); g.addColorStop(.5, 'rgba(150,230,255,.1)'); g.addColorStop(1, 'rgba(150,230,255,0)'); c.fillStyle = g; c.fillRect(0, ry - fh * .06, fw, fh * .12);
+    c.fillStyle = 'rgba(210,245,255,.2)'; c.fillRect(r + 1, e + .5, fw - 2 * r - 2, .35);
+    c.strokeStyle = '#7af4ff'; c.lineWidth = .55; rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.stroke();
+    c.strokeStyle = '#e8feff'; c.lineWidth = .8; const L = 6; c.beginPath();                                      // світлі кути
+    [[e, e, 1, 1], [fw - e, e, -1, 1], [e, fh - e, 1, -1], [fw - e, fh - e, -1, -1]].forEach(([x, y, sx, sy]) => { c.moveTo(x + sx * (r + L), y); c.lineTo(x + sx * r, y); c.moveTo(x, y + sy * r); c.lineTo(x, y + sy * (r + L)); }); c.stroke();
+    // шапка: іконка й назва вигляду, ● НАЖИВО, під нею — смужка прогресу задачі (коли Nexi працює)
+    const hh = fh * .15, [key, ic] = VIEW[view];
+    icon(c, ic, 7.5, hh * .56, hh * .46, CY);
+    A.txt(c, t_(key), 12.5, hh * .56, fw * .55, hh * .44, '#e8feff', { align: 'left', glow: CY });
+    const on = Math.sin(t * 4) > -.4; c.fillStyle = on ? '#ff4f6a' : '#6a1a2a'; c.beginPath(); c.arc(fw * .79, hh * .56, 1.1, 0, 7); c.fill();
+    A.txt(c, t_('scene.marketing.live'), fw * .81, hh * .56, fw * .16, hh * .3, 'rgba(255,205,215,.92)', { align: 'left' });
+    c.fillStyle = 'rgba(120,230,255,.3)'; c.fillRect(4, hh, fw - 8, .3);
+    if (act) { c.fillStyle = 'rgba(255,201,77,.22)'; c.fillRect(4, hh - .25, fw - 8, .8); c.fillStyle = GO; c.fillRect(4, hh - .25, (fw - 8) * prog, .8); }
+    // ліворуч — головне число й підпис; праворуч — графік вигляду
+    const y0 = hh + 3, yb = fh * .74, lx = 6, lw = fw * .27, gx = fw * .33, gw = fw - gx - 5, gy = y0 + 1, gh = yb - gy;
+    const grow = act ? prog : 1, sum = 48 + 9 * (.5 + .5 * Math.sin(t * .2)), pct = 18 + 4 * Math.sin(t * .4);
+    let big, sub2, delta = null;
+    if (view === 'sales') { big = '+' + NX.num(4 + 24 * grow, 1) + '%'; sub2 = t_('scene.analytics.sales'); }
+    else if (view === 'traffic') { big = NX.num(3 + 9.4 * grow, 1) + ' ' + t_('scene.unit.k'); sub2 = t_('scene.analytics.today'); }
+    else if (view === 'forecast') { big = '+' + NX.num(5 + 17 * grow, 1) + '%'; sub2 = t_('scene.analytics.forecast'); }
+    else { big = NX.num(sum, 1) + ' ' + t_('scene.unit.k'); sub2 = t_('scene.analytics.today'); delta = '+' + NX.num(pct, 1) + '%'; }
+    A.txt(c, sub2, lx, y0 + 4, lw, 3.4, 'rgba(190,225,255,.8)', { align: 'left' });
+    A.txt(c, big, lx, y0 + 13, lw, 8.5, '#ffffff', { align: 'left', glow: CY });
+    if (delta) { c.fillStyle = 'rgba(40,255,140,.14)'; rr(c, lx, y0 + 20, lw * .78, 7, 1.4); c.fill(); c.fillStyle = GR; c.beginPath(); c.moveTo(lx + 2, y0 + 25.4); c.lineTo(lx + 3.8, y0 + 21.6); c.lineTo(lx + 5.6, y0 + 25.4); c.fill();
+      A.txt(c, delta, lx + 7, y0 + 23.6, lw * .6, 4, '#b8ffd2', { align: 'left' }); }
+    c.fillStyle = 'rgba(8,22,70,.75)'; rr(c, gx, gy, gw, gh, 1.6); c.fill();
+    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.1)'; c.fillRect(gx + 1, gy + gh * k / 4, gw - 2, .3); }
+    c.save(); rr(c, gx, gy, gw, gh, 1.6); c.clip();
+    if (view === 'sales') {                                                                                       // стовпчики по днях: з'являються по черзі
+      const days = NX.t('scene.analytics.days'), n = 7, bw = gw / n;
+      DAYV.forEach((v, k) => { const f = Math.max(0, Math.min(1, grow * n - k)), h = (gh - 6) * v * (1 - Math.pow(1 - f, 2)), x = gx + bw * (k + .2), w = bw * .6, y = gy + gh - 4.5 - h, best = k === BEST && f > .9;
+        if (h > .3) { const gg = c.createLinearGradient(0, y, 0, gy + gh - 4.5); gg.addColorStop(0, best ? '#ffe4fa' : '#e8feff'); gg.addColorStop(.25, best ? '#ff7ad0' : '#5ae8ff'); gg.addColorStop(1, best ? '#7a1a8a' : '#1a5ad0'); c.fillStyle = gg; c.fillRect(x, y, w, h); }
+        if (best) { c.fillStyle = GO; star(c, x + w / 2, y - 2.4, 1.6); }
+        if (Array.isArray(days)) A.txt(c, days[k], x + w / 2, gy + gh - 2, bw * .9, 2.6, k === BEST ? '#ffe4fa' : 'rgba(170,220,255,.75)'); });
+    } else if (view === 'traffic') {                                                                              // карта: пінги частішають
+      K.scrMap(c, gx + .5, gy + .5, gw - 1, gh - 1, t, { act: act ? 1 : 0, hot: ['kyiv', 'warsaw', 'amsterdam'] });
+    } else {                                                                                                     // лінія виручки; прогноз — пунктир у майбутнє
+      const fc = view === 'forecast', cut = fc ? .62 : 1, step = gw / 18, n0 = Math.floor(t * (act ? 1.6 : .7)), f0 = fc ? 0 : t * (act ? 1.6 : .7) - n0, Pn = [];
+      for (let k = -1; k <= 19; k++) { const nn = (fc ? 0 : n0) + k, x = gx + (k - f0) * step, v = Math.max(.12, Math.min(.92, .42 + .2 * Math.sin(nn * .23) + .3 * (wave(nn, 5) - .5) + (fc ? k * .012 : 0))); Pn.push([x, gy + gh * (.9 - .74 * v)]); }
+      const hist = Pn.filter(p => p[0] <= gx + gw * cut + step);
+      c.beginPath(); c.moveTo(hist[0][0], gy + gh); hist.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(hist[hist.length - 1][0], gy + gh); c.closePath();
+      g = c.createLinearGradient(0, gy, 0, gy + gh); g.addColorStop(0, 'rgba(59,232,255,.38)'); g.addColorStop(1, 'rgba(59,232,255,0)'); c.fillStyle = g; c.fill();
+      c.strokeStyle = '#9af6ff'; c.lineWidth = .7; c.beginPath(); hist.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
+      if (fc) {                                                                                                  // пунктир прогнозу з «віялом» невизначеності
+        const p0 = hist[hist.length - 1], xe = p0[0] + (gx + gw - 3 - p0[0]) * grow, ye = p0[1] - (gh * .34) * grow, sp = gh * .2 * grow;
+        c.fillStyle = 'rgba(255,201,77,.14)'; c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(xe, ye - sp); c.lineTo(xe, ye + sp); c.closePath(); c.fill();
+        c.strokeStyle = GO; c.lineWidth = .7; c.setLineDash([1.6, 1.2]); c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(xe, ye); c.stroke(); c.setLineDash([]);
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(xe, ye, 1, 0, 7); c.fill(); c.strokeStyle = GO; c.lineWidth = .4; c.beginPath(); c.arc(xe, ye, 1.9, 0, 7); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,.25)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(p0[0] - .15, y, .3, 1);
+      } else {                                                                                                   // курсор з підказкою
+        const cu = .35 + .4 * (.5 + .5 * Math.sin(t * .6)), cxp = gx + gw * cu, ki = Math.max(0, Math.min(Pn.length - 2, Math.floor((cxp - Pn[0][0]) / step))), q = (cxp - Pn[ki][0]) / step, cyp = Pn[ki][1] + (Pn[ki + 1][1] - Pn[ki][1]) * q;
+        c.fillStyle = 'rgba(220,250,255,.4)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(cxp - .15, y, .3, 1);
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(cxp, cyp, 1, 0, 7); c.fill(); c.strokeStyle = CY; c.lineWidth = .4; c.beginPath(); c.arc(cxp, cyp, 1.8, 0, 7); c.stroke();
+        const tw = gw * .24, th = gh * .17, tx2 = Math.min(gx + gw - tw - 1, cxp + 2.2), ty = Math.max(gy + 1, cyp - th - 2.2);
+        c.fillStyle = 'rgba(16,48,140,.95)'; rr(c, tx2, ty, tw, th, .8); c.fill(); c.strokeStyle = 'rgba(160,240,255,.7)'; c.lineWidth = .3; rr(c, tx2, ty, tw, th, .8); c.stroke();
+        A.txt(c, NX.num(28 + 44 * (1 - (cyp - gy) / gh), 1) + ' ' + t_('scene.unit.k'), tx2 + tw / 2, ty + th * .55, tw * .86, th * .58, '#e8feff');
+      }
+    }
     c.restore();
+    // три показники внизу
+    const ky = fh * .79, kh = fh * .15, kw = (fw - 12 - 6) / 3;
+    kpi(c, 6, ky, kw, kh, 'user', t_('scene.analytics.visitors'), NX.num((12400 + t * (act ? 9 : 3)) / 1000, 1) + ' ' + t_('scene.unit.k'), CY, t, 1);
+    kpi(c, 6 + kw + 3, ky, kw, kh, 'target', t_('scene.analytics.conv'), NX.num(3.4 + .4 * Math.sin(t * .5), 1) + '%', PK, t, 2);
+    kpi(c, 6 + (kw + 3) * 2, ky, kw, kh, 'chart', t_('scene.analytics.sales'), '+' + NX.num(pct * .8, 1) + '%', GO, t, 3);
+    // печатка «ЗВІТ ГОТОВИЙ ✓» (після задачі)
+    const d = S.done || 0; if (d > 0) {
+      const w = gw * .74, h = gh * .36, x = gx + (gw - w) / 2, y = gy + (gh - h) / 2, sc = .85 + .15 * Math.min(1, d * 4);
+      c.save(); c.globalAlpha = Math.min(1, d * 3); c.translate(x + w / 2, y + h / 2); c.scale(sc, sc); c.translate(-(x + w / 2), -(y + h / 2));
+      c.fillStyle = 'rgba(6,40,30,.94)'; rr(c, x, y, w, h, 2); c.fill(); c.strokeStyle = GR; c.lineWidth = .8; rr(c, x, y, w, h, 2); c.stroke();
+      c.strokeStyle = GR; c.lineWidth = 1.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + h * .35, y + h * .52); c.lineTo(x + h * .55, y + h * .72); c.lineTo(x + h * .9, y + h * .3); c.stroke();
+      A.txt(c, t_('scene.analytics.ready'), x + h * 1.1 + (w - h * 1.2) / 2, y + h / 2, w - h * 1.25, h * .34, '#d0ffe4', { glow: GR });
+      c.restore(); }
   }
-  /** Скляне віконце всередині панелі (кант і легкий перелив). */
-  const box = (c, x, y, w, h, col = 'rgba(120,230,255,.55)') => { c.fillStyle = 'rgba(6,20,64,.7)'; c.fillRect(x, y, w, h); c.strokeStyle = col; c.lineWidth = .35; c.strokeRect(x + .2, y + .2, w - .4, h - .4); };
-  const RR = (f, fw, fh) => [f[0] * fw, f[1] * fh, f[2] * fw, f[3] * fh];
-  const DAYV = [.52, .64, .58, .74, .5, .34, .3], TODAY = 4;
-  const LANG = [['UA', .38, CY], ['PL', .27, PK], ['NL', .2, VI], ['EN', .15, GO]];
-  const IC7 = { cart: ['X......', 'XXXXXXX', '.X....X', '.X...X.', '.XXXXX.', '.......', '..X.X..'], ok: ['......X', '.....XX', '....XX.', 'X..XX..', 'XXXX...', '.XX....', '.......'] };
-  /** ВІДВІДУВАЧІ (ліве крило): лічильник за сьогодні з міні-графіком, стовпчики по днях (сьогоднішній росте), частки мов, «пульс». */
-  function visitors(c, fw, fh, t) {
-    const act = AN().active, { hh } = cyber(c, fw, fh, t_('scene.analytics.visitors'), 'user', t, 1);
-    const [cx, cy, cw, ch] = RR([.08, 0, .84, .17], fw, fh); box(c, cx, hh + 2.4, cw, ch);
-    A.txt(c, t_('scene.analytics.today'), cx + cw * .06, hh + 2.4 + ch * .24, cw * .7, ch * .2, 'rgba(200,240,255,.85)', { align: 'left' });
-    A.txt(c, NX.num((12400 + t * (act ? 9 : 3.2)) / 1000, 1) + ' ' + t_('scene.unit.k'), cx + cw * .06, hh + 2.4 + ch * .62, cw * .88, ch * .32, '#e8feff', { align: 'left' });
-    for (let k = 0; k < 9; k++) { const h = ch * .16 * (.3 + .7 * wave(Math.floor(t * 2) + k, 2)); c.fillStyle = k === 8 ? '#ffffff' : 'rgba(59,232,255,.8)'; c.fillRect(cx + cw * (.08 + k * .095), hh + 2.4 + ch * .96 - h, cw * .06, h); }
-    const by = hh + ch + 6, bh = fh * .3, bx = fw * .1, bw = fw * .8, grow = (t * (act ? .5 : .16)) % 1;
-    box(c, bx - fw * .03, by - 1.4, bw + fw * .06, bh + fh * .07);
-    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.13)'; c.fillRect(bx, by + bh * k / 4, bw, .3); }
-    DAYV.forEach((dv, k) => {
-      const today = k === TODAY, h = bh * (today ? .2 + .78 * (1 - Math.pow(1 - grow, 2)) : dv * (.96 + .04 * Math.sin(t * 1.5 + k))), x = bx + bw * (k + .16) / 7, w = bw / 7 * .68, y = by + bh - h;
-      const g = c.createLinearGradient(0, y, 0, by + bh); g.addColorStop(0, today ? '#ffe4fa' : '#e8feff'); g.addColorStop(.2, today ? '#ff7ad0' : '#5ae8ff'); g.addColorStop(1, today ? '#7a1a8a' : '#1a5ad0');
-      c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(x, y, w, Math.min(.7, h));
-    });
-    const days = NX.t('scene.analytics.days'); (Array.isArray(days) ? days : []).forEach((d, k) => A.txt(c, d, bx + bw * (k + .5) / 7, by + bh + fh * .03, bw / 7 * .95, fh * .022, k === TODAY ? '#ffe4fa' : 'rgba(170,220,255,.75)'));
-    const ly = by + bh + fh * .08, lh = fh * .06; let x = fw * .08; const lw = fw * .84;
-    LANG.forEach(([code, v, col]) => { const w = lw * v; c.fillStyle = col; c.fillRect(x + .25, ly + lh * .58, w - .5, lh * .34); A.txt(c, code, x + w / 2, ly + lh * .2, w * .9, lh * .36, 'rgba(225,245,255,.9)'); x += w; });
-    const py = fh * .86, ph = fh * .045; c.strokeStyle = 'rgba(255,140,220,.85)'; c.lineWidth = .6; c.beginPath();                    // «пульс» сайту
-    for (let i = 0; i <= 30; i++) { const xx = fw * (.08 + .8 * i / 30), q = ((i / 30) * 2.4 - t * (act ? 1.6 : .8)) % 1, beat = q < 0 ? q + 1 : q, v = beat < .1 ? Math.sin(beat / .1 * Math.PI) * (beat < .05 ? 1 : -.5) : 0;
-      i ? c.lineTo(xx, py - v * ph) : c.moveTo(xx, py - v * ph); } c.stroke();
-    sheen(c, fw, fh, t, 0);
-  }
-  /** ВИРУЧКА (центр): сума й ▲ відсоток, тренд (лінія з заливкою біжить, курсор із підказкою), продажі по світу (карта з
-   *  пінгами), ціль місяця. */
-  function revenue(c, fw, fh, t) {
-    const act = AN().active, sp = act ? 3.2 : 1.1, { hh } = cyber(c, fw, fh, t_('scene.analytics.revenue'), 'chart', t, 2);
-    const sum = 48 + 9 * (.5 + .5 * Math.sin(t * .2)) + ((t * (act ? .8 : .2)) % 3), pct = 18 + 4 * Math.sin(t * .4);
-    A.txt(c, NX.num(sum, 1) + ' ' + t_('scene.unit.k'), fw * .08, hh + fh * .07, fw * .52, fh * .085, '#e8feff', { align: 'left', glow: CY });
-    c.fillStyle = GR; c.beginPath(); c.moveTo(fw * .66, hh + fh * .1); c.lineTo(fw * .69, hh + fh * .045); c.lineTo(fw * .72, hh + fh * .1); c.fill();
-    A.txt(c, '+' + NX.num(pct, 1) + '%', fw * .735, hh + fh * .072, fw * .22, fh * .05, '#b8ffd2', { align: 'left' });
-    const gx = fw * .07, gy = hh + fh * .14, gw = fw * .86, gh = fh * .37; box(c, gx, gy, gw, gh);
-    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.12)'; c.fillRect(gx + 1, gy + gh * k / 4, gw - 2, .3); }
-    const step = gw / 16, n0 = Math.floor(t * sp), f = t * sp - n0, P = [];
-    for (let k = -1; k <= 17; k++) { const n = n0 + k, x = gx + (k - f) * step, v = Math.max(.12, Math.min(.94, .5 + .24 * Math.sin(n * .11) + .34 * (wave(n, 5) - .5))); P.push([x, gy + gh * (.92 - .74 * v)]); }
-    c.save(); c.beginPath(); c.rect(gx + .5, gy + .5, gw - 1, gh - 1); c.clip();
-    c.beginPath(); c.moveTo(P[0][0], gy + gh); P.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(P[P.length - 1][0], gy + gh); c.closePath();
-    const g = c.createLinearGradient(0, gy, 0, gy + gh); g.addColorStop(0, 'rgba(255,90,220,.42)'); g.addColorStop(1, 'rgba(255,90,220,0)'); c.fillStyle = g; c.fill();
-    c.strokeStyle = '#ff9af0'; c.lineWidth = .7; c.beginPath(); P.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
-    const cu = .3 + .45 * (.5 + .5 * Math.sin(t * .7)), cxp = gx + gw * cu, ki = Math.max(0, Math.min(P.length - 2, Math.floor((cxp - P[0][0]) / step))), q = (cxp - P[ki][0]) / step, cyp = P[ki][1] + (P[ki + 1][1] - P[ki][1]) * q;
-    c.fillStyle = 'rgba(220,250,255,.5)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(cxp - .15, y, .3, 1);
-    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(cxp, cyp, 1.1, 0, 7); c.fill(); c.strokeStyle = PK; c.lineWidth = .4; c.beginPath(); c.arc(cxp, cyp, 1.9, 0, 7); c.stroke();
-    const tw = gw * .3, th = gh * .16, tx = Math.min(gx + gw - tw - 1, cxp + 2.2), ty = Math.max(gy + 1, cyp - th - 2.2);
-    c.fillStyle = 'rgba(20,56,160,.95)'; c.fillRect(tx, ty, tw, th); c.strokeStyle = 'rgba(160,240,255,.8)'; c.lineWidth = .3; c.strokeRect(tx, ty, tw, th);
-    A.txt(c, NX.num(28 + 44 * (1 - (cyp - gy) / gh), 1) + ' ' + t_('scene.unit.k'), tx + tw / 2, ty + th * .55, tw * .86, th * .6, '#e8feff');
-    c.restore();
-    const mx = fw * .07, my = gy + gh + fh * .035, mw = fw * .86, mh = fh * .22; box(c, mx, my, mw, mh, 'rgba(255,120,230,.5)');   // продажі по світу
-    K.scrMap(c, mx + .6, my + .6, mw - 1.2, mh - 1.2, t, { act: act ? 1 : 0, hot: ['kyiv', 'warsaw', 'amsterdam'] });
-    const gy2 = fh * .875, gl = fw * .74, done = .62 + .25 * ((t * (act ? .05 : .012)) % 1);                       // ціль місяця: смуга з бігунцем
-    c.fillStyle = 'rgba(8,24,80,.9)'; c.fillRect(fw * .08, gy2, gl, fh * .022);
-    const g3 = c.createLinearGradient(fw * .08, 0, fw * .08 + gl, 0); g3.addColorStop(0, '#3be8ff'); g3.addColorStop(1, '#ff4fd8'); c.fillStyle = g3; c.fillRect(fw * .08, gy2, gl * done, fh * .022);
-    c.fillStyle = '#ffffff'; c.fillRect(fw * .08 + gl * done - .5, gy2 - .8, 1, fh * .022 + 1.6); icon(c, 'target', fw * .08 + gl + 3, gy2 + fh * .011, fh * .03, GO);
-    sheen(c, fw, fh, t, 3.3);
-  }
-  /** КОНВЕРСІЯ (праве крило): «пончик» з відсотком, легенда мов, воронка (відвідувачі -> кошики -> замовлення: іконки й числа). */
-  function conv(c, fw, fh, t) {
-    const act = AN().active, { hh } = cyber(c, fw, fh, t_('scene.analytics.conv'), 'target', t, 3);
-    const dcx = fw * .5, dcy = hh + fh * .2, r = Math.min(fw * .3, fh * .14), cv = 3.4 + .4 * Math.sin(t * .5);
-    c.fillStyle = 'rgba(10,28,90,.96)'; c.beginPath(); c.arc(dcx, dcy, r * 1.1, 0, 7); c.fill();
-    c.strokeStyle = 'rgba(150,240,255,.35)'; c.lineWidth = .3; c.beginPath(); c.arc(dcx, dcy, r * 1.22, 0, 7); c.stroke();
-    let a = -Math.PI / 2 + t * .25; [[44, CY], [33, PK], [23, VI]].forEach(([v2, col], k) => { const b = a + v2 / 100 * Math.PI * 2 * (.97 + .03 * Math.sin(t * 2 + k)); c.strokeStyle = col; c.lineWidth = r * .38; c.beginPath(); c.arc(dcx, dcy, r * .78, a + .05, b - .05); c.stroke(); a = b; });
-    c.fillStyle = '#0a1a50'; c.beginPath(); c.arc(dcx, dcy, r * .56, 0, 7); c.fill(); A.txt(c, NX.num(cv, 1) + '%', dcx, dcy, r * 1.05, r * .36, '#e8feff');
-    [['UA', CY, .44], ['PL', PK, .33], ['NL', VI, .23]].forEach(([s, col, v2], k) => { const y = hh + fh * (.38 + k * .055), lw = fw * .42;
-      c.fillStyle = col; c.fillRect(fw * .1, y - .7, 1.6, 1.4); A.txt(c, s, fw * .17, y, fw * .16, fh * .03, 'rgba(210,240,255,.85)', { align: 'left' });
-      c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(fw * .4, y - .7, lw, 1.4); c.fillStyle = col; c.fillRect(fw * .4, y - .7, lw * v2 * (1.6 + .15 * Math.sin(t * 1.3 + k)), 1.4); });
-    const fy = hh + fh * .57, sh = fh * .085, base = 1240 + Math.floor(t * (act ? 3 : .7));                       // воронка
-    [['user', base, CY, 1], ['cart', Math.round(base * .31), PK, .72], ['ok', Math.round(base * .034 * (1 + .03 * Math.sin(t * .5))), GR, .46]].forEach(([ic, n, col, w], k) => {
-      const y = fy + k * (sh + 1.4), x0 = fw * (.5 - .4 * w), x1 = fw * (.5 + .4 * w), xn = fw * (.5 - .4 * (k < 2 ? w * .82 : w)), xm = fw - xn;
-      c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.lineTo(xm, y + sh); c.lineTo(xn, y + sh); c.closePath(); c.fillStyle = 'rgba(8,24,80,.85)'; c.fill(); c.strokeStyle = col; c.lineWidth = .4; c.stroke();
-      const ph = (t * (act ? 1.2 : .5) + k * .3) % 1; c.fillStyle = col; c.globalAlpha = .25; c.fillRect(x0 + (x1 - x0) * ph - 1, y + .4, 2, sh - .8); c.globalAlpha = 1;
-      if (IC7[ic]) A.icon7(c, IC7[ic], x0 + sh * .55 + 1, y + sh / 2, sh * .55, col); else icon(c, ic, x0 + sh * .55 + 1, y + sh / 2, sh * .55, col);
-      A.txt(c, NX.num(n, 0), (x0 + x1) / 2 + sh * .3, y + sh / 2, (x1 - x0) * .55, sh * .5, '#e8feff'); });
-    sheen(c, fw, fh, t, 6.1);
-  }
-  NX.arc.anPane = (kind, c, fw, fh, t) => (kind === 'revenue' ? revenue : kind === 'conv' ? conv : visitors)(c, fw, fh, t);
+  function star(c, x, y, r) { c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr2 = k % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); } c.closePath(); c.fill(); }
+  NX.arc.anScreen = anScreen;
   NX.arc.anWave = wave;
 })();
 
-</script>      <!-- аналітика: скляний стіл, тумба, серверна стійка, «стіна даних»; вміст голо-панелей -->
+</script>      <!-- аналітика: скляний стіл, тумба, серверна стійка, купол обсерваторії; вміст голо-екрана -->
 <script>
 /* ---- js/objects/tl_paint.js ---- */
 /* ============================================================================
@@ -6697,7 +6702,7 @@ NX.arc = NX.arc || {};
  * tl_podL/R (прожектори-проєктори на кінцях балки), tl_cblL/R (кабелі вздовж стійок — форма st:cable, NX.arc.tlCable);
  *   tl_back    — перфодошка внизу, за верстаком: дірочки, ряд гнізд над стільницею, інструменти на гачках (видно крізь
  *                простір для ніг); голо-картки — восьмикутні кіберпанк-картки з бурштиновим кантом (NX.arc.tlPane)
- * Коли Nexi працює в зоні (NX.objects.tools.active — наступний крок), усе біжить швидше. Написи — NX.t (4 мови):
+ * Коли Nexi працює в зоні (NX.objects.tools.active, крок 11), усе біжить швидше, а картка його задачі підключається за його роботою (tlSync). Написи — NX.t (4 мови):
  * scene.tools.*; без перекладу — CRM, API, AI (правило словників).
  * ========================================================================== */
 (() => {
@@ -6914,9 +6919,13 @@ NX.arc = NX.arc || {};
   };
 
   // ---------- ВМІСТ ГОЛО-КАРТОК (objects/tools.js -> NX.arc.holo.pane) ----------
-  /** Стан синхронізації: яка картка зараз «підключається» і наскільки (k — номер, f — 0..1; f > 0.82 — готово, спалах),
-   *  коли Nexi працює — швидше. Одна для всіх (картки, жили дошки, хаб, маячок). */
-  const tlSync = t => { const p = t * (TL().active ? .45 : .16), k = Math.floor(p) % 3; return { k, f: p - Math.floor(p) }; };
+  /** Стан синхронізації: яка картка зараз «підключається» і наскільки (k — номер, f — 0..1; f > 0.82 — готово, спалах).
+   *  Сама по собі — по черзі; крок 11: коли Nexi підключає ПОШТУ / КАЛЕНДАР / CRM (focus 0..2), прогрес цієї картки йде за його
+   *  роботою (prog), а по завершенні (doneT) — ✓ і спалах ~2 с; АВТО (focus 3) — цикл просто швидший. Одна для всіх (картки,
+   *  хаб, маячок). */
+  const tlSync = t => {
+    const o = TL(); if (o.focus != null && o.focus < 3) { if (o.active) return { k: o.focus, f: Math.min(.8, (o.prog || 0) * .86) }; const dn = t - (o.doneT == null ? -99 : o.doneT); if (dn >= 0 && dn < 2.2) return { k: o.focus, f: .83 + .17 * dn / 2.2 }; }
+    const p = t * (o.active ? .45 : .16), k = Math.floor(p) % 3; return { k, f: p - Math.floor(p) }; };
   NX.arc.tlSync = tlSync;
   /** КІБЕРПАНК-КАРТКА (крок 10): восьмикутний обрис із виїмкою-«підвісом» угорі посередині, тепле темне скло з квадратною
    *  сіткою, бурштиновий неоновий кант з розщепленням кольорів (помаранчевий / жовтий), заклепки в кутах; шапка (title) —
@@ -6969,6 +6978,9 @@ NX.arc = NX.arc || {};
   const NODES = [['doc', .18], ['bot', .39], ['crm', .61], ['mail', .82]];
   function auto(c, fw, fh, t) {
     cardBase(c, fw, fh, t_('scene.tools.auto'), t);
+    const o = TL(), foc = o.focus === 3, dn = t - (o.doneT == null ? -99 : o.doneT);                  // задача Nexi «автоматизація»: картка світиться, по завершенні — зелений спалах
+    if (foc && o.active) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,90,${.1 + .08 * Math.sin(t * 6)})`; c.fillRect(0, 0, fw, fh); c.restore(); }
+    else if (foc && dn >= 0 && dn < 2.2) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,255,170,${.35 * (1 - dn / 2.2)})`; c.fillRect(0, 0, fw, fh); c.restore(); }
     const y = fh * .5, sp = TL().active ? .9 : .38, r = fh * .1;
     c.strokeStyle = 'rgba(255,190,120,.4)'; c.lineWidth = .6; c.setLineDash([1.2, 1]); c.beginPath(); c.moveTo(fw * .18, y); c.lineTo(fw * .82, y); c.stroke(); c.setLineDash([]);
     NODES.forEach(([ic, f], k) => { const hit = Math.abs(((t * sp * 4) % 4) - k) < .25; c.fillStyle = hit ? 'rgba(255,170,90,.45)' : 'rgba(8,26,72,.9)'; rr(c, fw * f - r, y - r, r * 2, r * 2, 1.2); c.fill();
@@ -7886,88 +7898,70 @@ NX.arc.holo = (() => {
 /* ============================================================================
  * objects/analytics.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): ЖИВИЙ ОБ'ЄКТ
  * ----------------------------------------------------------------------------
- * Нерухома частина (скляний стіл із заокругленим кінцем, тумба, серверна стійка, «труба даних» у просторі для ніг, планка-
- * емітер, гало-кільце з вивіскою) — у 3D-розкладці (gen_room.py: analytics(); грані й живі грані — objects/an_paint.js). Тут —
- * те, що живе поверх (крок 9, власник: «екрани — пласкі, зрідка глючать; більше графіки, фішок; вклади душу»; крок 10: «екрани
- * громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк»):
- *   ГОЛО-КОКПІТ — три пласкі кіберпанк-панелі дугою над столом: ВИРУЧКА по центру, крила ВІДВІДУВАЧІ й КОНВЕРСІЯ повернуті на
- *     28° до глядача (NX.arc.holo.pane: hinge, crisp; вміст — NX.arc.anPane); базис — привид an_scr із розкладки (вирівняний
- *     по центру стола); з лінз планки-емітера до кожної панелі б'є світлова завіса; по гало-кільцю біжать вогники;
- *     глючить ОДНА панель за раз і рідко (раз на 16–32 с);
- *   ГОЛО-ДІАГРАМА над проєктором на столі: стовпчики по колу повільно обертаються в справжній перспективі кімнати, кільце-
- *     основа, промінь з лінзи; з панелей у лінзу «стікають» дані; зрідка над діаграмою спливає знахідка «▲ +N%»;
- *   РАДАР-ТАРІЛКА на гало-кільці: повертається туди-сюди, з антени розходяться хвилі;
- *   ПАРА над чашкою кави.
- * Стан для екранів і Nexi (наступний крок): active / prog (задача, nexi.js: work.obj = 'analytics') — коли Nexi працює,
- * усе біжить швидше. Координати — px картинки зони -> світ -> екран (NX.arc.zone, якорі розкладки).
+ * Нерухома частина (скляний стіл із заокругленим кінцем, тумба, серверна стійка, «труба даних» у просторі для ніг, проєктор,
+ * чашка; на стіні — КУПОЛ ОБСЕРВАТОРІЇ з вивіскою) — у 3D-розкладці (gen_room.py: analytics(); грані й форма купола —
+ * objects/an_paint.js); крісло — objects/an_chair.js. Тут — те, що живе поверх.
+ * Крок 11 (власник: «з екраном аналітики перебор — треба простіше; або хоч якийсь фон, бо дуже цегляну стіну видно; спробуй ще
+ * щось; постав крісло; і роби взаємодію з Nexi»): три панелі-крила, гало-кільце, радар і світлові завіси (крок 10) прибрано —
+ *   ГОЛО-ЕКРАН — ОДИН широкий плаский екран у куполі (NX.arc.holo.pane, crisp, щільна темна підкладка — цегли крізь нього не
+ *     видно; вміст — NX.arc.anScreen); навколо — м'яке блакитне сяйво на склі купола; зрідка (раз на 22–40 с, коли Nexi не
+ *     працює) коротко «лагає»;
+ *   КОЛИ NEXI ПРАЦЮЄ (active / prog — nexi.js: work.obj = 'analytics'; задача — begin(task)): екран показує свою задачу
+ *     (ПРОДАЖІ за тиждень — стовпчики по днях ростуть по черзі; ВІДВІДУВАЧІ — карта з пінгами; ПРОГНОЗ — пунктир у майбутнє),
+ *     у шапці — смужка прогресу; проєктор на правому краї стола вмикається — над ним обертається 3D-ДІАГРАМА (стовпчики по
+ *     колу; там її не закриває крісло зі спинкою), з екрана в лінзу «стікають» дані, спливають
+ *     знахідки «▲ +N%»; по завершенні (finish) — на екрані печатка «ЗВІТ ГОТОВИЙ ✓», а з екрана вилітає голо-картка звіту (card);
+ *   ПАРА над чашкою кави — завжди.
+ * Координати — px картинки зони -> світ -> екран (NX.arc.zone, якорі розкладки).
  * ========================================================================== */
 (() => {
   const P = NX.px, T = NX.arc.pt, proj = NX.px3d.proj, hash = NX.art.hash, D = NX.persp.D, sc = z => D / (D + z);
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('analytics'));
-  // кокпіт (px картинки зони): привид an_scr — вісь кокпіту (X 399, v 42), вирівняна по центру стола; кокпіт ЛИЦЕМ ДО ГЛЯДАЧА
-  // (face: знято поворот зони — на екрані симетричний), крила — на петлях біля країв центру, повернуті на 30° до глядача;
-  // лінзи емітера — під серединами панелей
-  const PANES = [{ kind: 'visitors', X: [298, 347], Y: [130, 232], hinge: { X: 347, a: 30 }, lens: 335, seed: 1 },
-    { kind: 'revenue', X: [349, 449], Y: [124, 236], lens: 399, seed: 2 }, { kind: 'conv', X: [451, 500], Y: [130, 232], hinge: { X: 451, a: 30 }, lens: 463, seed: 3 }];
-  let panes = null;
-  const mk = () => panes || (panes = PANES.map(p => NX.arc.holo.pane({ zone: 'analytics', item: 'an_scr', Xc: 399, X: p.X, Y: p.Y, v: 0, face: true, hinge: p.hinge, rgb: '150,240,255', seed: p.seed,
-    lagMin: 0, crisp: true, shade: .55, paint: (c, fw, fh, t) => NX.arc.anPane(p.kind, c, fw, fh, t) })));
-  const FX = { pops: [], nextLag: 14 + Math.random() * 10, nextPop: 4 };
-  const val = (k, t, act) => .5 + .3 * Math.sin(t * (act ? 2.1 : .8) + k * 1.9) + .18 * Math.sin(t * .37 + k * .7);   // висота стовпчика 0..1
+  // екран (px картинки зони): привид an_scr — вісь екрана (X 406, v 62), вирівняна по центру стола; екран паралельний куполу
+  const SCR = { X: [322, 490], Y: [140, 240], Xc: 406 };
+  const S = { view: 'overview', prog: 0, act: false, done: 0 };                                     // стан для вмісту екрана (an_paint.js)
+  let pane = null;
+  const mk = () => pane || (pane = NX.arc.holo.pane({ zone: 'analytics', item: 'an_scr', Xc: SCR.Xc, X: SCR.X, Y: SCR.Y, v: 0, rgb: '150,240,255', seed: 2, lagMin: 0, crisp: true, shade: .94,
+    paint: (c, fw, fh, t) => NX.arc.anScreen(c, fw, fh, t, S) }));
+  const FX = { pops: [], cards: [], nextLag: 18 + Math.random() * 12, nextPop: 2, ch: 0 };
+  const val = (k, t) => .5 + .3 * Math.sin(t * 2.1 + k * 1.9) + .18 * Math.sin(t * .37 + k * .7);   // висота стовпчика діаграми 0..1
 
-  /** Еліпс-кільце в площині підлоги на висоті y навколо точки світу C (радіус r од. світу) — ламаною з n точок. */
+  /** М'яке сяйво екрана на склі купола (під екраном). */
+  function glow(c, q, t, act) {
+    const cx = (q[0][0] + q[1][0]) / 2, cy = (q[0][1] + q[3][1]) / 2, w = q[1][0] - q[0][0], a = .32 + .06 * Math.sin(t * 1.3) + (act ? .12 : 0);
+    c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, cx, cy, w * .72, 'rgba(70,180,255,.55)', a); c.restore();
+  }
+  /** Еліпс-кільце в площині підлоги на висоті y навколо точки світу C (радіус r од. світу). */
   function ring(c, C, y, r, kz = .8, n = 28) { c.beginPath(); for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, p = proj([C[0] + Math.cos(a) * r, y, C[2] + Math.sin(a) * r * kz]); i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } }
-  /** ГОЛО-ДІАГРАМА над проєктором: промінь з лінзи, кільця-основа, стовпчики по колу (у справжній перспективі: дальні —
-   *  тьмяніші й менші, ближчі — яскраві), найвищий — рожевий з підписом. */
-  function chart(c, z, t, act) {
+  /** 3D-ДІАГРАМА над проєктором (коли Nexi працює; al — проявлення): промінь з лінзи, кільця-основа, стовпчики по колу в
+   *  перспективі (дальні — тьмяніші), найвищий — рожевий з підписом. Повертає лінзу й верх (для даних і знахідок). */
+  function chart(c, z, t, al) {
     const L = z.anchor('anPuck'); if (!L) return null;
-    const lens = proj(L), y0 = L[1] - 3, R = 14, n = 10, th = t * (act ? .8 : .3), k0 = sc(L[2]);
-    c.save(); c.globalCompositeOperation = 'lighter';
-    const top = proj([L[0], y0 - 27, L[2]]), g = c.createLinearGradient(0, lens[1], 0, top[1]);
+    const lens = proj(L), y0 = L[1] - 3, R = 12, n = 10, th = t * .8, k0 = sc(L[2]);
+    c.save(); c.globalAlpha = al; c.globalCompositeOperation = 'lighter';
+    const top = proj([L[0], y0 - 25, L[2]]), g = c.createLinearGradient(0, lens[1], 0, top[1]);
     g.addColorStop(0, 'rgba(120,240,255,.3)'); g.addColorStop(1, 'rgba(120,240,255,0)'); c.fillStyle = g;
     c.beginPath(); c.moveTo(lens[0] - 2.5 * k0, lens[1]); c.lineTo(lens[0] + 2.5 * k0, lens[1]); c.lineTo(lens[0] + R * 1.3 * k0, top[1]); c.lineTo(lens[0] - R * 1.3 * k0, top[1]); c.closePath(); c.fill();
     P.glow(c, lens[0], lens[1], 7 * k0, 'rgba(150,245,255,.9)', .8);
     ring(c, L, y0, R + 3); c.strokeStyle = 'rgba(120,235,255,.75)'; c.lineWidth = .6; c.stroke();
     ring(c, L, y0, R + 1.2); c.strokeStyle = 'rgba(120,235,255,.3)'; c.lineWidth = .4; c.stroke();
-    const sweep = th * 2.3; for (let i = 0; i < 6; i++) { const a = sweep - i * .09, p = proj([L[0] + Math.cos(a) * (R + 3), y0, L[2] + Math.sin(a) * (R + 3) * .8]); c.fillStyle = `rgba(230,255,255,${.9 - i * .14})`; c.fillRect(p[0] - .5, p[1] - .5, 1, 1); }
     const bars = []; let best = 0;
-    for (let k = 0; k < n; k++) { const a = th + k / n * Math.PI * 2, v = val(k, t, act); bars.push({ k, x: L[0] + Math.cos(a) * R, zz: L[2] + Math.sin(a) * R * .8, h: 5 + 21 * v, v }); if (v > bars[best].v) best = k; }
+    for (let k = 0; k < n; k++) { const a = th + k / n * Math.PI * 2, v = val(k, t); bars.push({ k, x: L[0] + Math.cos(a) * R, zz: L[2] + Math.sin(a) * R * .8, h: 4 + 19 * v * al, v }); if (v > bars[best].v) best = k; }
     bars.slice().sort((a, b) => b.zz - a.zz).forEach(b => {
-      const p0 = proj([b.x, y0, b.zz]), p1 = proj([b.x, y0 - b.h, b.zz]), w = 3.1 * sc(b.zz), fr = b.zz < L[2], col = b.k === best ? '255,110,225' : '80,225,255';
+      const p0 = proj([b.x, y0, b.zz]), p1 = proj([b.x, y0 - b.h, b.zz]), w = 3 * sc(b.zz), fr = b.zz < L[2], col = b.k === best ? '255,110,225' : '80,225,255';
       const gg = c.createLinearGradient(0, p1[1], 0, p0[1]); gg.addColorStop(0, `rgba(${col},${fr ? .85 : .45})`); gg.addColorStop(1, `rgba(${col},${fr ? .2 : .08})`);
       c.fillStyle = gg; c.fillRect(p0[0] - w / 2, p1[1], w, p0[1] - p1[1]);
       c.fillStyle = `rgba(255,255,255,${fr ? .95 : .45})`; c.fillRect(p1[0] - w / 2, p1[1] - .35, w, .7);
     });
     c.restore();
-    const b = bars[best], tp = proj([b.x, y0 - b.h - 3, b.zz]);                                               // підпис найвищого
-    c.save(); c.font = '3.6px "Press Start 2P", monospace'; c.textAlign = 'center'; c.fillStyle = '#ffc4f0'; c.fillText(NX.num(b.v * 30, 1) + '%', tp[0], tp[1]); c.restore();
-    return { lens, top: proj([L[0], y0 - 30, L[2]]), k0 };
+    if (al > .6) { const b = bars[best], tp = proj([b.x, y0 - b.h - 3, b.zz]); c.save(); c.globalAlpha = (al - .6) / .4; c.font = '3.6px "Press Start 2P", monospace'; c.textAlign = 'center'; c.fillStyle = '#ffc4f0'; c.fillText(NX.num(b.v * 30, 1) + '%', tp[0], tp[1]); c.restore(); }
+    return { lens, top: proj([L[0], y0 - 28, L[2]]) };
   }
-  /** Дані «стікають» з панелей у лінзу проєктора: світлі точки по прямій від низу панелі до лінзи. */
-  function bits(c, lens, t, act) {
-    if (!panes) return; c.save(); c.globalCompositeOperation = 'lighter';
-    panes.forEach((p, n) => { const q = p.quad(); if (!q) return; const n0 = act ? 7 : 3;
-      for (let i = 0; i < n0; i++) { const ph = (t * (act ? .9 : .45) + i / n0 + n * .37) % 1, u = .15 + .7 * hash(i + n * 9, Math.floor(t * (act ? .9 : .45) + i / n0 + n * .37)), x0 = q[3][0] + (q[2][0] - q[3][0]) * u, y0 = q[3][1] + (q[2][1] - q[3][1]) * u - 2;
-        const x = x0 + (lens[0] - x0) * ph * ph, y = y0 + (lens[1] - y0) * ph, a = Math.sin(ph * Math.PI); c.fillStyle = `rgba(${i % 3 ? '170,250,255' : '255,170,240'},${a * .9})`; c.fillRect(x - .5, y - .5, 1, 1); } });
-    c.restore();
-  }
-  /** РАДАР-ТАРІЛКА на гало-кільці (ліворуч, ПІД панелями — вона за ними): стійка, тарілка (повертається — еліпс звужується),
-   *  опромінювач з вогником, хвилі в небо. */
-  function dish(c, z, t, act) {
-    const A0 = z.anchor('anDish'); if (!A0) return; const b = proj(A0), k = sc(A0[2]) * 1.45, a = Math.sin(t * (act ? .8 : .3)) * 1.15, ca = Math.cos(a), sa = Math.sin(a);
-    c.fillStyle = '#05030f'; c.fillRect(b[0] - 1.6 * k, b[1] - 6 * k, 3.2 * k, 6 * k); c.fillStyle = '#5a5aa0'; c.fillRect(b[0] - 1.1 * k, b[1] - 6 * k, 2.2 * k, 6 * k); c.fillStyle = '#c8d0f0'; c.fillRect(b[0] - 1.1 * k, b[1] - 6 * k, .6 * k, 6 * k);
-    c.fillStyle = '#1a1840'; rrect(c, b[0] - 3 * k, b[1] - 1.6 * k, 6 * k, 1.6 * k);                                // хомут на кільці
-    const cx = b[0] + sa * 1.2 * k, cy = b[1] - 10 * k, rx = Math.max(.9, 6.6 * Math.abs(ca)) * k, ry = 6.6 * k;
-    c.fillStyle = '#0a0a24'; c.beginPath(); c.ellipse(cx, cy, rx + .7 * k, ry + .7 * k, 0, 0, 7); c.fill();
-    const g = c.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry); g.addColorStop(0, ca > 0 ? '#e8ecff' : '#4a4a86'); g.addColorStop(.6, '#8a8ec8'); g.addColorStop(1, '#2a2a5a');
-    c.fillStyle = g; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.fill();
-    c.strokeStyle = 'rgba(59,232,255,.9)'; c.lineWidth = .5 * k; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.stroke();
-    if (ca > 0) { c.strokeStyle = 'rgba(40,40,90,.6)'; c.lineWidth = .3 * k; c.beginPath(); c.ellipse(cx, cy, rx * .6, ry * .6, 0, 0, 7); c.stroke(); }
-    const fx = cx + sa * 7 * k, fy = cy - 1.2 * k; c.strokeStyle = '#c8d0f0'; c.lineWidth = .6 * k; c.beginPath(); c.moveTo(cx, cy); c.lineTo(fx, fy); c.stroke();   // опромінювач
-    const on = Math.sin(t * 6) > 0; c.fillStyle = on ? '#ff4f6a' : '#7a1a2a'; c.beginPath(); c.arc(fx, fy, .9 * k, 0, 7); c.fill(); if (on) P.glow(c, fx, fy, 4 * k, 'rgba(255,80,110,.8)', .7);
-    c.save(); c.globalCompositeOperation = 'lighter';                                                           // хвилі
-    for (let i = 0; i < 3; i++) { const ph = (t * (act ? .9 : .45) + i / 3) % 1, r = (3 + ph * 16) * k; c.strokeStyle = `rgba(120,240,255,${(1 - ph) * .55})`; c.lineWidth = .5;
-      c.beginPath(); c.arc(fx, fy, r, -Math.PI / 2 - .8 + sa * .6, -Math.PI / 2 + .8 + sa * .6); c.stroke(); }
+  /** Дані «стікають» з низу екрана в лінзу проєктора: світлі точки по кривій. */
+  function bits(c, q, lens, t) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 8; i++) { const ph = (t * .85 + i / 8) % 1, u = .15 + .7 * hash(i, Math.floor(t * .85 + i / 8)), x0 = q[3][0] + (q[2][0] - q[3][0]) * u, y0 = q[3][1] + (q[2][1] - q[3][1]) * u - 1;
+      const x = x0 + (lens[0] - x0) * ph * ph, y = y0 + (lens[1] - y0) * ph, a = Math.sin(ph * Math.PI); c.fillStyle = `rgba(${i % 3 ? '170,250,255' : '255,210,120'},${a * .9})`; c.fillRect(x - .5, y - .5, 1, 1); }
     c.restore();
   }
   /** Пара над кавою: три тонкі звивисті струмені, що тануть угорі. */
@@ -7979,63 +7973,343 @@ NX.arc.holo = (() => {
       for (let s = 0; s <= 10; s++) { const q = s / 10, y = b[1] - 1 - q * hgt * (.5 + ph * .6), x = x0 + Math.sin(q * 5 + t * 1.6 + i * 2) * 1.6 * k * q; s ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); }
     c.restore();
   }
-  /** Світлові завіси: з лінзи планки-емітера на столі до нижнього краю кожної панелі — тьмяний клин світла, по ньому вгору
-   *  пробігає світліша смуга (ПІД панелями: панель лягає зверху). */
-  function sheets(c, z, t, act) {
-    c.save(); c.globalCompositeOperation = 'lighter';
-    panes.forEach((p, n) => { const q = p.quad(); if (!q) return; const L = proj(z.W(PANES[n].lens, 262.4, 48)), bl = q[3], br = q[2], k = sc(z.W(PANES[n].lens, 262.4, 48)[2]);
-      const g = c.createLinearGradient(0, L[1], 0, Math.min(bl[1], br[1])); g.addColorStop(0, 'rgba(120,240,255,.34)'); g.addColorStop(1, 'rgba(120,240,255,.05)'); c.fillStyle = g;
-      c.beginPath(); c.moveTo(L[0] - 3 * k, L[1]); c.lineTo(L[0] + 3 * k, L[1]); c.lineTo(br[0] - 1, br[1]); c.lineTo(bl[0] + 1, bl[1]); c.closePath(); c.fill();
-      const ph = (t * (act ? .9 : .4) + n * .33) % 1, y = L[1] + (Math.min(bl[1], br[1]) - L[1]) * ph, w = (3 * k) + ((br[0] - bl[0]) / 2 - 3 * k) * ph, xm = L[0] + ((bl[0] + br[0]) / 2 - L[0]) * ph;
-      c.fillStyle = `rgba(200,250,255,${.35 * Math.sin(ph * Math.PI)})`; c.fillRect(xm - w, y - .4, w * 2, .8); });
-    c.restore();
-  }
-  /** Вогники по гало-кільцю: три «комети» з хвостами біжать колом (ПІД панелями; там, де кільце за столом чи за вивіскою, — не
-   *  малюємо). */
-  let HALO = null;
-  function haloRun(c, t, act) {
-    const W = HALO || (HALO = NX.arc.holo.at('analytics', 'an_halo', 399, -2.2)); if (!W) return;
-    c.save(); c.globalCompositeOperation = 'lighter';
-    for (let q = 0; q < 3; q++) for (let s = 0; s < 6; s++) {
-      const a = (t * (act ? .45 : .16) + q / 3) * Math.PI * 2 - s * .045, X = 399 + Math.cos(a) * 106, Y = 179.5 - Math.sin(a) * 120.5;
-      if (Y > 258 || (Y < 101 && Math.abs(X - 399) < 92)) continue;
-      const p = W(X, Y), al = 1 - s / 6; if (!s) P.glow(c, p[0], p[1], 4.5, 'rgba(150,245,255,.9)', .8);
-      c.fillStyle = s ? `rgba(120,240,255,${al * .8})` : '#ffffff'; c.fillRect(p[0] - .7, p[1] - .7, 1.4, 1.4); }
-    c.restore();
-  }
-  function rrect(c, x, y, w, h) { c.beginPath(); c.rect(x, y, w, h); c.fill(); }
-  /** Знахідка над діаграмою: «▲ +N%» у голо-бульбашці, підіймається й тане. */
+  /** Знахідки «▲ +N%» у голо-бульбашці: підіймаються й тануть. */
   function pops(c) {
     FX.pops.forEach(o => { const k = o.a / o.ttl, al = k < .15 ? k / .15 : k > .7 ? (1 - k) / .3 : 1, y = o.y - o.a * 9, w = 22, h = 7;
       c.save(); c.globalAlpha = al * .95; c.fillStyle = 'rgba(10,40,110,.85)'; T.rr(c, o.x - w / 2, y - h / 2, w, h, 1.6); c.fill(); c.strokeStyle = '#7af4ff'; c.lineWidth = .4; T.rr(c, o.x - w / 2, y - h / 2, w, h, 1.6); c.stroke();
       c.fillStyle = '#3bff8a'; c.beginPath(); c.moveTo(o.x - w / 2 + 2, y + 1.4); c.lineTo(o.x - w / 2 + 3.6, y - 1.6); c.lineTo(o.x - w / 2 + 5.2, y + 1.4); c.fill();
       c.font = '3.2px "Press Start 2P", monospace'; c.textAlign = 'center'; c.fillStyle = '#e8feff'; c.fillText(o.s, o.x + 2.6, y + 1.5); c.restore(); });
   }
+  /** Голо-картка звіту: вилітає з екрана, збільшується, підіймається над куполом і тане (золотий кант, стовпчики, ✓). */
+  function reports(c) {
+    FX.cards.forEach(o => {
+      const k = o.a / o.ttl, s = Math.min(1, o.a / .35), w = 34 * (.5 + .5 * s), h = 24 * (.5 + .5 * s), x = o.x - w / 2, y = o.y - h / 2 - Math.max(0, o.a - .5) * 26, al = k < .75 ? 1 : (1 - k) / .25;
+      c.save(); c.globalAlpha = al * .94; c.fillStyle = 'rgba(12,30,90,.9)'; T.rr(c, x, y, w, h, 2); c.fill(); c.strokeStyle = '#ffd27a'; c.lineWidth = .7; T.rr(c, x, y, w, h, 2); c.stroke();
+      c.fillStyle = 'rgba(220,245,255,.9)'; c.fillRect(x + w * .1, y + h * .14, w * .46, .9); c.fillStyle = 'rgba(160,210,255,.7)'; c.fillRect(x + w * .1, y + h * .26, w * .3, .7);
+      [.42, .62, .5, .8, .95].forEach((v, i) => { const bh = h * .46 * v, bx = x + w * (.1 + i * .1); c.fillStyle = i === 4 ? '#ff7ad0' : '#5ae8ff'; c.fillRect(bx, y + h * .88 - bh, w * .065, bh); });
+      c.strokeStyle = '#3bff8a'; c.lineWidth = 1.1; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + w * .68, y + h * .6); c.lineTo(x + w * .76, y + h * .72); c.lineTo(x + w * .9, y + h * .44); c.stroke();
+      c.globalCompositeOperation = 'lighter'; P.glow(c, o.x, y + h / 2, w * .8, 'rgba(255,210,120,.45)', al * .5); c.restore();
+    });
+  }
 
   NX.addObject({
-    id: 'analytics', name: 'obj.analytics', active: false, prog: 0, boost: 0,
+    id: 'analytics', name: 'obj.analytics', act: 'analytics', active: false, prog: 0, boost: 0, view: null, doneT: -99,
     get span() { const z = zone(); return z && z.box ? [z.box[0] - 30, z.box[1] + 30] : null; },          // box (розкладка) — [x0, x1, y0, y1] на екрані
+    get hit() { const z = zone(); if (!z || !z.box) return null; const [x0, x1, y0, y1] = z.box; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 - 10 }; },
     ready() { return !!zone(); },
-    /** Глюк панелі зараз (i — номер, інакше випадкова): для Nexi й перевірок (наступний крок). */
-    glitch(i, dur = .5) { if (!NX.arc.holo || !zone()) return; mk(); const L = panes; L[i != null ? i % L.length : Math.random() * L.length | 0].kick(NX.time, dur); },
+    /** Nexi береться за задачу (activities.js): що показати на екрані — sales / traffic / forecast. */
+    begin(task) { this.view = task || null; this.doneT = -99; },
+    /** Задачу зроблено: печатка «ЗВІТ ГОТОВИЙ ✓» на екрані. */
+    finish() { this.doneT = NX.time; },
+    /** Голо-картка звіту вилітає з екрана. */
+    card() { const q = pane && pane.quad(); if (!q) return; FX.cards.push({ x: q[0][0] + (q[1][0] - q[0][0]) * .78, y: q[0][1] + (q[3][1] - q[0][1]) * .3, a: 0, ttl: 2.8 }); },   // з правого верхнього кута екрана (печатка — посередині)
+    /** Глюк екрана зараз (для перевірок). */
+    glitch(i, dur = .5) { if (!NX.arc.holo || !zone()) return; mk().kick(NX.time, dur); },
     update(dt, t) {
       if (!zone() || !NX.arc.holo) return; mk();
-      if (t > FX.nextLag) { panes[Math.random() * panes.length | 0].kick(t, .32 + Math.random() * .3); FX.nextLag = t + 16 + Math.random() * 16; }   // глючить одна панель і рідко
-      if (this.active) this.boost += dt;
-      if (t > FX.nextPop && this._top) { FX.pops.push({ x: this._top[0] + (Math.random() - .5) * 6, y: this._top[1], a: 0, ttl: 2.4, s: '+' + NX.num(4 + Math.random() * 16, 1) + '%' }); FX.nextPop = t + (this.active ? 2.5 + Math.random() * 2 : 7 + Math.random() * 6); }
-      FX.pops = FX.pops.filter(o => (o.a += dt) < o.ttl);
+      const act = !!this.active;
+      if (act) this.boost += dt;
+      const dn = t - this.doneT; S.act = act; S.prog = this.prog || 0; S.done = dn >= 0 && dn < 4.6 ? (dn < 3.6 ? 1 : (4.6 - dn) / 1) : 0;
+      S.view = (act || S.done > 0) && this.view ? this.view : 'overview';
+      if (t > FX.nextLag) { if (!act && !S.done) pane.kick(t, .3 + Math.random() * .3); FX.nextLag = t + 22 + Math.random() * 18; }   // зрідка й не під час роботи (і не на печатці «звіт готовий»)
+      FX.ch += ((act ? 1 : 0) - FX.ch) * Math.min(1, dt * 2.5);
+      if (act && t > FX.nextPop && this._top) { FX.pops.push({ x: this._top[0] + (Math.random() - .5) * 6, y: this._top[1], a: 0, ttl: 2.4, s: '+' + NX.num(4 + Math.random() * 16, 1) + '%' }); FX.nextPop = t + 2.4 + Math.random() * 2; }
+      FX.pops = FX.pops.filter(o => (o.a += dt) < o.ttl); FX.cards = FX.cards.filter(o => (o.a += dt) < o.ttl);
     },
     drawBack(c, t) {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
-      const act = !!this.active;
-      haloRun(c, t, act); dish(c, z, t, act); sheets(c, z, t, act); panes.forEach(p => p.draw(c, t));   // те, що за панелями, — спершу
-      const ch = chart(c, z, t, act); if (ch) { this._top = ch.top; bits(c, ch.lens, t, act); }
-      steam(c, z, t); pops(c);
+      const act = !!this.active, q = pane.quad();
+      if (q) glow(c, q, t, act);
+      pane.draw(c, t);
+      if (FX.ch > .02) { const ch = chart(c, z, t, FX.ch); if (ch) { this._top = ch.top; if (act && q) bits(c, q, ch.lens, t); } }
+      steam(c, z, t); pops(c); reports(c);
     },
   });
 })();
 
-</script>     <!-- аналітика: голо-панелі, голо-діаграма над проєктором, радар, пара над кавою -->
+</script>     <!-- аналітика: голо-екран у куполі, голо-клавіатура й 3D-діаграма (коли Nexi працює), звіт, пара над кавою -->
+<script>
+/* ---- js/objects/an_chair.js ---- */
+/* ============================================================================
+ * objects/an_chair.js — КРІСЛО АНАЛІТИКИ (і фабрика гоночного крісла NX.arc.raceChair)
+ * ----------------------------------------------------------------------------
+ * Власник (крок 11): «постав туди теж крісло — таке саме, як у маркетингу, тільки трохи більше й колір інший: ця зона
+ * ближче, тому й крісло ближче; і роби взаємодію з Nexi».
+ * Модель — ТА САМА, що в маркетингу (objects/mk_chair.js: гоночне геймерське крісло в піксельному 3D, обертається; Правки
+ * зон · 1 і · 4 — одне 3D-коліщатко на промінь, хрестовина стоїть, висока спинка HS 1.3). Файл маркетингу не чіпаємо (його
+ * веде інший чат), тож модель тут — ФАБРИКА з параметрами: зона й місце (px картинки зони), розмір K, кут спокою, кольори.
+ * Маркетинг може перейти на неї одним викликом (кольори за замовчуванням — його рожеві), тоді копії моделі не буде.
+ *   СПИНКА — витягнутий профіль: «крила» на плечах, талія, шия, підголівник з двома прорізами під ремені (справжні дірки);
+ *     спереду стьобана «ромбом» середина з кантом, бокові валики, вишитий N; ззаду глянцевий корпус, гоночні смуги, емблема;
+ *   СИДІННЯ — платформа, стьобана подушка, бокові валики, заокруглений передній край; подушка під шию;
+ *   ПІДЛОКІТНИКИ, механізм, LED-кільце; ОПОРА — газліфт у кожусі, хрестовина з 5 гранених хромованих променів з LED-смужкою,
+ *     під кожним — шток і одне 3D-коліщатко. Хрестовина стоїть (на газліфті крутиться лише верх).
+ * АНАЛІТИКА: K 1.85 (у маркетингу — 2; зона ближче до глядача, тож на екрані воно ~на 11 % більше, а Nexi в ньому
+ * — тієї ж пропорції, над спинкою видно антену); кольори — «обсерваторія»: блакитна шкіра, темно-синя стьобка, золотий кант,
+ * золоті кільця коліщат; стоїть у просторі для ніг перед столом, у спокої — спинкою до нас, рівно до стола (кут зони −20°).
+ * API — як у mk_chair.js (activities.js): ready(), floor(), depth(), side() — де стати, seat() — куди сісти, turnTo(кут)
+ *   (0 — до глядача, 180 — від глядача, 270 — праворуч), REST — кут спокою (до стола), sitDown() / standUp(), foot — слід.
+ * ========================================================================== */
+NX.arc = NX.arc || {};
+NX.arc.raceChair = cfg => {
+  const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, { ramp, col } = X;
+  const K = cfg.K || 2, HS = cfg.HS || 1.3, REST = cfg.rest == null ? 180 : cfg.rest, ZN = cfg.zone, AT = cfg.at;
+  // кольори: за замовчуванням — рожеві маркетингу (mk_chair.js); інша зона передає свої
+  const C = Object.assign({
+    bol: ['#5a1458', '#c63aa8', '#7a1c6d', '#7a1c6d', '#a0288d', '#4a1048'], grain: 'rgba(255,200,240,.22)',
+    quilt: ['#2a1a5e', '#1c1146', '#140c36'], puff: 'rgba(120,96,220,.4)', pipe: '#ff4fd8', stitch: 'rgba(255,214,246,.8)', lumbar: 'rgba(255,170,240,.6)',
+    slotRim: 'rgba(255,170,240,.55)', emb: '#ff9af0', edge: 'rgba(255,190,240,.7)',
+    shell: ['#3a2a7e', '#241a5a', '#120a36'], gloss: 'rgba(200,180,255,.22)', stripe: ['#ff9af0', '#ff4fd8', '#a0288d'], thread: '#9af6ff',
+    ring: ['#ff4fd8', '#ffd6f6'], logo: ['#3be8ff', '#e4fdff'], rim: ['#ff4fd8', 'rgba(255,214,246,.8)'],
+    seatPuff: 'rgba(140,110,240,.38)', seatStitch: 'rgba(255,190,240,.7)', roll: 'rgba(255,214,246,.32)', rollStitch: 'rgba(255,214,246,.6)',
+    pad: ['#ff4fd8', '#ffd6f6'], side: ['#ff9af0', '#ff4fd8'], led: ['#ffd6f6', '#ff4fd8'], wheel: ['#3be8ff', '#bff8ff'],
+    leather: PL.PINKP, glow: ['rgba(255,79,216,.8)', 'rgba(59,232,255,.7)'],
+  }, cfg.colors || {});
+  let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone(ZN));
+  // фронтальний зсув зони (sh: x + K·(z − z0)) — той самий, що в предметів розкладки; NX.arc.zone().W його вже додає, тож
+  // вісь крісла беремо БЕЗ зсуву (raw), а базис і точки (shp) зсувають самі — крісло стоїть рівно там, де якір
+  let SH0; const SH = () => { if (SH0 === undefined) { const L = NX.arcLayout || {}, xf = ['left', 'right'].map(sd => L[sd] && L[sd].zoneXf && L[sd].zoneXf[ZN]).find(Boolean); SH0 = xf && xf.sh ? xf.sh : null; } return SH0; };
+  const shp = p => { const sh = SH(); return sh ? [p[0] + sh[0] * (p[2] - sh[1]), p[1], p[2]] : p; };
+  const raw = p => { const sh = SH(); return sh ? [p[0] - sh[0] * (p[2] - sh[1]), p[1], p[2]] : p; };
+  let C0 = null; const centre = () => C0 || (C0 = raw(zone().W(AT[0], AT[1], AT[2])));   // вісь крісла (світ, без зсуву)
+
+  // ---------- СПИНКА: профіль лиця (половина праворуч, знизу вгору; [u, h] в одиницях крісла) ----------
+  const PROF = [[11.8, 20], [11.7, 22.5], [11.1, 25.5], [10.8, 27.5], [11.3, 29.6], [12.3, 31.4], [12.9, 33.0], [12.6, 34.2], [11.1, 35.0], [8.4, 35.6],
+    [7.8, 36.4], [7.6, 39.8], [7.2, 41.2], [6.1, 42.1], [4.2, 42.55], [0, 42.7]];
+  const OUT = [...PROF, ...PROF.slice(0, -1).reverse().map(([u, h]) => [-u, h])];
+  const INNER = [[8.2, 20.6], [7.8, 23.5], [7.4, 26.5], [7.7, 29.5], [8.2, 31.7], [7.5, 33.6], [5.6, 34.8], [4.9, 35.9], [4.7, 40.7], [3.8, 41.6], [0, 41.8]];
+  const INN = [...INNER, ...INNER.slice(0, -1).reverse().map(([u, h]) => [-u, h])];
+  const BW = 12.9, BH0 = 20, BH1 = 42.7, TILT = .07, BV = 9.4, BD = 5.4;
+  const hS = h => BH0 + (h - BH0) * HS;
+  const slot = (u, h) => Math.abs(Math.abs(u) - 3.2) < .7 && h > 38.4 && h < 40.8;
+  const tx = (u, h) => [(u + BW) * K, (BH1 - h) * K * HS];
+  const path = (c, pts, mirror = 1) => { c.beginPath(); pts.forEach(([u, h], k) => { const [x, y] = tx(u * mirror, h); k ? c.lineTo(x, y) : c.moveTo(x, y); }); c.closePath(); };
+  const grad = (c, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach((s, i) => g.addColorStop(Array.isArray(s) ? s[0] : i / (stops.length - 1), Array.isArray(s) ? s[1] : s)); return g; };
+  /** Лице спинки: бокові валики (глянець), стьобана «ромбом» середина з кантом і пунктиром-строчкою, строчка попереку,
+   *  темні обідки прорізів, вишитий N. */
+  const backFront = (c, fw, fh) => {
+    const b = C.bol; path(c, OUT); c.fillStyle = grad(c, 0, 0, fw, 0, [[0, b[0]], [.12, b[1]], [.3, b[2]], [.7, b[3]], [.88, b[4]], [1, b[5]]]); c.fill();
+    c.save(); path(c, OUT); c.clip(); c.fillStyle = C.grain; for (let y = 0; y < fh; y += 2.2) c.fillRect(0, y, fw, .35); c.restore();
+    path(c, INN); c.fillStyle = grad(c, 0, 0, 0, fh, [[0, C.quilt[0]], [.5, C.quilt[1]], [1, C.quilt[2]]]); c.fill();
+    c.save(); path(c, INN); c.clip(); const s = 2.6 * K;
+    c.strokeStyle = 'rgba(8,4,24,.85)'; c.lineWidth = .5; for (let k = -12; k < 14; k++) { c.beginPath(); c.moveTo(k * s, 0); c.lineTo(k * s + fh, fh); c.stroke(); c.beginPath(); c.moveTo(k * s, fh); c.lineTo(k * s + fh, 0); c.stroke(); }
+    c.fillStyle = C.puff; for (let y = s / 2; y < fh; y += s) for (let x = s / 2 + ((y / s | 0) % 2) * s / 2; x < fw; x += s) c.fillRect(x - .5, y - .9, 1, 1.2);
+    c.restore();
+    path(c, INN); c.strokeStyle = C.pipe; c.lineWidth = .8; c.stroke(); c.setLineDash([.7, .7]); c.strokeStyle = C.stitch; c.lineWidth = .3; c.stroke(); c.setLineDash([]);
+    const [lx0, ly] = tx(-7.4, 27.4), [lx1] = tx(7.4, 27.4); c.setLineDash([.7, .7]); c.strokeStyle = C.lumbar; c.lineWidth = .3; c.beginPath(); c.moveTo(lx0, ly); c.lineTo(lx1, ly); c.stroke(); c.setLineDash([]);
+    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3), w = 2.2 * K, h = 3.4 * K * HS; c.fillStyle = '#05030f'; c.fillRect(x, y, w, h); c.fillStyle = C.slotRim; c.fillRect(x, y + h - .4, w, .4); });
+    const [nx, ny] = tx(-1.25, 41.1), nw = 2.5 * K, nh = 2.1 * K * HS; c.strokeStyle = C.emb; c.lineWidth = .7; c.lineJoin = 'round'; c.beginPath(); c.moveTo(nx, ny + nh); c.lineTo(nx, ny); c.lineTo(nx + nw, ny + nh); c.lineTo(nx + nw, ny); c.stroke();
+    path(c, OUT); c.strokeStyle = C.edge; c.lineWidth = .5; c.stroke();
+  };
+  /** Спинка ззаду: глянцевий корпус, дві гоночні смуги з тонкими нитками, неонова емблема з N, кант по краю, обідки прорізів. */
+  const backBack = (c, fw, fh) => {
+    path(c, OUT); c.fillStyle = grad(c, 0, 0, 0, fh, [[0, C.shell[0]], [.35, C.shell[1]], [1, C.shell[2]]]); c.fill();
+    c.save(); path(c, OUT); c.clip();
+    c.fillStyle = grad(c, 0, 0, fw, 0, [[0, 'rgba(255,255,255,0)'], [.16, C.gloss], [.24, 'rgba(255,255,255,0)']]); c.fillRect(0, 0, fw, fh);
+    [-1, 1].forEach(sd => { const [x0] = tx(sd > 0 ? 1.9 : -3.7, 0), w = 1.8 * K;
+      c.fillStyle = grad(c, 0, 0, 0, fh, [[0, C.stripe[0]], [.5, C.stripe[1]], [1, C.stripe[2]]]); c.fillRect(x0, 0, w, fh);
+      c.fillStyle = C.thread; c.fillRect(sd > 0 ? x0 + w + .4 : x0 - .7, 0, .3, fh); });
+    const [ex, ey] = tx(0, 30.4), r = 4 * K;
+    c.fillStyle = '#0a0620'; c.beginPath(); c.arc(ex, ey, r, 0, 7); c.fill();
+    c.strokeStyle = C.ring[0]; c.lineWidth = 1.1; c.beginPath(); c.arc(ex, ey, r * .82, 0, 7); c.stroke(); c.strokeStyle = C.ring[1]; c.lineWidth = .35; c.stroke();
+    c.strokeStyle = C.logo[0]; c.lineWidth = 1.2; c.lineJoin = 'round'; const q = r * .38; c.beginPath(); c.moveTo(ex - q, ey + q); c.lineTo(ex - q, ey - q); c.lineTo(ex + q, ey + q); c.lineTo(ex + q, ey - q); c.stroke(); c.strokeStyle = C.logo[1]; c.lineWidth = .4; c.stroke();
+    c.restore();
+    [-1, 1].forEach(sd => { const [x, y] = tx(sd * 3.2 - 1.1, 41.3); c.fillStyle = '#05030f'; c.fillRect(x, y, 2.2 * K, 3.4 * K * HS); });
+    path(c, OUT); c.strokeStyle = C.rim[0]; c.lineWidth = .9; c.stroke(); c.strokeStyle = C.rim[1]; c.lineWidth = .3; c.stroke();
+  };
+  /** Стьобана подушка сидіння (зверху): «ромб», кант, строчка. */
+  const quilt = (c, fw, fh) => { const s = Math.min(fw, fh) / 3.4;
+    c.strokeStyle = 'rgba(8,4,24,.8)'; c.lineWidth = .45; for (let k = -8; k < 10; k++) { c.beginPath(); c.moveTo(k * s, 0); c.lineTo(k * s + fh, fh); c.stroke(); c.beginPath(); c.moveTo(k * s, fh); c.lineTo(k * s + fh, 0); c.stroke(); }
+    c.fillStyle = C.seatPuff; for (let y = s / 2; y < fh; y += s) for (let x = s / 2 + ((y / s | 0) % 2) * s / 2; x < fw; x += s) c.fillRect(x - .4, y - .4, .8, .8);
+    c.setLineDash([.6, .6]); c.strokeStyle = C.seatStitch; c.lineWidth = .3; c.strokeRect(.8, .8, fw - 1.6, fh - 1.6); c.setLineDash([]); };
+  /** Валик (зверху / спереду): глянцевий відблиск уздовж і строчка. */
+  const roll = (c, fw, fh) => { c.fillStyle = C.roll; c.fillRect(0, fh * .22, fw, fh * .14); c.setLineDash([.6, .6]); c.strokeStyle = C.rollStitch; c.lineWidth = .3; c.beginPath(); c.moveTo(.5, fh * .7); c.lineTo(fw - .5, fh * .7); c.stroke(); c.setLineDash([]); };
+  /** Накладка підлокітника (зверху): кольорова смуга. */
+  const pad = (c, fw, fh) => { c.fillStyle = C.pad[0]; c.fillRect(fw * .38, 0, fw * .24, fh); c.fillStyle = C.pad[1]; c.fillRect(fw * .46, 0, fw * .08, fh); };
+
+  // частини-коробки: [id, u (середина), v0 (передній край; + — назад), ширина, глибина, низ, верх, матеріал, додатково]
+  const PARTS = [
+    ['slab', 0, -12.4, 26, 24.2, 15, 18.6, 'shell', { ch: 1.2 }], ['cush', 0, -11.2, 16.8, 20.4, 18.6, 20.6, 'cush', { top: quilt }],
+    ['bolL', -10.7, -12, 4.8, 22, 18.6, 22.8, 'pink', { ch: 1.7, top: roll }], ['bolR', 10.7, -12, 4.8, 22, 18.6, 22.8, 'pink', { ch: 1.7, top: roll }],
+    ['nose', 0, -14.2, 24.6, 3.2, 15.4, 21, 'pink', { ch: 1.4, front: roll }],
+    ['neck', 0, BV + (hS(36) - BH0) * TILT - 2.5, 9, 2.8, hS(34.6), hS(37.7), 'pinkL', { ch: 1.2, front: roll }],
+    ['postL', -15.4, 1.2, 3.2, 3.4, 15.6, 27.4, 'steel'], ['postR', 15.4, 1.2, 3.2, 3.4, 15.6, 27.4, 'steel'],
+    ['brkL', -14, .9, 3.6, 4, 15.4, 17.2, 'steel'], ['brkR', 14, .9, 3.6, 4, 15.4, 17.2, 'steel'],
+    ['padL', -15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }], ['padR', 15.4, -7.4, 5.6, 12.6, 27.2, 29.8, 'arm', { ch: 1.1, top: pad }],
+    ['mech', 0, -7.2, 14.4, 14.4, 13.3, 15, 'steel'], ['ring', 0, -11.4, 22.8, 22.8, 12.6, 13.4, 'led', { cyl: 28 }],
+    ['lift', 0, -2.2, 4.4, 4.4, 7.5, 13.3, 'chrome', { cyl: 16 }], ['cover', 0, -3.3, 6.6, 6.6, 3.4, 8.6, 'dark', { cyl: 16, kt: .78, base: 1 }],
+    ['hub', 0, -3.8, 7.6, 7.6, 2.6, 4.6, 'dark', { cyl: 18, base: 1 }], ['hring', 0, -4.4, 8.8, 8.8, 4.6, 5.2, 'led', { cyl: 24, base: 1 }], ['cap', 0, -3.4, 6.8, 6.8, 5.2, 6.4, 'chrome', { cyl: 18, kt: .8, base: 1 }],
+  ];   // base — частина хрестовини: стоїть, не крутиться з сидінням
+  const MAT = { shell: { pal: PL.DESK, q: .5, bev: .8 }, cush: { pal: PL.DESK, q: .56, bev: .7 }, pink: { pal: C.leather, q: .5, bev: 1 }, pinkL: { pal: C.leather, q: .64, bev: .9 },
+    arm: { pal: PL.MET, q: .4, bev: .7 }, steel: { pal: PL.STEEL, q: .6, bev: .5 }, chrome: { pal: PL.CHROME, q: .58, metal: 1, bev: 0 }, dark: { pal: PL.DARK, q: .62, bev: .4 },
+    led: { pal: C.leather, q: .92, emit: 1, bev: 0 } };
+  const BACK_ID = PARTS.length + 1, LEG_ID = BACK_ID + 1, WHEEL_ID = LEG_ID + 1;
+
+  // ---------- ХРЕСТОВИНА Й КОЛІЩАТКА (стоїть: базис BASE_TURN = кут спокою; один промінь — рівно назад, за опорою) ----------
+  const BASE_TURN = REST, LEG0 = .9425, TIP = [3.5, 4.4], WR = 1.6, WW = 1.6, WC = 15.6, WN = 16, SPLAY = .5;
+  const WC0 = col(C.wheel[0]), WC1 = col(C.wheel[1]);
+  /** Бік колеса: шина з відблиском угорі, світне кільце, хромова маточина з болтом. */
+  const wheelSide = (u, v, i, j) => { const dd = Math.hypot(u - .5, v - .5);
+    if (dd > .4) return ramp(PL.DARK, .34 + (v < .42 ? .22 : 0) + (u < .42 && v < .42 ? .08 : 0), i, j);
+    if (dd > .26) { X.SH.fl |= X.F_EMIT; return dd > .33 ? WC0 : WC1; }
+    if (dd < .07) return ramp(PL.DARK, .5, i, j);
+    return ramp(PL.CHROME, .8 - dd * 1.6 + (u < .5 && v < .5 ? .08 : 0), i, j); };
+  /** КОЛІЩАТКО — справжнє 3D-колесо (два боки + протектор) у точці (cu, cv) крісла; (au, av) — вісь у плані. */
+  function wheel(L, Pt, cu, cv, au, av) {
+    const eu = -av, ev = au, pt = (c, s, w) => Pt(cu + eu * WR * c + au * w, cv + ev * WR * c + av * w, WR * (1 + s));
+    const hub = pt(0, 0, 0), ring = w => Array.from({ length: WN }, (_, k) => { const t = (k + .5) / WN * Math.PI * 2; return pt(Math.cos(t), Math.sin(t), w); });
+    const nOut = poly => { let n = X.newell(poly); const m = poly.reduce((s, p) => [s[0] + p[0], s[1] + p[1], s[2] + p[2]], [0, 0, 0]).map(q => q / poly.length);
+      if (X.dot(n, X.sub(m, hub)) < 0) n = n.map(q => -q); const l = Math.hypot(...n) || 1; return n.map(q => q / l); };
+    const R1 = ring(WW / 2), R0 = ring(-WW / 2);
+    for (const [poly, w] of [[R1, WW / 2], [R0, -WW / 2]]) { const O = pt(-1, 1, w);
+      X.face(L, poly, O, X.sub(pt(1, 1, w), O), X.sub(pt(-1, -1, w), O), wheelSide, { id: WHEEL_ID, fid: WHEEL_ID, n: nOut(poly) }); }
+    for (let k = 0; k < WN; k++) { const poly = [R1[k], R1[(k + 1) % WN], R0[(k + 1) % WN], R0[k]], up = Math.sin((k + 1) / WN * Math.PI * 2);
+      X.face(L, poly, poly[0], X.sub(poly[3], poly[0]), X.sub(poly[1], poly[0]), (u, v, i, j) => ramp(PL.DARK, .3 + up * .28 + (u > .44 && u < .56 ? .12 : 0), i, j),
+        { id: WHEEL_ID, fid: WHEEL_ID, n: nOut(poly) }); }
+  }
+  // КЕШ КАДРІВ: повний растр (R 4) — для кутів спокою (до стола, праворуч до Nexi, до глядача — заздалегідь), грубший (R 2) —
+  // поки крісло обертається
+  const keyOf = a => ((Math.round(a / 4) * 4) % 360 + 360) % 360;
+  const HI = new Map(), LO = new Map(), PIN = [REST, 270, REST + 180].map(keyOf), TX = new Map(), LS = {}; let box = null;
+  const put = (M, k, v, cap) => { M.set(k, v); if (M.size > cap) for (const q of M.keys()) if (!(M === HI && PIN.includes(q))) { M.delete(q); break; } };
+  const texOf = (key, B, Fc, paint) => { if (!TX.has(key)) TX.set(key, A.texture(B, Fc, R, paint)); return TX.get(key); };
+  const LED = [col(C.led[0]), col(C.led[1])], SIDE = [col(C.side[0]), col(C.side[1])];
+
+  /** Витягнутий профіль спинки: грані лиця, тилу й боків. */
+  function backFaces(b) {
+    const V = (u, h, bk) => b.P(u * K, (BV + (hS(h) - BH0) * TILT + (bk ? BD : 0)) * K, FL - hS(h) * K);
+    const fr = OUT.map(([u, h]) => V(u, h, 0)), bk = OUT.map(([u, h]) => V(u, h, 1)), out = [], sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]];
+    const orient = (poly, ref) => { let n = X.newell(poly); const m = poly.reduce((s, p) => [s[0] + p[0] / poly.length, s[1] + p[1] / poly.length, s[2] + p[2] / poly.length], [0, 0, 0]), d = sub(m, ref);
+      if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] < 0) n = [-n[0], -n[1], -n[2]]; const l = Math.hypot(...n) || 1; return [n[0] / l, n[1] / l, n[2] / l]; };
+    const mid = V(0, 30, 0), cen = [(mid[0] + V(0, 30, 1)[0]) / 2, (mid[1] + V(0, 30, 1)[1]) / 2, (mid[2] + V(0, 30, 1)[2]) / 2];
+    { const O = V(-BW, BH1, 0); out.push({ k: 'front', poly: fr, O, A: sub(V(BW, BH1, 0), O), B: sub(V(-BW, BH0, 0), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K * HS, n: orient(fr, cen), side: 'f' }); }
+    { const O = V(BW, BH1, 1); out.push({ k: 'back', poly: bk.slice().reverse(), O, A: sub(V(-BW, BH1, 1), O), B: sub(V(BW, BH0, 1), O), fw: 2 * BW * K, fh: (BH1 - BH0) * K * HS, n: orient(bk, cen), side: 'b' }); }
+    for (let i = 0; i < OUT.length; i++) { const j = (i + 1) % OUT.length, poly = [fr[i], fr[j], bk[j], bk[i]], len = Math.hypot(...sub(fr[j], fr[i]));
+      if (len < .05) continue; out.push({ k: 'left', poly, O: fr[i], A: sub(fr[j], fr[i]), B: sub(bk[i], fr[i]), fw: len, fh: BD * K, n: orient(poly, cen), side: 's' }); }
+    return out;
+  }
+
+  /** Растр крісла під кут a (градуси): {back, front} — два полотна (позаду / попереду Nexi), x0, y0, w, h (од. кімнати). */
+  function render(a, lo) {
+    const key = keyOf(a); if (HI.has(key)) return HI.get(key); if (lo && LO.has(key)) return LO.get(key);
+    const r = lo ? 2 : R, Cc = centre(), b = A.basis({ x: Cc[0], z: Cc[2], turn: key, sh: SH() }), Pt = (u, v, h) => b.P(u * K, v * K, FL - h * K);
+    const b0 = A.basis({ x: Cc[0], z: Cc[2], turn: key }), b0s = A.basis({ x: Cc[0], z: Cc[2], turn: BASE_TURN });   // частини-коробки зсуваються самі (B.sh); b0s — хрестовина
+    if (!box) {                                                                        // межі растра — одні на всі кути
+      const pts = []; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; [0, hS(BH1) + 2.5].forEach(h => pts.push(X.proj(shp([Cc[0] + Math.cos(an) * 22 * K, FL - h * K, Cc[2] + Math.sin(an) * 22 * K])))); }
+      box = [Math.min(...pts.map(p => p[0])) - 3, Math.min(...pts.map(p => p[1])) - 3, Math.max(...pts.map(p => p[0])) + 3, Math.max(...pts.map(p => p[1])) + 3];
+    }
+    const L = LS[r] || (LS[r] = X.Layer(box[0], box[1], box[2], box[3], r)); L.c.fill(0); L.dep.fill(Infinity); L.id.fill(0); L.fid.fill(0); L.fl.fill(0);
+    const front = new Set(), zc = Cc[2], Bx = { yb: FL - 20 * K };
+    const BF = backFaces(b), bmid = Pt(0, BV + BD / 2 + 1.6, 0); if (bmid[2] < zc - 1.5) { front.add(BACK_ID); front.add(PARTS.findIndex(p => p[0] === 'neck') + 1); }
+    BF.forEach(Fc => {
+      if (!A.visible(Fc)) return;
+      if (Fc.side === 's') { const base = A.shader('chair', Fc, Bx, { pal: C.leather, q: .34, bev: .25 }); X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, (u, v, i, j, t) => v < .2 ? (v < .1 ? SIDE[0] : SIDE[1]) : base(u, v, i, j, t), { id: BACK_ID, fid: BACK_ID, n: Fc.n }); return; }
+      const tex = texOf('back' + Fc.side, Bx, Fc, Fc.side === 'f' ? backFront : backBack), base = A.shader('chair', Fc, Bx, { pal: PL.DESK, q: .5, bev: .3, tex }), mir = Fc.side === 'f' ? 1 : -1;
+      X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, (u, v, i, j, t) => slot(mir * (-BW + u * 2 * BW), BH1 - v * (BH1 - BH0)) ? 0 : base(u, v, i, j, t), { id: BACK_ID, fid: BACK_ID, n: Fc.n });
+    });
+    PARTS.forEach(([nm, u, v0, w, d, h0, h1, mat, ex = {}], n) => {
+      const id = n + 1, p0 = (ex.base ? b0s : b0).P(u * K, v0 * K, 0), B = { x: p0[0], z: p0[2], turn: ex.base ? BASE_TURN : key, sh: SH(), w: w * K, dep: d * K, yb: FL - h0 * K, yt: FL - h1 * K, ch: ex.ch ? [ex.ch * K, ex.ch * K] : null, cyl: ex.cyl, kt: ex.kt, id: 'chair_' + nm };
+      const mid = Pt(u, v0 + d / 2, 0); if (/^pad|^post/.test(nm) && mid[2] < zc - 7) front.add(id);
+      for (const Fc of A.faces(B)) {
+        if (!A.visible(Fc)) continue;
+        const paint = Fc.k === 'top' ? ex.top : Fc.k === 'front' ? ex.front : null, tex = paint ? texOf(nm + Fc.k, B, Fc, paint) : null;
+        X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, A.shader('chair', Fc, B, Object.assign({ bev: .9, ins: 0, fog: 0 }, MAT[mat], { tex })), { id, fid: id, n: Fc.n });
+      }
+    });
+    // ХРЕСТОВИНА: 5 гранених хромованих променів, що звужуються, по верху — LED-смужка; під кінцем кожного — шток і колесо
+    const LEG = (u0, v0, i, j, side) => side === 't' ? (u0 > .4 && u0 < .6 && v0 > .08 && v0 < .92 ? (X.SH.fl |= X.F_EMIT, u0 > .46 && u0 < .54 ? LED[0] : LED[1]) : ramp(PL.CHROME, .42 + (1 - Math.abs(u0 - .5) * 2) * .4 - v0 * .08, i, j))
+      : side === 'c' ? ramp(PL.STEEL, .55, i, j) : ramp(PL.CHROME, .18 + (1 - v0) * .2 + (side === 'a' ? .1 : 0), i, j);
+    const sub = X.sub, bs = A.basis({ x: Cc[0], z: Cc[2], turn: BASE_TURN, sh: SH() }), Pb = (u, v, h) => bs.P(u * K, v * K, FL - h * K);
+    const stem = (u0, v0, i, j) => ramp(PL.CHROME, .45 + (1 - Math.abs(u0 - .5) * 2) * .35, i, j);
+    for (let q = 0; q < 5; q++) {
+      const an = q / 5 * Math.PI * 2 + LEG0, cs = Math.cos(an), sn = Math.sin(an), V = (rr, o, h) => Pb(cs * rr - sn * o, sn * rr + cs * o, h);
+      const A0t = V(2.6, -1.9, 5), B0t = V(2.6, 1.9, 5), A1t = V(16, -1.15, TIP[1]), B1t = V(16, 1.15, TIP[1]), A0b = V(2.6, -1.9, 2.8), B0b = V(2.6, 1.9, 2.8), A1b = V(16, -1.15, TIP[0]), B1b = V(16, 1.15, TIP[0]);
+      const mid = V(9, 0, 3.6), fc = (poly, O, Ax, Bx2, side) => { let n = X.newell(poly); const m = poly.reduce((a2, p) => [a2[0] + p[0] / 4, a2[1] + p[1] / 4, a2[2] + p[2] / 4], [0, 0, 0]), d = sub(m, mid); if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] < 0) n = n.map(v => -v); const l = Math.hypot(...n) || 1; n = n.map(v => v / l);
+        const F = { poly, n }; if (A.visible(F)) X.face(L, poly, O, sub(Ax, O), sub(Bx2, O), (u0, v0, i, j) => LEG(u0, v0, i, j, side), { id: LEG_ID, fid: LEG_ID, n }); };
+      fc([A0t, B0t, B1t, A1t], A0t, B0t, A1t, 't'); fc([A0t, A1t, A1b, A0b], A0t, A1t, A0b, 'a'); fc([B0t, B0b, B1b, B1t], B0t, B1t, B0b, 'b'); fc([A1t, B1t, B1b, A1b], A1t, B1t, A1b, 'c');
+      X.tube(L, V(WC, 0, TIP[0] + .3), V(WC, 0, 2 * WR - .2), .75 * K, stem, { id: LEG_ID, fid: LEG_ID });
+      wheel(L, Pb, cs * WC, sn * WC, -Math.sign(cs) * Math.sin(SPLAY), Math.cos(SPLAY));
+    }
+    X.outline(L, () => A.C.out, lo ? 1 : 2);
+    // два шари: позаду Nexi і попереду (спинка, коли вона між ним і глядачем); полотна — лише розміром з намальоване
+    let i0 = L.W, i1 = -1, j0 = L.H, j1 = -1;
+    for (let j = 0; j < L.H; j++) for (let i = 0, k = j * L.W; i < L.W; i++, k++) if (L.c[k]) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
+    if (i1 < 0) { i0 = j0 = 0; i1 = j1 = 0; }
+    const W2 = i1 - i0 + 1, H2 = j1 - j0 + 1;
+    const mk = sel => { const cv = document.createElement('canvas'); cv.width = W2; cv.height = H2; const x = cv.getContext('2d'), im = x.createImageData(W2, H2), d = new Uint32Array(im.data.buffer);
+      for (let j = j0; j <= j1; j++) for (let i = i0, k = j * L.W + i0, o = (j - j0) * W2; i <= i1; i++, k++, o++) if (L.c[k] && sel(L.id[k])) d[o] = L.c[k];
+      x.putImageData(im, 0, 0); return cv; };
+    const out = { back: mk(id => !front.has(id)), front: mk(id => front.has(id)), x0: L.x0 + i0 / r, y0: L.y0 + j0 / r, w: W2 / r, h: H2 / r };
+    if (lo) put(LO, key, out, 40); else put(HI, key, out, 10);
+    return out;
+  }
+
+  const ks = K / 2;                                                                     // розмір відносно крісла маркетингу (K 2)
+  return NX.addObject({
+    id: cfg.id, name: cfg.name, act: cfg.act, REST,
+    a: REST, tgt: REST, seated: false, idleT: 4,
+    ready() { return !!zone(); },
+    /** Точка підлоги під серединою крісла (екран) і глибина — для порядку малювання з Nexi. */
+    floor() { return X.proj(shp(centre())); },
+    depth() { return this.floor()[1]; },
+    side() { const f = this.floor(), ft = this.foot; return [(ft ? ft[1] : f[0] + 40) + 15, Math.max(362, f[1] + 6)]; },   // праворуч від сліду крісла
+    /** Куди сісти (екран). cfg.align: у зоні з сильним фронтальним зсувом (аналітика: fv 1.25) спинка, що ближче чи далі від
+     *  глядача, на екрані з'їжджає вбік від сидіння — тоді Nexi зсувається до середини спинки (лише та частка, що від глибини:
+     *  cos² кута — боком крісло стоїть як є), і спинка рівно ховає його, коли він працює, та рівно за ним, коли радіє. */
+    seat() { const Cc = centre(), s = X.proj(shp([Cc[0], FL - 21 * K, Cc[2] + 2])), al = cfg.align || 0; if (!al) return s;
+      const rr = this.a * Math.PI / 180, bv = (BV + BD / 2) * K, ca = Math.cos(rr), b = X.proj(shp([Cc[0] + Math.sin(rr) * bv, FL - 21 * K, Cc[2] + ca * bv]));
+      return [s[0] + (b[0] - s[0]) * al * ca * ca, s[1]]; },
+    /** Слід на підлозі (екран): коло хрестовини з коліщатками — Nexi й кіт обходять (world/room.js: route). */
+    get foot() { if (!zone()) return null; if (!this._foot) { const Cc = centre(), pts = []; for (let q = 0; q < 16; q++) { const an = q / 16 * Math.PI * 2; pts.push(X.proj(shp([Cc[0] + Math.cos(an) * 17.5 * K, FL, Cc[2] + Math.sin(an) * 17.5 * K]))); }
+      this._foot = [Math.min(...pts.map(p => p[0])), Math.max(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[1]))]; } return this._foot; },
+    turnTo(deg) { let d = deg; while (d - this.a > 180) d -= 360; while (d - this.a < -180) d += 360; this.tgt = d; },
+    spin(deg) { this.tgt = this.a + deg; },
+    sitDown() { this.seated = true; }, standUp() { this.seated = false; this.turnTo(REST); },
+    get span() { const f = zone() && this.floor(); return f ? [f[0] - 60 * ks, f[0] + 60 * ks] : null; },
+    get hit() { if (!zone()) return null; const f = this.floor(), Cc = centre(), top = X.proj(shp([Cc[0], FL - (hS(BH1) + 1) * K, Cc[2] + BV * K]))[1]; return { x: f[0] - 33 * ks, y: top, w: 66 * ks, h: f[1] + 2 - top }; },
+    update(dt, t) {
+      if (!zone()) return;
+      if (NX.loop.frames > 130 && !this.warm) { const k = PIN.find(q => !HI.has(q)); if (k === undefined) this.warm = true; else render(k, false); }   // кути спокою — заздалегідь, по одному за кадр
+      const d = this.tgt - this.a, sp = (90 + Math.abs(d) * 5) * dt; this.a = Math.abs(d) <= sp ? this.tgt : this.a + Math.sign(d) * sp;
+      if (!this.seated && Math.abs(d) < .5) { this.idleT -= dt; if (this.idleT < 0) { this.idleT = 6 + Math.random() * 6; this.turnTo(REST + (Math.random() < .5 ? 0 : (Math.random() - .5) * 10)); } }
+      const n = NX.nexi;
+      if (this.seated && n.loc === cfg.loc) {                                              // Nexi їде разом із кріслом: спиною / лицем / боком
+        const rr = this.a * Math.PI / 180, fx = -Math.sin(rr), fz = -Math.cos(rr); n.back = fz > .2; if (Math.abs(fx) > .55) n.dir = fx > 0 ? 1 : -1;
+        if (!(n.cur && (n.cur.hop || n.cur.fly))) { const s = this.seat(); n.x = s[0]; n.y = s[1]; }
+      }
+    },
+    layers(t) {
+      if (!zone()) return [];
+      const fr = render(this.a, Math.abs(this.tgt - this.a) > 12), f = this.floor(), y = f[1], o = cfg.obj && NX.objects[cfg.obj], act = o && o.active, lit = .55 + .25 * Math.sin(t * 2.4) + (act ? .25 : 0);
+      const draw = cv => c => { c.save(); c.imageSmoothingEnabled = true; c.drawImage(cv, fr.x0, fr.y0, fr.w, fr.h); c.restore(); };
+      return [
+        { y: y - .5, draw: c => { c.save(); c.fillStyle = 'rgba(4,2,14,.55)'; c.beginPath(); c.ellipse(f[0], f[1] + .5, 36 * ks, 5.2 * ks, 0, 0, 7); c.fill(); c.restore();
+          P.glow(c, f[0], f[1] - 5, 40 * ks, C.glow[0], lit * .55); P.glow(c, f[0], f[1] + 1, 26 * ks, C.glow[1], lit * .3); draw(fr.back)(c); } },
+        { y: y + .5, draw: draw(fr.front) },
+      ];
+    },
+  });
+};
+
+// ---------- КРІСЛО АНАЛІТИКИ: та сама модель, більша й «обсерваторних» кольорів ----------
+// Кольори: блакитна шкіра валиків і смуг, темно-синя стьобка, ЗОЛОТИЙ кант і вишитий N (латунь аналітики), темно-синій корпус,
+// золоті кільця коліщат; LED-кільце й смужки хрестовини — блакитні. Кут спокою — 160° (рівно до стола: зона повернута на −20°).
+NX.arc.raceChair({
+  id: 'anChair', name: 'obj.analytics', act: 'analytics', obj: 'analytics', loc: 'anChair', zone: 'analytics', at: [366, 340, -32], K: 1.85, HS: 1.3, rest: 160, align: .9,
+  colors: {
+    bol: ['#04283c', '#2aa8d0', '#0d5574', '#0d5574', '#1a80a8', '#032236'], grain: 'rgba(200,245,255,.2)',
+    quilt: ['#132a60', '#0d1c48', '#091438'], puff: 'rgba(96,170,240,.4)', pipe: '#ffc94d', stitch: 'rgba(255,240,200,.8)', lumbar: 'rgba(255,226,160,.6)',
+    slotRim: 'rgba(170,240,255,.55)', emb: '#ffd27a', edge: 'rgba(190,245,255,.7)',
+    shell: ['#1c3a80', '#12285c', '#0a1636'], gloss: 'rgba(180,220,255,.22)', stripe: ['#9af6ff', '#3be8ff', '#1a8ab0'], thread: '#ffd27a',
+    ring: ['#ffc94d', '#fff2c4'], logo: ['#3be8ff', '#e4fdff'], rim: ['#3be8ff', 'rgba(214,250,255,.8)'],
+    seatPuff: 'rgba(110,170,240,.38)', seatStitch: 'rgba(255,230,170,.7)', roll: 'rgba(214,250,255,.32)', rollStitch: 'rgba(214,250,255,.6)',
+    pad: ['#3be8ff', '#e4fdff'], side: ['#9af6ff', '#3be8ff'], led: ['#e4fdff', '#3be8ff'], wheel: ['#ffc94d', '#fff2c4'],
+    leather: NX.px3d.pal(['#04202e', '#073246', '#0c4a64', '#126482', '#1a80a2', '#2a9ec0', '#56c4e0', '#a6ecff']),
+    glow: ['rgba(59,232,255,.8)', 'rgba(255,201,77,.6)'],
+  },
+});
+
+</script>      <!-- аналітика: крісло (та сама гоночна модель, що в маркетингу, — фабрика NX.arc.raceChair; більше, блакитне) -->
 <script>
 /* ---- js/objects/tools.js ---- */
 /* ============================================================================
@@ -8053,7 +8327,12 @@ NX.arc.holo = (() => {
  *   АНТЕНА хаба з вогником (коли синхронізація — розходяться радіохвилі);
  *   МАЯЧОК посередині балки: бурштиновий, крутиться; коли картка готова — розганяється й спалахує;
  *   ЛЕЩАТА: раз на 5–9 с (коли Nexi працює — частіше) — сніп іскор, що відскакують від стільниці.
- * Стан для карток і Nexi (наступний крок): active / prog (nexi.js: work.obj = 'tools'); синхронізація — NX.arc.tlSync.
+ * Крок 11 — NEXI ПРАЦЮЄ ТУТ (власник: «роби взаємодію з Nexi»): Nexi підходить до верстака, злітає на ранці (руки — на рівні
+ * стільниці, спиною до нас), лагодить хаб молотком (іскри); задача (begin) — яку картку підключити: CRM / КАЛЕНДАР — її
+ * кільце прогресу йде за роботою Nexi (NX.arc.tlSync), АВТО — картка світиться й біжить швидше; пакети з хаба летять саме до
+ * неї; по завершенні (finish) — ✓ і зелений спалах на картці, маячок спалахує й розганяється, Nexi спускається й радіє.
+ * Стан: active / prog (nexi.js: work.obj = 'tools'), focus — номер картки задачі, doneT — коли завершено; stand() / hover() —
+ * де Nexi стає й куди злітає (activities.js: tools).
  * ========================================================================== */
 (() => {
   const P = NX.px, proj = NX.px3d.proj, hash = NX.art.hash, D = NX.persp.D, sc = z => D / (D + z);
@@ -8090,8 +8369,8 @@ NX.arc.holo = (() => {
     c.restore();
   }
   /** Пакети з хаба до картки, що синхронізується: дуга вгору-назад, світлі точки біжать по ній. */
-  function stream(c, z, t, s, act) {
-    if (!cards || s.f > .82) return; const H = z.anchor('tlAnt'), q = cards[s.k].quad(); if (!H || !q) return;
+  function stream(c, z, t, s, act, k = s.k) {
+    if (!cards || (k === s.k && s.f > .82)) return; const H = z.anchor('tlAnt'), q = cards[k].quad(); if (!H || !q) return;
     const a = proj([H[0] - 14, H[1] - 1, H[2] - 4]), b = [(q[2][0] + q[3][0]) / 2, Math.max(q[2][1], q[3][1]) - 3], m = [(a[0] + b[0]) / 2 - 6, Math.min(a[1], b[1]) - 10];
     c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(255,170,90,.18)'; c.lineWidth = .8; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(m[0], m[1], b[0], b[1]); c.stroke();
     const n = act ? 7 : 4; for (let i = 0; i < n; i++) { const u = (t * (act ? 1.3 : .7) + i / n) % 1, w = 1 - u, x = w * w * a[0] + 2 * w * u * m[0] + u * u * b[0], y = w * w * a[1] + 2 * w * u * m[1] + u * u * b[1];
@@ -8141,15 +8420,25 @@ NX.arc.holo = (() => {
     c.restore();
   }
 
+  const FOCUS = { mail: 0, calendar: 1, crm: 2, auto: 3 };                             // задача Nexi (ui/zones.js) -> картка
   NX.addObject({
-    id: 'tools', name: 'obj.tools', active: false, prog: 0, boost: 0,
+    id: 'tools', name: 'obj.tools', act: 'tools', active: false, prog: 0, boost: 0, focus: null, doneT: -99,
     get span() { const z = zone(); return z && z.box ? [z.box[0] - 30, z.box[1] + 40] : null; },
+    get hit() { const z = zone(); if (!z || !z.box) return null; const [x0, x1, y0, y1] = z.box; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 - 10 }; },
     ready() { return !!zone(); },
-    /** Глюк панелі зараз (i — номер, інакше випадкова): для Nexi й перевірок (наступний крок). */
+    /** Де Nexi стає перед верстаком: на підлозі просто перед слідом верстака, навпроти хаба. */
+    stand() { const z = zone(), f = NX.objects.foot_tools && NX.objects.foot_tools.foot, x = proj(z.W(1238, 357, -12))[0]; return NX.room.clampWalk(x, (f ? f[3] : 395) + 6); },
+    /** Куди Nexi злітає на ранці: над тим самим місцем, руки з молотком — над стільницею (лагодить хаб), ноги — під нею. */
+    hover() { const z = zone(), s = this.stand(), top = proj(z.W(1238, 285, -2)); return [s[0], top[1] + 33]; },
+    /** Nexi береться за задачу (activities.js): яку картку підключає. */
+    begin(task) { this.focus = FOCUS[task] != null ? FOCUS[task] : null; this.doneT = -99; },
+    /** Задачу зроблено: ✓ на картці, маячок спалахує й розганяється. */
+    finish() { this.doneT = NX.time; FX.flash = 1; const z = zone(); if (z) sparkBurst(z, true); },
+    /** Глюк панелі зараз (i — номер, інакше випадкова): для перевірок. */
     glitch(i, dur = .5) { if (!NX.arc.holo || !zone()) return; mk(); const L = cards; L[i != null ? i % L.length : Math.random() * L.length | 0].kick(NX.time, dur); },
     update(dt, t) {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
-      if (t > FX.nextLag) { cards[Math.random() * cards.length | 0].kick(t, .3 + Math.random() * .3); FX.nextLag = t + 15 + Math.random() * 13; }   // глючить одна картка і рідко
+      if (t > FX.nextLag) { if (!this.active && t - this.doneT > 2.5) cards[Math.random() * cards.length | 0].kick(t, .3 + Math.random() * .3); FX.nextLag = t + 15 + Math.random() * 13; }   // глючить одна картка, рідко й не під час роботи Nexi (і не на його ✓)
       if (this.active) this.boost += dt;
       const s = NX.arc.tlSync(t), done = s.f > .82 ? s.k : -1; if (done >= 0 && FX.lastK !== done) FX.flash = 1; FX.lastK = done; FX.flash = Math.max(0, FX.flash - dt * .9);
       if (t > FX.nextSpark) { sparkBurst(z, this.active); FX.nextSpark = t + (this.active ? 2 + Math.random() * 2 : 5 + Math.random() * 4); }
@@ -8161,12 +8450,12 @@ NX.arc.holo = (() => {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
       const s = NX.arc.tlSync(t), act = !!this.active;
       cones(c, t); cableRun(c, t, act); cards.forEach(p => p.draw(c, t));   // те, що за картками, — спершу
-      stream(c, z, t, s, act); antenna(c, z, t, s); beacon(c, z, t, this._dt || 0); sparks(c);
+      stream(c, z, t, s, act, act && this.focus === 3 ? 3 : s.k); antenna(c, z, t, s); beacon(c, z, t, this._dt || 0); sparks(c);
     },
   });
 })();
 
-</script>         <!-- інструменти: голо-картки, потік даних, антена, маячок, іскри лещат -->
+</script>         <!-- інструменти: голо-картки, потік даних, антена, маячок, іскри лещат; Nexi на ранці біля верстака -->
 <script>
 /* ---- js/objects/sofa.js ---- */
 /* ============================================================================
@@ -8568,11 +8857,13 @@ NX.nexi = {
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };
-    const ch = NX.objects.mkChair, ws = NX.objects.workshop;
-    return ({                                                                         // місця зон: крісло маркетингу, капсула майстерні
+    const ch = NX.objects.mkChair, ws = NX.objects.workshop, ac = NX.objects.anChair, tl = NX.objects.tools;
+    return ({                                                                         // місця зон: крісла маркетингу й аналітики, капсула майстерні, верстак інструментів
       sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }],
       mkChair: ch ? [{ do: () => ch.standUp() }, up, { hop: ch.side() }] : [],
+      anChair: ac ? [{ do: () => ac.standUp() }, up, { hop: ac.side() }] : [],
       wsPad: ws ? [up, { do: () => ws.leave() }, { fly: ws.front() }] : [],
+      tlHover: tl ? [up, { fly: tl.stand() }] : [],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
@@ -8679,9 +8970,11 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
-      const r = Math.random();                                                        // сам працює: у маркетингу — за своїм столом, решта зон — з дивану
-      if (r < .17 && NX.acts.marketing && NX.objects.mkChair && NX.objects.mkChair.ready()) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
-      if (r < .32) { this.do('sofaWork', false); return; }
+      const r = Math.random(), ok = (id, o) => NX.acts[id] && NX.objects[o] && NX.objects[o].ready();   // сам працює: маркетинг, аналітика, інструменти — на своїх місцях, AI-центр — з дивану
+      if (r < .13 && ok('marketing', 'mkChair')) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
+      if (r >= .13 && r < .25 && ok('analytics', 'anChair')) { this.do('analytics', false, { task: NX.ui.zones.pick('analytics') }); return; }
+      if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
+      if (r < .43) { this.do('sofaWork', false); return; }
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
@@ -8737,8 +9030,15 @@ NX.nexi = {
  *     (голо-клавіатура, пости й лайки вилітають з екрана), потім крісло розвертається до глядача — Nexi радіє, картка результату;
  *   МАЙСТЕРНЯ (скіни) — Nexi злітає на пад капсули, сканер біжить по ньому, відкривається лабораторія скінів, маніпулятор
  *     «встановлює» кожен новий скін; у вільний час — просто милується голограмою з різними скінами.
- * Інші зони (AI-центр, аналітика, інструменти, портал) — далі; їхні задачі поки з дивану (sofaWork). Старі сценарії зон —
- * в історії git (коміт a941612), тексти act.<зона> — у словниках.
+ * Крок 11 (власник: «постав крісло; роби взаємодію з Nexi»):
+ *   АНАЛІТИКА — як у маркетингу: крісло (objects/an_chair.js) повертається до Nexi, він сідає, крісло — до екрана в куполі;
+ *     екран показує задачу (продажі / трафік / прогноз), над проєктором — 3D-діаграма; потім
+ *     печатка «ЗВІТ ГОТОВИЙ ✓», крісло розвертається до глядача, з екрана вилітає картка звіту, Nexi радіє (objects/analytics.js);
+ *   ІНСТРУМЕНТИ — Nexi підходить до верстака, злітає на ранці (спиною до нас) і лагодить хаб молотком — картка задачі (CRM /
+ *     календар / автоматизація) підключається, пакети летять з хаба до неї; ✓, маячок спалахує; Nexi спускається й радіє
+ *     (objects/tools.js).
+ * Решта зон (AI-центр, портал) — далі; задачі AI-центру поки з дивану (sofaWork). Старі сценарії зон — в історії git (коміт
+ * a941612), тексти act.<зона> — у словниках.
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
@@ -8747,7 +9047,7 @@ NX.nexi = {
 
     sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
 
-    sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai', 'analytics', 'tools'], z = zs[Math.random() * zs.length | 0], task = NX.ui.zones.pick(z);   // маркетинг — за своїм столом
+    sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai'], z = zs[Math.random() * zs.length | 0], task = NX.ui.zones.pick(z);   // маркетинг, аналітика, інструменти — на своїх місцях
       return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofaWork'),
         { work: { pose: 'sitTablet', dur: 9, tick: () => Math.random() < .06 && NX.fx.emit('bit', NX.nexi.x + 10, NX.nexi.y - 30, { vy: -30 }) } }, { do: () => { NX.ui.zones.result(z, task, !!(NX.nexi.task && NX.nexi.task.auto)); NX.nexi.emote('cool', 2); } }]; } },
 
@@ -8787,6 +9087,27 @@ NX.nexi = {
         { work: { pose: 'sitType', dur: 10.5, obj: 'marketing', tick: () => Math.random() < .05 && NX.fx.emit('bit', NX.nexi.x + (Math.random() - .5) * 20, NX.nexi.y - 40, { vy: -30 }) } },
         { do: () => ch.turnTo(360) }, { work: { pose: 'sit', dur: .8 } },                                                    // розворот до глядача
         { do: () => { NX.nexi.emote('happy', 2.2); M && M.card && M.card(NX.time); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
+
+    // ---------- АНАЛІТИКА: крісло обертається, Nexi сідає, екран у куполі показує задачу (objects/an_chair.js, analytics.js) ----------
+    analytics: { nav: 'analytics', color: '#ffc94d', route() {
+      const ch = NX.objects.anChair, A = NX.objects.analytics, task = NX.nexi.taskOpt; if (!ch || !ch.ready() || !A) return [line('analytics')];
+      return [{ walk: ch.side() }, { face: -1 }, { do: () => ch.turnTo(270) }, { work: { pose: 'look', dur: .6 } },              // крісло повертається до Nexi
+        { hop: ch.seat(), dy: ch.depth() }, { do: () => ch.sitDown() }, { loc: 'anChair' },
+        { do: () => { ch.turnTo(ch.REST); A.begin(task); } }, { work: { pose: 'sit', dur: .8 } }, line('analytics'),          // і до екрана
+        { work: { pose: 'sitType', dur: 10.5, obj: 'analytics', tick: () => Math.random() < .05 && NX.fx.emit('bit', NX.nexi.x + (Math.random() - .5) * 20, NX.nexi.y - 44, { vy: -30 }) } },
+        { do: () => A.finish() }, { work: { pose: 'sit', dur: 1.2 } },                                                        // печатка «звіт готовий»
+        { do: () => ch.turnTo(ch.REST + 180) }, { work: { pose: 'sit', dur: .8 } },                                          // розворот до глядача
+        { do: () => { NX.nexi.emote('happy', 2.2); A.card(); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
+
+    // ---------- ІНСТРУМЕНТИ: на ранці біля верстака лагодить хаб, картка підключається (objects/tools.js) ----------
+    tools: { nav: 'tools', color: '#3bff8a', route() {
+      const T = NX.objects.tools, task = NX.nexi.taskOpt; if (!T || !T.ready()) return [line('tools')];
+      const st = T.stand(), hv = T.hover(), spark = () => { const n = NX.nexi; NX.fx.emit('spark', n.x + (Math.random() - .5) * 14, n.y - 46 - Math.random() * 10, { col: Math.random() < .5 ? '#ffd27a' : '#ffffff' }); };
+      return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
+        { fly: hv, dy: st[1] }, { loc: 'tlHover' }, { do: () => T.begin(task) }, line('tools'),                               // злітає до верстака
+        { work: { pose: 'hoverFix', dur: 10, obj: 'tools', back: true, tick: () => Math.random() < .22 && spark() } },
+        { do: () => { T.finish(); NX.nexi.back = false; } }, { fly: st }, { loc: 'floor' }, { face: 1 },                      // ✓ — і вниз
+        { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.4 } }]; } },
 
     // ---------- МАЙСТЕРНЯ (СКІНИ): капсула, сканер, лабораторія скінів, маніпулятор (objects/workshop.js) ----------
     workshop: { nav: 'workshop', color: '#ff7af0', route(n) {
@@ -8950,7 +9271,7 @@ NX.input = {
  * Меню: кожна кнопка запускає сценарій з actors/nexi/activities.js.
  * ========================================================================== */
 NX.ui.hud = {
-  NAV: ['home', 'marketing', 'workshop'],   // кнопки зон — разом із зонами (крок 2: маркетинг, майстерня; далі ai, analytics, tools, portal)
+  NAV: ['home', 'analytics', 'marketing', 'workshop', 'tools'],   // кнопки зон — разом із зонами, як у кімнаті зліва направо (крок 2: маркетинг, майстерня; крок 11: аналітика, інструменти; далі ai, portal)
   $: id => document.getElementById(id), typed: null,
   init() {
     const nav = this.$('nav');

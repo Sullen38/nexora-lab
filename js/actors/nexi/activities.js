@@ -11,8 +11,15 @@
  *     (голо-клавіатура, пости й лайки вилітають з екрана), потім крісло розвертається до глядача — Nexi радіє, картка результату;
  *   МАЙСТЕРНЯ (скіни) — Nexi злітає на пад капсули, сканер біжить по ньому, відкривається лабораторія скінів, маніпулятор
  *     «встановлює» кожен новий скін; у вільний час — просто милується голограмою з різними скінами.
- * Інші зони (AI-центр, аналітика, інструменти, портал) — далі; їхні задачі поки з дивану (sofaWork). Старі сценарії зон —
- * в історії git (коміт a941612), тексти act.<зона> — у словниках.
+ * Крок 11 (власник: «постав крісло; роби взаємодію з Nexi»):
+ *   АНАЛІТИКА — як у маркетингу: крісло (objects/an_chair.js) повертається до Nexi, він сідає, крісло — до екрана в куполі;
+ *     екран показує задачу (продажі / трафік / прогноз), над проєктором — 3D-діаграма; потім
+ *     печатка «ЗВІТ ГОТОВИЙ ✓», крісло розвертається до глядача, з екрана вилітає картка звіту, Nexi радіє (objects/analytics.js);
+ *   ІНСТРУМЕНТИ — Nexi підходить до верстака, злітає на ранці (спиною до нас) і лагодить хаб молотком — картка задачі (CRM /
+ *     календар / автоматизація) підключається, пакети летять з хаба до неї; ✓, маячок спалахує; Nexi спускається й радіє
+ *     (objects/tools.js).
+ * Решта зон (AI-центр, портал) — далі; задачі AI-центру поки з дивану (sofaWork). Старі сценарії зон — в історії git (коміт
+ * a941612), тексти act.<зона> — у словниках.
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
@@ -21,7 +28,7 @@
 
     sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
 
-    sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai', 'analytics', 'tools'], z = zs[Math.random() * zs.length | 0], task = NX.ui.zones.pick(z);   // маркетинг — за своїм столом
+    sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai'], z = zs[Math.random() * zs.length | 0], task = NX.ui.zones.pick(z);   // маркетинг, аналітика, інструменти — на своїх місцях
       return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofaWork'),
         { work: { pose: 'sitTablet', dur: 9, tick: () => Math.random() < .06 && NX.fx.emit('bit', NX.nexi.x + 10, NX.nexi.y - 30, { vy: -30 }) } }, { do: () => { NX.ui.zones.result(z, task, !!(NX.nexi.task && NX.nexi.task.auto)); NX.nexi.emote('cool', 2); } }]; } },
 
@@ -61,6 +68,27 @@
         { work: { pose: 'sitType', dur: 10.5, obj: 'marketing', tick: () => Math.random() < .05 && NX.fx.emit('bit', NX.nexi.x + (Math.random() - .5) * 20, NX.nexi.y - 40, { vy: -30 }) } },
         { do: () => ch.turnTo(360) }, { work: { pose: 'sit', dur: .8 } },                                                    // розворот до глядача
         { do: () => { NX.nexi.emote('happy', 2.2); M && M.card && M.card(NX.time); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
+
+    // ---------- АНАЛІТИКА: крісло обертається, Nexi сідає, екран у куполі показує задачу (objects/an_chair.js, analytics.js) ----------
+    analytics: { nav: 'analytics', color: '#ffc94d', route() {
+      const ch = NX.objects.anChair, A = NX.objects.analytics, task = NX.nexi.taskOpt; if (!ch || !ch.ready() || !A) return [line('analytics')];
+      return [{ walk: ch.side() }, { face: -1 }, { do: () => ch.turnTo(270) }, { work: { pose: 'look', dur: .6 } },              // крісло повертається до Nexi
+        { hop: ch.seat(), dy: ch.depth() }, { do: () => ch.sitDown() }, { loc: 'anChair' },
+        { do: () => { ch.turnTo(ch.REST); A.begin(task); } }, { work: { pose: 'sit', dur: .8 } }, line('analytics'),          // і до екрана
+        { work: { pose: 'sitType', dur: 10.5, obj: 'analytics', tick: () => Math.random() < .05 && NX.fx.emit('bit', NX.nexi.x + (Math.random() - .5) * 20, NX.nexi.y - 44, { vy: -30 }) } },
+        { do: () => A.finish() }, { work: { pose: 'sit', dur: 1.2 } },                                                        // печатка «звіт готовий»
+        { do: () => ch.turnTo(ch.REST + 180) }, { work: { pose: 'sit', dur: .8 } },                                          // розворот до глядача
+        { do: () => { NX.nexi.emote('happy', 2.2); A.card(); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
+
+    // ---------- ІНСТРУМЕНТИ: на ранці біля верстака лагодить хаб, картка підключається (objects/tools.js) ----------
+    tools: { nav: 'tools', color: '#3bff8a', route() {
+      const T = NX.objects.tools, task = NX.nexi.taskOpt; if (!T || !T.ready()) return [line('tools')];
+      const st = T.stand(), hv = T.hover(), spark = () => { const n = NX.nexi; NX.fx.emit('spark', n.x + (Math.random() - .5) * 14, n.y - 46 - Math.random() * 10, { col: Math.random() < .5 ? '#ffd27a' : '#ffffff' }); };
+      return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
+        { fly: hv, dy: st[1] }, { loc: 'tlHover' }, { do: () => T.begin(task) }, line('tools'),                               // злітає до верстака
+        { work: { pose: 'hoverFix', dur: 10, obj: 'tools', back: true, tick: () => Math.random() < .22 && spark() } },
+        { do: () => { T.finish(); NX.nexi.back = false; } }, { fly: st }, { loc: 'floor' }, { face: 1 },                      // ✓ — і вниз
+        { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.4 } }]; } },
 
     // ---------- МАЙСТЕРНЯ (СКІНИ): капсула, сканер, лабораторія скінів, маніпулятор (objects/workshop.js) ----------
     workshop: { nav: 'workshop', color: '#ff7af0', route(n) {

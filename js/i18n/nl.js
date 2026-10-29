@@ -22,7 +22,7 @@ NX.i18n.add('nl', {
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', today: 'VANDAAG', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
-      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'] },
+      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'], forecast: 'PROGNOSE', ready: 'RAPPORT KLAAR' },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
     wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
@@ -39,7 +39,7 @@ NX.i18n.add('nl', {
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },
     res: { projects: 'Projecten: 3 actief, één deadline morgen. Alles genoteerd.', team: 'Team: 4 mensen online, twee wachten op je antwoord.', clients: 'Klanten: 3 nieuwe aanvragen, twee heb ik al beantwoord.' } },
   chat: { quick: { work: 'Werk', city: 'Stad', dance: 'Dans', cat: 'Kat', skin: 'Skin' },
-    fallback: 'Ik kan nu: werken bij marketing aan mijn bureau, skins wisselen in de werkplaats, uitrusten op de bank, naar de stad kijken, dansen en spelen met Gember. Meer zones komen eraan! Wat gaan we doen?',
+    fallback: 'Ik kan nu: werken bij marketing en analyse aan mijn bureaus, diensten koppelen bij tools, skins wisselen in de werkplaats, uitrusten op de bank, naar de stad kijken, dansen en spelen met Gember. Meer zones komen eraan! Wat gaan we doen?',
     greet: 'Hoi! Ik ben Nexi. Tik op een zone, de bank of het raam en ik ga erheen. Tik op mij om mijn skin te wijzigen.' },
   act: {
     home: { title: 'Laadstation', steps: ['Terug naar het station', 'Opladen'], lines: ['Hoi! Ik ben Nexi, je AI-assistent voor je bedrijf. Tik op een zone, de bank of het raam en ik ga erheen.', 'Ik ben thuis aan het opladen. Wat gaan we doen?'] },
@@ -48,7 +48,7 @@ NX.i18n.add('nl', {
     marketing: { title: 'Marketing: campagne', steps: ['In mijn stoel', 'Post schrijven', 'Advertentie starten', 'Bereik groeit ✓'], lines: ['Marketing: ik schrijf posts, nieuwsbrieven en advertenties in jouw stijl.', 'Ik kies de doelgroep en plan de campagnes voor de week.'] },
     wsLook: { lines: ['Wat een hologram! Die skin staat me goed.', 'Zoveel skins… Tik op de werkplaats en ik pas een nieuwe!'] },
     workshop: { title: 'Werkplaats: nieuwe skin', steps: ['De capsule in vliegen', 'Romp scannen', 'Kies een skin ✓'], lines: ['Werkplaats! Kies rechts een skin en de robotarm installeert hem.', 'Romp scannen... Klaar voor een nieuwe look!'] },
-    tools: { title: 'Tools: integraties', steps: ['Naar het paneel vliegen', 'E-mail koppelen', 'Agenda koppelen', 'CRM koppelen ✓'], lines: ['Tools: ik koppel je CRM, e-mail, chat-apps en agenda.', 'Ik automatiseer routine: herinneringen, facturen, aanvragen via de site.'] },
+    tools: { title: 'Tools: integraties', steps: ['Naar de werkbank vliegen', 'Dienst koppelen', 'Data synchroniseren', 'Het werkt ✓'], lines: ['Tools: ik koppel je CRM, e-mail, chat-apps en agenda.', 'Ik automatiseer routine: herinneringen, facturen, aanvragen via de site.'] },
     portal: { title: 'Portaal: bedrijfsruimte', steps: ['Console instellen', 'Portaal opladen', 'Reizen', 'Terug ✓'] },
     sofa: { title: 'Rust op de bank', steps: ['Gaan zitten', 'Nieuws lezen'], lines: ['Even rusten en zakelijk nieuws lezen.', 'De bank is de beste plek voor nieuwe ideeën.'] },
     sleep: { title: 'Dutje op de bank', steps: ['Gaan liggen', 'Zzz...'], lines: ['Ik ben een beetje moe... Maak me wakker als je me nodig hebt.'] },

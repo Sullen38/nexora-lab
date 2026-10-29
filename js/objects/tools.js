@@ -13,7 +13,12 @@
  *   АНТЕНА хаба з вогником (коли синхронізація — розходяться радіохвилі);
  *   МАЯЧОК посередині балки: бурштиновий, крутиться; коли картка готова — розганяється й спалахує;
  *   ЛЕЩАТА: раз на 5–9 с (коли Nexi працює — частіше) — сніп іскор, що відскакують від стільниці.
- * Стан для карток і Nexi (наступний крок): active / prog (nexi.js: work.obj = 'tools'); синхронізація — NX.arc.tlSync.
+ * Крок 11 — NEXI ПРАЦЮЄ ТУТ (власник: «роби взаємодію з Nexi»): Nexi підходить до верстака, злітає на ранці (руки — на рівні
+ * стільниці, спиною до нас), лагодить хаб молотком (іскри); задача (begin) — яку картку підключити: CRM / КАЛЕНДАР — її
+ * кільце прогресу йде за роботою Nexi (NX.arc.tlSync), АВТО — картка світиться й біжить швидше; пакети з хаба летять саме до
+ * неї; по завершенні (finish) — ✓ і зелений спалах на картці, маячок спалахує й розганяється, Nexi спускається й радіє.
+ * Стан: active / prog (nexi.js: work.obj = 'tools'), focus — номер картки задачі, doneT — коли завершено; stand() / hover() —
+ * де Nexi стає й куди злітає (activities.js: tools).
  * ========================================================================== */
 (() => {
   const P = NX.px, proj = NX.px3d.proj, hash = NX.art.hash, D = NX.persp.D, sc = z => D / (D + z);
@@ -50,8 +55,8 @@
     c.restore();
   }
   /** Пакети з хаба до картки, що синхронізується: дуга вгору-назад, світлі точки біжать по ній. */
-  function stream(c, z, t, s, act) {
-    if (!cards || s.f > .82) return; const H = z.anchor('tlAnt'), q = cards[s.k].quad(); if (!H || !q) return;
+  function stream(c, z, t, s, act, k = s.k) {
+    if (!cards || (k === s.k && s.f > .82)) return; const H = z.anchor('tlAnt'), q = cards[k].quad(); if (!H || !q) return;
     const a = proj([H[0] - 14, H[1] - 1, H[2] - 4]), b = [(q[2][0] + q[3][0]) / 2, Math.max(q[2][1], q[3][1]) - 3], m = [(a[0] + b[0]) / 2 - 6, Math.min(a[1], b[1]) - 10];
     c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(255,170,90,.18)'; c.lineWidth = .8; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(m[0], m[1], b[0], b[1]); c.stroke();
     const n = act ? 7 : 4; for (let i = 0; i < n; i++) { const u = (t * (act ? 1.3 : .7) + i / n) % 1, w = 1 - u, x = w * w * a[0] + 2 * w * u * m[0] + u * u * b[0], y = w * w * a[1] + 2 * w * u * m[1] + u * u * b[1];
@@ -101,15 +106,25 @@
     c.restore();
   }
 
+  const FOCUS = { mail: 0, calendar: 1, crm: 2, auto: 3 };                             // задача Nexi (ui/zones.js) -> картка
   NX.addObject({
-    id: 'tools', name: 'obj.tools', active: false, prog: 0, boost: 0,
+    id: 'tools', name: 'obj.tools', act: 'tools', active: false, prog: 0, boost: 0, focus: null, doneT: -99,
     get span() { const z = zone(); return z && z.box ? [z.box[0] - 30, z.box[1] + 40] : null; },
+    get hit() { const z = zone(); if (!z || !z.box) return null; const [x0, x1, y0, y1] = z.box; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 - 10 }; },
     ready() { return !!zone(); },
-    /** Глюк панелі зараз (i — номер, інакше випадкова): для Nexi й перевірок (наступний крок). */
+    /** Де Nexi стає перед верстаком: на підлозі просто перед слідом верстака, навпроти хаба. */
+    stand() { const z = zone(), f = NX.objects.foot_tools && NX.objects.foot_tools.foot, x = proj(z.W(1238, 357, -12))[0]; return NX.room.clampWalk(x, (f ? f[3] : 395) + 6); },
+    /** Куди Nexi злітає на ранці: над тим самим місцем, руки з молотком — над стільницею (лагодить хаб), ноги — під нею. */
+    hover() { const z = zone(), s = this.stand(), top = proj(z.W(1238, 285, -2)); return [s[0], top[1] + 33]; },
+    /** Nexi береться за задачу (activities.js): яку картку підключає. */
+    begin(task) { this.focus = FOCUS[task] != null ? FOCUS[task] : null; this.doneT = -99; },
+    /** Задачу зроблено: ✓ на картці, маячок спалахує й розганяється. */
+    finish() { this.doneT = NX.time; FX.flash = 1; const z = zone(); if (z) sparkBurst(z, true); },
+    /** Глюк панелі зараз (i — номер, інакше випадкова): для перевірок. */
     glitch(i, dur = .5) { if (!NX.arc.holo || !zone()) return; mk(); const L = cards; L[i != null ? i % L.length : Math.random() * L.length | 0].kick(NX.time, dur); },
     update(dt, t) {
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
-      if (t > FX.nextLag) { cards[Math.random() * cards.length | 0].kick(t, .3 + Math.random() * .3); FX.nextLag = t + 15 + Math.random() * 13; }   // глючить одна картка і рідко
+      if (t > FX.nextLag) { if (!this.active && t - this.doneT > 2.5) cards[Math.random() * cards.length | 0].kick(t, .3 + Math.random() * .3); FX.nextLag = t + 15 + Math.random() * 13; }   // глючить одна картка, рідко й не під час роботи Nexi (і не на його ✓)
       if (this.active) this.boost += dt;
       const s = NX.arc.tlSync(t), done = s.f > .82 ? s.k : -1; if (done >= 0 && FX.lastK !== done) FX.flash = 1; FX.lastK = done; FX.flash = Math.max(0, FX.flash - dt * .9);
       if (t > FX.nextSpark) { sparkBurst(z, this.active); FX.nextSpark = t + (this.active ? 2 + Math.random() * 2 : 5 + Math.random() * 4); }
@@ -121,7 +136,7 @@
       const z = zone(); if (!z || !NX.arc.holo) return; mk();
       const s = NX.arc.tlSync(t), act = !!this.active;
       cones(c, t); cableRun(c, t, act); cards.forEach(p => p.draw(c, t));   // те, що за картками, — спершу
-      stream(c, z, t, s, act); antenna(c, z, t, s); beacon(c, z, t, this._dt || 0); sparks(c);
+      stream(c, z, t, s, act, act && this.focus === 3 ? 3 : s.k); antenna(c, z, t, s); beacon(c, z, t, this._dt || 0); sparks(c);
     },
   });
 })();

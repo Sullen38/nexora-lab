@@ -1,9 +1,9 @@
 /* ============================================================================
- * objects/an_paint.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): МАЛЮНКИ ГРАНЕЙ, ЖИВІ ГРАНІ, ВМІСТ ГОЛО-ПАНЕЛЕЙ
+ * objects/an_paint.js — АНАЛІТИКА («ОБСЕРВАТОРІЯ ДАНИХ»): МАЛЮНКИ ГРАНЕЙ, ЖИВІ ГРАНІ, КУПОЛ, ВМІСТ ГОЛО-ЕКРАНА
  * ----------------------------------------------------------------------------
  * Розкладка частин — tools/wingbox/gen_room.py: analytics() (id an_*). Тут — як виглядають їхні грані (NX.arc.paint[id], пласкі
- * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id]). Голо-панелі, 3D-діаграма, радар, пара над
- * кавою — живий об'єкт objects/analytics.js (вміст панелей — NX.arc.anPane нижче).
+ * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id]). Голо-екран, 3D-діаграма, голо-клавіатура, пара
+ * над кавою — живий об'єкт objects/analytics.js (вміст екрана — NX.arc.anScreen нижче); крісло — objects/an_chair.js.
  * Крок 9 (власник: «вклади душу: більше графіки, унікальності, фішок; простір для ніг між тумбочками, унікальні краї; столи не
  * однакові; екрани — пласкі, зрідка глючать»). Характер зони: спокійна наукова обсерваторія — холодний блакитний і фіолет,
  * теплі латунні акценти (ручки шухляд, кава), скло й плавні форми.
@@ -12,15 +12,16 @@
  *   an_pedL    — тумба з трьома шухлядами: латунні ручки, картки-мітки, замок; збоку (видно) — панель з неоновою смугою
  *   an_pedR    — серверна стійка: ґратка, чотири блоки з вогниками й лотками дисків, смуга навантаження (живі)
  *   an_knee    — у глибині простору для ніг: скляна «труба даних» на кріпленнях, кабелі (по трубі біжать імпульси — живі)
- *   an_mug, an_puck — верх чашки (кава з сердечком) і лінза проєктора
- * Крок 10 (власник: «екрани громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк»): шафу-рамку (шапка,
- * стовпи, «стіна даних») прибрано — ГОЛО-КОКПІТ:
- *   an_emit    — тонка планка-емітер на задньому краї стільниці (три лінзи під панелями; промені — живі)
- *   an_halo    — тонке неонове гало-кільце за панелями (форма NX.arc.shape['st:halo']: блакитна й рожева трубки, шкала, вузли)
- *   вміст трьох панелей кокпіту (NX.arc.anPane: visitors / revenue / conv) — кіберпанк-обрис зі зрізаними кутами, розщеплення
- *   кольорів на канті, шапка-вкладка, «дощ даних», шкала, штрих-код.
- * Нові матеріали (NX.arc.kit.STY): chrome — хром (підставка для ніг), mug — світла кераміка.
- * Коли Nexi працює в зоні (NX.objects.analytics.active — наступний крок), дані біжать швидше. Написи — NX.t (4 мови).
+ *   an_mug, an_puck — верх чашки (кава з сердечком) і лінза проєктора (крок 11 — на правому краї стільниці)
+ * Крок 10 — голо-кокпіт (три кіберпанк-панелі, гало-кільце, планка-емітер). Крок 11 (власник: «з екраном аналітики перебор —
+ * треба простіше; або хоч якийсь фон, бо дуже цегляну стіну видно; спробуй ще щось»): кокпіт прибрано —
+ *   an_dome    — КУПОЛ ОБСЕРВАТОРІЇ на стіні (форма NX.arc.shape['st:dome']): тонка плита темного скла з аркою вгорі, ледь
+ *                видимі ребра купола й зорі, неоновий кант по арці, хромовані вузли; ховає цеглу за екраном
+ *   вміст ОДНОГО широкого голо-екрана (NX.arc.anScreen): скло з тонким кантом, шапка (назва, ● НАЖИВО, смужка прогресу, коли
+ *   Nexi працює), ліворуч — головне число, праворуч — графік, унизу — три показники; вигляд — за задачею Nexi: огляд виручки,
+ *   ПРОДАЖІ за тиждень (стовпчики по днях), ВІДВІДУВАЧІ (карта з пінгами), ПРОГНОЗ (пунктир у майбутнє); по завершенні —
+ *   печатка «ЗВІТ ГОТОВИЙ ✓».
+ * Матеріали (NX.arc.kit.STY): chrome — хром (підставка для ніг), mug — світла кераміка, dome — темне скло купола. Написи — NX.t (4 мови).
  * ========================================================================== */
 (() => {
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k), K = NX.kit;
@@ -44,7 +45,7 @@
   /** Стільниця зверху: темне скло (глянець — матеріал), ледь видима сітка, світний «килимок» під проєктором. */
   PAINT.an_top.sides = { top: (c, fw, fh) => {
     c.strokeStyle = 'rgba(90,200,255,.09)'; c.lineWidth = .3; for (let x = 6; x < fw; x += 7) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, fh); c.stroke(); } for (let y = 5; y < fh; y += 7) { c.beginPath(); c.moveTo(0, y); c.lineTo(fw, y); c.stroke(); }
-    const cx = fw * .49, cy = fh * .59; [[30, .3], [25, .18]].forEach(([r, a]) => { c.strokeStyle = `rgba(59,232,255,${a})`; c.lineWidth = .7; c.beginPath(); c.ellipse(cx, cy, r, r * .72, 0, 0, 7); c.stroke(); });   // «килимок» під проєктором (an_puck)
+    const cx = fw * .8, cy = fh * .59; [[26, .3], [21, .18]].forEach(([r, a]) => { c.strokeStyle = `rgba(59,232,255,${a})`; c.lineWidth = .7; c.beginPath(); c.ellipse(cx, cy, r, r * .72, 0, 0, 7); c.stroke(); });   // «килимок» під проєктором (an_puck — на правому краї)
     c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(0, 0, fw, .6);
   } };
   /** Заокруглений зовнішній кінець стільниці (циліндр, пів-еліпс у плані): бік — та сама кромка, що й спереду (світла губа,
@@ -152,154 +153,152 @@
 
   LIVE.an_sign = NX.arc.glint(7.4, 2.1);
 
-  // ---------- ГОЛО-КОКПІТ (крок 10): тонкі емітер і гало-кільце замість шафи-рамки ----------
-  // Власник: «екрани громосткі в профіль; треба інноваційні, футуристичні, типу кіберпанк». Шапки, стовпів і «стіни даних»
-  // більше немає: над столом висять три пласкі голо-панелі дугою (objects/analytics.js), їх «проєктує» тонка планка-емітер
-  // на задньому краї стільниці, за ними — тонке неонове гало-кільце, на ньому вивіска й радар.
-  const SHP = NX.arc.shape = NX.arc.shape || {}, NE = A.NEON;
-  /** ГАЛО-КІЛЬЦЕ (форма st:halo): еліпс у площині предмета — товста блакитна неонова трубка, ближче — тонка рожева, риски-
-   *  шкала назовні (як лімб телескопа), хромовані вузли з блакитним «оком»; низ ховається за столом (z-буфер). */
-  SHP['st:halo'] = (G, B) => {
-    const P = G.P, rx = B.w / 2, ry = (B.yb - B.yt) / 2, yc = (B.yt + B.yb) / 2, v = B.dep / 2, n = 96, TAU = Math.PI * 2;
-    const at = (a, k = 1, dv = 0) => P(Math.cos(a) * rx * k, v + dv, yc - Math.sin(a) * ry * k);
-    const tube = pal => (u, vv, i, j) => { X3.SH.fl |= X3.F_EMIT; return Math.abs(u - .5) < .22 ? pal[2] : pal[1]; };
-    const cyan = tube(NE.cyan), pink = tube(NE.pink);
-    for (let i = 0; i < n; i++) G.tube(at(i / n * TAU), at((i + 1) / n * TAU), 1.8, cyan);
-    for (let i = 0; i < n / 2; i++) G.tube(at(i / (n / 2) * TAU, .955, -1.6), at((i + 1) / (n / 2) * TAU, .955, -1.6), .7, pink);
-    const steel = (u, vv, i, j) => X3.ramp(PL.CHROME, .3 + (1 - Math.abs(u - .5) * 2) * .55, i, j);
-    for (let k = 0; k < 60; k++) { const a = k / 60 * TAU, long = k % 5 === 0; G.tube(at(a, 1.04), at(a, long ? 1.095 : 1.065), long ? .7 : .45, steel); }   // шкала
-    [25, 155, 205, 335].forEach(d => { const p = at(d * Math.PI / 180, 1, -.9);
-      G.disc([p[0], p[1], p[2] - .3], 2.3, (u, vv, i, j) => { const r = Math.hypot(u - .5, vv - .5); if (r < .17) { X3.SH.fl |= X3.F_EMIT; return NE.cyan[2]; } return X3.ramp(PL.CHROME, .9 - r * 1.2 + (u < .45 && vv < .45 ? .15 : 0), i, j); }); });
+  // ---------- КУПОЛ ОБСЕРВАТОРІЇ (крок 11): фон за екраном — замість гало-кільця й цегли ----------
+  // Власник: «з екраном аналітики перебор — треба простіше; або хоч якийсь фон, бо дуже цегляну стіну видно». Купол — тонка
+  // (2.5 px) плита темного скла на стіні: прямі боки й полога арка вгорі (як вікно обсерваторії); усередині ледь видимі ребра купола й
+  // зорі, по арці — неоновий кант, на п'ятах арки й угорі — хромовані вузли. Низ — за столом.
+  const SHP = NX.arc.shape = NX.arc.shape || {}, X3s = NX.px3d;
+  A.STY.dome = A.STY.dome || { pal: PL.NAVY, q: .3, bev: 0, ins: 0 };
+  /** Обрис купола в текстурі (fw × fh, од. світу): k — відступ усередину. Арка — пів-еліпс заввишки rise над прямими боками. */
+  const domeRise = (fw, fh) => Math.min(fw / 2 * .62, fh * .48);                                   // арка пологіша за півколо: вивіска вгорі вміщається між п'ятами арки
+  function arch(c, fw, fh, k = 0) { const a = fw / 2, rise = domeRise(fw, fh); c.beginPath(); c.moveTo(k, fh + 1); c.lineTo(k, rise); c.ellipse(a, rise, a - k, rise - k, 0, Math.PI, 0); c.lineTo(fw - k, fh + 1); c.closePath(); }
+  /** Скло купола: темно-синій перелив, ледь видимі ребра й паралелі купола, зорі (кілька яскравіших з хрестиком), темна
+   *  фаска всередині краю, неоновий кант по арці, хромовані вузли. */
+  function domeArt(c, fw, fh) {
+    const a = fw / 2, rise = domeRise(fw, fh);
+    let g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#040720'); g.addColorStop(.45, '#070e2e'); g.addColorStop(1, '#0a1238'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    g = c.createRadialGradient(a * .62, rise * .5, 0, a * .62, rise * .5, a * .75); g.addColorStop(0, 'rgba(110,80,220,.12)'); g.addColorStop(1, 'rgba(110,80,220,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    g = c.createRadialGradient(a * 1.4, rise * .9, 0, a * 1.4, rise * .9, a * .6); g.addColorStop(0, 'rgba(40,150,255,.09)'); g.addColorStop(1, 'rgba(40,150,255,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    c.save(); arch(c, fw, fh); c.clip();
+    c.strokeStyle = 'rgba(120,190,255,.075)'; c.lineWidth = .35;                                                   // ребра купола й паралелі
+    [.36, .7].forEach(k => { c.beginPath(); c.ellipse(a, rise, a * k, rise, 0, Math.PI, 0); c.stroke(); [-1, 1].forEach(sd => { c.beginPath(); c.moveTo(a + sd * a * k, rise); c.lineTo(a + sd * a * k, fh); c.stroke(); }); });
+    c.beginPath(); c.moveTo(a, 0); c.lineTo(a, fh); c.stroke();
+    [.4, .74].forEach(k => { const y = rise * (1 - k), hw = a * Math.sqrt(1 - k * k); c.beginPath(); c.moveTo(a - hw, y); c.lineTo(a + hw, y); c.stroke(); });
+    for (let i = 0; i < 150; i++) {                                                                             // зорі (гущі вгорі)
+      const x = hash(i, 71) * fw, y = Math.pow(hash(i, 73), 1.7) * fh * .92, s = hash(i, 75), big = s > .94, r = big ? .65 : .22 + s * .28;
+      c.fillStyle = big ? 'rgba(235,250,255,.95)' : `rgba(${s > .5 ? '200,232,255' : '168,184,255'},${.16 + s * .32})`; c.fillRect(x - r, y - r, r * 2, r * 2);
+      if (big) { c.fillStyle = 'rgba(190,236,255,.35)'; c.fillRect(x - 2.4, y - .15, 4.8, .3); c.fillRect(x - .15, y - 2.4, .3, 4.8); } }
+    c.strokeStyle = 'rgba(0,0,12,.6)'; c.lineWidth = 6; arch(c, fw, fh); c.stroke();                               // темна фаска всередині краю
+    c.restore();
+    [['rgba(10,40,90,.9)', 2.6], ['#3be8ff', 1.1], ['#d8fcff', .38]].forEach(([st, w]) => { c.strokeStyle = st; c.lineWidth = w; arch(c, fw, fh, 1.7); c.stroke(); });   // неоновий кант
+    c.strokeStyle = 'rgba(190,225,255,.4)'; c.lineWidth = .45; arch(c, fw, fh, .25); c.stroke();                   // край скла
+    [[1.7, rise], [fw - 1.7, rise], [a, 1.7]].forEach(([x, y]) => { const gg = c.createRadialGradient(x - .6, y - .6, 0, x, y, 2.6); gg.addColorStop(0, '#ffffff'); gg.addColorStop(.4, '#aeb8e6'); gg.addColorStop(1, '#2a2f5e');
+      c.fillStyle = gg; c.beginPath(); c.arc(x, y, 2.6, 0, 7); c.fill(); c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(x, y, .8, 0, 7); c.fill(); });   // хромовані вузли
+  }
+  /** КУПОЛ (форма st:dome): лицьова грань — многокутник (прямі боки + арка з 48 відрізків) з текстурою domeArt; торець по обрису —
+   *  тонка хромована смужка (видно збоку). Предмет B: w — ширина, yt..yb — від верху арки до низу, dep — товщина. */
+  SHP['st:dome'] = (G, B) => {
+    const Pp = G.P, a = B.w / 2, H = B.yb - B.yt, rise = domeRise(B.w, H), ys = B.yt + rise, n = 48, sub = X3s.sub, dot = X3s.dot;
+    const outl = [[-a, B.yb], [-a, ys]]; for (let i = 1; i < n; i++) { const th = Math.PI - i / n * Math.PI; outl.push([a * Math.cos(th), ys - rise * Math.sin(th)]); } outl.push([a, ys], [a, B.yb]);
+    const Fr = outl.map(([u, y]) => Pp(u, 0, y)), Bk = outl.map(([u, y]) => Pp(u, B.dep, y));
+    const unit = v => { const l = Math.hypot(...v) || 1; return v.map(q => q / l); };
+    let nF = X3s.newell(Fr); if (dot(nF, sub(Pp(0, -10, ys), Pp(0, 0, ys))) < 0) nF = nF.map(q => -q); nF = unit(nF);
+    const O = Pp(-a, 0, B.yt), Fc = { k: 'front', poly: Fr, n: nF, fw: B.w, fh: H, O, A: sub(Pp(a, 0, B.yt), O), B: sub(Pp(-a, 0, B.yb), O) };
+    G.face(Fr, Fc.O, Fc.A, Fc.B, A.shader('dome', Fc, B, { tex: A.texture(B, Fc, 3.5, domeArt), fog: 0 }), nF);
+    const cen = Pp(0, B.dep / 2, ys), rim = (u, v, i, j) => v < .3 ? X3s.ramp(PL.CHROME, .7 - v, i, j) : X3s.ramp(PL.STEEL, .5, i, j);
+    for (let i = 0; i < outl.length - 1; i++) {
+      const poly = [Fr[i], Fr[i + 1], Bk[i + 1], Bk[i]], m = poly.reduce((s2, p) => [s2[0] + p[0] / 4, s2[1] + p[1] / 4, s2[2] + p[2] / 4], [0, 0, 0]);
+      let nn = X3s.newell(poly); if (dot(nn, sub(m, cen)) < 0) nn = nn.map(q => -q); nn = unit(nn);
+      G.face(poly, Fr[i], sub(Fr[i + 1], Fr[i]), sub(Bk[i], Fr[i]), rim, nn);
+    }
   };
-  /** Планка-емітер на задньому краї стільниці: темний корпус зі світлою губою, блакитна неонова щілина, три лінзи — під
-   *  кожною панеллю (промені до панелей — живі, objects/analytics.js). */
-  const LENS = [.08, .5, .92];
-  PAINT.an_emit = (c, fw, fh) => {
-    c.fillStyle = 'rgba(4,6,20,.88)'; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(200,240,255,.4)'; c.fillRect(0, 0, fw, fh * .16);
-    A.neon(c, fw * .02, fh * .66, fw * .98, fh * .66, CY, .6);
-    LENS.forEach(f => { c.fillStyle = '#05030f'; rr(c, fw * f - 4.5, fh * .14, 9, fh * .7, .8); c.fill();
-      const g = c.createRadialGradient(fw * f, fh * .48, 0, fw * f, fh * .48, 4.2); g.addColorStop(0, '#ffffff'); g.addColorStop(.35, '#9af6ff'); g.addColorStop(1, 'rgba(59,232,255,0)'); c.fillStyle = g; c.fillRect(fw * f - 4.5, fh * .1, 9, fh * .8); });
-  };
-  PAINT.an_emit.sides = { top: (c, fw, fh) => { c.fillStyle = 'rgba(4,6,20,.6)'; c.fillRect(0, 0, fw, fh); A.neon(c, fw * .03, fh * .55, fw * .97, fh * .55, CY, 1.2);
-    LENS.forEach(f => { c.fillStyle = '#ffffff'; c.fillRect(fw * f - 2.5, fh * .55 - .5, 5, 1); }); } };
 
-  // ---------- ВМІСТ ГОЛО-ПАНЕЛЕЙ КОКПІТУ (objects/analytics.js -> NX.arc.holo.pane, crisp) ----------
-  /** КІБЕРПАНК-ПАНЕЛЬ: обрис зі зрізаними кутами (ліворуч угорі й праворуч унизу), темне скло з тонкою сіткою й «дощем даних»,
-   *  шапка-вкладка з назвою й іконкою, неоновий кант з розщепленням кольорів (блакитний / рожевий), білі кутові скоби, риски-
-   *  шкала по лівому краю, штрих-код і вогник стану. Повертає k — розмір зрізу (вміст — від шапки вниз). */
-  function cyber(c, fw, fh, title, ic, t, seed = 0) {
-    const e = .8, k = Math.min(fw, fh) * .14, hh = fh * .095;
-    const path = (dx = 0) => { c.beginPath(); c.moveTo(k + e + dx, e); c.lineTo(fw - e + dx, e); c.lineTo(fw - e + dx, fh - k - e); c.lineTo(fw - k - e + dx, fh - e); c.lineTo(e + dx, fh - e); c.lineTo(e + dx, k + e); c.closePath(); };
-    const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, 'rgba(14,34,96,.84)'); g.addColorStop(.55, 'rgba(10,18,66,.8)'); g.addColorStop(1, 'rgba(34,12,74,.86)');
-    path(); c.fillStyle = g; c.fill();
-    c.save(); path(); c.clip();
-    c.strokeStyle = 'rgba(90,200,255,.07)'; c.lineWidth = .25; c.beginPath(); for (let x = 3; x < fw; x += 4) { c.moveTo(x, 0); c.lineTo(x, fh); } for (let y = 3; y < fh; y += 4) { c.moveTo(0, y); c.lineTo(fw, y); } c.stroke();   // сітка
-    for (let i = 0; i < 7; i++) { const x = fw * (.07 + i * .14), sp = 6 + 9 * hash(i, seed + 3);                   // «дощ даних»
-      for (let q = 0; q < 5; q++) { const y = ((t * sp + hash(i, q + seed) * fh + q * fh * .21) % (fh * 1.1)) - fh * .05; c.fillStyle = q === 0 ? 'rgba(200,250,255,.22)' : `rgba(90,220,255,${.1 - q * .015})`; c.fillRect(x, y, 1.1, .8); } }
+  // ---------- ГОЛО-ЕКРАН У КУПОЛІ (крок 11; objects/analytics.js -> NX.arc.holo.pane, crisp) ----------
+  // Один широкий екран замість трьох панелей: спокійне скло, тонкий кант, шапка, головне число, графік, три показники. Що
+  // показує — за задачею Nexi (S.view): огляд виручки (у спокої), продажі за тиждень, відвідувачі, прогноз; S.prog — поступ
+  // задачі (стовпчики, пінги, пунктир ростуть), S.done — печатка «ЗВІТ ГОТОВИЙ ✓» після задачі (0..1 — проявлення/згасання).
+  const VIEW = { overview: ['scene.analytics.revenue', 'chart'], sales: ['scene.analytics.sales', 'chart'], traffic: ['scene.analytics.visitors', 'user'], forecast: ['scene.analytics.forecast', 'target'] };
+  const DAYV = [.52, .64, .58, .74, .92, .46, .38], BEST = 4;                                                       // продажі по днях: п'ятниця — найкраща
+  const kpi = (c, x, y, w, h, ic, label, value, col, t, seed) => {
+    c.fillStyle = 'rgba(10,30,84,.9)'; rr(c, x, y, w, h, 1.4); c.fill(); c.strokeStyle = 'rgba(120,220,255,.28)'; c.lineWidth = .3; rr(c, x, y, w, h, 1.4); c.stroke();
+    icon(c, ic, x + h * .42, y + h * .5, h * .42, col);
+    A.txt(c, label, x + h * .8, y + h * .3, w - h * .9, h * .24, 'rgba(190,225,255,.85)', { align: 'left' });
+    A.txt(c, value, x + h * .8, y + h * .68, w * .5, h * .34, '#e8feff', { align: 'left' });
+    c.strokeStyle = col; c.lineWidth = .45; c.beginPath();                                                       // міні-графік
+    for (let i = 0; i <= 8; i++) { const xx = x + w * (.66 + .3 * i / 8), yy = y + h * (.78 - .5 * wave(Math.floor(t * .8) + i, seed)); i ? c.lineTo(xx, yy) : c.moveTo(xx, yy); } c.stroke();
+  };
+  function anScreen(c, fw, fh, t, S = {}) {
+    const view = VIEW[S.view] ? S.view : 'overview', act = !!S.act, prog = S.prog || 0, r = 3.2, e = .6;
+    // скло й кант
+    let g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, 'rgba(12,30,82,.97)'); g.addColorStop(.55, 'rgba(7,17,54,.97)'); g.addColorStop(1, 'rgba(9,13,46,.97)');
+    rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.fillStyle = g; c.fill();
+    c.save(); rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.clip();
+    c.strokeStyle = 'rgba(90,200,255,.05)'; c.lineWidth = .25; c.beginPath(); for (let x = 6; x < fw; x += 6) { c.moveTo(x, 0); c.lineTo(x, fh); } for (let y = 6; y < fh; y += 6) { c.moveTo(0, y); c.lineTo(fw, y); } c.stroke();
+    g = c.createLinearGradient(0, 0, fw, fh); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.42, 'rgba(255,255,255,0)'); g.addColorStop(.47, 'rgba(200,240,255,.05)'); g.addColorStop(.55, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);   // відблиск по склу
     c.restore();
-    c.beginPath(); c.moveTo(k + e + .6, e + .6); c.lineTo(fw * .74, e + .6); c.lineTo(fw * .74 - hh * .6, hh); c.lineTo(e + .6 + k * .4, hh); c.closePath();   // шапка-вкладка
-    c.fillStyle = 'rgba(59,232,255,.2)'; c.fill();
-    A.txt(c, title, k + e + 1.6, hh * .55, fw * .74 - k - hh * .7 - 2.6, hh * .58, '#e8feff', { align: 'left', glow: CY });
-    icon(c, ic, fw * .84, hh * .55, hh * .55, 'rgba(190,240,255,.9)');
-    c.fillStyle = Math.sin(t * 5 + seed) > 0 ? '#ff4f6a' : '#7a1a2a'; c.beginPath(); c.arc(fw * .94, hh * .55, hh * .13, 0, 7); c.fill();
-    c.fillStyle = 'rgba(120,230,255,.55)'; c.fillRect(e + 1, hh + 1, fw - 2 * e - 2, .3); c.fillStyle = '#e8feff'; c.fillRect(e + 1, hh + .9, fw * .16, .5);
-    for (let y = hh + 3; y < fh - k; y += 2.6) { const L = Math.round((y - hh) / 2.6) % 4 === 0; c.fillStyle = L ? 'rgba(150,240,255,.6)' : 'rgba(150,240,255,.3)'; c.fillRect(e + .9, y, L ? 1.6 : .9, .25); }   // шкала
-    for (let i = 0, x = fw * .5; i < 14 && x < fw - k - 2; i++) { const w = .25 + .55 * hash(i, seed + 9); c.fillStyle = 'rgba(190,240,255,.5)'; c.fillRect(x, fh - e - 2.8, w, 1.6); x += w + .35 + .4 * hash(i, seed + 4); }   // штрих-код
-    c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = .5;
-    c.strokeStyle = 'rgba(255,60,210,.55)'; path(.5); c.stroke(); c.strokeStyle = 'rgba(60,220,255,.5)'; path(-.5); c.stroke(); c.restore();   // розщеплення кольорів
-    c.strokeStyle = '#8af4ff'; c.lineWidth = .55; path(); c.stroke();
-    const L = Math.min(fw, fh) * .1; c.strokeStyle = '#ffffff'; c.lineWidth = 1; c.beginPath();
-    c.moveTo(fw - e - L, e + .5); c.lineTo(fw - e - .5, e + .5); c.lineTo(fw - e - .5, e + L); c.moveTo(e + .5, fh - e - L); c.lineTo(e + .5, fh - e - .5); c.lineTo(e + L, fh - e - .5); c.stroke();   // скоби
-    c.strokeStyle = 'rgba(255,90,220,.9)'; c.lineWidth = .5; c.beginPath(); c.moveTo(e + 1.6, k + e - .2); c.lineTo(k + e - .2, e + 1.6); c.moveTo(fw - k - e + .2, fh - e - 1.6); c.lineTo(fw - e - 1.6, fh - k - e + .2); c.stroke();   // кант зрізів
-    return { k, hh };
-  }
-  /** Скан-смуга по панелі. */
-  function sheen(c, fw, fh, t, seed) {
-    c.save(); c.globalCompositeOperation = 'lighter';
-    const ry = (((t + seed) * .11) % 1.3 - .15) * fh, g = c.createLinearGradient(0, ry - fh * .06, 0, ry + fh * .06);
-    g.addColorStop(0, 'rgba(150,230,255,0)'); g.addColorStop(.5, 'rgba(150,230,255,.1)'); g.addColorStop(1, 'rgba(150,230,255,0)'); c.fillStyle = g; c.fillRect(0, ry - fh * .06, fw, fh * .12);
+    c.fillStyle = 'rgba(210,245,255,.2)'; c.fillRect(r + 1, e + .5, fw - 2 * r - 2, .35);
+    c.strokeStyle = '#7af4ff'; c.lineWidth = .55; rr(c, e, e, fw - 2 * e, fh - 2 * e, r); c.stroke();
+    c.strokeStyle = '#e8feff'; c.lineWidth = .8; const L = 6; c.beginPath();                                      // світлі кути
+    [[e, e, 1, 1], [fw - e, e, -1, 1], [e, fh - e, 1, -1], [fw - e, fh - e, -1, -1]].forEach(([x, y, sx, sy]) => { c.moveTo(x + sx * (r + L), y); c.lineTo(x + sx * r, y); c.moveTo(x, y + sy * r); c.lineTo(x, y + sy * (r + L)); }); c.stroke();
+    // шапка: іконка й назва вигляду, ● НАЖИВО, під нею — смужка прогресу задачі (коли Nexi працює)
+    const hh = fh * .15, [key, ic] = VIEW[view];
+    icon(c, ic, 7.5, hh * .56, hh * .46, CY);
+    A.txt(c, t_(key), 12.5, hh * .56, fw * .55, hh * .44, '#e8feff', { align: 'left', glow: CY });
+    const on = Math.sin(t * 4) > -.4; c.fillStyle = on ? '#ff4f6a' : '#6a1a2a'; c.beginPath(); c.arc(fw * .79, hh * .56, 1.1, 0, 7); c.fill();
+    A.txt(c, t_('scene.marketing.live'), fw * .81, hh * .56, fw * .16, hh * .3, 'rgba(255,205,215,.92)', { align: 'left' });
+    c.fillStyle = 'rgba(120,230,255,.3)'; c.fillRect(4, hh, fw - 8, .3);
+    if (act) { c.fillStyle = 'rgba(255,201,77,.22)'; c.fillRect(4, hh - .25, fw - 8, .8); c.fillStyle = GO; c.fillRect(4, hh - .25, (fw - 8) * prog, .8); }
+    // ліворуч — головне число й підпис; праворуч — графік вигляду
+    const y0 = hh + 3, yb = fh * .74, lx = 6, lw = fw * .27, gx = fw * .33, gw = fw - gx - 5, gy = y0 + 1, gh = yb - gy;
+    const grow = act ? prog : 1, sum = 48 + 9 * (.5 + .5 * Math.sin(t * .2)), pct = 18 + 4 * Math.sin(t * .4);
+    let big, sub2, delta = null;
+    if (view === 'sales') { big = '+' + NX.num(4 + 24 * grow, 1) + '%'; sub2 = t_('scene.analytics.sales'); }
+    else if (view === 'traffic') { big = NX.num(3 + 9.4 * grow, 1) + ' ' + t_('scene.unit.k'); sub2 = t_('scene.analytics.today'); }
+    else if (view === 'forecast') { big = '+' + NX.num(5 + 17 * grow, 1) + '%'; sub2 = t_('scene.analytics.forecast'); }
+    else { big = NX.num(sum, 1) + ' ' + t_('scene.unit.k'); sub2 = t_('scene.analytics.today'); delta = '+' + NX.num(pct, 1) + '%'; }
+    A.txt(c, sub2, lx, y0 + 4, lw, 3.4, 'rgba(190,225,255,.8)', { align: 'left' });
+    A.txt(c, big, lx, y0 + 13, lw, 8.5, '#ffffff', { align: 'left', glow: CY });
+    if (delta) { c.fillStyle = 'rgba(40,255,140,.14)'; rr(c, lx, y0 + 20, lw * .78, 7, 1.4); c.fill(); c.fillStyle = GR; c.beginPath(); c.moveTo(lx + 2, y0 + 25.4); c.lineTo(lx + 3.8, y0 + 21.6); c.lineTo(lx + 5.6, y0 + 25.4); c.fill();
+      A.txt(c, delta, lx + 7, y0 + 23.6, lw * .6, 4, '#b8ffd2', { align: 'left' }); }
+    c.fillStyle = 'rgba(8,22,70,.75)'; rr(c, gx, gy, gw, gh, 1.6); c.fill();
+    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.1)'; c.fillRect(gx + 1, gy + gh * k / 4, gw - 2, .3); }
+    c.save(); rr(c, gx, gy, gw, gh, 1.6); c.clip();
+    if (view === 'sales') {                                                                                       // стовпчики по днях: з'являються по черзі
+      const days = NX.t('scene.analytics.days'), n = 7, bw = gw / n;
+      DAYV.forEach((v, k) => { const f = Math.max(0, Math.min(1, grow * n - k)), h = (gh - 6) * v * (1 - Math.pow(1 - f, 2)), x = gx + bw * (k + .2), w = bw * .6, y = gy + gh - 4.5 - h, best = k === BEST && f > .9;
+        if (h > .3) { const gg = c.createLinearGradient(0, y, 0, gy + gh - 4.5); gg.addColorStop(0, best ? '#ffe4fa' : '#e8feff'); gg.addColorStop(.25, best ? '#ff7ad0' : '#5ae8ff'); gg.addColorStop(1, best ? '#7a1a8a' : '#1a5ad0'); c.fillStyle = gg; c.fillRect(x, y, w, h); }
+        if (best) { c.fillStyle = GO; star(c, x + w / 2, y - 2.4, 1.6); }
+        if (Array.isArray(days)) A.txt(c, days[k], x + w / 2, gy + gh - 2, bw * .9, 2.6, k === BEST ? '#ffe4fa' : 'rgba(170,220,255,.75)'); });
+    } else if (view === 'traffic') {                                                                              // карта: пінги частішають
+      K.scrMap(c, gx + .5, gy + .5, gw - 1, gh - 1, t, { act: act ? 1 : 0, hot: ['kyiv', 'warsaw', 'amsterdam'] });
+    } else {                                                                                                     // лінія виручки; прогноз — пунктир у майбутнє
+      const fc = view === 'forecast', cut = fc ? .62 : 1, step = gw / 18, n0 = Math.floor(t * (act ? 1.6 : .7)), f0 = fc ? 0 : t * (act ? 1.6 : .7) - n0, Pn = [];
+      for (let k = -1; k <= 19; k++) { const nn = (fc ? 0 : n0) + k, x = gx + (k - f0) * step, v = Math.max(.12, Math.min(.92, .42 + .2 * Math.sin(nn * .23) + .3 * (wave(nn, 5) - .5) + (fc ? k * .012 : 0))); Pn.push([x, gy + gh * (.9 - .74 * v)]); }
+      const hist = Pn.filter(p => p[0] <= gx + gw * cut + step);
+      c.beginPath(); c.moveTo(hist[0][0], gy + gh); hist.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(hist[hist.length - 1][0], gy + gh); c.closePath();
+      g = c.createLinearGradient(0, gy, 0, gy + gh); g.addColorStop(0, 'rgba(59,232,255,.38)'); g.addColorStop(1, 'rgba(59,232,255,0)'); c.fillStyle = g; c.fill();
+      c.strokeStyle = '#9af6ff'; c.lineWidth = .7; c.beginPath(); hist.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
+      if (fc) {                                                                                                  // пунктир прогнозу з «віялом» невизначеності
+        const p0 = hist[hist.length - 1], xe = p0[0] + (gx + gw - 3 - p0[0]) * grow, ye = p0[1] - (gh * .34) * grow, sp = gh * .2 * grow;
+        c.fillStyle = 'rgba(255,201,77,.14)'; c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(xe, ye - sp); c.lineTo(xe, ye + sp); c.closePath(); c.fill();
+        c.strokeStyle = GO; c.lineWidth = .7; c.setLineDash([1.6, 1.2]); c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(xe, ye); c.stroke(); c.setLineDash([]);
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(xe, ye, 1, 0, 7); c.fill(); c.strokeStyle = GO; c.lineWidth = .4; c.beginPath(); c.arc(xe, ye, 1.9, 0, 7); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,.25)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(p0[0] - .15, y, .3, 1);
+      } else {                                                                                                   // курсор з підказкою
+        const cu = .35 + .4 * (.5 + .5 * Math.sin(t * .6)), cxp = gx + gw * cu, ki = Math.max(0, Math.min(Pn.length - 2, Math.floor((cxp - Pn[0][0]) / step))), q = (cxp - Pn[ki][0]) / step, cyp = Pn[ki][1] + (Pn[ki + 1][1] - Pn[ki][1]) * q;
+        c.fillStyle = 'rgba(220,250,255,.4)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(cxp - .15, y, .3, 1);
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(cxp, cyp, 1, 0, 7); c.fill(); c.strokeStyle = CY; c.lineWidth = .4; c.beginPath(); c.arc(cxp, cyp, 1.8, 0, 7); c.stroke();
+        const tw = gw * .24, th = gh * .17, tx2 = Math.min(gx + gw - tw - 1, cxp + 2.2), ty = Math.max(gy + 1, cyp - th - 2.2);
+        c.fillStyle = 'rgba(16,48,140,.95)'; rr(c, tx2, ty, tw, th, .8); c.fill(); c.strokeStyle = 'rgba(160,240,255,.7)'; c.lineWidth = .3; rr(c, tx2, ty, tw, th, .8); c.stroke();
+        A.txt(c, NX.num(28 + 44 * (1 - (cyp - gy) / gh), 1) + ' ' + t_('scene.unit.k'), tx2 + tw / 2, ty + th * .55, tw * .86, th * .58, '#e8feff');
+      }
+    }
     c.restore();
+    // три показники внизу
+    const ky = fh * .79, kh = fh * .15, kw = (fw - 12 - 6) / 3;
+    kpi(c, 6, ky, kw, kh, 'user', t_('scene.analytics.visitors'), NX.num((12400 + t * (act ? 9 : 3)) / 1000, 1) + ' ' + t_('scene.unit.k'), CY, t, 1);
+    kpi(c, 6 + kw + 3, ky, kw, kh, 'target', t_('scene.analytics.conv'), NX.num(3.4 + .4 * Math.sin(t * .5), 1) + '%', PK, t, 2);
+    kpi(c, 6 + (kw + 3) * 2, ky, kw, kh, 'chart', t_('scene.analytics.sales'), '+' + NX.num(pct * .8, 1) + '%', GO, t, 3);
+    // печатка «ЗВІТ ГОТОВИЙ ✓» (після задачі)
+    const d = S.done || 0; if (d > 0) {
+      const w = gw * .74, h = gh * .36, x = gx + (gw - w) / 2, y = gy + (gh - h) / 2, sc = .85 + .15 * Math.min(1, d * 4);
+      c.save(); c.globalAlpha = Math.min(1, d * 3); c.translate(x + w / 2, y + h / 2); c.scale(sc, sc); c.translate(-(x + w / 2), -(y + h / 2));
+      c.fillStyle = 'rgba(6,40,30,.94)'; rr(c, x, y, w, h, 2); c.fill(); c.strokeStyle = GR; c.lineWidth = .8; rr(c, x, y, w, h, 2); c.stroke();
+      c.strokeStyle = GR; c.lineWidth = 1.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + h * .35, y + h * .52); c.lineTo(x + h * .55, y + h * .72); c.lineTo(x + h * .9, y + h * .3); c.stroke();
+      A.txt(c, t_('scene.analytics.ready'), x + h * 1.1 + (w - h * 1.2) / 2, y + h / 2, w - h * 1.25, h * .34, '#d0ffe4', { glow: GR });
+      c.restore(); }
   }
-  /** Скляне віконце всередині панелі (кант і легкий перелив). */
-  const box = (c, x, y, w, h, col = 'rgba(120,230,255,.55)') => { c.fillStyle = 'rgba(6,20,64,.7)'; c.fillRect(x, y, w, h); c.strokeStyle = col; c.lineWidth = .35; c.strokeRect(x + .2, y + .2, w - .4, h - .4); };
-  const RR = (f, fw, fh) => [f[0] * fw, f[1] * fh, f[2] * fw, f[3] * fh];
-  const DAYV = [.52, .64, .58, .74, .5, .34, .3], TODAY = 4;
-  const LANG = [['UA', .38, CY], ['PL', .27, PK], ['NL', .2, VI], ['EN', .15, GO]];
-  const IC7 = { cart: ['X......', 'XXXXXXX', '.X....X', '.X...X.', '.XXXXX.', '.......', '..X.X..'], ok: ['......X', '.....XX', '....XX.', 'X..XX..', 'XXXX...', '.XX....', '.......'] };
-  /** ВІДВІДУВАЧІ (ліве крило): лічильник за сьогодні з міні-графіком, стовпчики по днях (сьогоднішній росте), частки мов, «пульс». */
-  function visitors(c, fw, fh, t) {
-    const act = AN().active, { hh } = cyber(c, fw, fh, t_('scene.analytics.visitors'), 'user', t, 1);
-    const [cx, cy, cw, ch] = RR([.08, 0, .84, .17], fw, fh); box(c, cx, hh + 2.4, cw, ch);
-    A.txt(c, t_('scene.analytics.today'), cx + cw * .06, hh + 2.4 + ch * .24, cw * .7, ch * .2, 'rgba(200,240,255,.85)', { align: 'left' });
-    A.txt(c, NX.num((12400 + t * (act ? 9 : 3.2)) / 1000, 1) + ' ' + t_('scene.unit.k'), cx + cw * .06, hh + 2.4 + ch * .62, cw * .88, ch * .32, '#e8feff', { align: 'left' });
-    for (let k = 0; k < 9; k++) { const h = ch * .16 * (.3 + .7 * wave(Math.floor(t * 2) + k, 2)); c.fillStyle = k === 8 ? '#ffffff' : 'rgba(59,232,255,.8)'; c.fillRect(cx + cw * (.08 + k * .095), hh + 2.4 + ch * .96 - h, cw * .06, h); }
-    const by = hh + ch + 6, bh = fh * .3, bx = fw * .1, bw = fw * .8, grow = (t * (act ? .5 : .16)) % 1;
-    box(c, bx - fw * .03, by - 1.4, bw + fw * .06, bh + fh * .07);
-    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.13)'; c.fillRect(bx, by + bh * k / 4, bw, .3); }
-    DAYV.forEach((dv, k) => {
-      const today = k === TODAY, h = bh * (today ? .2 + .78 * (1 - Math.pow(1 - grow, 2)) : dv * (.96 + .04 * Math.sin(t * 1.5 + k))), x = bx + bw * (k + .16) / 7, w = bw / 7 * .68, y = by + bh - h;
-      const g = c.createLinearGradient(0, y, 0, by + bh); g.addColorStop(0, today ? '#ffe4fa' : '#e8feff'); g.addColorStop(.2, today ? '#ff7ad0' : '#5ae8ff'); g.addColorStop(1, today ? '#7a1a8a' : '#1a5ad0');
-      c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(x, y, w, Math.min(.7, h));
-    });
-    const days = NX.t('scene.analytics.days'); (Array.isArray(days) ? days : []).forEach((d, k) => A.txt(c, d, bx + bw * (k + .5) / 7, by + bh + fh * .03, bw / 7 * .95, fh * .022, k === TODAY ? '#ffe4fa' : 'rgba(170,220,255,.75)'));
-    const ly = by + bh + fh * .08, lh = fh * .06; let x = fw * .08; const lw = fw * .84;
-    LANG.forEach(([code, v, col]) => { const w = lw * v; c.fillStyle = col; c.fillRect(x + .25, ly + lh * .58, w - .5, lh * .34); A.txt(c, code, x + w / 2, ly + lh * .2, w * .9, lh * .36, 'rgba(225,245,255,.9)'); x += w; });
-    const py = fh * .86, ph = fh * .045; c.strokeStyle = 'rgba(255,140,220,.85)'; c.lineWidth = .6; c.beginPath();                    // «пульс» сайту
-    for (let i = 0; i <= 30; i++) { const xx = fw * (.08 + .8 * i / 30), q = ((i / 30) * 2.4 - t * (act ? 1.6 : .8)) % 1, beat = q < 0 ? q + 1 : q, v = beat < .1 ? Math.sin(beat / .1 * Math.PI) * (beat < .05 ? 1 : -.5) : 0;
-      i ? c.lineTo(xx, py - v * ph) : c.moveTo(xx, py - v * ph); } c.stroke();
-    sheen(c, fw, fh, t, 0);
-  }
-  /** ВИРУЧКА (центр): сума й ▲ відсоток, тренд (лінія з заливкою біжить, курсор із підказкою), продажі по світу (карта з
-   *  пінгами), ціль місяця. */
-  function revenue(c, fw, fh, t) {
-    const act = AN().active, sp = act ? 3.2 : 1.1, { hh } = cyber(c, fw, fh, t_('scene.analytics.revenue'), 'chart', t, 2);
-    const sum = 48 + 9 * (.5 + .5 * Math.sin(t * .2)) + ((t * (act ? .8 : .2)) % 3), pct = 18 + 4 * Math.sin(t * .4);
-    A.txt(c, NX.num(sum, 1) + ' ' + t_('scene.unit.k'), fw * .08, hh + fh * .07, fw * .52, fh * .085, '#e8feff', { align: 'left', glow: CY });
-    c.fillStyle = GR; c.beginPath(); c.moveTo(fw * .66, hh + fh * .1); c.lineTo(fw * .69, hh + fh * .045); c.lineTo(fw * .72, hh + fh * .1); c.fill();
-    A.txt(c, '+' + NX.num(pct, 1) + '%', fw * .735, hh + fh * .072, fw * .22, fh * .05, '#b8ffd2', { align: 'left' });
-    const gx = fw * .07, gy = hh + fh * .14, gw = fw * .86, gh = fh * .37; box(c, gx, gy, gw, gh);
-    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.12)'; c.fillRect(gx + 1, gy + gh * k / 4, gw - 2, .3); }
-    const step = gw / 16, n0 = Math.floor(t * sp), f = t * sp - n0, P = [];
-    for (let k = -1; k <= 17; k++) { const n = n0 + k, x = gx + (k - f) * step, v = Math.max(.12, Math.min(.94, .5 + .24 * Math.sin(n * .11) + .34 * (wave(n, 5) - .5))); P.push([x, gy + gh * (.92 - .74 * v)]); }
-    c.save(); c.beginPath(); c.rect(gx + .5, gy + .5, gw - 1, gh - 1); c.clip();
-    c.beginPath(); c.moveTo(P[0][0], gy + gh); P.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(P[P.length - 1][0], gy + gh); c.closePath();
-    const g = c.createLinearGradient(0, gy, 0, gy + gh); g.addColorStop(0, 'rgba(255,90,220,.42)'); g.addColorStop(1, 'rgba(255,90,220,0)'); c.fillStyle = g; c.fill();
-    c.strokeStyle = '#ff9af0'; c.lineWidth = .7; c.beginPath(); P.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
-    const cu = .3 + .45 * (.5 + .5 * Math.sin(t * .7)), cxp = gx + gw * cu, ki = Math.max(0, Math.min(P.length - 2, Math.floor((cxp - P[0][0]) / step))), q = (cxp - P[ki][0]) / step, cyp = P[ki][1] + (P[ki + 1][1] - P[ki][1]) * q;
-    c.fillStyle = 'rgba(220,250,255,.5)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(cxp - .15, y, .3, 1);
-    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(cxp, cyp, 1.1, 0, 7); c.fill(); c.strokeStyle = PK; c.lineWidth = .4; c.beginPath(); c.arc(cxp, cyp, 1.9, 0, 7); c.stroke();
-    const tw = gw * .3, th = gh * .16, tx = Math.min(gx + gw - tw - 1, cxp + 2.2), ty = Math.max(gy + 1, cyp - th - 2.2);
-    c.fillStyle = 'rgba(20,56,160,.95)'; c.fillRect(tx, ty, tw, th); c.strokeStyle = 'rgba(160,240,255,.8)'; c.lineWidth = .3; c.strokeRect(tx, ty, tw, th);
-    A.txt(c, NX.num(28 + 44 * (1 - (cyp - gy) / gh), 1) + ' ' + t_('scene.unit.k'), tx + tw / 2, ty + th * .55, tw * .86, th * .6, '#e8feff');
-    c.restore();
-    const mx = fw * .07, my = gy + gh + fh * .035, mw = fw * .86, mh = fh * .22; box(c, mx, my, mw, mh, 'rgba(255,120,230,.5)');   // продажі по світу
-    K.scrMap(c, mx + .6, my + .6, mw - 1.2, mh - 1.2, t, { act: act ? 1 : 0, hot: ['kyiv', 'warsaw', 'amsterdam'] });
-    const gy2 = fh * .875, gl = fw * .74, done = .62 + .25 * ((t * (act ? .05 : .012)) % 1);                       // ціль місяця: смуга з бігунцем
-    c.fillStyle = 'rgba(8,24,80,.9)'; c.fillRect(fw * .08, gy2, gl, fh * .022);
-    const g3 = c.createLinearGradient(fw * .08, 0, fw * .08 + gl, 0); g3.addColorStop(0, '#3be8ff'); g3.addColorStop(1, '#ff4fd8'); c.fillStyle = g3; c.fillRect(fw * .08, gy2, gl * done, fh * .022);
-    c.fillStyle = '#ffffff'; c.fillRect(fw * .08 + gl * done - .5, gy2 - .8, 1, fh * .022 + 1.6); icon(c, 'target', fw * .08 + gl + 3, gy2 + fh * .011, fh * .03, GO);
-    sheen(c, fw, fh, t, 3.3);
-  }
-  /** КОНВЕРСІЯ (праве крило): «пончик» з відсотком, легенда мов, воронка (відвідувачі -> кошики -> замовлення: іконки й числа). */
-  function conv(c, fw, fh, t) {
-    const act = AN().active, { hh } = cyber(c, fw, fh, t_('scene.analytics.conv'), 'target', t, 3);
-    const dcx = fw * .5, dcy = hh + fh * .2, r = Math.min(fw * .3, fh * .14), cv = 3.4 + .4 * Math.sin(t * .5);
-    c.fillStyle = 'rgba(10,28,90,.96)'; c.beginPath(); c.arc(dcx, dcy, r * 1.1, 0, 7); c.fill();
-    c.strokeStyle = 'rgba(150,240,255,.35)'; c.lineWidth = .3; c.beginPath(); c.arc(dcx, dcy, r * 1.22, 0, 7); c.stroke();
-    let a = -Math.PI / 2 + t * .25; [[44, CY], [33, PK], [23, VI]].forEach(([v2, col], k) => { const b = a + v2 / 100 * Math.PI * 2 * (.97 + .03 * Math.sin(t * 2 + k)); c.strokeStyle = col; c.lineWidth = r * .38; c.beginPath(); c.arc(dcx, dcy, r * .78, a + .05, b - .05); c.stroke(); a = b; });
-    c.fillStyle = '#0a1a50'; c.beginPath(); c.arc(dcx, dcy, r * .56, 0, 7); c.fill(); A.txt(c, NX.num(cv, 1) + '%', dcx, dcy, r * 1.05, r * .36, '#e8feff');
-    [['UA', CY, .44], ['PL', PK, .33], ['NL', VI, .23]].forEach(([s, col, v2], k) => { const y = hh + fh * (.38 + k * .055), lw = fw * .42;
-      c.fillStyle = col; c.fillRect(fw * .1, y - .7, 1.6, 1.4); A.txt(c, s, fw * .17, y, fw * .16, fh * .03, 'rgba(210,240,255,.85)', { align: 'left' });
-      c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(fw * .4, y - .7, lw, 1.4); c.fillStyle = col; c.fillRect(fw * .4, y - .7, lw * v2 * (1.6 + .15 * Math.sin(t * 1.3 + k)), 1.4); });
-    const fy = hh + fh * .57, sh = fh * .085, base = 1240 + Math.floor(t * (act ? 3 : .7));                       // воронка
-    [['user', base, CY, 1], ['cart', Math.round(base * .31), PK, .72], ['ok', Math.round(base * .034 * (1 + .03 * Math.sin(t * .5))), GR, .46]].forEach(([ic, n, col, w], k) => {
-      const y = fy + k * (sh + 1.4), x0 = fw * (.5 - .4 * w), x1 = fw * (.5 + .4 * w), xn = fw * (.5 - .4 * (k < 2 ? w * .82 : w)), xm = fw - xn;
-      c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.lineTo(xm, y + sh); c.lineTo(xn, y + sh); c.closePath(); c.fillStyle = 'rgba(8,24,80,.85)'; c.fill(); c.strokeStyle = col; c.lineWidth = .4; c.stroke();
-      const ph = (t * (act ? 1.2 : .5) + k * .3) % 1; c.fillStyle = col; c.globalAlpha = .25; c.fillRect(x0 + (x1 - x0) * ph - 1, y + .4, 2, sh - .8); c.globalAlpha = 1;
-      if (IC7[ic]) A.icon7(c, IC7[ic], x0 + sh * .55 + 1, y + sh / 2, sh * .55, col); else icon(c, ic, x0 + sh * .55 + 1, y + sh / 2, sh * .55, col);
-      A.txt(c, NX.num(n, 0), (x0 + x1) / 2 + sh * .3, y + sh / 2, (x1 - x0) * .55, sh * .5, '#e8feff'); });
-    sheen(c, fw, fh, t, 6.1);
-  }
-  NX.arc.anPane = (kind, c, fw, fh, t) => (kind === 'revenue' ? revenue : kind === 'conv' ? conv : visitors)(c, fw, fh, t);
+  function star(c, x, y, r) { c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr2 = k % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); } c.closePath(); c.fill(); }
+  NX.arc.anScreen = anScreen;
   NX.arc.anWave = wave;
 })();
