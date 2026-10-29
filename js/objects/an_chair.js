@@ -263,7 +263,7 @@ NX.arc.raceChair = cfg => {
 // Кольори: блакитна шкіра валиків і смуг, темно-синя стьобка, ЗОЛОТИЙ кант і вишитий N (латунь аналітики), темно-синій корпус,
 // золоті кільця коліщат; LED-кільце й смужки хрестовини — блакитні. Кут спокою — 160° (рівно до стола: зона повернута на −20°).
 NX.arc.raceChair({
-  id: 'anChair', name: 'obj.analytics', act: 'analytics', obj: 'analytics', loc: 'anChair', zone: 'analytics', at: [366, 340, -32], K: 1.85, HS: 1.3, rest: 160, align: .9,
+  id: 'anChair', name: 'obj.analytics', act: 'analytics', obj: 'analytics', loc: 'anChair', zone: 'analytics', at: [384, 340, -32], K: 1.85, HS: 1.3, rest: 180, align: .9,
   colors: {
     bol: ['#04283c', '#2aa8d0', '#0d5574', '#0d5574', '#1a80a8', '#032236'], grain: 'rgba(200,245,255,.2)',
     quilt: ['#132a60', '#0d1c48', '#091438'], puff: 'rgba(96,170,240,.4)', pipe: '#ffc94d', stitch: 'rgba(255,240,200,.8)', lumbar: 'rgba(255,226,160,.6)',

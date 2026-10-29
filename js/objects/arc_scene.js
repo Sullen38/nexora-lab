@@ -489,14 +489,37 @@
     if (window.ARC_LOG !== 0) console.log('[arc] ' + side + ': ' + acc.tm.join(', '));
     out.ms = acc.ms; return out;
   }
-  /** Фініш крила: підлоги плавно в передню, маски живих екранів, растри -> полотна (буфери далі не потрібні). */
+  /** ПЕРЕДНІ ПРЕДМЕТИ ЗОНИ (крок 12): предмети розкладки з fg=1 (речі на столі перед живим екраном — лампа, планшет, папки)
+   *  -> їхні пікселі шару окремим полотном; живий шар зони малює його ПОВЕРХ своїх голо-екранів (NX.arc.fg), інакше екран, що
+   *  кладеться поверх нерухомого злиття, сховав би їх. Пікселі, закриті пізнішими (ближчими) шарами, і живі грані — пропускаються.
+   *  -> {zone, cv, x, y, w, h} (одиниці кімнати) або null. */
+  function fgLayer(layers, li) {
+    const { L, reg } = layers[li]; if (!reg) return null; const ids = new Set(); let zone = null;
+    reg.list.forEach((r, i) => { if (r && r.B && r.B.fg) { ids.add(i); zone = r.B.zone; } }); if (!ids.size) return null;
+    const { W, H, R } = L, has = k => L.c[k] && ids.has(L.id[k]) && L.fid[k] === L.id[k]; let i0 = 1e9, i1 = -1, j0 = 1e9, j1 = -1;
+    for (let j = 0; j < H; j++) for (let i = 0, k = j * W; i < W; i++, k++) if (has(k)) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
+    if (i1 < 0) return null;
+    const w = i1 - i0 + 1, h = j1 - j0 + 1, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'), im = x.createImageData(w, h), d = new Uint32Array(im.data.buffer);
+    const later = layers.slice(li + 1).map(l => l.L);
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+      const k = (j + j0) * W + i + i0; if (!has(k)) continue;
+      const Xr = L.x0 + (i + i0 + .5) / R, Yr = L.y0 + (j + j0 + .5) / R; let hid = false;
+      for (const M of later) { const ii = Math.floor((Xr - M.x0) * M.R), jj = Math.floor((Yr - M.y0) * M.R); if (ii < 0 || jj < 0 || ii >= M.W || jj >= M.H) continue; const q = jj * M.W + ii; if (M.id[q] && !(M.fl[q] & X.F_REFL)) { hid = true; break; } }
+      if (!hid) d[j * w + i] = L.c[k];
+    }
+    x.putImageData(im, 0, 0); return { zone, cv, x: L.x0 + i0 / R, y: L.y0 + j0 / R, w: w / R, h: h / R };
+  }
+  /** Фініш крила: підлоги плавно в передню, маски живих екранів, передні предмети, растри -> полотна (буфери далі не потрібні). */
   function* finishG(layers, side, box) {
-    const n = layers.length, live = [], cvs = [];
+    const n = layers.length, live = [], cvs = [], fg = [];
     for (let k = 0; k < n; k++) { fadeFloor(layers[k].L, side); yield .3 * (k + 1) / n; }
     for (let li = 0; li < n; li++) { for (const E of (layers[li].L.live || [])) { const m = liveMask(layers, li, E.fid); if (m) live.push(Object.assign(E, { mask: m })); yield .3 + .2 * (li + 1) / n; } }   // живі екрани: маски з z-буфера
+    for (let li = 0; li < n; li++) { const f = fgLayer(layers, li); if (f) fg.push(f); }
     for (let k = 0; k < n; k++) { const l = layers[k]; cvs.push({ cv: X.canvas(l.L), x0: l.L.x0, y0: l.L.y0, x1: l.L.x1, y1: l.L.y1 }); yield .5 + .5 * (k + 1) / n; }
-    return { side, box, live, layers: cvs };
+    return { side, box, live, layers: cvs, fg };
   }
+  /** Передні предмети зони (fgLayer) — живий шар зони малює їх поверх своїх екранів: NX.arc.fgDraw(c, 'analytics'). */
+  NX.arc.fgDraw = (c, zone) => { for (const sd of ['left', 'right']) { const S = SIDES[sd], f = S && S.fg && S.fg.find(o => o.zone === zone); if (f) { c.save(); c.imageSmoothingEnabled = true; c.drawImage(f.cv, f.x, f.y, f.w, f.h); c.restore(); return true; } } return false; };
   /** Шари -> одне полотно під масштаб Rd (+ сяйво). Генератором: шар за шаром, сяйво — кроками. */
   function* composeG(S, Rd) {
     const [x0, y0, x1, y1] = S.box, w = Math.round((x1 - x0) * Rd), h = Math.round((y1 - y0) * Rd), cv = document.createElement('canvas'); cv.width = w; cv.height = h;

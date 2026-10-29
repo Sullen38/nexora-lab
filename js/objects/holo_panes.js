@@ -18,7 +18,7 @@
  * ghost, якого розкладка не малює, але вирівнює по центру стола). o.face — лицем до глядача (знято поворот зони: кокпіт
  * аналітики на екрані симетричний); o.hinge = {X, a} — КРИЛО: панель повернута на a° навколо вертикалі X до глядача; o.crisp —
  * чіткий обрис (кіберпанк-панель зі зрізаними кутами малює вміст), темна підкладка — за обрисом вмісту, без розчинених країв.
- *   const p = NX.arc.holo.pane({ zone, item, Xc, X: [x0, x1], Y: [y0, y1], dv, rgb, seed, paint(c, fw, fh, t) });
+ *   const p = NX.arc.holo.pane({ zone, item, Xc, X: [x0, x1], Y: [y0, y1], dv, rgb, seed, paint(c, fw, fh, t), every });
  *   p.draw(c, t) — у шарі кімнати (координати кімнати); p.quad() — чотирикутник на екрані (або null); p.kick(t, dur, kind).
  *   NX.arc.holo.at(zone, item, Xc, dv) -> (X, Y) => точка екрана на лиці предмета (для дешевих живих дрібниць поверх стіни).
  * ========================================================================== */
@@ -100,7 +100,7 @@ NX.arc.holo = (() => {
       const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), lag = lagOf(t);
       canv(Math.min(4, Math.max(1.5, Math.ceil(Rd * 1.3 * 2) / 2)));
       P.fr++;
-      if (!lag && (!P.ok || P.fr % EVERY === 0 || P.Rd !== Rd)) { paint(t); warp(Rd); P.ok = true; }
+      if (!lag && (!P.ok || P.fr % (o.every || EVERY) === 0 || P.Rd !== Rd)) { paint(t); warp(Rd); P.ok = true; }   // o.every — свій темп (великий екран аналітики — раз на 5 кадрів)
       else if (P.Rd !== Rd) warp(Rd);
       const [x0, y0] = P.box, OUT = P.out, OW = OUT.width, OH = OUT.height, w = OW / P.Rd, h = OH / P.Rd;      // полотно — 1:1 до екрана (з запасом 2 px)
       const st = Math.floor(t * 14), rnd = s => hash(st * 7 + s, (o.seed || 0) * 13 + 5), seed = o.seed || 0;
