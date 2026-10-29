@@ -16,7 +16,8 @@ NX.i18n.add('pl', {
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND' },
+    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', today: 'DZIŚ', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
+      days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'] },
     marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
     wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
@@ -25,7 +26,7 @@ NX.i18n.add('pl', {
     seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
     hub: { online: 'ONLINE', tasks: 'ZADAŃ' },
     ws: { skins: 'SKÓRKI', acc: 'AKCESORIA' },
-    tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO', leads: 'ZGŁOSZENIA' },
     poster: { meow: 'MIAU', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
   },

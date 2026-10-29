@@ -7,7 +7,8 @@
  *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
  *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
- *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage
+ *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage; екрани поза
+ *     видимою смугою (телефон бачить ~третину кімнати) не оновлюються й не кладуться
  * Як вміст лягає в 3D: пласке полотно грані -> чотирикутник грані на екрані стовпчиками (NX.furn.warp, бо боки грані
  * вертикальні) -> МАСКА видимих пікселів цієї грані з z-буфера (те, що попереду — рослина, крісло, — лишається попереду).
  * Усе — функції часу; тексти — NX.t; журнали — кольорові рядки-мітки (на дрібному екрані літер однаково не видно).
@@ -49,26 +50,15 @@ NX.arc = NX.arc || {};
   LIVE.ai_top2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .34, fw * .84, fh * .52, PANEL); logLines(c, fw * .1, fh * .36, fw * .8, fh * .48, t, 2); } };
   LIVE.ai_laptop = { every: 4, draw(c, fw, fh, t) { const n = Math.floor(t * 2) % 6; glass(c, fw * .1, fh * .1, fw * .8, fh * .8, { r: 1, a: '#1a5ad0', b: '#123a9a', c: '#0c2a7a' }); for (let k = 0; k < 5; k++) { const w = k < n ? fw * (.66 - (k % 3) * .14) : k === n ? fw * (.66 - (k % 3) * .14) * ((t * 2) % 1) : 0; c.fillStyle = k === 2 ? '#ff9af0' : 'rgba(200,240,255,.75)'; c.fillRect(fw * .16, fh * (.22 + k * .13), w, 1.1); } } };
   LIVE.sh_scr2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .14, fw * .84, fh * .72, PANEL); K.scrMap(c, fw * .1, fh * .18, fw * .8, fh * .64, t); } };
-  // ---------- аналітика й маркетинг ----------
-  LIVE.an_booth = { every: 3, draw(c, fw, fh, t, B) {
-    const L = Rr(Fd(B, 0), fw, fh), R2 = Rr(Fd(B, 2), fw, fh);
-    if (L) { glass(c, L[0] + L[2] * .06, L[1] + L[3] * .2, L[2] * .88, L[3] * .62, PANEL); bars(c, L[0] + L[2] * .08, L[1] + L[3] * .22, L[2] * .84, L[3] * .58, 6, 2 + t * .25); }
-    if (R2) { glass(c, R2[0] + R2[2] * .06, R2[1] + R2[3] * .18, R2[2] * .88, R2[3] * .36, PANEL); lineChart(c, R2[0] + R2[2] * .08, R2[1] + R2[3] * .2, R2[2] * .84, R2[3] * .32, 1.3 + t * .4);
-      const a = t * .6; c.save(); c.translate(R2[0] + R2[2] * .3, R2[1] + R2[3] * .72); c.rotate(a); donut(c, 0, 0, R2[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); c.restore(); }
-  } };
+  // ---------- маркетинг (монітори попередньої спроби, --preset v1); аналітика й інструменти — objects/an_paint.js, tl_paint.js ----------
   LIVE.mk_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .14, fw * .76, fh * .7, PANEL); const o = (t * .5) % 1;
     for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
-  LIVE.an_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .2, fw * .76, fh * .6, PANEL); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9 + t * .5); } };
-  LIVE.an_scr2 = LIVE.an_scr; LIVE.mk_scr2 = LIVE.mk_scr;
+  LIVE.mk_scr2 = LIVE.mk_scr;
   // ---------- праве крило ----------
   LIVE.hub = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .085, fh * .27, fw * .62, fh * .385, PANEL); K.scrMap(c, fw * .09, fh * .28, fw * .6, fh * .36, t, { hot: ['kyiv', 'warsaw', 'amsterdam'] });
     glass(c, fw * .065, fh * .775, fw * .87, fh * .15, { r: .6, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .01 }); lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6 + t * .8, '#ff4fd8', 'rgba(255,80,220,.15)');
     c.fillStyle = Math.sin(t * 3) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(fw * .08, fh * .72, 2, 2); } };
   LIVE.ws_term = { every: 4, draw(c, fw, fh, t) { const y = fh * .42, h = fh * .24; glass(c, fw * .14, y, fw * .72, h, { r: 1 }); logLines(c, fw * .16, y + h * .08, fw * .68, h * .84, t, 5); } };
-  LIVE.tl_tiles = { every: 3, draw(c, fw, fh, t) { const k = Math.floor(t * .8) % 3, f = (t * .8) % 1, x = fw * (.03 + k * .325); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,240,255,${.28 * Math.sin(f * Math.PI)})`; c.fillRect(x, fh * .08, fw * .3, fh * .84);
-    c.fillStyle = '#3bff8a'; c.fillRect(x + fw * .24, fh * .12, 2, 2); c.restore(); } };
-  LIVE.tl_tileBR = { every: 3, draw(c, fw, fh, t) { const P = [[.2, .4], [.5, .3], [.8, .45], [.35, .75], [.68, .78]], E2 = [[0, 1], [1, 2], [0, 3], [1, 4], [3, 4], [2, 4]];
-    E2.forEach(([a, b], k) => { const ph = (t * .7 + k * .23) % 1, x = (P[a][0] + (P[b][0] - P[a][0]) * ph) * fw, y = (P[a][1] + (P[b][1] - P[a][1]) * ph) * fh; c.fillStyle = k % 2 ? '#ff9af0' : '#e8feff'; c.fillRect(x - .9, y - .9, 1.8, 1.8); }); } };
   LIVE.pt_back = { every: 2, draw(c, fw, fh, t, B) {
     const d = (B.deco || [])[0], [x0, y0, w, h] = d ? Rr(d.f, fw, fh) : [0, 0, fw, fh], x1 = x0 + w, y1 = y0 + h, sp = (d ? d.spring : .3) * fh, cx = (x0 + x1) / 2, rx = w / 2;
     const arch = () => { c.beginPath(); c.moveTo(x0 + 1.4, y1); c.lineTo(x0 + 1.4, sp); c.ellipse(cx, sp, rx - 1.4, sp - y0 - 1.4, 0, Math.PI, 0); c.lineTo(x1 - 1.4, y1); c.closePath(); };
@@ -111,11 +101,12 @@ NX.arc = NX.arc || {};
   /** Щокадру: оновити (вразбіг) і покласти живі грані крила side. */                 // і грані з парним every (2, 4) на непарних місцях не оновлювались би ніколи
   NX.arc.live = (c, side, S, t) => {
     if (!S.live) return; const fr = FR[side] = (FR[side] || 0) + 1;
-    const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);
+    const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
     S.live.forEach((E, n) => {
+      if (E.mask.x > vx1 || E.mask.x + E.mask.w < vx0) { E.off = true; return; }                       // поза екраном (телефон бачить ~третину кімнати) — не оновлюємо й не кладемо
       if (!E.q) { const Fc = E.Fc; E.q = [proj(Fc.O), proj(addv(Fc.O, Fc.A)), proj(addv(addv(Fc.O, Fc.A), Fc.B)), proj(addv(Fc.O, Fc.B))]; E.TS = Math.min(4, Math.max(2, Rd * 1.2)); }
-      if (!E.out || E.Rd !== Rd || (fr + n) % (LIVE[E.id].every || 3) === 0) update(E, t, Rd);
-      if (!E.empty) c.drawImage(E.out, E.mask.x, E.mask.y, E.mask.w, E.mask.h);
+      if (!E.out || E.off || E.Rd !== Rd || (fr + n) % (LIVE[E.id].every || 3) === 0) update(E, t, Rd);   // щойно повернулась на екран — одразу свіжа
+      E.off = false; if (!E.empty) c.drawImage(E.out, E.mask.x, E.mask.y, E.mask.w, E.mask.h);
     });
   };
 })();

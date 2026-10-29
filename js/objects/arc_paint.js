@@ -3,9 +3,10 @@
  * ----------------------------------------------------------------------------
  * Пласкі текстури лицьових граней головних частин зон — у стилі картинки кімнати: голо-екрани (скло з переливом
  * і скан-лініями, світні графіки, карта світу, мозок-голограма, іконки), вивіски з NX.t, шухляди з ручками й LED,
- * вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу);
- * живі екрани поверх — objects/arc_live.js. Майстерня й маркетинг (нові, 29.10) — у своїх файлах: objects/ws_paint.js,
- * mk_paint.js (вони визначають ws_* / mk_* самі).
+ * вихор порталу; спільне «залізо» граней (утоплена панель, заклепка, світлодіод, ґратка, світло внутрішньої грані).
+ * Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу); живі екрани поверх — objects/arc_live.js.
+ * Нові зони (29.10) — у своїх файлах: майстерня objects/ws_paint.js, маркетинг mk_paint.js, аналітика an_paint.js,
+ * інструменти tl_paint.js (вони визначають ws_* / mk_* / an_* / tl_* самі).
  *   NX.arc.paint[id] = (c, fw, fh, B, F) => {...}   — c уже масштабоване: 1 = одиниця грані; fw × fh — розмір грані
  * Усі написи — NX.t (4 мови): nav.* (вивіски), scene.* (екрани). Ключі розкладки — objects/arc_layout.js.
  * ========================================================================== */
@@ -100,6 +101,26 @@ NX.arc = NX.arc || {};
   }
   /** Карта світу крапками (та сама, що на екранах лівого крила). */
   function map(c, x, y, w, h) { K.scrMap(c, x, y, w, h, 1.7, { hot: ['kyiv', 'warsaw', 'amsterdam'] }); }
+  // «Залізо» граней (як у майстерні й маркетингу; для аналітики й інструментів — objects/an_paint.js, tl_paint.js)
+  /** Утоплена панель: темне дно, тінь зверху й ліворуч, світла кромка знизу й праворуч. */
+  function inset(c, x, y, w, h, fill = 'rgba(6,3,20,.6)', r = .6) {
+    c.fillStyle = fill; rr(c, x, y, w, h, r); c.fill(); c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x, y, w, .5); c.fillRect(x, y, .5, h);
+    c.fillStyle = 'rgba(170,150,255,.28)'; c.fillRect(x, y + h - .45, w, .45); c.fillRect(x + w - .45, y, .45, h);
+  }
+  /** Заклепка: темне кільце, світлий блік угорі ліворуч. */
+  const bolt = (c, x, y, r = .85) => { c.fillStyle = '#05030f'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); c.fillStyle = '#6a5ab8'; c.beginPath(); c.arc(x - r * .15, y - r * .15, r * .62, 0, 7); c.fill(); c.fillStyle = '#d8d0ff'; c.fillRect(x - r * .45, y - r * .45, r * .4, r * .4); };
+  /** Світлодіод: темна оправа, кольорове тіло, біла іскра. */
+  const led = (c, x, y, col, r = .75) => { c.fillStyle = '#05030f'; c.beginPath(); c.arc(x, y, r * 1.5, 0, 7); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); c.fillStyle = '#fff'; c.fillRect(x - r * .35, y - r * .35, r * .5, r * .5); };
+  /** Ґратка вентиляції: щілини з темним нутром і світлою нижньою губою. */
+  function vent(c, x, y, w, h, n) {
+    inset(c, x, y, w, h, 'rgba(4,2,14,.7)'); const g = h / n;
+    for (let k = 0; k < n; k++) { const yy = y + g * k + g * .3; c.fillStyle = '#020108'; c.fillRect(x + w * .08, yy, w * .84, g * .42); c.fillStyle = 'rgba(150,130,240,.35)'; c.fillRect(x + w * .08, yy + g * .42, w * .84, .35); }
+  }
+  /** Внутрішня грань рамки (видно в отворі екрана): світлова смуга кольору col, поділена на сегменти. */
+  function innerLight(c, fw, fh, col = '59,232,255', core = '#b8f8ff') {
+    c.fillStyle = 'rgba(4,12,40,.7)'; c.fillRect(0, 0, fw, fh); const g = c.createLinearGradient(fw * .1, 0, fw * .7, 0); g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(.5, core); g.addColorStop(1, `rgba(${col},0)`);
+    c.fillStyle = g; c.fillRect(fw * .1, fh * .02, fw * .6, fh * .96); for (let k = 0; k < fh / 3; k++) { c.fillStyle = 'rgba(4,12,40,.55)'; c.fillRect(fw * .1, k * 3 + 1.2, fw * .6, .45); }
+  }
   /** Шухляди: фасад з фаскою, ручка, LED-смужка. */
   function drawer(c, x, y, w, h, o = {}) {
     const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, o.a || '#2a1c5a'); g.addColorStop(1, o.b || '#170f38'); c.fillStyle = g; rr(c, x, y, w, h, .8); c.fill();
@@ -157,16 +178,8 @@ NX.arc = NX.arc || {};
       c.fillStyle = col; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x + w - .5, y, .5, h); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x, y + h * .18, w, .45); c.fillRect(x, y + h * .74, w, .45); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(x + .3, y, .35, h);
       x += w + .25; }
   };
-  /** Будка аналітики: ліворуч — користувачі (стовпчики), праворуч — тренд і «пончик». */
-  PAINT.an_booth = (c, fw, fh, B) => {
-    const L = R(F(B, 0), fw, fh), Rr = R(F(B, 2), fw, fh);
-    if (L) { glass(c, ...L, { r: 1.5 }); A.txt(c, t('scene.analytics.users'), L[0] + L[2] / 2, L[1] + L[3] * .1, L[2] * .8, L[3] * .07, '#bff8ff'); bars(c, L[0] + L[2] * .08, L[1] + L[3] * .22, L[2] * .84, L[3] * .58, 6, 2); ['UA', 'PL', 'NL', 'EN'].forEach((s, k) => A.txt(c, s, L[0] + L[2] * (.16 + k * .22), L[1] + L[3] * .9, L[2] * .2, L[3] * .06, 'rgba(190,240,255,.85)')); }
-    if (Rr) { glass(c, ...Rr, { r: 1.5 }); A.txt(c, t('scene.analytics.trend'), Rr[0] + Rr[2] / 2, Rr[1] + Rr[3] * .1, Rr[2] * .8, Rr[3] * .07, '#bff8ff'); lineChart(c, Rr[0] + Rr[2] * .08, Rr[1] + Rr[3] * .2, Rr[2] * .84, Rr[3] * .32, 1.3); donut(c, Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); A.txt(c, '72%', Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .2, Rr[3] * .05, '#e8feff');
-      for (let k = 0; k < 3; k++) { c.fillStyle = ['#3be8ff', '#ff4fd8', '#9a8cff'][k]; c.fillRect(Rr[0] + Rr[2] * .58, Rr[1] + Rr[3] * (.62 + k * .08), 2, 1.4); c.fillStyle = 'rgba(190,240,255,.7)'; c.fillRect(Rr[0] + Rr[2] * .58 + 3, Rr[1] + Rr[3] * (.62 + k * .08) + .2, Rr[2] * .26, 1); } }
-  };
   /** Монітор маркетингу на столі: стрічка постів із сердечками. */
   PAINT.mk_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); for (let k = 0; k < 3; k++) { const y = fh * (.2 + k * .2); c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); icon(c, 'heart', fw * .78, y + fh * .06, fh * .12, '#ff4fd8'); } };
-  PAINT.an_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9); };
   /** Фасади столів: шухляди з ручками, неонова кромка плити — з розкладки (лінія 'l' угорі). */
   const deskFront = (c, fw, fh, B) => {
     (B.deco || []).forEach(d => {
@@ -175,13 +188,10 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });   // стіл маркетингу — objects/mk_paint.js
-  PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
+  ['mk_deskL', 'mk_deskR'].forEach(id => { PAINT[id] = deskFront; });   // столи попередньої спроби (--preset v1); нові столи — objects/mk_paint.js, an_paint.js
+  PAINT.mk_scr2 = PAINT.mk_scr;                                                    // другий монітор на столі маркетингу (--preset v1)
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
-  PAINT.tl_top = PAINT.ai_top;
-  ['tl_cabL', 'tl_cabR'].forEach(id => { PAINT[id] = (c, fw, fh) => { drawer(c, fw * .07, fh * .1, fw * .86, fh * .38, { led: '#3be8ff' }); drawer(c, fw * .07, fh * .54, fw * .86, fh * .38); }; });
-  PAINT.an_poster = (c, fw, fh) => { c.fillStyle = '#0a0620'; rr(c, 0, 0, fw, fh, 2); c.fill(); A.neonRect(c, 1, 1, fw - 2, fh - 2, '#ff4fd8', .8, 2); icon(c, 'chart', fw / 2, fh / 2, Math.min(fw, fh) * .55, '#7af4ff'); };
 
   // ---------- ПОСТЕРИ В РАМКАХ (оздоби стіни, objects/arc_scene.js: DECOR) ----------
   /** «NEXORA» — синтвейв: небо, смугасте сонце, неонова сітка, силует Nexi з антеною. */
@@ -234,18 +244,7 @@ NX.arc = NX.arc || {};
   PAINT.hub_strip = (c, fw, fh) => { c.fillStyle = '#0c1238'; c.fillRect(0, 0, fw, fh); for (let k = 0; k < 6; k++) { const y = fh * (.05 + k * .155), h = fh * .13; c.fillStyle = '#140c34'; c.fillRect(fw * .14, y, fw * .72, h); A.neonRect(c, fw * .16, y + .4, fw * .68, h - .8, '#ff4fd8', .5, .6); for (let q = 0; q < 3; q++) { c.fillStyle = hash(k, q) > .4 ? '#3bff8a' : '#ff9af0'; c.fillRect(fw * (.28 + q * .16), y + h * .4, 1.2, 1.2); } } };
   PAINT.ws_term = (c, fw, fh) => { c.fillStyle = '#0c1430'; c.fillRect(0, 0, fw, fh); [[.12, .36], [.42, .66], [.72, .94]].forEach(([a, b], k) => { const y = fh * a, h = fh * (b - a); glass(c, fw * .14, y, fw * .72, h, { r: 1 }); if (k === 0) bars(c, fw * .2, y + h * .3, fw * .6, h * .55, 5, 11); else if (k === 1) for (let q = 0; q < 4; q++) { c.fillStyle = q === 1 ? '#3bff8a' : 'rgba(190,240,255,.7)'; c.fillRect(fw * .2, y + h * (.22 + q * .18), fw * (.5 - q * .06), 1); } else lineChart(c, fw * .2, y + h * .2, fw * .6, h * .6, 3, '#7af4ff', 'rgba(90,220,255,.15)'); }); };
   PAINT.ws_ped = (c, fw, fh) => { c.fillStyle = '#0c2a5a'; rr(c, fw * .1, fh * .46, fw * .8, fh * .46, 1); c.fill(); A.neonRect(c, fw * .1, fh * .46, fw * .8, fh * .46, '#3be8ff', .6, 1); c.strokeStyle = '#7af4ff'; c.lineWidth = .8; c.beginPath(); c.arc(fw / 2, fh * .7, fw * .17, 0, 7); c.stroke(); icon(c, 'gear', fw / 2, fh * .7, fw * .2, '#7af4ff'); };
-  /** Дошка інструментів: перфодошка (дірочки), інструменти на гачках у помаранчевій рамці, неонові канти. */
-  PAINT.tl_board = (c, fw, fh, B) => {
-    c.fillStyle = 'rgba(10,20,70,.6)'; c.fillRect(2, 2, fw - 4, fh - 4);
-    for (let y = 5; y < fh - 3; y += 3.2) for (let x = 5; x < fw - 3; x += 3.2) { c.fillStyle = 'rgba(2,4,20,.9)'; c.fillRect(x, y, .8, .8); }
-    (B.deco || []).forEach(d => { if (d.t === 'l') A.neon(c, d.f[0] * fw, d.f[1] * fh, d.f[2] * fw, d.f[3] * fh, d.col, 1.1); });
-    const o = R(F(B, 0), fw, fh); if (o) { const [x, y, w, h] = o; c.fillStyle = '#1a0e08'; c.fillRect(x, y, w, h); A.neonRect(c, x, y, w, h, '#ff9a3a', .6, .5);
-      const tools = [['wrench', '#c8d0f0'], ['gear', '#ffd27a'], ['bolt', '#ff9a3a']]; tools.forEach(([ic, col], n) => icon(c, ic, x + w * (.25 + n * .25), y + h * (.32 + (n % 2) * .3), w * .28, col)); }
-  };
-  PAINT.tl_tiles = (c, fw, fh) => { c.fillStyle = '#0a1440'; c.fillRect(0, 0, fw, fh); A.neonRect(c, .5, .5, fw - 1, fh - 1, '#3be8ff', .6, 1); [['mail', 'scene.tools.mail'], ['cal', 'scene.tools.cal'], ['crm', 'scene.tools.crm']].forEach(([ic, key], n) => tile(c, fw * (.03 + n * .325), fh * .08, fw * .3, fh * .84, ic, t(key))); };
-  PAINT.tl_tileBL = (c, fw, fh) => tile(c, .5, .5, fw - 1, fh - 1, 'bot', null);
-  PAINT.tl_tileBR = (c, fw, fh) => { glass(c, .5, .5, fw - 1, fh - 1, { r: 1.2 }); A.txt(c, t('scene.tools.auto'), fw / 2, fh * .14, fw * .7, fh * .09, '#bff8ff'); const P = [[.2, .4], [.5, .3], [.8, .45], [.35, .75], [.68, .78]]; c.strokeStyle = '#7af4ff'; c.lineWidth = .6; [[0, 1], [1, 2], [0, 3], [1, 4], [3, 4], [2, 4]].forEach(([a, b]) => { c.beginPath(); c.moveTo(P[a][0] * fw, P[a][1] * fh); c.lineTo(P[b][0] * fw, P[b][1] * fh); c.stroke(); }); P.forEach(([x, y], k) => { c.fillStyle = k === 1 ? '#ff7af0' : '#e8feff'; c.beginPath(); c.arc(x * fw, y * fh, 1.6, 0, 7); c.fill(); }); };
-  PAINT.tl_item3 = (c, fw, fh) => { glass(c, fw * .1, fh * .1, fw * .8, fh * .6, { r: .6 }); c.fillStyle = '#3bff8a'; c.fillRect(fw * .25, fh * .3, fw * .5, fh * .15); };
+
   /** Портал: арка-отвір з глибоким вихором (статичний; живий — arc_live.js), хромований обід з неоном. */
   PAINT.pt_back = (c, fw, fh, B) => {
     const d = (B.deco || [])[0], [x0, y0, w, h] = d ? R(d.f, fw, fh) : [0, 0, fw, fh], x1 = x0 + w, y1 = y0 + h, sp = (d ? d.spring : .3) * fh, cx = (x0 + x1) / 2, rx = w / 2;
@@ -259,5 +258,5 @@ NX.arc = NX.arc || {};
     c.restore();
     arch(); c.strokeStyle = '#bcc5e6'; c.lineWidth = 2.4; c.stroke(); arch(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.stroke(); arch(); c.strokeStyle = '#e4fdff'; c.lineWidth = .35; c.stroke();
   };
-  NX.arc.pt = { glass, bars, lineChart, donut, icon, tile, brain, map, drawer, rr, F, R, IC };   // для живих екранів (objects/arc_live.js)
+  NX.arc.pt = { glass, bars, lineChart, donut, icon, tile, brain, map, drawer, rr, F, R, IC, inset, bolt, led, vent, innerLight };   // для живих екранів і малюнків зон (arc_live.js, *_paint.js)
 })();

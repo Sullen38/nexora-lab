@@ -16,7 +16,8 @@ NX.i18n.add('nl', {
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND' },
+    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', today: 'VANDAAG', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
+      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'] },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
     wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
@@ -25,7 +26,7 @@ NX.i18n.add('nl', {
     seen: { face: 'GEZICHT', user: 'PERSOON', bot: 'BOT', cat: 'KAT', fox: 'VOS', dog: 'HOND', logo: 'LOGO', icon: 'ICOON', text: 'TEKST', doc: 'DOC', form: 'FORMULIER', photo: 'FOTO', match: 'GEVONDEN', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TAKEN' },
     ws: { skins: 'SKINS', acc: 'ACCESSOIRES' },
-    tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO', leads: 'AANVRAGEN' },
     poster: { meow: 'MIAUW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: ',',
   },

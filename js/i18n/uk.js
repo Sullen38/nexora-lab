@@ -16,7 +16,8 @@ NX.i18n.add('uk', {
     ad: 'NEXORA AI · AI-ПОМІЧНИК ДЛЯ БІЗНЕСУ · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },   // білборд і екран дирижабля (world/cityscape.js); шрифт міста: латиниця, цифри, кирилиця
   scene: {   // НАПИСИ В КІМНАТІ (намальовані на екранах і табличках зон): objects/arc_paint.js, arc_live.js, screens.js. Великими літерами — як на екранах
     ai: { live: 'НАЖИВО', neuro: 'НЕЙРО', net: 'МЕРЕЖА', map: 'КАРТА', log: 'ЖУРНАЛ', vision: 'ЗІР', kpi: 'KPI', ok: 'ОК' },
-    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД' },
+    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД', visitors: 'ВІДВІДУВАЧІ', today: 'СЬОГОДНІ', revenue: 'ВИРУЧКА', conv: 'КОНВЕРСІЯ', sales: 'ПРОДАЖІ',
+      days: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'НД'] },   // аналітика: екрани ВІДВІДУВАЧІ й ВИРУЧКА, стрічка ПРОДАЖІ на столі (objects/an_paint.js)
     marketing: { tags: 'AI-ТЕГИ', ads: 'РЕКЛАМА', live: 'НАЖИВО', reach: 'ОХОПЛЕННЯ', likes: 'ЛАЙКИ', clicks: 'КЛІКИ' },
     wallChat: ['AI', 'ЧАТ'], core: 'ЯДРО', scan: 'СКАН', coffee: { brew: 'ВАРЮ', done: 'ГОТОВО' },
     log: { tags: { OK: 'ОК', AI: 'AI', NET: 'МЕРЕЖА', WARN: 'УВАГА', ERR: 'ЗБІЙ' },   // журнал подій на екранах (objects/screens.js)
@@ -25,7 +26,7 @@ NX.i18n.add('uk', {
     seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
     hub: { online: 'ОНЛАЙН', tasks: 'ЗАДАЧ' },   // екран NEXORA AI на стіні (objects/arc_paint.js: hub)
     ws: { skins: 'СКІНИ', acc: 'АКСЕСУАРИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
-    tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/arc_paint.js)
+    tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО', leads: 'ЗАЯВКИ' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/tl_paint.js)
     poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
     unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
   },

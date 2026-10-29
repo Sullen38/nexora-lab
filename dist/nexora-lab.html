@@ -215,7 +215,8 @@ NX.i18n.add('uk', {
     ad: 'NEXORA AI · AI-ПОМІЧНИК ДЛЯ БІЗНЕСУ · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },   // білборд і екран дирижабля (world/cityscape.js); шрифт міста: латиниця, цифри, кирилиця
   scene: {   // НАПИСИ В КІМНАТІ (намальовані на екранах і табличках зон): objects/arc_paint.js, arc_live.js, screens.js. Великими літерами — як на екранах
     ai: { live: 'НАЖИВО', neuro: 'НЕЙРО', net: 'МЕРЕЖА', map: 'КАРТА', log: 'ЖУРНАЛ', vision: 'ЗІР', kpi: 'KPI', ok: 'ОК' },
-    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД' },
+    analytics: { map: 'КАРТА', users: 'КОРИСТУВАЧІ', trend: 'ТРЕНД', visitors: 'ВІДВІДУВАЧІ', today: 'СЬОГОДНІ', revenue: 'ВИРУЧКА', conv: 'КОНВЕРСІЯ', sales: 'ПРОДАЖІ',
+      days: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'НД'] },   // аналітика: екрани ВІДВІДУВАЧІ й ВИРУЧКА, стрічка ПРОДАЖІ на столі (objects/an_paint.js)
     marketing: { tags: 'AI-ТЕГИ', ads: 'РЕКЛАМА', live: 'НАЖИВО', reach: 'ОХОПЛЕННЯ', likes: 'ЛАЙКИ', clicks: 'КЛІКИ' },
     wallChat: ['AI', 'ЧАТ'], core: 'ЯДРО', scan: 'СКАН', coffee: { brew: 'ВАРЮ', done: 'ГОТОВО' },
     log: { tags: { OK: 'ОК', AI: 'AI', NET: 'МЕРЕЖА', WARN: 'УВАГА', ERR: 'ЗБІЙ' },   // журнал подій на екранах (objects/screens.js)
@@ -224,7 +225,7 @@ NX.i18n.add('uk', {
     seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
     hub: { online: 'ОНЛАЙН', tasks: 'ЗАДАЧ' },   // екран NEXORA AI на стіні (objects/arc_paint.js: hub)
     ws: { skins: 'СКІНИ', acc: 'АКСЕСУАРИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
-    tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/arc_paint.js)
+    tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО', leads: 'ЗАЯВКИ' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/tl_paint.js)
     poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
     unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
   },
@@ -297,7 +298,8 @@ NX.i18n.add('en', {
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND' },
+    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', today: 'TODAY', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
+      days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] },
     marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
     wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
@@ -306,7 +308,7 @@ NX.i18n.add('en', {
     seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TASKS' },
     ws: { skins: 'SKINS', acc: 'ACCESSORIES' },
-    tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO', leads: 'LEADS' },
     poster: { meow: 'MEOW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
   },
@@ -379,7 +381,8 @@ NX.i18n.add('pl', {
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND' },
+    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', today: 'DZIŚ', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
+      days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'] },
     marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
     wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
@@ -388,7 +391,7 @@ NX.i18n.add('pl', {
     seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
     hub: { online: 'ONLINE', tasks: 'ZADAŃ' },
     ws: { skins: 'SKÓRKI', acc: 'AKCESORIA' },
-    tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO', leads: 'ZGŁOSZENIA' },
     poster: { meow: 'MIAU', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
   },
@@ -461,7 +464,8 @@ NX.i18n.add('nl', {
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND' },
+    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', today: 'VANDAAG', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
+      days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'] },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
     wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
@@ -470,7 +474,7 @@ NX.i18n.add('nl', {
     seen: { face: 'GEZICHT', user: 'PERSOON', bot: 'BOT', cat: 'KAT', fox: 'VOS', dog: 'HOND', logo: 'LOGO', icon: 'ICOON', text: 'TEKST', doc: 'DOC', form: 'FORMULIER', photo: 'FOTO', match: 'GEVONDEN', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TAKEN' },
     ws: { skins: 'SKINS', acc: 'ACCESSOIRES' },
-    tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO', leads: 'AANVRAGEN' },
     poster: { meow: 'MIAUW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: ',',
   },
@@ -4044,9 +4048,18 @@ NX.floorTiles = (() => {
  * Предмет: {id, zone, x, z — середина лиця на підлозі, turn — поворот (°), w, dep — ширина й глибина, yt..yb — висота,
  *   st — стиль (матеріал), on — на чому стоїть, cyl — циліндр, plant/fw/fh/bloom/hangs — рослина, deco — оздоби лиця}.
  * ========================================================================== */
-NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1062.36,"z":65.48,"turn":0,"w":308.76,"dep":107.64,"yb":372.0,"yt":329.51,"st":"base","sh":[0.492526,65.481]},{"id":"ws_dais","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":240.78,"dep":90.65,"yb":329.51,"yt":318.18,"st":"base","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_pad","zone":"workshop","x":1062.36,"z":82.48,"turn":0,"w":62.32,"dep":45.32,"yb":318.18,"yt":312.51,"st":"dark","on":"ws_dais","cyl":24,"band":1,"sh":[0.492526,65.481]},{"id":"ws_wingL","zone":"workshop","x":924.98,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[14.16,0.0],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_wingR","zone":"workshop","x":1199.75,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[0.0,14.16],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postL","zone":"workshop","x":968.89,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postR","zone":"workshop","x":1155.84,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_back","zone":"workshop","x":1062.36,"z":130.63,"turn":0,"w":133.14,"dep":11.33,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sh":[0.492526,65.481]},{"id":"ws_beam","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":274.77,"dep":82.15,"yb":156.72,"yt":100.06,"st":"frame","ch":[22.66,22.66],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_sign","zone":"workshop","x":1062.36,"z":70.3,"turn":0,"w":170.28,"dep":3.4,"yb":144.0,"yt":109.95,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}],"sh":[0.492526,65.481]},{"id":"ws_dome","zone":"workshop","x":1062.36,"z":86.02,"turn":0,"w":118.97,"dep":62.32,"yb":100.06,"yt":80.23,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1,"sh":[0.492526,65.481]},{"id":"ws_dome2","zone":"workshop","x":1062.36,"z":90.98,"turn":0,"w":99.14,"dep":52.4,"yb":80.23,"yt":66.07,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7,"sh":[0.492526,65.481]},{"id":"ws_cap","zone":"workshop","x":1062.36,"z":98.77,"turn":0,"w":70.82,"dep":36.82,"yb":66.07,"yt":57.57,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62,"sh":[0.492526,65.481]},{"id":"ws_mount","zone":"workshop","x":1062.36,"z":104.43,"turn":0,"w":28.33,"dep":25.49,"yb":57.57,"yt":40.58,"st":"dark","on":"ws_cap","cyl":14,"sh":[0.492526,65.481]},{"id":"ws_tabLs","zone":"workshop","x":943.39,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabL","zone":"workshop","x":943.39,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabLs","sh":[0.492526,65.481]},{"id":"ws_tabRs","zone":"workshop","x":1181.34,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabR","zone":"workshop","x":1181.34,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabRs","sh":[0.492526,65.481]}],"cols":[],"armZone":"workshop","scales":{"far":1.416340556452093},"angles":{},"mains":{"workshop":["ws_base","ws_beam","ws_postL"]},"anchors":{"wsPad":[1081.89,312.51,105.14],"wsFront":[1056.08,372.0,52.73],"wsArm":[1087.82,41.99,117.18],"wsBeamBot":[1083.29,156.72,107.97],"wsTabL":[944.36,244.53,67.46],"wsTabR":[1182.31,244.53,67.46]},"zoneXf":{"workshop":{"ax":1062.365,"az":65.481,"m":1.41634,"Xref":1005,"Yf":358,"sh":[0.492526,65.481]}},"zoneBox":{"workshop":[893.0,1167.2,70.6,355.0]},"armRig":{"pts":[[1087.82,46.24,117.18],[1168.56,0.92,117.18],[1262.03,54.74,117.18],[1242.21,88.73,117.18]],"k":1.18,"zone":"workshop"},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":477.2,"z":88.5,"turn":0,"w":315.08,"dep":59.97,"yb":372.0,"yt":304.83,"st":"desk","sh":[-0.487751,88.497]},{"id":"mk_booth","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":229.6,"dep":26.87,"yb":133.86,"yt":77.68,"st":"frame","ch":[14.66,14.66],"sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpL","zone":"marketing","x":370.96,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpR","zone":"marketing","x":583.45,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bb","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":195.4,"dep":26.87,"yb":372.0,"yt":292.62,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_screen","zone":"marketing","x":477.2,"z":163.12,"turn":0,"w":195.4,"dep":7.33,"yb":292.62,"yt":133.86,"st":"screen","sh":[-0.487751,88.497]},{"id":"mk_sign","zone":"marketing","x":477.2,"z":149.2,"turn":0,"w":193.04,"dep":2.93,"yb":125.07,"yt":86.47,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.127536231884058,0.5,0.06028985507246377],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.24347826086956523,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}],"sh":[-0.487751,88.497]},{"id":"mk_projL","zone":"marketing","x":355.08,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"mk_projR","zone":"marketing","x":599.33,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]}],"cols":[],"armZone":"marketing","scales":{"far":1.2212518450367364},"angles":{},"mains":{"marketing":["mk_booth","mk_desk"]},"anchors":{"mkChair":[491.49,372.0,59.19],"mkKeys":[471.84,304.83,99.49],"mkProjL":[339.52,297.5,120.4],"mkProjR":[583.77,297.5,120.4],"mkScreen":[440.8,213.24,163.12],"mkDeskTop":[477.2,304.83,88.5]},"zoneXf":{"marketing":{"ax":477.205,"az":88.497,"m":1.22125,"Xref":589,"Yf":337,"sh":[-0.487751,88.497]}},"zoneBox":{"marketing":[385.7,655.0,109.9,349.9]},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
+NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1062.36,"z":65.48,"turn":0,"w":308.76,"dep":107.64,"yb":372.0,"yt":329.51,"st":"base","sh":[0.492526,65.481]},{"id":"ws_dais","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":240.78,"dep":90.65,"yb":329.51,"yt":318.18,"st":"base","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_pad","zone":"workshop","x":1062.36,"z":82.48,"turn":0,"w":62.32,"dep":45.32,"yb":318.18,"yt":312.51,"st":"dark","on":"ws_dais","cyl":24,"band":1,"sh":[0.492526,65.481]},{"id":"ws_wingL","zone":"workshop","x":924.98,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[14.16,0.0],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_wingR","zone":"workshop","x":1199.75,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[0.0,14.16],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postL","zone":"workshop","x":968.89,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postR","zone":"workshop","x":1155.84,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_back","zone":"workshop","x":1062.36,"z":130.63,"turn":0,"w":133.14,"dep":11.33,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sh":[0.492526,65.481]},{"id":"ws_beam","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":274.77,"dep":82.15,"yb":156.72,"yt":100.06,"st":"frame","ch":[22.66,22.66],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_sign","zone":"workshop","x":1062.36,"z":70.3,"turn":0,"w":170.28,"dep":3.4,"yb":144.0,"yt":109.95,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}],"sh":[0.492526,65.481]},{"id":"ws_dome","zone":"workshop","x":1062.36,"z":86.02,"turn":0,"w":118.97,"dep":62.32,"yb":100.06,"yt":80.23,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1,"sh":[0.492526,65.481]},{"id":"ws_dome2","zone":"workshop","x":1062.36,"z":90.98,"turn":0,"w":99.14,"dep":52.4,"yb":80.23,"yt":66.07,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7,"sh":[0.492526,65.481]},{"id":"ws_cap","zone":"workshop","x":1062.36,"z":98.77,"turn":0,"w":70.82,"dep":36.82,"yb":66.07,"yt":57.57,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62,"sh":[0.492526,65.481]},{"id":"ws_mount","zone":"workshop","x":1062.36,"z":104.43,"turn":0,"w":28.33,"dep":25.49,"yb":57.57,"yt":40.58,"st":"dark","on":"ws_cap","cyl":14,"sh":[0.492526,65.481]},{"id":"ws_tabLs","zone":"workshop","x":943.39,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabL","zone":"workshop","x":943.39,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabLs","sh":[0.492526,65.481]},{"id":"ws_tabRs","zone":"workshop","x":1181.34,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabR","zone":"workshop","x":1181.34,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabRs","sh":[0.492526,65.481]},{"id":"tl_bench","zone":"tools","x":1262.55,"z":-8.89,"turn":0,"w":200.18,"dep":36.17,"yb":372.0,"yt":331.49,"st":"bench","sh":[0.955869,-8.889]},{"id":"tl_cap","zone":"tools","x":1262.55,"z":29.66,"turn":0,"w":182.7,"dep":14.3,"yb":234.58,"yt":193.27,"st":"board","ch":[11.12,11.12],"sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_bpL","zone":"tools","x":1175.97,"z":29.66,"turn":0,"w":9.53,"dep":14.3,"yb":372.0,"yt":234.58,"st":"board","sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_bpR","zone":"tools","x":1349.14,"z":29.66,"turn":0,"w":9.53,"dep":14.3,"yb":372.0,"yt":234.58,"st":"board","sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_rail","zone":"tools","x":1262.55,"z":29.66,"turn":0,"w":163.64,"dep":14.3,"yb":282.24,"yt":275.88,"st":"board","sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_mid","zone":"tools","x":1262.55,"z":29.66,"turn":0,"w":4.77,"dep":14.3,"yb":323.54,"yt":282.24,"st":"board","sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_bb","zone":"tools","x":1262.55,"z":29.66,"turn":0,"w":163.64,"dep":14.3,"yb":372.0,"yt":323.54,"st":"board","sty":{"bev":1.43,"ins":2.86,"nIn":1.11,"nW":0.87},"sh":[0.955869,-8.889]},{"id":"tl_tiles","zone":"tools","x":1262.55,"z":35.23,"turn":0,"w":163.64,"dep":3.97,"yb":275.88,"yt":234.58,"st":"screen","sh":[0.955869,-8.889]},{"id":"tl_scrL","zone":"tools","x":1220.45,"z":35.23,"turn":0,"w":79.44,"dep":3.97,"yb":323.54,"yt":282.24,"st":"screen","sh":[0.955869,-8.889]},{"id":"tl_scrR","zone":"tools","x":1304.66,"z":35.23,"turn":0,"w":79.44,"dep":3.97,"yb":323.54,"yt":282.24,"st":"screen","sh":[0.955869,-8.889]},{"id":"tl_sign","zone":"tools","x":1262.55,"z":27.76,"turn":0,"w":158.01,"dep":1.91,"yb":229.73,"yt":198.12,"st":"board","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07526315789473685,0.5,0.03557894736842105],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.1436842105263158,0.97,0.16,0.86],"key":"nav.tools","col":"#7af4ff"}],"sh":[0.955869,-8.889]}],"cols":[],"armZone":"workshop","scales":{"far":1.416340556452093,"mid":0.7943516717658436},"angles":{"mid":"front"},"mains":{"workshop":["ws_base","ws_beam","ws_postL"],"tools":["tl_cap","tl_bench"]},"anchors":{"wsPad":[1081.89,312.51,105.14],"wsFront":[1056.08,372.0,52.73],"wsArm":[1087.82,41.99,117.18],"wsBeamBot":[1083.29,156.72,107.97],"wsTabL":[944.36,244.53,67.46],"wsTabR":[1182.31,244.53,67.46],"tlFront":[1253.44,372.0,-18.42],"tlBenchTop":[1262.55,331.49,-8.89],"tlTiles":[1304.72,255.23,35.23]},"zoneXf":{"workshop":{"ax":1062.365,"az":65.481,"m":1.41634,"Xref":1005,"Yf":358,"sh":[0.492526,65.481]},"tools":{"ax":1262.555,"az":-8.889,"m":0.79435,"Xref":1230,"Yf":357,"sh":[0.955869,-8.889],"turn":0}},"zoneBox":{"workshop":[893.0,1167.2,70.6,355.0],"tools":[1169.2,1372.9,194.7,374.6]},"armRig":{"pts":[[1087.82,46.24,117.18],[1168.56,0.92,117.18],[1262.03,54.74,117.18],[1242.21,88.73,117.18]],"k":1.18,"zone":"workshop"},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":477.2,"z":88.5,"turn":0,"w":315.08,"dep":59.97,"yb":372.0,"yt":304.83,"st":"desk","sh":[-0.487751,88.497]},{"id":"mk_booth","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":229.6,"dep":26.87,"yb":133.86,"yt":77.68,"st":"frame","ch":[14.66,14.66],"sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpL","zone":"marketing","x":370.96,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpR","zone":"marketing","x":583.45,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bb","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":195.4,"dep":26.87,"yb":372.0,"yt":292.62,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_screen","zone":"marketing","x":477.2,"z":163.12,"turn":0,"w":195.4,"dep":7.33,"yb":292.62,"yt":133.86,"st":"screen","sh":[-0.487751,88.497]},{"id":"mk_sign","zone":"marketing","x":477.2,"z":149.2,"turn":0,"w":193.04,"dep":2.93,"yb":125.07,"yt":86.47,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.127536231884058,0.5,0.06028985507246377],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.24347826086956523,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}],"sh":[-0.487751,88.497]},{"id":"mk_projL","zone":"marketing","x":355.08,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"mk_projR","zone":"marketing","x":599.33,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"an_desk","zone":"analytics","x":288.71,"z":-5.79,"turn":0,"w":198.75,"dep":37.73,"yb":372.0,"yt":329.75,"st":"desk","sh":[-0.943767,-5.789]},{"id":"an_cap","zone":"analytics","x":288.71,"z":34.28,"turn":0,"w":179.97,"dep":15.65,"yb":232.72,"yt":192.03,"st":"frame","ch":[10.95,10.95],"sty":{"bev":1.41,"ins":2.82,"nIn":1.1,"nW":0.86,"neon":"#3be8ff"},"sh":[-0.943767,-5.789]},{"id":"an_bpL","zone":"analytics","x":203.41,"z":34.28,"turn":0,"w":9.39,"dep":15.65,"yb":372.0,"yt":232.72,"st":"frame","sty":{"bev":1.41,"ins":2.82,"nIn":1.1,"nW":0.86,"neon":"#3be8ff"},"sh":[-0.943767,-5.789]},{"id":"an_bpR","zone":"analytics","x":374.0,"z":34.28,"turn":0,"w":9.39,"dep":15.65,"yb":372.0,"yt":232.72,"st":"frame","sty":{"bev":1.41,"ins":2.82,"nIn":1.1,"nW":0.86,"neon":"#3be8ff"},"sh":[-0.943767,-5.789]},{"id":"an_mid","zone":"analytics","x":288.71,"z":34.28,"turn":0,"w":4.69,"dep":15.65,"yb":318.79,"yt":232.72,"st":"frame","sty":{"bev":1.41,"ins":2.82,"nIn":1.1,"nW":0.86,"neon":"#3be8ff"},"sh":[-0.943767,-5.789]},{"id":"an_bb","zone":"analytics","x":288.71,"z":34.28,"turn":0,"w":161.19,"dep":15.65,"yb":372.0,"yt":318.79,"st":"frame","sty":{"bev":1.41,"ins":2.82,"nIn":1.1,"nW":0.86,"neon":"#3be8ff"},"sh":[-0.943767,-5.789]},{"id":"an_scrL","zone":"analytics","x":247.23,"z":40.54,"turn":0,"w":78.25,"dep":3.91,"yb":318.79,"yt":232.72,"st":"screen","sh":[-0.943767,-5.789]},{"id":"an_scrR","zone":"analytics","x":330.18,"z":40.54,"turn":0,"w":78.25,"dep":3.91,"yb":318.79,"yt":232.72,"st":"screen","sh":[-0.943767,-5.789]},{"id":"an_sign","zone":"analytics","x":288.71,"z":32.41,"turn":0,"w":159.35,"dep":1.88,"yb":228.31,"yt":196.44,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07526315789473685,0.5,0.03557894736842105],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.1436842105263158,0.97,0.16,0.86],"key":"nav.analytics","col":"#7af4ff"}],"sh":[-0.943767,-5.789]}],"cols":[],"armZone":"marketing","scales":{"far":1.2212518450367364,"mid":0.7824807972807967},"angles":{"mid":"front"},"mains":{"marketing":["mk_booth","mk_desk"],"analytics":["an_cap","an_desk"]},"anchors":{"mkChair":[491.49,372.0,59.19],"mkKeys":[471.84,304.83,99.49],"mkProjL":[339.52,297.5,120.4],"mkProjR":[583.77,297.5,120.4],"mkScreen":[440.8,213.24,163.12],"mkDeskTop":[477.2,304.83,88.5],"anChair":[306.43,372.0,-24.57],"anDeskTop":[288.71,329.75,-5.79],"anScreen":[244.99,275.75,40.54]},"zoneXf":{"marketing":{"ax":477.205,"az":88.497,"m":1.22125,"Xref":589,"Yf":337,"sh":[-0.487751,88.497]},"analytics":{"ax":288.705,"az":-5.789,"m":0.78248,"Xref":399,"Yf":340,"sh":[-0.943767,-5.789],"turn":0}},"zoneBox":{"marketing":[385.7,655.0,109.9,349.9],"analytics":[182.8,383.7,193.8,373.7]},"hang":[],"C":[348,-40],"R":225}};   // згенеровано tools/wingbox/gen_room.py
 
 </script>    <!-- розкладка крил «по дузі» (генерує tools/wingbox/gen_room.py) -->
+<script>
+/* ---- js/objects/arc_layout_alt.js ---- */
+/* objects/arc_layout_alt.js — ТИМЧАСОВО (крок 5, 29.10): варіант Б розкладки для порівняння наживо — середні зони
+ * (аналітика, інструменти) ЛИЦЕМ ДО ЦЕНТРУ ДУГИ (основний варіант А — фронтально). Вмикається адресою ?zones=arc
+ * (або #zones-arc). Згенеровано tools/wingbox/gen_room.py --alt arc (руками не правити); після вибору
+ * власника — прибрати разом із рядком в index.html. */
+if (/zones[=-]arc/.test(location.search + location.hash)) NX.arcLayout = {"right":{"wall":[[1134.6,185],[1200,185],[1239.1,181.6],[1277.0,171.4],[1312.5,154.9],[1344.6,132.4],[1372.4,104.6],[1394.9,72.5],[1411.4,37.0],[1421.6,-0.9],[1425.0,-40.0],[1421.6,-79.1],[1411.4,-117.0],[1394.9,-152.5],[1372.4,-184.6]],"items":[{"id":"ws_base","zone":"workshop","x":1062.36,"z":65.48,"turn":0,"w":308.76,"dep":107.64,"yb":372.0,"yt":329.51,"st":"base","sh":[0.492526,65.481]},{"id":"ws_dais","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":240.78,"dep":90.65,"yb":329.51,"yt":318.18,"st":"base","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_pad","zone":"workshop","x":1062.36,"z":82.48,"turn":0,"w":62.32,"dep":45.32,"yb":318.18,"yt":312.51,"st":"dark","on":"ws_dais","cyl":24,"band":1,"sh":[0.492526,65.481]},{"id":"ws_wingL","zone":"workshop","x":924.98,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[14.16,0.0],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_wingR","zone":"workshop","x":1199.75,"z":85.31,"turn":0,"w":33.99,"dep":76.48,"yb":329.51,"yt":182.21,"st":"frame","on":"ws_base","ch":[0.0,14.16],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postL","zone":"workshop","x":968.89,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_postR","zone":"workshop","x":1155.84,"z":79.64,"turn":0,"w":53.82,"dep":76.48,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_back","zone":"workshop","x":1062.36,"z":130.63,"turn":0,"w":133.14,"dep":11.33,"yb":318.18,"yt":156.72,"st":"frame","on":"ws_dais","sh":[0.492526,65.481]},{"id":"ws_beam","zone":"workshop","x":1062.36,"z":73.98,"turn":0,"w":274.77,"dep":82.15,"yb":156.72,"yt":100.06,"st":"frame","ch":[22.66,22.66],"sty":{"bev":2.55,"ins":5.1,"nIn":1.98,"nW":1.56},"sh":[0.492526,65.481]},{"id":"ws_sign","zone":"workshop","x":1062.36,"z":70.3,"turn":0,"w":170.28,"dep":3.4,"yb":144.0,"yt":109.95,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.16403508771929828,0.5,0.0775438596491228],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.31315789473684214,0.97,0.16,0.86],"key":"nav.workshop","col":"#7af4ff"}],"sh":[0.492526,65.481]},{"id":"ws_dome","zone":"workshop","x":1062.36,"z":86.02,"turn":0,"w":118.97,"dep":62.32,"yb":100.06,"yt":80.23,"st":"dome","on":"ws_beam","cyl":24,"kt":0.84,"band":1,"sh":[0.492526,65.481]},{"id":"ws_dome2","zone":"workshop","x":1062.36,"z":90.98,"turn":0,"w":99.14,"dep":52.4,"yb":80.23,"yt":66.07,"st":"dome","on":"ws_dome","cyl":22,"kt":0.7,"sh":[0.492526,65.481]},{"id":"ws_cap","zone":"workshop","x":1062.36,"z":98.77,"turn":0,"w":70.82,"dep":36.82,"yb":66.07,"yt":57.57,"st":"dome","on":"ws_dome2","cyl":18,"kt":0.62,"sh":[0.492526,65.481]},{"id":"ws_mount","zone":"workshop","x":1062.36,"z":104.43,"turn":0,"w":28.33,"dep":25.49,"yb":57.57,"yt":40.58,"st":"dark","on":"ws_cap","cyl":14,"sh":[0.492526,65.481]},{"id":"ws_tabLs","zone":"workshop","x":943.39,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabL","zone":"workshop","x":943.39,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabLs","sh":[0.492526,65.481]},{"id":"ws_tabRs","zone":"workshop","x":1181.34,"z":67.61,"turn":0,"w":11.33,"dep":5.67,"yb":329.51,"yt":289.85,"st":"dark","on":"ws_base","sh":[0.492526,65.481]},{"id":"ws_tabR","zone":"workshop","x":1181.34,"z":67.46,"turn":0,"w":62.32,"dep":6.23,"yb":289.85,"yt":199.21,"st":"tablet","on":"ws_tabRs","sh":[0.492526,65.481]},{"id":"tl_bench","zone":"tools","x":1322.79,"z":50.07,"turn":53.7371301651001,"w":191.82,"dep":34.66,"yb":372.0,"yt":333.18,"st":"bench"},{"id":"tl_cap","zone":"tools","x":1352.57,"z":71.92,"turn":53.7371301651001,"w":175.07,"dep":13.7,"yb":240.31,"yt":200.73,"st":"board","ch":[10.66,10.66],"sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_bpL","zone":"tools","x":1303.5,"z":138.82,"turn":53.7371301651001,"w":9.13,"dep":13.7,"yb":372.0,"yt":240.31,"st":"board","sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_bpR","zone":"tools","x":1401.65,"z":5.02,"turn":53.7371301651001,"w":9.13,"dep":13.7,"yb":372.0,"yt":240.31,"st":"board","sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_rail","zone":"tools","x":1352.57,"z":71.92,"turn":53.7371301651001,"w":156.81,"dep":13.7,"yb":285.99,"yt":279.9,"st":"board","sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_mid","zone":"tools","x":1352.57,"z":71.92,"turn":53.7371301651001,"w":4.57,"dep":13.7,"yb":325.57,"yt":285.99,"st":"board","sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_bb","zone":"tools","x":1352.57,"z":71.92,"turn":53.7371301651001,"w":156.81,"dep":13.7,"yb":372.0,"yt":325.57,"st":"board","sty":{"bev":1.37,"ins":2.74,"nIn":1.07,"nW":0.84}},{"id":"tl_tiles","zone":"tools","x":1356.87,"z":75.08,"turn":53.7371301651001,"w":156.81,"dep":3.81,"yb":279.9,"yt":240.31,"st":"screen"},{"id":"tl_scrL","zone":"tools","x":1333.01,"z":107.61,"turn":53.7371301651001,"w":76.12,"dep":3.81,"yb":325.57,"yt":285.99,"st":"screen"},{"id":"tl_scrR","zone":"tools","x":1380.73,"z":42.55,"turn":53.7371301651001,"w":76.12,"dep":3.81,"yb":325.57,"yt":285.99,"st":"screen"},{"id":"tl_sign","zone":"tools","x":1351.1,"z":70.84,"turn":53.7371301651001,"w":122.72,"dep":1.83,"yb":237.57,"yt":203.48,"st":"board","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07526315789473685,0.5,0.03557894736842105],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.1436842105263158,0.97,0.16,0.86],"key":"nav.tools","col":"#7af4ff"}]}],"cols":[],"armZone":"workshop","scales":{"far":1.416340556452093,"mid":0.7611943377280818},"angles":{"mid":53.74},"mains":{"workshop":["ws_base","ws_beam","ws_postL"],"tools":["tl_cap","tl_bench"]},"anchors":{"wsPad":[1081.89,312.51,105.14],"wsFront":[1056.08,372.0,52.73],"wsArm":[1087.82,41.99,117.18],"wsBeamBot":[1083.29,156.72,107.97],"wsTabL":[944.36,244.53,67.46],"wsTabR":[1182.31,244.53,67.46],"tlFront":[1315.42,372.0,44.67],"tlBenchTop":[1322.79,333.18,50.07],"tlTiles":[1356.87,260.1,75.08]},"zoneXf":{"workshop":{"ax":1062.365,"az":65.481,"m":1.41634,"Xref":1005,"Yf":358,"sh":[0.492526,65.481]},"tools":{"ax":1322.785,"az":50.072,"m":0.76119,"Xref":1230,"Yf":357,"sh":null,"turn":53.737}},"zoneBox":{"workshop":[893.0,1167.2,70.6,355.0],"tools":[1169.2,1415.8,200.8,380.4]},"armRig":{"pts":[[1087.82,46.24,117.18],[1168.56,0.92,117.18],[1262.03,54.74,117.18],[1242.21,88.73,117.18]],"k":1.18,"zone":"workshop"},"hang":[],"C":[1200,-40],"R":225},"left":{"wall":[[413.4,185],[348,185],[308.9,181.6],[271.0,171.4],[235.5,154.9],[203.4,132.4],[175.6,104.6],[153.1,72.5],[136.6,37.0],[126.4,-0.9],[123.0,-40.0],[126.4,-79.1],[136.6,-117.0],[153.1,-152.5],[175.6,-184.6]],"items":[{"id":"mk_desk","zone":"marketing","x":477.2,"z":88.5,"turn":0,"w":315.08,"dep":59.97,"yb":372.0,"yt":304.83,"st":"desk","sh":[-0.487751,88.497]},{"id":"mk_booth","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":229.6,"dep":26.87,"yb":133.86,"yt":77.68,"st":"frame","ch":[14.66,14.66],"sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpL","zone":"marketing","x":370.96,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bpR","zone":"marketing","x":583.45,"z":152.13,"turn":0,"w":17.1,"dep":26.87,"yb":372.0,"yt":133.86,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_bb","zone":"marketing","x":477.2,"z":152.13,"turn":0,"w":195.4,"dep":26.87,"yb":372.0,"yt":292.62,"st":"frame","sty":{"bev":2.2,"ins":4.4,"nIn":1.71,"nW":1.34,"neon":"#3be8ff"},"sh":[-0.487751,88.497]},{"id":"mk_screen","zone":"marketing","x":477.2,"z":163.12,"turn":0,"w":195.4,"dep":7.33,"yb":292.62,"yt":133.86,"st":"screen","sh":[-0.487751,88.497]},{"id":"mk_sign","zone":"marketing","x":477.2,"z":149.2,"turn":0,"w":193.04,"dep":2.93,"yb":125.07,"yt":86.47,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#ff4fd8","lw":1.2},{"t":"c","f":[0.127536231884058,0.5,0.06028985507246377],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.24347826086956523,0.97,0.16,0.86],"key":"nav.marketing","col":"#7af4ff"}],"sh":[-0.487751,88.497]},{"id":"mk_projL","zone":"marketing","x":355.08,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"mk_projR","zone":"marketing","x":599.33,"z":113.68,"turn":0,"w":46.41,"dep":13.43,"yb":304.83,"yt":297.5,"st":"dark","on":"mk_desk","sh":[-0.487751,88.497]},{"id":"an_desk","zone":"analytics","x":229.63,"z":51.97,"turn":-52.1517539024353,"w":190.85,"dep":36.23,"yb":372.0,"yt":331.43,"st":"desk"},{"id":"an_cap","zone":"analytics","x":199.25,"z":75.58,"turn":-52.1517539024353,"w":172.82,"dep":15.03,"yb":238.26,"yt":199.18,"st":"frame","ch":[10.52,10.52],"sty":{"bev":1.35,"ins":2.7,"nIn":1.05,"nW":0.83,"neon":"#3be8ff"}},{"id":"an_bpL","zone":"analytics","x":149.0,"z":10.91,"turn":-52.1517539024353,"w":9.02,"dep":15.03,"yb":372.0,"yt":238.26,"st":"frame","sty":{"bev":1.35,"ins":2.7,"nIn":1.05,"nW":0.83,"neon":"#3be8ff"}},{"id":"an_bpR","zone":"analytics","x":249.5,"z":140.25,"turn":-52.1517539024353,"w":9.02,"dep":15.03,"yb":372.0,"yt":238.26,"st":"frame","sty":{"bev":1.35,"ins":2.7,"nIn":1.05,"nW":0.83,"neon":"#3be8ff"}},{"id":"an_mid","zone":"analytics","x":199.25,"z":75.58,"turn":-52.1517539024353,"w":4.51,"dep":15.03,"yb":320.91,"yt":238.26,"st":"frame","sty":{"bev":1.35,"ins":2.7,"nIn":1.05,"nW":0.83,"neon":"#3be8ff"}},{"id":"an_bb","zone":"analytics","x":199.25,"z":75.58,"turn":-52.1517539024353,"w":154.78,"dep":15.03,"yb":372.0,"yt":320.91,"st":"frame","sty":{"bev":1.35,"ins":2.7,"nIn":1.05,"nW":0.83,"neon":"#3be8ff"}},{"id":"an_scrL","zone":"analytics","x":170.07,"z":47.83,"turn":-52.1517539024353,"w":75.14,"dep":3.76,"yb":320.91,"yt":238.26,"st":"screen"},{"id":"an_scrR","zone":"analytics","x":218.94,"z":110.72,"turn":-52.1517539024353,"w":75.14,"dep":3.76,"yb":320.91,"yt":238.26,"st":"screen"},{"id":"an_sign","zone":"analytics","x":200.67,"z":74.48,"turn":-52.1517539024353,"w":123.86,"dep":1.8,"yb":235.87,"yt":201.57,"st":"dark","deco":[{"t":"r","f":[0,1,0,1],"fill":"#0a0620","line":"#3be8ff","lw":1.2},{"t":"c","f":[0.07526315789473685,0.5,0.03557894736842105],"line":"#7af4ff","lw":1.1},{"t":"txt","f":[0.1436842105263158,0.97,0.16,0.86],"key":"nav.analytics","col":"#7af4ff"}]}],"cols":[],"armZone":"marketing","scales":{"far":1.2212518450367364,"mid":0.7513721392021295},"angles":{"mid":52.15},"mains":{"marketing":["mk_booth","mk_desk"],"analytics":["an_cap","an_desk"]},"anchors":{"mkChair":[491.49,372.0,59.19],"mkKeys":[471.84,304.83,99.49],"mkProjL":[339.52,297.5,120.4],"mkProjR":[583.77,297.5,120.4],"mkScreen":[440.8,213.24,163.12],"mkDeskTop":[477.2,304.83,88.5],"anChair":[243.87,372.0,40.91],"anDeskTop":[229.63,331.43,51.97],"anScreen":[194.5,279.58,79.27]},"zoneXf":{"marketing":{"ax":477.205,"az":88.497,"m":1.22125,"Xref":589,"Yf":337,"sh":[-0.487751,88.497]},"analytics":{"ax":229.635,"az":51.973,"m":0.75137,"Xref":399,"Yf":340,"sh":null,"turn":-52.152}},"zoneBox":{"marketing":[385.7,655.0,109.9,349.9],"analytics":[141.1,383.7,199.5,379.2]},"hang":[],"C":[348,-40],"R":225}};
+
+</script> <!-- ТИМЧАСОВО: варіант Б (середні зони лицем до центру дуги) — адреса ?zones=arc -->
 <!-- КРИЛА «ПО ДУЗІ» В ПІКСЕЛЬНОМУ 3D: матеріали -> малюнки граней -> сцена (стіни, підлога, зони) -> живі екрани -->
 <script>
 /* ---- js/objects/arc_kit.js ---- */
@@ -4341,9 +4354,10 @@ NX.arc.kit = (() => {
  * ----------------------------------------------------------------------------
  * Пласкі текстури лицьових граней головних частин зон — у стилі картинки кімнати: голо-екрани (скло з переливом
  * і скан-лініями, світні графіки, карта світу, мозок-голограма, іконки), вивіски з NX.t, шухляди з ручками й LED,
- * вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу);
- * живі екрани поверх — objects/arc_live.js. Майстерня й маркетинг (нові, 29.10) — у своїх файлах: objects/ws_paint.js,
- * mk_paint.js (вони визначають ws_* / mk_* самі).
+ * вихор порталу; спільне «залізо» граней (утоплена панель, заклепка, світлодіод, ґратка, світло внутрішньої грані).
+ * Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу); живі екрани поверх — objects/arc_live.js.
+ * Нові зони (29.10) — у своїх файлах: майстерня objects/ws_paint.js, маркетинг mk_paint.js, аналітика an_paint.js,
+ * інструменти tl_paint.js (вони визначають ws_* / mk_* / an_* / tl_* самі).
  *   NX.arc.paint[id] = (c, fw, fh, B, F) => {...}   — c уже масштабоване: 1 = одиниця грані; fw × fh — розмір грані
  * Усі написи — NX.t (4 мови): nav.* (вивіски), scene.* (екрани). Ключі розкладки — objects/arc_layout.js.
  * ========================================================================== */
@@ -4438,6 +4452,26 @@ NX.arc = NX.arc || {};
   }
   /** Карта світу крапками (та сама, що на екранах лівого крила). */
   function map(c, x, y, w, h) { K.scrMap(c, x, y, w, h, 1.7, { hot: ['kyiv', 'warsaw', 'amsterdam'] }); }
+  // «Залізо» граней (як у майстерні й маркетингу; для аналітики й інструментів — objects/an_paint.js, tl_paint.js)
+  /** Утоплена панель: темне дно, тінь зверху й ліворуч, світла кромка знизу й праворуч. */
+  function inset(c, x, y, w, h, fill = 'rgba(6,3,20,.6)', r = .6) {
+    c.fillStyle = fill; rr(c, x, y, w, h, r); c.fill(); c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x, y, w, .5); c.fillRect(x, y, .5, h);
+    c.fillStyle = 'rgba(170,150,255,.28)'; c.fillRect(x, y + h - .45, w, .45); c.fillRect(x + w - .45, y, .45, h);
+  }
+  /** Заклепка: темне кільце, світлий блік угорі ліворуч. */
+  const bolt = (c, x, y, r = .85) => { c.fillStyle = '#05030f'; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); c.fillStyle = '#6a5ab8'; c.beginPath(); c.arc(x - r * .15, y - r * .15, r * .62, 0, 7); c.fill(); c.fillStyle = '#d8d0ff'; c.fillRect(x - r * .45, y - r * .45, r * .4, r * .4); };
+  /** Світлодіод: темна оправа, кольорове тіло, біла іскра. */
+  const led = (c, x, y, col, r = .75) => { c.fillStyle = '#05030f'; c.beginPath(); c.arc(x, y, r * 1.5, 0, 7); c.fill(); c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); c.fillStyle = '#fff'; c.fillRect(x - r * .35, y - r * .35, r * .5, r * .5); };
+  /** Ґратка вентиляції: щілини з темним нутром і світлою нижньою губою. */
+  function vent(c, x, y, w, h, n) {
+    inset(c, x, y, w, h, 'rgba(4,2,14,.7)'); const g = h / n;
+    for (let k = 0; k < n; k++) { const yy = y + g * k + g * .3; c.fillStyle = '#020108'; c.fillRect(x + w * .08, yy, w * .84, g * .42); c.fillStyle = 'rgba(150,130,240,.35)'; c.fillRect(x + w * .08, yy + g * .42, w * .84, .35); }
+  }
+  /** Внутрішня грань рамки (видно в отворі екрана): світлова смуга кольору col, поділена на сегменти. */
+  function innerLight(c, fw, fh, col = '59,232,255', core = '#b8f8ff') {
+    c.fillStyle = 'rgba(4,12,40,.7)'; c.fillRect(0, 0, fw, fh); const g = c.createLinearGradient(fw * .1, 0, fw * .7, 0); g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(.5, core); g.addColorStop(1, `rgba(${col},0)`);
+    c.fillStyle = g; c.fillRect(fw * .1, fh * .02, fw * .6, fh * .96); for (let k = 0; k < fh / 3; k++) { c.fillStyle = 'rgba(4,12,40,.55)'; c.fillRect(fw * .1, k * 3 + 1.2, fw * .6, .45); }
+  }
   /** Шухляди: фасад з фаскою, ручка, LED-смужка. */
   function drawer(c, x, y, w, h, o = {}) {
     const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, o.a || '#2a1c5a'); g.addColorStop(1, o.b || '#170f38'); c.fillStyle = g; rr(c, x, y, w, h, .8); c.fill();
@@ -4495,16 +4529,8 @@ NX.arc = NX.arc || {};
       c.fillStyle = col; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x + w - .5, y, .5, h); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x, y + h * .18, w, .45); c.fillRect(x, y + h * .74, w, .45); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(x + .3, y, .35, h);
       x += w + .25; }
   };
-  /** Будка аналітики: ліворуч — користувачі (стовпчики), праворуч — тренд і «пончик». */
-  PAINT.an_booth = (c, fw, fh, B) => {
-    const L = R(F(B, 0), fw, fh), Rr = R(F(B, 2), fw, fh);
-    if (L) { glass(c, ...L, { r: 1.5 }); A.txt(c, t('scene.analytics.users'), L[0] + L[2] / 2, L[1] + L[3] * .1, L[2] * .8, L[3] * .07, '#bff8ff'); bars(c, L[0] + L[2] * .08, L[1] + L[3] * .22, L[2] * .84, L[3] * .58, 6, 2); ['UA', 'PL', 'NL', 'EN'].forEach((s, k) => A.txt(c, s, L[0] + L[2] * (.16 + k * .22), L[1] + L[3] * .9, L[2] * .2, L[3] * .06, 'rgba(190,240,255,.85)')); }
-    if (Rr) { glass(c, ...Rr, { r: 1.5 }); A.txt(c, t('scene.analytics.trend'), Rr[0] + Rr[2] / 2, Rr[1] + Rr[3] * .1, Rr[2] * .8, Rr[3] * .07, '#bff8ff'); lineChart(c, Rr[0] + Rr[2] * .08, Rr[1] + Rr[3] * .2, Rr[2] * .84, Rr[3] * .32, 1.3); donut(c, Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); A.txt(c, '72%', Rr[0] + Rr[2] * .3, Rr[1] + Rr[3] * .72, Rr[3] * .2, Rr[3] * .05, '#e8feff');
-      for (let k = 0; k < 3; k++) { c.fillStyle = ['#3be8ff', '#ff4fd8', '#9a8cff'][k]; c.fillRect(Rr[0] + Rr[2] * .58, Rr[1] + Rr[3] * (.62 + k * .08), 2, 1.4); c.fillStyle = 'rgba(190,240,255,.7)'; c.fillRect(Rr[0] + Rr[2] * .58 + 3, Rr[1] + Rr[3] * (.62 + k * .08) + .2, Rr[2] * .26, 1); } }
-  };
   /** Монітор маркетингу на столі: стрічка постів із сердечками. */
   PAINT.mk_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); for (let k = 0; k < 3; k++) { const y = fh * (.2 + k * .2); c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); icon(c, 'heart', fw * .78, y + fh * .06, fh * .12, '#ff4fd8'); } };
-  PAINT.an_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9); };
   /** Фасади столів: шухляди з ручками, неонова кромка плити — з розкладки (лінія 'l' угорі). */
   const deskFront = (c, fw, fh, B) => {
     (B.deco || []).forEach(d => {
@@ -4513,13 +4539,10 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });   // стіл маркетингу — objects/mk_paint.js
-  PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
+  ['mk_deskL', 'mk_deskR'].forEach(id => { PAINT[id] = deskFront; });   // столи попередньої спроби (--preset v1); нові столи — objects/mk_paint.js, an_paint.js
+  PAINT.mk_scr2 = PAINT.mk_scr;                                                    // другий монітор на столі маркетингу (--preset v1)
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
-  PAINT.tl_top = PAINT.ai_top;
-  ['tl_cabL', 'tl_cabR'].forEach(id => { PAINT[id] = (c, fw, fh) => { drawer(c, fw * .07, fh * .1, fw * .86, fh * .38, { led: '#3be8ff' }); drawer(c, fw * .07, fh * .54, fw * .86, fh * .38); }; });
-  PAINT.an_poster = (c, fw, fh) => { c.fillStyle = '#0a0620'; rr(c, 0, 0, fw, fh, 2); c.fill(); A.neonRect(c, 1, 1, fw - 2, fh - 2, '#ff4fd8', .8, 2); icon(c, 'chart', fw / 2, fh / 2, Math.min(fw, fh) * .55, '#7af4ff'); };
 
   // ---------- ПОСТЕРИ В РАМКАХ (оздоби стіни, objects/arc_scene.js: DECOR) ----------
   /** «NEXORA» — синтвейв: небо, смугасте сонце, неонова сітка, силует Nexi з антеною. */
@@ -4572,18 +4595,7 @@ NX.arc = NX.arc || {};
   PAINT.hub_strip = (c, fw, fh) => { c.fillStyle = '#0c1238'; c.fillRect(0, 0, fw, fh); for (let k = 0; k < 6; k++) { const y = fh * (.05 + k * .155), h = fh * .13; c.fillStyle = '#140c34'; c.fillRect(fw * .14, y, fw * .72, h); A.neonRect(c, fw * .16, y + .4, fw * .68, h - .8, '#ff4fd8', .5, .6); for (let q = 0; q < 3; q++) { c.fillStyle = hash(k, q) > .4 ? '#3bff8a' : '#ff9af0'; c.fillRect(fw * (.28 + q * .16), y + h * .4, 1.2, 1.2); } } };
   PAINT.ws_term = (c, fw, fh) => { c.fillStyle = '#0c1430'; c.fillRect(0, 0, fw, fh); [[.12, .36], [.42, .66], [.72, .94]].forEach(([a, b], k) => { const y = fh * a, h = fh * (b - a); glass(c, fw * .14, y, fw * .72, h, { r: 1 }); if (k === 0) bars(c, fw * .2, y + h * .3, fw * .6, h * .55, 5, 11); else if (k === 1) for (let q = 0; q < 4; q++) { c.fillStyle = q === 1 ? '#3bff8a' : 'rgba(190,240,255,.7)'; c.fillRect(fw * .2, y + h * (.22 + q * .18), fw * (.5 - q * .06), 1); } else lineChart(c, fw * .2, y + h * .2, fw * .6, h * .6, 3, '#7af4ff', 'rgba(90,220,255,.15)'); }); };
   PAINT.ws_ped = (c, fw, fh) => { c.fillStyle = '#0c2a5a'; rr(c, fw * .1, fh * .46, fw * .8, fh * .46, 1); c.fill(); A.neonRect(c, fw * .1, fh * .46, fw * .8, fh * .46, '#3be8ff', .6, 1); c.strokeStyle = '#7af4ff'; c.lineWidth = .8; c.beginPath(); c.arc(fw / 2, fh * .7, fw * .17, 0, 7); c.stroke(); icon(c, 'gear', fw / 2, fh * .7, fw * .2, '#7af4ff'); };
-  /** Дошка інструментів: перфодошка (дірочки), інструменти на гачках у помаранчевій рамці, неонові канти. */
-  PAINT.tl_board = (c, fw, fh, B) => {
-    c.fillStyle = 'rgba(10,20,70,.6)'; c.fillRect(2, 2, fw - 4, fh - 4);
-    for (let y = 5; y < fh - 3; y += 3.2) for (let x = 5; x < fw - 3; x += 3.2) { c.fillStyle = 'rgba(2,4,20,.9)'; c.fillRect(x, y, .8, .8); }
-    (B.deco || []).forEach(d => { if (d.t === 'l') A.neon(c, d.f[0] * fw, d.f[1] * fh, d.f[2] * fw, d.f[3] * fh, d.col, 1.1); });
-    const o = R(F(B, 0), fw, fh); if (o) { const [x, y, w, h] = o; c.fillStyle = '#1a0e08'; c.fillRect(x, y, w, h); A.neonRect(c, x, y, w, h, '#ff9a3a', .6, .5);
-      const tools = [['wrench', '#c8d0f0'], ['gear', '#ffd27a'], ['bolt', '#ff9a3a']]; tools.forEach(([ic, col], n) => icon(c, ic, x + w * (.25 + n * .25), y + h * (.32 + (n % 2) * .3), w * .28, col)); }
-  };
-  PAINT.tl_tiles = (c, fw, fh) => { c.fillStyle = '#0a1440'; c.fillRect(0, 0, fw, fh); A.neonRect(c, .5, .5, fw - 1, fh - 1, '#3be8ff', .6, 1); [['mail', 'scene.tools.mail'], ['cal', 'scene.tools.cal'], ['crm', 'scene.tools.crm']].forEach(([ic, key], n) => tile(c, fw * (.03 + n * .325), fh * .08, fw * .3, fh * .84, ic, t(key))); };
-  PAINT.tl_tileBL = (c, fw, fh) => tile(c, .5, .5, fw - 1, fh - 1, 'bot', null);
-  PAINT.tl_tileBR = (c, fw, fh) => { glass(c, .5, .5, fw - 1, fh - 1, { r: 1.2 }); A.txt(c, t('scene.tools.auto'), fw / 2, fh * .14, fw * .7, fh * .09, '#bff8ff'); const P = [[.2, .4], [.5, .3], [.8, .45], [.35, .75], [.68, .78]]; c.strokeStyle = '#7af4ff'; c.lineWidth = .6; [[0, 1], [1, 2], [0, 3], [1, 4], [3, 4], [2, 4]].forEach(([a, b]) => { c.beginPath(); c.moveTo(P[a][0] * fw, P[a][1] * fh); c.lineTo(P[b][0] * fw, P[b][1] * fh); c.stroke(); }); P.forEach(([x, y], k) => { c.fillStyle = k === 1 ? '#ff7af0' : '#e8feff'; c.beginPath(); c.arc(x * fw, y * fh, 1.6, 0, 7); c.fill(); }); };
-  PAINT.tl_item3 = (c, fw, fh) => { glass(c, fw * .1, fh * .1, fw * .8, fh * .6, { r: .6 }); c.fillStyle = '#3bff8a'; c.fillRect(fw * .25, fh * .3, fw * .5, fh * .15); };
+
   /** Портал: арка-отвір з глибоким вихором (статичний; живий — arc_live.js), хромований обід з неоном. */
   PAINT.pt_back = (c, fw, fh, B) => {
     const d = (B.deco || [])[0], [x0, y0, w, h] = d ? R(d.f, fw, fh) : [0, 0, fw, fh], x1 = x0 + w, y1 = y0 + h, sp = (d ? d.spring : .3) * fh, cx = (x0 + x1) / 2, rx = w / 2;
@@ -4597,7 +4609,7 @@ NX.arc = NX.arc || {};
     c.restore();
     arch(); c.strokeStyle = '#bcc5e6'; c.lineWidth = 2.4; c.stroke(); arch(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.stroke(); arch(); c.strokeStyle = '#e4fdff'; c.lineWidth = .35; c.stroke();
   };
-  NX.arc.pt = { glass, bars, lineChart, donut, icon, tile, brain, map, drawer, rr, F, R, IC };   // для живих екранів (objects/arc_live.js)
+  NX.arc.pt = { glass, bars, lineChart, donut, icon, tile, brain, map, drawer, rr, F, R, IC, inset, bolt, led, vent, innerLight };   // для живих екранів і малюнків зон (arc_live.js, *_paint.js)
 })();
 
 </script>
@@ -4625,19 +4637,22 @@ NX.arc = NX.arc || {};
  * картинки, міста, рами вікна й цього злиття (patchFront — замість латки міста).
  * Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
  * Живі частини зон (голограма й маніпулятор майстерні, голо-монітори й крісло маркетингу) — окремі об'єкти поверх цього
- * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче).
+ * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче). Малюнки граней
+ * і живі екрани зон — *_paint.js (майстерня ws_, маркетинг mk_, аналітика an_, інструменти tl_).
  * ========================================================================== */
 (() => {
   const X = NX.px3d, A = NX.arc.kit, K = NX.kit, F = NX.furn, PZ = NX.persp, { col, pal, ramp, mixc, dim, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
-  const R_HERO = { workshop: 4, marketing: 4 };            // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
+  const R_HERO = { workshop: 4, marketing: 4, analytics: 4, tools: 4 };   // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
   /** ЗОНА -> СВІТ (для живих частин зон: objects/workshop.js, marketing.js, mk_chair.js): px картинки зони (X, Y) і відступ
-   *  углиб v -> точка світу — як у генераторі (place + фронтальний зсув frontal). Повертає null, якщо зони ще немає. */
+   *  углиб v -> точка світу — як у генераторі (place з поворотом turn + фронтальний зсув frontal). Повертає null, якщо зони
+   *  ще немає. Поворот — у зони, що стоїть лицем до центру дуги (середні зони, варіант Б); фронтальні — turn 0. */
   NX.arc.zone = name => {
     const pick = k => ['right', 'left'].map(sd => ALL[sd] && ALL[sd][k] && ALL[sd][k][name]).find(Boolean), Z = pick('zoneXf'); if (!Z) return null;
     const anch = Object.assign({}, ALL.right && ALL.right.anchors, ALL.left && ALL.left.anchors);
-    const W = (Xi, Yi, v = 0) => { let x = Z.ax + (Xi - Z.Xref) * Z.m; const z = Z.az + v * Z.m; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
+    const a = (Z.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]];   // як basis у arc_kit.js
+    const W = (Xi, Yi, v = 0) => { const u = (Xi - Z.Xref) * Z.m, d = v * Z.m; let x = Z.ax + r[0] * u - f[0] * d; const z = Z.az + r[1] * u - f[1] * d; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
     return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az };
   };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
@@ -4881,7 +4896,7 @@ NX.arc = NX.arc || {};
     const out = [], ctr = B => { const { P } = A.basis(B); return P(0, B.dep / 2, (B.yt + B.yb) / 2); }, add = (p, r, k, h) => out.push({ x: p[0], y: p[1], z: p[2], r, k, c: col(h) });
     (Ls.items || []).forEach(B => {
       if (B.glow) add(ctr(B), Math.max(60, (B.gr || 30) * 2.6), .34, B.st === 'clamp' ? '#3be8ff' : B.st === 'neon' ? '#ff4fd8' : B.st === 'gold' ? '#ffd27a' : '#ffb24a');
-      else if (/_booth$|_screen$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
+      else if (/_booth$|_screen$|_scr[LR]$|_tiles$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
       else if (B.id === 'ws_pad') add(ctr(B), 120, .24, '#ff6ae0');                                             // пад капсули — рожеве світло на стіну й підлогу
     });
     (Ls.hang || []).forEach(h => { if (h.kind !== 'vine') add([h.x, (h.from != null ? h.from : 56) + h.len + 8, h.z], 70, .3, h.kind === 'red' ? '#ff4a3a' : '#ffb24a'); });
@@ -5134,6 +5149,18 @@ NX.arc = NX.arc || {};
   NX.i18n.onLang(() => { want = true; });                                                                   // написи новою мовою — нова збірка (стара видна до готовності)
   NX.addObject({ id: 'arcLeft', span: [-12, MID + SEAM], drawBack(c, t) { if (!c.isRefl) draw(c, 'left'); } });
   NX.addObject({ id: 'arcRight', span: [MID - SEAM, 1547], drawBack(c, t) { if (!c.isRefl) draw(c, 'right'); } });
+  /** СЛІДИ ЗОН НА ПІДЛОЗІ (обхід меблів — world/room.js obstacles): зона, що стоїть там, де ходять Nexi й кіт (середні —
+   *  аналітика й інструменти: їхній перед — на y ~374), каже, де вона стоїть, — прямокутник на екрані під її частинами на
+   *  підлозі (власник, крок 3: «щоб не ходив по верху об'єктів»). Дальні зони (маркетинг, майстерня) стоять за межею
+   *  підлоги — сліду не треба (до них Nexi підходить спереду: крісло, пад). */
+  ['right', 'left'].forEach(sd => {
+    const by = {}; ((ALL[sd] || {}).items || []).forEach(B => { if (B.zone && B.layer !== 'up' && !B.on && B.yb >= FL - 1) (by[B.zone] || (by[B.zone] = [])).push(B); });
+    Object.entries(by).forEach(([zn, list]) => {
+      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+      list.forEach(B => A.faces(B).forEach(Fc => { if (Fc.k === 'bottom') Fc.poly.forEach(q => { const p = X.proj(q); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); }));
+      if (y1 > NX.cfg.FLOOR_Y + 6) NX.addObject({ id: 'foot_' + zn, foot: [x0, x1, y0, y1] });
+    });
+  });
   NX.arc.scene = { SIDES, compose, rebuild() { want = true; } };
 })();
 
@@ -5149,7 +5176,8 @@ NX.arc = NX.arc || {};
  *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
  *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
- *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage
+ *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage; екрани поза
+ *     видимою смугою (телефон бачить ~третину кімнати) не оновлюються й не кладуться
  * Як вміст лягає в 3D: пласке полотно грані -> чотирикутник грані на екрані стовпчиками (NX.furn.warp, бо боки грані
  * вертикальні) -> МАСКА видимих пікселів цієї грані з z-буфера (те, що попереду — рослина, крісло, — лишається попереду).
  * Усе — функції часу; тексти — NX.t; журнали — кольорові рядки-мітки (на дрібному екрані літер однаково не видно).
@@ -5191,26 +5219,15 @@ NX.arc = NX.arc || {};
   LIVE.ai_top2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .34, fw * .84, fh * .52, PANEL); logLines(c, fw * .1, fh * .36, fw * .8, fh * .48, t, 2); } };
   LIVE.ai_laptop = { every: 4, draw(c, fw, fh, t) { const n = Math.floor(t * 2) % 6; glass(c, fw * .1, fh * .1, fw * .8, fh * .8, { r: 1, a: '#1a5ad0', b: '#123a9a', c: '#0c2a7a' }); for (let k = 0; k < 5; k++) { const w = k < n ? fw * (.66 - (k % 3) * .14) : k === n ? fw * (.66 - (k % 3) * .14) * ((t * 2) % 1) : 0; c.fillStyle = k === 2 ? '#ff9af0' : 'rgba(200,240,255,.75)'; c.fillRect(fw * .16, fh * (.22 + k * .13), w, 1.1); } } };
   LIVE.sh_scr2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .14, fw * .84, fh * .72, PANEL); K.scrMap(c, fw * .1, fh * .18, fw * .8, fh * .64, t); } };
-  // ---------- аналітика й маркетинг ----------
-  LIVE.an_booth = { every: 3, draw(c, fw, fh, t, B) {
-    const L = Rr(Fd(B, 0), fw, fh), R2 = Rr(Fd(B, 2), fw, fh);
-    if (L) { glass(c, L[0] + L[2] * .06, L[1] + L[3] * .2, L[2] * .88, L[3] * .62, PANEL); bars(c, L[0] + L[2] * .08, L[1] + L[3] * .22, L[2] * .84, L[3] * .58, 6, 2 + t * .25); }
-    if (R2) { glass(c, R2[0] + R2[2] * .06, R2[1] + R2[3] * .18, R2[2] * .88, R2[3] * .36, PANEL); lineChart(c, R2[0] + R2[2] * .08, R2[1] + R2[3] * .2, R2[2] * .84, R2[3] * .32, 1.3 + t * .4);
-      const a = t * .6; c.save(); c.translate(R2[0] + R2[2] * .3, R2[1] + R2[3] * .72); c.rotate(a); donut(c, 0, 0, R2[3] * .17, [[72, '#3be8ff'], [28, '#ff4fd8']]); c.restore(); }
-  } };
+  // ---------- маркетинг (монітори попередньої спроби, --preset v1); аналітика й інструменти — objects/an_paint.js, tl_paint.js ----------
   LIVE.mk_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .14, fw * .76, fh * .7, PANEL); const o = (t * .5) % 1;
     for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
-  LIVE.an_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .2, fw * .76, fh * .6, PANEL); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9 + t * .5); } };
-  LIVE.an_scr2 = LIVE.an_scr; LIVE.mk_scr2 = LIVE.mk_scr;
+  LIVE.mk_scr2 = LIVE.mk_scr;
   // ---------- праве крило ----------
   LIVE.hub = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .085, fh * .27, fw * .62, fh * .385, PANEL); K.scrMap(c, fw * .09, fh * .28, fw * .6, fh * .36, t, { hot: ['kyiv', 'warsaw', 'amsterdam'] });
     glass(c, fw * .065, fh * .775, fw * .87, fh * .15, { r: .6, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .01 }); lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6 + t * .8, '#ff4fd8', 'rgba(255,80,220,.15)');
     c.fillStyle = Math.sin(t * 3) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(fw * .08, fh * .72, 2, 2); } };
   LIVE.ws_term = { every: 4, draw(c, fw, fh, t) { const y = fh * .42, h = fh * .24; glass(c, fw * .14, y, fw * .72, h, { r: 1 }); logLines(c, fw * .16, y + h * .08, fw * .68, h * .84, t, 5); } };
-  LIVE.tl_tiles = { every: 3, draw(c, fw, fh, t) { const k = Math.floor(t * .8) % 3, f = (t * .8) % 1, x = fw * (.03 + k * .325); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,240,255,${.28 * Math.sin(f * Math.PI)})`; c.fillRect(x, fh * .08, fw * .3, fh * .84);
-    c.fillStyle = '#3bff8a'; c.fillRect(x + fw * .24, fh * .12, 2, 2); c.restore(); } };
-  LIVE.tl_tileBR = { every: 3, draw(c, fw, fh, t) { const P = [[.2, .4], [.5, .3], [.8, .45], [.35, .75], [.68, .78]], E2 = [[0, 1], [1, 2], [0, 3], [1, 4], [3, 4], [2, 4]];
-    E2.forEach(([a, b], k) => { const ph = (t * .7 + k * .23) % 1, x = (P[a][0] + (P[b][0] - P[a][0]) * ph) * fw, y = (P[a][1] + (P[b][1] - P[a][1]) * ph) * fh; c.fillStyle = k % 2 ? '#ff9af0' : '#e8feff'; c.fillRect(x - .9, y - .9, 1.8, 1.8); }); } };
   LIVE.pt_back = { every: 2, draw(c, fw, fh, t, B) {
     const d = (B.deco || [])[0], [x0, y0, w, h] = d ? Rr(d.f, fw, fh) : [0, 0, fw, fh], x1 = x0 + w, y1 = y0 + h, sp = (d ? d.spring : .3) * fh, cx = (x0 + x1) / 2, rx = w / 2;
     const arch = () => { c.beginPath(); c.moveTo(x0 + 1.4, y1); c.lineTo(x0 + 1.4, sp); c.ellipse(cx, sp, rx - 1.4, sp - y0 - 1.4, 0, Math.PI, 0); c.lineTo(x1 - 1.4, y1); c.closePath(); };
@@ -5253,11 +5270,12 @@ NX.arc = NX.arc || {};
   /** Щокадру: оновити (вразбіг) і покласти живі грані крила side. */                 // і грані з парним every (2, 4) на непарних місцях не оновлювались би ніколи
   NX.arc.live = (c, side, S, t) => {
     if (!S.live) return; const fr = FR[side] = (FR[side] || 0) + 1;
-    const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);
+    const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
     S.live.forEach((E, n) => {
+      if (E.mask.x > vx1 || E.mask.x + E.mask.w < vx0) { E.off = true; return; }                       // поза екраном (телефон бачить ~третину кімнати) — не оновлюємо й не кладемо
       if (!E.q) { const Fc = E.Fc; E.q = [proj(Fc.O), proj(addv(Fc.O, Fc.A)), proj(addv(addv(Fc.O, Fc.A), Fc.B)), proj(addv(Fc.O, Fc.B))]; E.TS = Math.min(4, Math.max(2, Rd * 1.2)); }
-      if (!E.out || E.Rd !== Rd || (fr + n) % (LIVE[E.id].every || 3) === 0) update(E, t, Rd);
-      if (!E.empty) c.drawImage(E.out, E.mask.x, E.mask.y, E.mask.w, E.mask.h);
+      if (!E.out || E.off || E.Rd !== Rd || (fr + n) % (LIVE[E.id].every || 3) === 0) update(E, t, Rd);   // щойно повернулась на екран — одразу свіжа
+      E.off = false; if (!E.empty) c.drawImage(E.out, E.mask.x, E.mask.y, E.mask.w, E.mask.h);
     });
   };
 })();
@@ -5714,6 +5732,386 @@ NX.arc = NX.arc || {};
 })();
 
 </script>      <!-- маркетинг: стіл, будка з утопленим голо-екраном, проєктори -->
+<script>
+/* ---- js/objects/an_paint.js ---- */
+/* ============================================================================
+ * objects/an_paint.js — АНАЛІТИКА: МАЛЮНКИ ГРАНЕЙ І ЖИВІ ЕКРАНИ
+ * ----------------------------------------------------------------------------
+ * Розкладка частин — tools/wingbox/gen_room.py: analytics() (id an_*). Тут — як виглядають їхні грані (NX.arc.paint[id], пласкі
+ * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id] — лише те, що рухається). Крок 5 (29.10): лише стіл
+ * і екрани («спершу лише столи й екрани, без дрібних елементів»); крісло, ноутбук і Nexi за роботою — наступним кроком.
+ *   an_desk    — стіл: блакитна неонова кромка, тумби з шухлядами на обох кінцях, посередині — утоплена панель з голо-стрічкою
+ *                ПРОДАЖІ (графік біжить, ▲ відсоток) і ґраткою, що «дихає»
+ *   an_cap     — шапка рамки (вивіска — an_sign, arc_paint.js): ґратки й світлодіоди обабіч вивіски
+ *   an_bpL/R   — стовпи рамки: колонка світлодіодів (вогник біжить), внутрішні грані — блакитне світло; an_mid — між екранами
+ *   an_bb      — нижня полиця рамки (над столом видно смужку зі світлодіодами)
+ *   an_scrL    — голо-екран ВІДВІДУВАЧІ: лічильник за сьогодні, стовпчики по днях тижня (сьогоднішній росте), частки мов
+ *   an_scrR    — голо-екран ВИРУЧКА: тренд (лінія з заливкою біжить, курсор із підказкою), «пончик» КОНВЕРСІЯ з легендою
+ * Поверх обох екранів — скан-лінія CRT, відблиск по склу й зрідка короткий глітч (як у маркетингу, але спокійніше).
+ * Коли Nexi працює в зоні (живий об'єкт аналітики — наступний крок: NX.objects.analytics.active), дані біжать швидше.
+ * Усі написи — NX.t (4 мови), числа — NX.num (десятковий знак мови).
+ * ========================================================================== */
+(() => {
+  const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k);
+  const { glass, icon, rr, drawer, inset, bolt, led, vent, innerLight } = T;
+  const AN = () => NX.objects.analytics || {};                                                              // живий об'єкт зони (наступний крок)
+  const DESK_X0 = 272, DESK_W = 254, U = X => (X - DESK_X0) / DESK_W;                                       // частка ширини стола з px картинки
+  const CY = '#3be8ff', PK = '#ff4fd8', GR = '#3bff8a', GO = '#ffd27a';
+  const PANEL = { r: .8, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .45 };
+  /** Плавний «шум» ряду даних: сума синусоїд + трохи випадковості (n — номер точки). */
+  const wave = (n, s = 0) => .5 + .22 * Math.sin(n * .55 + s) + .14 * Math.sin(n * 1.37 + 1 + s * 2) + .08 * (hash(n, 3 + s) - .5);
+
+  // ---------- СТІЛ ----------
+  /** Фасад стола: блакитна неонова кромка з глянцевою губою, тумби з шухлядами на обох кінцях (ручки, LED), посередині —
+   *  утоплена панель: голо-стрічка ПРОДАЖІ (графік — живе) і ґратка-еквалайзер. Світлої смуги знизу немає (як у маркетингу). */
+  PAINT.an_desk = (c, fw, fh) => {
+    c.fillStyle = 'rgba(200,250,255,.22)'; c.fillRect(0, 0, fw, fh * .035); A.neon(c, 0, fh * .07, fw, fh * .07, CY, 1.5);
+    c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(0, fh * .11, fw, fh * .025);
+    [[279, 323], [475, 519]].forEach(([a, b], s) => {                                                             // тумби з шухлядами
+      const x = fw * U(a), w = fw * (U(b) - U(a)); inset(c, x - 1, fh * .16, w + 2, fh * .76, 'rgba(4,2,14,.65)');
+      for (let k = 0; k < 3; k++) drawer(c, x, fh * (.18 + k * .245), w, fh * .225, { led: k === 0 ? (s ? PK : GR) : null, a: '#24205e', b: '#141040' });
+    });
+    const x0 = fw * U(333), x1 = fw * U(465), w = x1 - x0; inset(c, x0, fh * .2, w, fh * .66, 'rgba(4,2,16,.75)', 1.2);   // середня панель
+    glass(c, x0 + 2, fh * .25, w - 4, fh * .3, { r: .8, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .5 });
+    for (let k = 0; k < 15; k++) { const x = x0 + 3 + k * (w - 6) / 14; c.fillStyle = '#03020a'; c.fillRect(x - .55, fh * .62, 1.1, fh * .18); c.fillStyle = 'rgba(59,232,255,.3)'; c.fillRect(x - .25, fh * .64, .5, fh * .14); }   // ґратка
+    [x0 + 1.6, x1 - 1.6].forEach(x => { bolt(c, x, fh * .24); bolt(c, x, fh * .82); });
+  };
+  /** Живе на столі: голо-стрічка ПРОДАЖІ — графік біжить ліворуч, крапка на кінці, ▲ відсоток; ґратка «дихає» еквалайзером. */
+  LIVE.an_desk = { every: 3, draw(c, fw, fh, t) {
+    const x0 = fw * U(333) + 2, x1 = fw * U(465) - 2, w = x1 - x0, y = fh * .25, h = fh * .3, sp = AN().active ? 4 : 1.6;
+    glass(c, x0, y, w, h, { r: .8, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .5 });
+    A.txt(c, t_('scene.analytics.sales'), x0 + 1.4, y + h * .27, w * .32, h * .3, '#bff8ff', { align: 'left' });
+    const gx0 = x0 + w * .02, gx1 = x0 + w * .7, step = 2.4, n0 = Math.floor(t * sp), f = t * sp - n0, pts = [];
+    for (let k = 0; ; k++) { const x = gx1 - (k - f) * step; if (x < gx0 - step) break; pts.push([Math.max(gx0, Math.min(gx1, x)), y + h * (.92 - .55 * wave(n0 - k, 1))]); }
+    c.save(); c.beginPath(); c.rect(gx0, y + h * .45, gx1 - gx0, h * .55); c.clip();
+    c.beginPath(); c.moveTo(pts[0][0], y + h); pts.forEach(p => c.lineTo(p[0], p[1] + h * .28)); c.lineTo(pts[pts.length - 1][0], y + h); c.closePath(); c.fillStyle = 'rgba(59,232,255,.18)'; c.fill();
+    c.strokeStyle = '#7af4ff'; c.lineWidth = .55; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1] + h * .28) : c.moveTo(p[0], p[1] + h * .28)); c.stroke(); c.restore();
+    c.fillStyle = '#ffffff'; c.fillRect(pts[0][0] - .6, pts[0][1] + h * .28 - .6, 1.2, 1.2);
+    const pct = 12 + 6 * wave(n0, 4); c.fillStyle = GR; c.beginPath(); c.moveTo(x0 + w * .74, y + h * .66); c.lineTo(x0 + w * .775, y + h * .36); c.lineTo(x0 + w * .81, y + h * .66); c.fill();   // ▲
+    A.txt(c, '+' + NX.num(pct, 1) + '%', x0 + w * .825, y + h * .52, w * .155, h * .36, '#b8ffd2', { align: 'left' });
+    const x0g = fw * U(333), wg = fw * U(465) - x0g; c.save(); c.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 15; k++) { const v = .35 + .65 * Math.abs(Math.sin(t * (2.2 + k * .13) + k)); c.fillStyle = `rgba(59,232,255,${v * .5})`; c.fillRect(x0g + 3 + k * (wg - 6) / 14 - .25, fh * (.64 + .14 * (1 - v)), .5, fh * .14 * v); }
+    c.restore();
+  } };
+
+  // ---------- РАМКА: шапка, стовпи, стовпчик, полиця ----------
+  /** Шапка рамки (посередині — вивіска an_sign): ґратки й світлодіоди на краях, заклепки. */
+  PAINT.an_cap = (c, fw, fh) => {
+    [[.012, .052], [.948, .988]].forEach(([a, b]) => vent(c, fw * a, fh * .3, fw * (b - a), fh * .44, 4));
+    [.065, .935].forEach((f, s) => { for (let k = 0; k < 3; k++) led(c, fw * f, fh * (.32 + k * .19), [GR, CY, PK][(k + s) % 3], .55); });
+    [.03, .97].forEach(f => { bolt(c, fw * f, fh * .14); bolt(c, fw * f, fh * .86); });
+  };
+  /** Шапка живе: світлодіоди обабіч вивіски перемигуються («йдуть дані»). */
+  LIVE.an_cap = { every: 4, draw(c, fw, fh, t) {
+    [.065, .935].forEach((f, s) => { const k = Math.floor(t * (AN().active ? 6 : 3) + s * 2) % 3; led(c, fw * f, fh * (.32 + k * .19), '#ffffff', .55); });
+  } };
+  /** Стовп рамки спереду: колонка світлодіодів, заклепки, ґратка внизу (за столом її не видно — лише верх). */
+  const pillar = (c, fw, fh) => { for (let k = 0; k < 9; k++) led(c, fw / 2, fh * (.05 + k * .045), k % 4 ? CY : PK, .5); bolt(c, fw / 2, fh * .015 + .9); };
+  const inner = (c, fw, fh) => innerLight(c, fw, fh, '59,232,255', '#b8f8ff');
+  PAINT.an_bpL = pillar; PAINT.an_bpL.sides = { right: inner };
+  PAINT.an_bpR = (c, fw, fh) => pillar(c, fw, fh); PAINT.an_bpR.sides = { left: inner };
+  PAINT.an_mid = (c, fw, fh) => { for (let k = 0; k < 6; k++) led(c, fw / 2, fh * (.1 + k * .16), k % 2 ? CY : '#9a8cff', .45); };
+  PAINT.an_mid.sides = { left: inner, right: inner };
+  /** Стовпи живуть: вогник біжить колоною світлодіодів (лівий угору, правий униз), за ним хвіст. */
+  const pillarLive = dir => ({ every: 4, draw(c, fw, fh, t) {
+    const n = 9, on = ((Math.floor(t * 8) * -dir) % n + n) % n;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < n; k++) { const d = (k - on + n) % n, a = dir > 0 ? [1, .55, .25][d] : [1, .55, .25][(n - d) % n]; if (!a) continue;
+      c.fillStyle = k % 4 ? `rgba(160,250,255,${a})` : `rgba(255,170,240,${a})`; c.beginPath(); c.arc(fw / 2, fh * (.05 + k * .045), .85, 0, 7); c.fill(); }
+    c.restore();
+  } });
+  LIVE.an_bpL = pillarLive(1); LIVE.an_bpR = pillarLive(-1);
+  /** Нижня полиця: над столом видно смужку — неонова кромка й ряд світлодіодів; верх світиться. */
+  PAINT.an_bb = (c, fw, fh) => { A.neon(c, fw * .02, fh * .04, fw * .98, fh * .04, CY, 1); for (let k = 0; k < 12; k++) led(c, fw * (.08 + k * .076), fh * .16, k % 5 === 2 ? PK : '#1a8ab0', .45); };
+  PAINT.an_bb.sides = { top: (c, fw, fh) => { c.fillStyle = 'rgba(59,232,255,.22)'; c.fillRect(0, 0, fw, fh * .35); } };
+  LIVE.an_sign = NX.arc.glint(7.4, 2.1);                                                                   // відблиск по вивісці (не разом з маркетингом)
+
+  // ---------- ГОЛО-ЕКРАНИ ----------
+  /** Основа екрана: темна рамка, скло, шапка з назвою, ● НАЖИВО / іконка праворуч (нерухоме; вміст — живий). */
+  function screenBase(c, fw, fh, title, ic) {
+    c.fillStyle = '#040a2a'; c.fillRect(0, 0, fw, fh);
+    glass(c, .8, .8, fw - 1.6, fh - 1.6, { r: 1.6, a: '#0f3a9e', b: '#0a2676', c: '#061a52', line: CY, lw: .8 });
+    A.txt(c, title, fw * .5, fh * .085, fw * .62, fh * .05, '#e8feff', { glow: CY });
+    c.fillStyle = 'rgba(150,230,255,.4)'; c.fillRect(fw * .06, fh * .15, fw * .88, .35);
+    icon(c, ic, fw * .9, fh * .085, fh * .055, 'rgba(190,240,255,.85)');
+    c.fillStyle = '#ff3b5c'; c.beginPath(); c.arc(fw * .09, fh * .085, fh * .016, 0, 7); c.fill();
+  }
+  /** Поверх екрана: блимає ●, смуга CRT, відблиск по склу, пульс рамки, зрідка — коротке мерехтіння й глітч. */
+  function fx(c, fw, fh, t, seed) {
+    if (Math.sin(t * 5 + seed) > 0) { c.fillStyle = '#ffd0da'; c.beginPath(); c.arc(fw * .09, fh * .085, fh * .01, 0, 7); c.fill(); }
+    c.save(); c.globalCompositeOperation = 'lighter';
+    const ry = (((t + seed) * .12) % 1.3 - .15) * fh, g = c.createLinearGradient(0, ry - fh * .08, 0, ry + fh * .08);
+    g.addColorStop(0, 'rgba(150,230,255,0)'); g.addColorStop(.5, 'rgba(150,230,255,.08)'); g.addColorStop(1, 'rgba(150,230,255,0)'); c.fillStyle = g; c.fillRect(0, ry - fh * .08, fw, fh * .16);
+    const sk = ((t + seed * 2) % 7.1) / 1.2; if (sk < 1) { const x = -fw * .3 + sk * fw * 1.6, g2 = c.createLinearGradient(x - fw * .12, 0, x + fw * .12, 0);
+      g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, 'rgba(220,245,255,.13)'); g2.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g2;
+      c.beginPath(); c.moveTo(x - fw * .06, 0); c.lineTo(x + fw * .12, 0); c.lineTo(x + fw * .02, fh); c.lineTo(x - fw * .16, fh); c.closePath(); c.fill(); }
+    c.strokeStyle = `rgba(120,240,255,${.18 + .2 * Math.sin(t * 2 + seed)})`; c.lineWidth = .8; c.strokeRect(1.3, 1.3, fw - 2.6, fh - 2.6);
+    c.restore();
+    const burst = ((t + seed * 3) % 9.7) < .4, f8 = Math.floor(t * 9);
+    if (burst && hash(Math.floor(t * 14), 3 + seed) > .4) { c.fillStyle = 'rgba(4,8,30,.22)'; c.fillRect(0, 0, fw, fh); }
+    if (burst || hash(f8, 17 + seed) > .965) {
+      for (let b = 0; b < (burst ? 2 : 1); b++) { const y = fh * (.15 + .75 * hash(f8 + b * 13, 5 + seed)), h = fh * (.015 + .03 * hash(b, f8)), dx = (hash(b * 3, f8) - .5) * fw * .05;
+        c.fillStyle = 'rgba(255,80,220,.38)'; c.fillRect(dx - .7, y, fw, h * .5); c.fillStyle = 'rgba(80,230,255,.38)'; c.fillRect(dx + .7, y + h * .5, fw, h * .5); }
+    }
+  }
+
+  // ВІДВІДУВАЧІ: лічильник за сьогодні, стовпчики по днях (сьогодні — ПТ, росте), частки мов
+  const L1 = { cnt: [.06, .19, .88, .17], bars: [.08, .42, .84, .33], lang: [.06, .86, .88, .09] };   // частки грані: x, y, w, h
+  const RR = (f, fw, fh) => [f[0] * fw, f[1] * fh, f[2] * fw, f[3] * fh];
+  const DAYV = [.52, .64, .58, .74, .5, .34, .3], TODAY = 4;                                                    // дні тижня (ПТ — сьогодні)
+  const LANG = [['UA', .38, CY], ['PL', .27, PK], ['NL', .2, '#9a8cff'], ['EN', .15, GO]];
+  PAINT.an_scrL = (c, fw, fh) => {
+    screenBase(c, fw, fh, t_('scene.analytics.visitors'), 'user');
+    const [cx, cy, cw, ch] = RR(L1.cnt, fw, fh); glass(c, cx, cy, cw, ch, PANEL);
+    A.txt(c, t_('scene.analytics.today'), cx + cw * .05, cy + ch * .28, cw * .5, ch * .22, 'rgba(200,240,255,.85)', { align: 'left' });
+    const [bx, by, bw, bh] = RR(L1.bars, fw, fh); glass(c, bx - fw * .02, by - fh * .05, bw + fw * .04, bh + fh * .14, PANEL);
+    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.13)'; c.fillRect(bx, by + bh * k / 4, bw, .3); }   // сітка
+    const days = NX.t('scene.analytics.days'); (Array.isArray(days) ? days : []).forEach((d, k) => A.txt(c, d, bx + bw * (k + .5) / 7, by + bh + fh * .045, bw / 7 * .9, fh * .03, k === TODAY ? '#e8feff' : 'rgba(170,220,255,.7)'));
+    const [lx, ly, lw, lh] = RR(L1.lang, fw, fh); let x = lx;
+    LANG.forEach(([code, v, col]) => { const w = lw * v; c.fillStyle = col; rr(c, x + .3, ly + lh * .55, w - .6, lh * .35, .3); c.fill(); A.txt(c, code, x + w / 2, ly + lh * .2, w * .9, lh * .36, 'rgba(225,245,255,.9)'); x += w; });
+  };
+  LIVE.an_scrL = { every: 3, draw(c, fw, fh, t) {
+    const act = AN().active, [cx, cy, cw, ch] = RR(L1.cnt, fw, fh);
+    const v = 12400 + t * (act ? 9 : 3.2); c.fillStyle = 'rgba(8,24,80,.96)'; c.fillRect(cx + cw * .04, cy + ch * .48, cw * .92, ch * .44);
+    A.txt(c, NX.num(v / 1000, 1) + ' ' + t_('scene.unit.k'), cx + cw * .05, cy + ch * .7, cw * .62, ch * .34, '#e8feff', { align: 'left' });
+    for (let k = 0; k < 9; k++) { const h = ch * .32 * (.3 + .7 * wave(Math.floor(t * 2) + k, 2)); c.fillStyle = k === 8 ? '#ffffff' : 'rgba(59,232,255,.75)'; c.fillRect(cx + cw * (.68 + k * .033), cy + ch * .9 - h, cw * .022, h); }   // міні-графік
+    const [bx, by, bw, bh] = RR(L1.bars, fw, fh), grow = (t * (act ? .5 : .18)) % 1;
+    c.fillStyle = 'rgba(10,30,100,.92)'; c.fillRect(bx, by, bw, bh);
+    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.13)'; c.fillRect(bx, by + bh * k / 4, bw, .3); }
+    DAYV.forEach((dv, k) => {
+      const today = k === TODAY, h = bh * (today ? .2 + .78 * (1 - Math.pow(1 - grow, 2)) : dv * (.96 + .04 * Math.sin(t * 1.5 + k))), x = bx + bw * (k + .18) / 7, w = bw / 7 * .64, y = by + bh - h;
+      const g = c.createLinearGradient(0, y, 0, by + bh); g.addColorStop(0, today ? '#ffe4fa' : '#e8feff'); g.addColorStop(.2, today ? '#ff7ad0' : '#5ae8ff'); g.addColorStop(1, today ? '#7a1a8a' : '#1a5ad0');
+      c.fillStyle = g; c.fillRect(x, y, w, h); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x, y, w, Math.min(.7, h));
+      if (today) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,120,230,${.25 + .25 * Math.sin(t * 6)})`; c.fillRect(x - .5, y - .5, w + 1, h + .5); c.restore(); }
+    });
+    c.fillStyle = 'rgba(120,230,255,.6)'; c.fillRect(bx, by + bh, bw, .45);
+    fx(c, fw, fh, t, 0);
+  } };
+
+  // ВИРУЧКА: тренд (лінія з заливкою біжить, курсор із підказкою) + «пончик» КОНВЕРСІЯ з легендою
+  const R1 = { chart: [.06, .2, .88, .4], conv: [.06, .66, .88, .28] };
+  PAINT.an_scrR = (c, fw, fh) => {
+    screenBase(c, fw, fh, t_('scene.analytics.revenue'), 'chart');
+    const [gx, gy, gw, gh] = RR(R1.chart, fw, fh); glass(c, gx, gy, gw, gh, PANEL);
+    const [vx, vy, vw, vh] = RR(R1.conv, fw, fh); glass(c, vx, vy, vw, vh, PANEL);
+    A.txt(c, t_('scene.analytics.conv'), vx + vw * .66, vy + vh * .17, vw * .6, vh * .14, '#e8feff', { glow: CY });
+    [['UA', CY], ['PL', PK], ['NL', '#9a8cff']].forEach(([s, col], k) => { const y = vy + vh * (.42 + k * .19); c.fillStyle = col; c.fillRect(vx + vw * .4, y - .7, 1.6, 1.4); A.txt(c, s, vx + vw * .47, y, vw * .1, vh * .11, 'rgba(210,240,255,.85)', { align: 'left' }); });
+  };
+  LIVE.an_scrR = { every: 3, draw(c, fw, fh, t) {
+    const act = AN().active, [gx, gy, gw, gh] = RR(R1.chart, fw, fh), sp = act ? 3.2 : 1.2;
+    glass(c, gx + .6, gy + .6, gw - 1.2, gh - 1.2, { r: .6, a: '#10348e', b: '#0b276e', c: '#081c52', lw: .01 });
+    for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(150,220,255,.12)'; c.fillRect(gx + 1, gy + gh * k / 4, gw - 2, .3); }
+    // лінія тренду: хвилі виручки з коливаннями, біжить ліворуч
+    const step = gw / 16, n0 = Math.floor(t * sp), f = t * sp - n0, P = [];
+    for (let k = -1; k <= 17; k++) { const n = n0 + k, x = gx + (k - f) * step, v = Math.max(.12, Math.min(.94, .5 + .24 * Math.sin(n * .11) + .34 * (wave(n, 5) - .5))); P.push([x, gy + gh * (.92 - .78 * v)]); }
+    c.save(); c.beginPath(); c.rect(gx + 1, gy + 1, gw - 2, gh - 2); c.clip();
+    c.beginPath(); c.moveTo(P[0][0], gy + gh); P.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(P[P.length - 1][0], gy + gh); c.closePath();
+    const g = c.createLinearGradient(0, gy, 0, gy + gh); g.addColorStop(0, 'rgba(255,90,220,.38)'); g.addColorStop(1, 'rgba(255,90,220,0)'); c.fillStyle = g; c.fill();
+    c.strokeStyle = '#ff9af0'; c.lineWidth = .7; c.beginPath(); P.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
+    // курсор: ходить туди-сюди, крапка на лінії й підказка з сумою
+    const cu = .25 + .5 * (.5 + .5 * Math.sin(t * .7)), cxp = gx + gw * cu, ki = Math.max(0, Math.min(P.length - 2, Math.floor((cxp - P[0][0]) / step))), q = (cxp - P[ki][0]) / step, cyp = P[ki][1] + (P[ki + 1][1] - P[ki][1]) * q;
+    c.fillStyle = 'rgba(220,250,255,.5)'; for (let y = gy + 2; y < gy + gh - 1; y += 2) c.fillRect(cxp - .15, y, .3, 1);
+    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(cxp, cyp, 1.1, 0, 7); c.fill(); c.strokeStyle = PK; c.lineWidth = .4; c.beginPath(); c.arc(cxp, cyp, 1.9, 0, 7); c.stroke();
+    const tw = gw * .3, th = gh * .2, tx = Math.min(gx + gw - tw - 1, cxp + 2.4), ty = Math.max(gy + 1, cyp - th - 2.4);
+    c.fillStyle = 'rgba(20,56,160,.95)'; rr(c, tx, ty, tw, th, .6); c.fill(); c.strokeStyle = 'rgba(160,240,255,.8)'; c.lineWidth = .3; rr(c, tx, ty, tw, th, .6); c.stroke();
+    A.txt(c, NX.num(28 + 44 * (1 - (cyp - gy) / gh), 1) + ' ' + t_('scene.unit.k'), tx + tw / 2, ty + th * .55, tw * .86, th * .6, '#e8feff');
+    c.restore();
+    const pct = 18 + 4 * Math.sin(t * .4); c.fillStyle = GR; c.beginPath(); c.moveTo(gx + gw * .06, gy + gh * .2); c.lineTo(gx + gw * .1, gy + gh * .06); c.lineTo(gx + gw * .14, gy + gh * .2); c.fill();
+    A.txt(c, '+' + NX.num(pct, 1) + '%', gx + gw * .16, gy + gh * .13, gw * .3, gh * .14, '#b8ffd2', { align: 'left' });
+    // «пончик» конверсії: сегменти «дихають», стрілка повертається
+    const [vx, vy, vw, vh] = RR(R1.conv, fw, fh), dcx = vx + vw * .2, dcy = vy + vh * .55, r = Math.min(vw * .17, vh * .4), conv = 3.4 + .4 * Math.sin(t * .5);
+    c.fillStyle = 'rgba(10,28,90,.96)'; c.beginPath(); c.arc(dcx, dcy, r * 1.08, 0, 7); c.fill();
+    let a = -Math.PI / 2 + t * .25; [[44, CY], [33, PK], [23, '#9a8cff']].forEach(([v2, col], k) => { const b = a + v2 / 100 * Math.PI * 2 * (.97 + .03 * Math.sin(t * 2 + k)); c.strokeStyle = col; c.lineWidth = r * .38; c.beginPath(); c.arc(dcx, dcy, r * .78, a + .05, b - .05); c.stroke(); a = b; });
+    c.fillStyle = '#0a1a50'; c.beginPath(); c.arc(dcx, dcy, r * .56, 0, 7); c.fill();
+    A.txt(c, NX.num(conv, 1) + '%', dcx, dcy, r * 1.05, r * .38, '#e8feff');
+    const lw = vw * .36; [.44, .33, .23].forEach((v2, k) => { const y = vy + vh * (.42 + k * .19); c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(vx + vw * .58, y - .7, lw, 1.4); c.fillStyle = [CY, PK, '#9a8cff'][k]; c.fillRect(vx + vw * .58, y - .7, lw * v2 * (1.6 + .15 * Math.sin(t * 1.3 + k)), 1.4); });
+    fx(c, fw, fh, t, 3.3);
+  } };
+})();
+
+</script>      <!-- аналітика: стіл, рамка з двома голо-екранами (відвідувачі, виручка) -->
+<script>
+/* ---- js/objects/tl_paint.js ---- */
+/* ============================================================================
+ * objects/tl_paint.js — ІНСТРУМЕНТИ: МАЛЮНКИ ГРАНЕЙ І ЖИВІ ЕКРАНИ
+ * ----------------------------------------------------------------------------
+ * Розкладка частин — tools/wingbox/gen_room.py: tools() (id tl_*). Тут — як виглядають їхні грані (NX.arc.paint[id], пласкі
+ * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id] — лише те, що рухається). Крок 5 (29.10): лише
+ * верстак і екрани («спершу лише столи й екрани, без дрібних елементів»); Nexi за роботою — наступним кроком.
+ *   tl_bench   — верстак: тепла помаранчева кромка (робоче світло), тумби з шухлядами інструментів на кінцях, посередині —
+ *                перфодошка з інструментами (ключ, викрутка, молоток, плоскогубці) і попереджувальні смужки
+ *   tl_cap     — шапка панелі (вивіска — tl_sign, arc_paint.js): ґратки й світлодіоди обабіч вивіски
+ *   tl_bpL/R   — стовпи панелі (колонка світлодіодів, внутрішні грані — блакитне світло); tl_mid — між нижніми екранами
+ *   tl_rail    — планка під плитками: неон і світлодіоди стану під кожною плиткою; tl_bb — низ панелі (смужка над верстаком)
+ *   tl_tiles   — ряд плиток інтеграцій ПОШТА · КАЛЕНДАР · CRM: по черзі «синхронізуються» (підсвітка, кружляє індикатор,
+ *                смужка прогресу, потім ✓), конверт вилітає, у календарі блимає день, у CRM додаються контакти
+ *   tl_scrL    — АВТО: потік автоматизації заявка -> AI -> CRM -> пошта (пакети біжать вузлами), лічильник ЗАЯВКИ
+ *   tl_scrR    — API: голограма двох шестерень у зачепленні й маніпулятора, що їх налаштовує (іскри), стан OK
+ * Коли Nexi працює в зоні (живий об'єкт інструментів — наступний крок: NX.objects.tools.active), усе біжить швидше.
+ * Усі написи — NX.t (4 мови): scene.tools.*; без перекладу — CRM, API, AI (правило словників).
+ * ========================================================================== */
+(() => {
+  const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k);
+  const { glass, icon, rr, drawer, inset, bolt, led, vent, innerLight } = T;
+  const TL = () => NX.objects.tools || {};                                                                  // живий об'єкт зони (наступний крок)
+  const BX0 = 1104, BW = 252, U = X => (X - BX0) / BW;                                                      // частка ширини верстака з px картинки
+  const CY = '#3be8ff', OR = '#ff9a3a', GR = '#3bff8a', PK = '#ff4fd8';
+  const PANEL = { r: .8, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .45 };
+  const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+
+  // ---------- ВЕРСТАК ----------
+  /** Інструменти на перфодошці (силуети з бліком, c — у координатах грані; s — довжина інструмента). */
+  function tool(c, kind, x, y, s, col = '#c8d0f0') {
+    c.save(); c.translate(x, y); c.fillStyle = col; const hi = 'rgba(255,255,255,.55)', dk = 'rgba(10,6,30,.6)';
+    if (kind === 'wrench') { c.rotate(-.5); c.fillRect(-s * .06, -s * .38, s * .12, s * .76); c.beginPath(); c.arc(0, -s * .42, s * .14, 0, 7); c.fill(); c.fillStyle = '#0a0620'; c.fillRect(-s * .05, -s * .6, s * .1, s * .16); c.fillStyle = col; c.beginPath(); c.arc(0, s * .42, s * .12, 0, 7); c.fill(); c.fillStyle = hi; c.fillRect(-s * .06, -s * .3, s * .04, s * .6); }
+    else if (kind === 'driver') { c.rotate(.12); c.fillStyle = OR; rr(c, -s * .08, -s * .5, s * .16, s * .38, s * .05); c.fill(); c.fillStyle = dk; c.fillRect(-s * .02, -s * .48, s * .04, s * .34); c.fillStyle = col; c.fillRect(-s * .025, -s * .12, s * .05, s * .58); c.fillStyle = hi; c.fillRect(-s * .025, -s * .1, s * .02, s * .5); }
+    else if (kind === 'hammer') { c.rotate(-.12); c.fillStyle = '#a05668'; c.fillRect(-s * .04, -s * .3, s * .08, s * .78); c.fillStyle = col; rr(c, -s * .22, -s * .46, s * .44, s * .17, s * .03); c.fill(); c.fillStyle = hi; c.fillRect(-s * .2, -s * .45, s * .4, s * .04); }
+    else { c.rotate(.35); c.fillStyle = col; c.fillRect(-s * .1, -s * .45, s * .07, s * .34); c.fillRect(s * .03, -s * .45, s * .07, s * .34); c.beginPath(); c.arc(0, -s * .1, s * .08, 0, 7); c.fill();
+      c.fillStyle = PK; c.fillRect(-s * .12, -s * .06, s * .08, s * .5); c.fillRect(s * .04, -s * .06, s * .08, s * .5); c.fillStyle = hi; c.fillRect(-s * .1, -s * .44, s * .02, s * .3); }   // плоскогубці
+    c.restore();
+  }
+  /** Попереджувальні смужки (жовто-чорні). */
+  function hazard(c, x, y, w, h) { c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.fillStyle = '#e8b82a'; c.fillRect(x, y, w, h); c.fillStyle = '#1a1020'; for (let k = -2; k < w / h + 2; k++) { const xx = x + k * h * 1.2; c.beginPath(); c.moveTo(xx, y + h); c.lineTo(xx + h * .6, y + h); c.lineTo(xx + h * 1.2, y); c.lineTo(xx + h * .6, y); c.fill(); } c.restore(); }
+  /** Фасад верстака: тепла помаранчева кромка (робоче світло), тумби з шухлядами на кінцях (помаранчеві LED), посередині —
+   *  перфодошка з інструментами на гачках, унизу — попереджувальні смужки. */
+  PAINT.tl_bench = (c, fw, fh) => {
+    c.fillStyle = 'rgba(255,220,170,.25)'; c.fillRect(0, 0, fw, fh * .04); A.neon(c, 0, fh * .08, fw, fh * .08, OR, 1.5);
+    c.fillStyle = 'rgba(0,0,0,.42)'; c.fillRect(0, fh * .12, fw, fh * .03);
+    [[1111, 1157], [1303, 1349]].forEach(([a, b], s) => {                                                         // тумби з шухлядами
+      const x = fw * U(a), w = fw * (U(b) - U(a)); inset(c, x - 1, fh * .17, w + 2, fh * .76, 'rgba(4,2,14,.65)');
+      for (let k = 0; k < 3; k++) drawer(c, x, fh * (.19 + k * .245), w, fh * .225, { led: k === 0 ? (s ? CY : OR) : null, a: '#262060', b: '#151040' });
+    });
+    const x0 = fw * U(1165), x1 = fw * U(1295), w = x1 - x0; inset(c, x0, fh * .19, w, fh * .7, 'rgba(6,4,22,.85)', 1.2);   // перфодошка
+    for (let y = fh * .25; y < fh * .78; y += 2.6) for (let x = x0 + 2.2; x < x1 - 1.5; x += 2.6) { c.fillStyle = 'rgba(1,1,8,.95)'; c.fillRect(x, y, .75, .75); c.fillStyle = 'rgba(150,130,240,.22)'; c.fillRect(x + .2, y + .75, .55, .25); }
+    [['wrench', .14], ['driver', .33], ['hammer', .56], ['pliers', .8]].forEach(([k, f]) => tool(c, k, x0 + w * f, fh * .52, fh * .56, '#d0d8f8'));
+    hazard(c, x0 + 1, fh * .8, w * .18, fh * .06); hazard(c, x1 - 1 - w * .18, fh * .8, w * .18, fh * .06);
+    [x0 + 1.6, x1 - 1.6].forEach(x => { bolt(c, x, fh * .24); bolt(c, x, fh * .84); });
+  };
+  /** Верстак живе: робоче світло кромки ледь «дихає», на тумбах перемигуються світлодіоди. */
+  LIVE.tl_bench = { every: 4, draw(c, fw, fh, t) {
+    const p = .5 + .5 * Math.sin(t * 1.8); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,80,${.08 + .1 * p})`; c.fillRect(0, fh * .05, fw, fh * .06); c.restore();
+    [[1111, 1157], [1303, 1349]].forEach(([a, b], s) => { const x = fw * U(a), w = fw * (U(b) - U(a)), on = Math.floor(t * 2 + s) % 3; led(c, x + w - 2, fh * (.19 + on * .245) + 1.8, on ? '#ffffff' : (s ? CY : OR), .45); });
+  } };
+
+  // ---------- ПАНЕЛЬ: шапка, стовпи, планка, низ ----------
+  PAINT.tl_cap = (c, fw, fh) => {
+    [[.012, .052], [.948, .988]].forEach(([a, b]) => vent(c, fw * a, fh * .3, fw * (b - a), fh * .44, 4));
+    [.065, .935].forEach((f, s) => { for (let k = 0; k < 3; k++) led(c, fw * f, fh * (.32 + k * .19), [OR, CY, GR][(k + s) % 3], .55); });
+    [.03, .97].forEach(f => { bolt(c, fw * f, fh * .14); bolt(c, fw * f, fh * .86); });
+  };
+  LIVE.tl_cap = { every: 4, draw(c, fw, fh, t) { [.065, .935].forEach((f, s) => { const k = Math.floor(t * (TL().active ? 6 : 3) + s) % 3; led(c, fw * f, fh * (.32 + k * .19), '#ffffff', .55); }); } };
+  const pillar = (c, fw, fh) => { for (let k = 0; k < 9; k++) led(c, fw / 2, fh * (.05 + k * .045), k % 4 ? CY : OR, .5); bolt(c, fw / 2, fh * .015 + .9); };
+  const inner = (c, fw, fh) => innerLight(c, fw, fh, '59,232,255', '#b8f8ff');
+  PAINT.tl_bpL = pillar; PAINT.tl_bpL.sides = { right: inner };
+  PAINT.tl_bpR = (c, fw, fh) => pillar(c, fw, fh); PAINT.tl_bpR.sides = { left: inner };
+  PAINT.tl_mid = (c, fw, fh) => { for (let k = 0; k < 3; k++) led(c, fw / 2, fh * (.2 + k * .3), k === 1 ? OR : CY, .45); };
+  PAINT.tl_mid.sides = { left: inner, right: inner };
+  const pillarLive = dir => ({ every: 4, draw(c, fw, fh, t) {
+    const n = 9, on = ((Math.floor(t * 8) * -dir) % n + n) % n;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < n; k++) { const d = (k - on + n) % n, a = dir > 0 ? [1, .55, .25][d] : [1, .55, .25][(n - d) % n]; if (!a) continue;
+      c.fillStyle = k % 4 ? `rgba(160,250,255,${a})` : `rgba(255,200,140,${a})`; c.beginPath(); c.arc(fw / 2, fh * (.05 + k * .045), .85, 0, 7); c.fill(); }
+    c.restore();
+  } });
+  LIVE.tl_bpL = pillarLive(1); LIVE.tl_bpR = pillarLive(-1);
+  /** Планка під плитками: неонова кромка й світлодіоди стану під кожною плиткою (живі — колір стану синхронізації). */
+  PAINT.tl_rail = (c, fw, fh) => { A.neon(c, fw * .01, fh * .3, fw * .99, fh * .3, CY, .9); [1, 3, 5].forEach(k => led(c, fw * k / 6, fh * .66, '#1a8ab0', .5)); };
+  PAINT.tl_rail.sides = { top: (c, fw, fh) => { c.fillStyle = 'rgba(59,232,255,.2)'; c.fillRect(0, 0, fw, fh * .4); } };
+  PAINT.tl_bb = (c, fw, fh) => { A.neon(c, fw * .02, fh * .04, fw * .98, fh * .04, CY, 1); for (let k = 0; k < 12; k++) led(c, fw * (.08 + k * .076), fh * .14, k % 4 === 1 ? OR : '#1a8ab0', .45); };
+  PAINT.tl_bb.sides = { top: (c, fw, fh) => { c.fillStyle = 'rgba(59,232,255,.22)'; c.fillRect(0, 0, fw, fh * .35); } };
+  LIVE.tl_sign = NX.arc.glint(8.1, 4.4);                                                                   // відблиск по вивісці (не разом з іншими)
+
+  // ---------- ПЛИТКИ ІНТЕГРАЦІЙ ----------
+  const TILE = [['mail', 'scene.tools.mail', CY], ['cal', 'scene.tools.cal', '#9a8cff'], ['crm', 'scene.tools.crm', PK]];
+  const tileR = (k, fw, fh) => [fw * (.035 + k * .32), fh * .1, fw * .29, fh * .8];
+  /** Стан синхронізації: яка плитка зараз «підключається» і наскільки (k — номер, f — 0..1), коли Nexi працює — швидше. */
+  const syncAt = t => { const p = t * (TL().active ? .45 : .16), k = Math.floor(p) % 3; return { k, f: p - Math.floor(p) }; };
+  PAINT.tl_tiles = (c, fw, fh) => {
+    c.fillStyle = '#040a2a'; c.fillRect(0, 0, fw, fh); glass(c, .8, .8, fw - 1.6, fh - 1.6, { r: 1.4, a: '#0f3a9e', b: '#0a2676', c: '#061a52', line: CY, lw: .8 });
+    TILE.forEach(([ic, key, col], k) => { const [x, y, w, h] = tileR(k, fw, fh);
+      glass(c, x, y, w, h, { r: 1.2, line: col, a: '#163e9e', b: '#0d2a7a', c: '#091e5e', lw: .55 });
+      icon(c, ic, x + w / 2, y + h * .4, h * .42, col === PK ? '#ff9af0' : col === CY ? '#9af6ff' : '#c8bcff');
+      A.txt(c, t_(key), x + w / 2, y + h * .82, w * .86, h * .13, '#bff8ff'); });
+  };
+  LIVE.tl_tiles = { every: 3, draw(c, fw, fh, t) {
+    const { k: on, f } = syncAt(t);
+    TILE.forEach(([ic, key, col], k) => { const [x, y, w, h] = tileR(k, fw, fh), done = k < on || (k === on && f > .82);
+      const st = x + w - h * .14, sy = y + h * .14;                                                         // кружечок стану в куті
+      c.fillStyle = 'rgba(8,20,70,.95)'; c.beginPath(); c.arc(st, sy, h * .1, 0, 7); c.fill();
+      if (k === on && !done) {                                                                              // синхронізація: підсвітка, індикатор, смужка
+        c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,240,255,${.14 + .12 * Math.sin(t * 6)})`; rr(c, x, y, w, h, 1.2); c.fill(); c.restore();
+        c.strokeStyle = '#e8feff'; c.lineWidth = h * .035; c.beginPath(); c.arc(st, sy, h * .065, t * 6, t * 6 + 4.2); c.stroke();
+        const pw = w * .74; c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(x + w * .13, y + h * .64, pw, h * .045); c.fillStyle = col; c.fillRect(x + w * .13, y + h * .64, pw * ease(Math.min(1, f / .82)), h * .045);
+        if (ic === 'mail') { const q = (t * 1.4) % 1; c.globalAlpha = 1 - q; icon(c, 'mail', x + w * (.5 + q * .35), y + h * (.4 - q * .28), h * (.22 - q * .08), '#e8feff'); c.globalAlpha = 1; }
+      } else if (done) { c.strokeStyle = GR; c.lineWidth = h * .04; c.beginPath(); c.moveTo(st - h * .05, sy); c.lineTo(st - h * .01, sy + h * .04); c.lineTo(st + h * .06, sy - h * .045); c.stroke(); }
+      else { c.fillStyle = 'rgba(150,200,255,.35)'; c.beginPath(); c.arc(st, sy, h * .035, 0, 7); c.fill(); }
+      if (ic === 'cal' && Math.sin(t * 4) > 0) { c.fillStyle = '#ff9af0'; c.fillRect(x + w / 2 + h * .04, y + h * .44, h * .05, h * .05); }   // у календарі блимає день
+      if (ic === 'crm') { const n = 1240 + Math.floor(t * (TL().active ? 3 : .7)); c.fillStyle = 'rgba(8,24,80,.92)'; c.fillRect(x + w * .08, y + h * .03, w * .5, h * .14); A.txt(c, '+' + n, x + w * .1, y + h * .1, w * .46, h * .1, '#ffc4f0', { align: 'left' }); }
+    });
+  } };
+  // світлодіоди стану на планці під плитками: синій — чекає, кружляє білий — синхронізація, зелений — готово
+  LIVE.tl_rail = { every: 4, draw(c, fw, fh, t) { const { k: on, f } = syncAt(t); [1, 3, 5].forEach((q, k) => led(c, fw * q / 6, fh * .66, k < on || (k === on && f > .82) ? GR : k === on ? (Math.sin(t * 10) > 0 ? '#ffffff' : CY) : '#1a8ab0', .5)); } };
+
+  // ---------- НИЖНІ ЕКРАНИ ----------
+  function screenBase(c, fw, fh, title) {
+    c.fillStyle = '#040a2a'; c.fillRect(0, 0, fw, fh);
+    glass(c, .7, .7, fw - 1.4, fh - 1.4, { r: 1.2, a: '#0f3a9e', b: '#0a2676', c: '#061a52', line: CY, lw: .7 });
+    A.txt(c, title, fw * .5, fh * .13, fw * .5, fh * .09, '#e8feff', { glow: CY }); c.fillStyle = 'rgba(150,230,255,.4)'; c.fillRect(fw * .06, fh * .24, fw * .88, .3);
+  }
+  /** Скан-лінія й відблиск по склу; зрідка — короткий глітч. */
+  function fx(c, fw, fh, t, seed) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    const ry = (((t + seed) * .14) % 1.3 - .15) * fh, g = c.createLinearGradient(0, ry - fh * .1, 0, ry + fh * .1);
+    g.addColorStop(0, 'rgba(150,230,255,0)'); g.addColorStop(.5, 'rgba(150,230,255,.09)'); g.addColorStop(1, 'rgba(150,230,255,0)'); c.fillStyle = g; c.fillRect(0, ry - fh * .1, fw, fh * .2);
+    c.strokeStyle = `rgba(120,240,255,${.16 + .18 * Math.sin(t * 2.3 + seed)})`; c.lineWidth = .7; c.strokeRect(1.1, 1.1, fw - 2.2, fh - 2.2); c.restore();
+    const f8 = Math.floor(t * 9); if (((t + seed * 3) % 10.3) < .35 || hash(f8, 23 + seed) > .97) { const y = fh * (.25 + .65 * hash(f8, 5 + seed)), h = fh * .05;
+      c.fillStyle = 'rgba(255,80,220,.36)'; c.fillRect(-.7, y, fw, h * .5); c.fillStyle = 'rgba(80,230,255,.36)'; c.fillRect(.7, y + h * .5, fw, h * .5); }
+  }
+  // АВТО: заявка -> AI -> CRM -> пошта; пакети біжать вузлами, лічильник заявок росте
+  const NODES = [['doc', .14], ['bot', .38], ['crm', .62], ['mail', .86]];
+  PAINT.tl_scrL = (c, fw, fh) => {
+    screenBase(c, fw, fh, t_('scene.tools.auto'));
+    const y = fh * .54; c.strokeStyle = 'rgba(122,244,255,.45)'; c.lineWidth = .5; c.beginPath(); c.moveTo(fw * .14, y); c.lineTo(fw * .86, y); c.stroke();
+    NODES.forEach(([ic, f]) => { glass(c, fw * f - fh * .14, y - fh * .14, fh * .28, fh * .28, { r: .8, line: '#7af4ff', a: '#163e9e', b: '#0d2a7a', c: '#091e5e', lw: .4 }); icon(c, ic, fw * f, y, fh * .16, '#bff8ff'); });
+  };
+  LIVE.tl_scrL = { every: 3, draw(c, fw, fh, t) {
+    const y = fh * .54, sp = TL().active ? .9 : .38;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let q = 0; q < 4; q++) { const ph = (t * sp + q / 4) % 1, x = fw * (.14 + .72 * ph); c.fillStyle = q % 2 ? 'rgba(255,170,240,.95)' : 'rgba(200,250,255,.95)'; c.fillRect(x - .9, y - .9, 1.8, 1.8); c.fillStyle = 'rgba(120,230,255,.3)'; c.fillRect(x - 3, y - .35, 2.2, .7); }
+    NODES.forEach(([, f], k) => { const hit = Math.abs(((t * sp * 4) % 4) - k) < .25; if (hit) { c.strokeStyle = 'rgba(160,250,255,.9)'; c.lineWidth = .6; rr(c, fw * f - fh * .16, y - fh * .16, fh * .32, fh * .32, 1); c.stroke(); } });
+    c.restore();
+    const n = 128 + Math.floor(t * sp * 1.2); c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(fw * .08, fh * .76, fw * .84, fh * .15);
+    A.txt(c, t_('scene.tools.leads'), fw * .1, fh * .835, fw * .5, fh * .09, 'rgba(200,240,255,.85)', { align: 'left' });
+    A.txt(c, '+' + n, fw * .9, fh * .835, fw * .3, fh * .1, '#b8ffd2', { align: 'right' });
+    fx(c, fw, fh, t, 1.7);
+  } };
+  // API: дві шестерні в зачепленні (голограма) і маніпулятор, що їх налаштовує; іскри; стан OK
+  function gear(c, cx, cy, r, n, a, col, hole) {
+    c.save(); c.translate(cx, cy); c.rotate(a); c.beginPath();
+    for (let k = 0; k < n * 2; k++) { const r2 = k % 2 ? r : r * 1.22, a0 = k / (n * 2) * Math.PI * 2, a1 = (k + 1) / (n * 2) * Math.PI * 2; c.lineTo(Math.cos(a0) * r2, Math.sin(a0) * r2); c.lineTo(Math.cos(a1) * r2, Math.sin(a1) * r2); }
+    c.closePath(); c.fillStyle = col; c.fill(); c.fillStyle = '#081c52'; c.beginPath(); c.arc(0, 0, r * hole, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(230,252,255,.8)'; c.lineWidth = r * .07; c.beginPath(); c.arc(0, 0, r * .68, 0, 7); c.stroke(); c.restore();
+  }
+  PAINT.tl_scrR = (c, fw, fh) => { screenBase(c, fw, fh, 'API'); };
+  LIVE.tl_scrR = { every: 2, draw(c, fw, fh, t) {
+    const sp = TL().active ? 1.6 : .7, cx = fw * .36, cy = fh * .6, r = fh * .2, r2 = r * .62;
+    glass(c, fw * .05, fh * .28, fw * .9, fh * .66, { r: .8, a: '#10348e', b: '#0b276e', c: '#081c52', lw: .01 });
+    c.save(); c.globalAlpha = .9; c.fillStyle = 'rgba(90,220,255,.16)'; c.beginPath(); c.moveTo(cx - r * 1.4, fh * .94); c.lineTo(cx + r * 2.6, fh * .94); c.lineTo(cx + r * 1.6, fh * .32); c.lineTo(cx - r * .6, fh * .32); c.fill();   // конус голограми
+    gear(c, cx, cy, r, 10, t * sp, 'rgba(90,220,255,.85)', .3); gear(c, cx + r * 1.62, cy - r * .55, r2, 7, -t * sp * 10 / 7 + .22, 'rgba(255,140,230,.85)', .32);
+    // маніпулятор (з правого краю): основа, дві ланки, «торкається» малої шестерні
+    const bx = fw * .9, by = fh * .9, a1 = -2.2 + .18 * Math.sin(t * 1.3), l1 = fh * .32, ex = bx + Math.cos(a1) * l1, ey = by + Math.sin(a1) * l1, a2 = a1 - 1.1 + .25 * Math.sin(t * 2.1), l2 = fh * .24, tx = ex + Math.cos(a2) * l2, ty = ey + Math.sin(a2) * l2;
+    c.strokeStyle = 'rgba(200,250,255,.9)'; c.lineCap = 'round'; c.lineWidth = fh * .05; c.beginPath(); c.moveTo(bx, by); c.lineTo(ex, ey); c.lineTo(tx, ty); c.stroke();
+    c.fillStyle = '#e8feff'; [[bx, by, .05], [ex, ey, .04], [tx, ty, .03]].forEach(([x, y, k]) => { c.beginPath(); c.arc(x, y, fh * k, 0, 7); c.fill(); });
+    c.restore();
+    if (Math.sin(t * 7) > .55) { c.save(); c.globalCompositeOperation = 'lighter'; for (let q = 0; q < 6; q++) { const a = hash(q, Math.floor(t * 9)) * 6.28, d = fh * (.03 + .06 * hash(q + 3, Math.floor(t * 9))); c.fillStyle = q % 2 ? '#ffe2b0' : '#ffffff'; c.fillRect(tx + Math.cos(a) * d - .4, ty + Math.sin(a) * d - .4, .8, .8); } c.restore(); }   // іскри
+    c.fillStyle = 'rgba(8,24,80,.95)'; c.fillRect(fw * .07, fh * .3, fw * .3, fh * .13);
+    c.fillStyle = Math.sin(t * 3) > -.6 ? GR : '#1f6a45'; c.beginPath(); c.arc(fw * .11, fh * .365, fh * .025, 0, 7); c.fill();
+    A.txt(c, '200 ' + t_('scene.ai.ok'), fw * .14, fh * .365, fw * .22, fh * .08, '#b8ffd2', { align: 'left' });
+    fx(c, fw, fh, t, 5.2);
+  } };
+})();
+
+</script>      <!-- інструменти: верстак, панель інтеграцій (плитки, автоматизація, API) -->
 <script>
 /* ---- js/objects/workshop.js ---- */
 /* ============================================================================

@@ -16,7 +16,8 @@ NX.i18n.add('en', {
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND' },
+    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', today: 'TODAY', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
+      days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] },
     marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
     wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
@@ -25,7 +26,7 @@ NX.i18n.add('en', {
     seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
     hub: { online: 'ONLINE', tasks: 'TASKS' },
     ws: { skins: 'SKINS', acc: 'ACCESSORIES' },
-    tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO' },
+    tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO', leads: 'LEADS' },
     poster: { meow: 'MEOW', tag: '8-BIT AI' },
     unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
   },

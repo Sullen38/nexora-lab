@@ -20,19 +20,22 @@
  * картинки, міста, рами вікна й цього злиття (patchFront — замість латки міста).
  * Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
  * Живі частини зон (голограма й маніпулятор майстерні, голо-монітори й крісло маркетингу) — окремі об'єкти поверх цього
- * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче).
+ * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче). Малюнки граней
+ * і живі екрани зон — *_paint.js (майстерня ws_, маркетинг mk_, аналітика an_, інструменти tl_).
  * ========================================================================== */
 (() => {
   const X = NX.px3d, A = NX.arc.kit, K = NX.kit, F = NX.furn, PZ = NX.persp, { col, pal, ramp, mixc, dim, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
-  const R_HERO = { workshop: 4, marketing: 4 };            // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
+  const R_HERO = { workshop: 4, marketing: 4, analytics: 4, tools: 4 };   // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
   /** ЗОНА -> СВІТ (для живих частин зон: objects/workshop.js, marketing.js, mk_chair.js): px картинки зони (X, Y) і відступ
-   *  углиб v -> точка світу — як у генераторі (place + фронтальний зсув frontal). Повертає null, якщо зони ще немає. */
+   *  углиб v -> точка світу — як у генераторі (place з поворотом turn + фронтальний зсув frontal). Повертає null, якщо зони
+   *  ще немає. Поворот — у зони, що стоїть лицем до центру дуги (середні зони, варіант Б); фронтальні — turn 0. */
   NX.arc.zone = name => {
     const pick = k => ['right', 'left'].map(sd => ALL[sd] && ALL[sd][k] && ALL[sd][k][name]).find(Boolean), Z = pick('zoneXf'); if (!Z) return null;
     const anch = Object.assign({}, ALL.right && ALL.right.anchors, ALL.left && ALL.left.anchors);
-    const W = (Xi, Yi, v = 0) => { let x = Z.ax + (Xi - Z.Xref) * Z.m; const z = Z.az + v * Z.m; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
+    const a = (Z.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]];   // як basis у arc_kit.js
+    const W = (Xi, Yi, v = 0) => { const u = (Xi - Z.Xref) * Z.m, d = v * Z.m; let x = Z.ax + r[0] * u - f[0] * d; const z = Z.az + r[1] * u - f[1] * d; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
     return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az };
   };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
@@ -276,7 +279,7 @@
     const out = [], ctr = B => { const { P } = A.basis(B); return P(0, B.dep / 2, (B.yt + B.yb) / 2); }, add = (p, r, k, h) => out.push({ x: p[0], y: p[1], z: p[2], r, k, c: col(h) });
     (Ls.items || []).forEach(B => {
       if (B.glow) add(ctr(B), Math.max(60, (B.gr || 30) * 2.6), .34, B.st === 'clamp' ? '#3be8ff' : B.st === 'neon' ? '#ff4fd8' : B.st === 'gold' ? '#ffd27a' : '#ffb24a');
-      else if (/_booth$|_screen$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
+      else if (/_booth$|_screen$|_scr[LR]$|_tiles$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
       else if (B.id === 'ws_pad') add(ctr(B), 120, .24, '#ff6ae0');                                             // пад капсули — рожеве світло на стіну й підлогу
     });
     (Ls.hang || []).forEach(h => { if (h.kind !== 'vine') add([h.x, (h.from != null ? h.from : 56) + h.len + 8, h.z], 70, .3, h.kind === 'red' ? '#ff4a3a' : '#ffb24a'); });
@@ -529,5 +532,17 @@
   NX.i18n.onLang(() => { want = true; });                                                                   // написи новою мовою — нова збірка (стара видна до готовності)
   NX.addObject({ id: 'arcLeft', span: [-12, MID + SEAM], drawBack(c, t) { if (!c.isRefl) draw(c, 'left'); } });
   NX.addObject({ id: 'arcRight', span: [MID - SEAM, 1547], drawBack(c, t) { if (!c.isRefl) draw(c, 'right'); } });
+  /** СЛІДИ ЗОН НА ПІДЛОЗІ (обхід меблів — world/room.js obstacles): зона, що стоїть там, де ходять Nexi й кіт (середні —
+   *  аналітика й інструменти: їхній перед — на y ~374), каже, де вона стоїть, — прямокутник на екрані під її частинами на
+   *  підлозі (власник, крок 3: «щоб не ходив по верху об'єктів»). Дальні зони (маркетинг, майстерня) стоять за межею
+   *  підлоги — сліду не треба (до них Nexi підходить спереду: крісло, пад). */
+  ['right', 'left'].forEach(sd => {
+    const by = {}; ((ALL[sd] || {}).items || []).forEach(B => { if (B.zone && B.layer !== 'up' && !B.on && B.yb >= FL - 1) (by[B.zone] || (by[B.zone] = [])).push(B); });
+    Object.entries(by).forEach(([zn, list]) => {
+      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+      list.forEach(B => A.faces(B).forEach(Fc => { if (Fc.k === 'bottom') Fc.poly.forEach(q => { const p = X.proj(q); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); }));
+      if (y1 > NX.cfg.FLOOR_Y + 6) NX.addObject({ id: 'foot_' + zn, foot: [x0, x1, y0, y1] });
+    });
+  });
   NX.arc.scene = { SIDES, compose, rebuild() { want = true; } };
 })();
