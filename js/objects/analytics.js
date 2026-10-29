@@ -9,8 +9,8 @@
  *   ВЕЛИКИЙ ЕКРАН на стіні на всю ширину стола (NX.arc.holo.pane, crisp, непрозорий — він і фон, що ховає цеглу; вміст —
  *     щільна панель показників NX.arc.anScreen, перемальовується раз на 5 кадрів); навколо — м'яке сяйво на стіні; зрідка (раз
  *     на 22–40 с, коли Nexi не працює) коротко «лагає»;
- *   РЕЧІ НА СТОЛІ, вищі за низ екрана (лампа, планшет, папки — fg у розкладці), рушій малює ще раз ПОВЕРХ екрана (NX.arc.fgDraw);
- *     лампа світить: теплий ореол під абажуром і пляма світла на столі (коли Nexi працює — яскравіше);
+ *   РЕЧІ НА СТОЛІ (склянка з ручками, клавіатура, планшет — fg у розкладці) рушій малює ще раз ПОВЕРХ екрана (NX.arc.fgDraw);
+ *     лампу, звіти й папки прибрано (власник: «дуже офісні»);
  *   КОЛИ NEXI ПРАЦЮЄ (active / prog — nexi.js: work.obj = 'analytics'; задача — begin(task)): головний графік екрана показує
  *     задачу (ПРОДАЖІ за тиждень — стовпчики по днях ростуть по черзі; ВІДВІДУВАЧІ — лінія з живими точками й пінги на карті;
  *     ПРОГНОЗ — пунктир у майбутнє), у шапці — смужка прогресу; проєктор на правому краї стола вмикається — над ним
@@ -35,16 +35,6 @@
   function glow(c, q, t, act) {
     const cx = (q[0][0] + q[1][0]) / 2, cy = (q[0][1] + q[3][1]) / 2, w = q[1][0] - q[0][0], a = .26 + .05 * Math.sin(t * 1.3) + (act ? .1 : 0);
     c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, cx, cy, w * .7, 'rgba(70,180,255,.5)', a); c.restore();
-  }
-  /** Світло лампи: тепла пляма на столі під абажуром (під речами) і ореол біля світного краю абажура (поверх). */
-  function lampPool(c, z, t, act) {
-    const L = z.anchor('anLamp'), Dd = z.anchor('anDocs'); if (!L || !Dd) return; const a = proj([L[0], Dd[1], L[2] - 4]), k = sc(L[2]), fl = .9 + .1 * Math.sin(t * 7) * Math.sin(t * 2.3);
-    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,190,110,${(act ? .2 : .13) * fl})`; c.beginPath(); c.ellipse(a[0], a[1], 15 * k, 3.4 * k, 0, 0, 7); c.fill();
-    c.fillStyle = `rgba(255,220,160,${(act ? .16 : .1) * fl})`; c.beginPath(); c.ellipse(a[0], a[1], 8 * k, 1.8 * k, 0, 0, 7); c.fill(); c.restore();
-  }
-  function lampGlow(c, z, t, act) {
-    const L = z.anchor('anLamp'); if (!L) return; const b = proj(L), k = sc(L[2]), fl = .9 + .1 * Math.sin(t * 7) * Math.sin(t * 2.3);
-    c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, b[0], b[1] + 1.2 * k, 9 * k, 'rgba(255,200,120,.9)', (act ? .75 : .55) * fl); c.restore();
   }
   /** Еліпс-кільце в площині підлоги на висоті y навколо точки світу C (радіус r од. світу). */
   function ring(c, C, y, r, kz = .8, n = 28) { c.beginPath(); for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, p = proj([C[0] + Math.cos(a) * r, y, C[2] + Math.sin(a) * r * kz]); i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } }
@@ -137,9 +127,8 @@
       if (q) glow(c, q, t, act);
       pane.draw(c, t);
       if (FX.ch > .02) { const ch = chart(c, z, t, FX.ch); if (ch) { this._top = ch.top; if (act && q) bits(c, q, ch.lens, t); } }
-      lampPool(c, z, t, act);
       if (NX.arc.fgDraw) NX.arc.fgDraw(c, 'analytics');                                                       // речі на столі, вищі за низ екрана, — поверх нього
-      lampGlow(c, z, t, act); steam(c, z, t); pops(c); reports(c);
+      steam(c, z, t); pops(c); reports(c);
     },
   });
 })();
