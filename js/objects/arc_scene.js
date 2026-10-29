@@ -38,7 +38,8 @@
     const anch = Object.assign({}, ALL.right && ALL.right.anchors, ALL.left && ALL.left.anchors);
     const a = (Z.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]];   // як basis у arc_kit.js
     const W = (Xi, Yi, v = 0) => { const u = (Xi - Z.Xref) * Z.m, d = v * Z.m; let x = Z.ax + r[0] * u - f[0] * d; const z = Z.az + r[1] * u - f[1] * d; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
-    return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az };
+    const item = id => ['right', 'left'].map(sd => ALL[sd] && (ALL[sd].items || []).find(i => i.id === id)).find(Boolean);   // предмет розкладки (уже зі зсувом vcenter)
+    return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az, Yf: Z.Yf, Xref: Z.Xref, item };
   };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
   if (window.ARC_PROF) {                                                              // заміри збірки (лише для відлагодження: window.ARC_PROF = 1)

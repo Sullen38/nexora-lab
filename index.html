@@ -167,7 +167,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / відсотки етапу, data-raw — текст як є (NEXI);
   data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
   для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
-<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="56" data-room="assets/room.webp">
+<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="59" data-room="assets/room.webp">
  <i class="sp-stars"></i>
  <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
  <!-- A · ДОК-СТАНЦІЯ -->
@@ -376,11 +376,14 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 <!-- ЗОНИ (по черзі, docs/HANDOFF.md): малюнки граней і живі екрани -> живі об'єкти (голограма, маніпулятор, голо-монітори, крісло) -->
 <script src="js/objects/ws_paint.js"></script>      <!-- майстерня (скіни): платформа, капсула, скло сканера, планшети -->
 <script src="js/objects/mk_paint.js"></script>      <!-- маркетинг: стіл, будка з утопленим голо-екраном, проєктори -->
-<script src="js/objects/an_paint.js"></script>      <!-- аналітика: стіл, рамка з двома голо-екранами (відвідувачі, виручка) -->
-<script src="js/objects/tl_paint.js"></script>      <!-- інструменти: верстак, панель інтеграцій (плитки, автоматизація, API) -->
+<script src="js/objects/an_paint.js"></script>      <!-- аналітика: скляний стіл, тумба, серверна стійка, «стіна даних»; вміст голо-панелей -->
+<script src="js/objects/tl_paint.js"></script>      <!-- інструменти: верстак на козлах, хаб, лещата, перфодошка; вміст голо-карток -->
+<script src="js/objects/holo_panes.js"></script>    <!-- пласкі голо-панелі середніх зон у перспективі (зрідка «лагають») -->
 <script src="js/objects/workshop.js"></script>      <!-- майстерня: голограма Nexi в різних скінах, маніпулятор, сканер -->
 <script src="js/objects/marketing.js"></script>     <!-- маркетинг: голо-монітори, голо-клавіатура, пости й лайки -->
 <script src="js/objects/mk_chair.js"></script>      <!-- крісло маркетингу (3D, обертається; Nexi сідає) -->
+<script src="js/objects/analytics.js"></script>     <!-- аналітика: голо-панелі, голо-діаграма над проєктором, радар, пара над кавою -->
+<script src="js/objects/tools.js"></script>         <!-- інструменти: голо-картки, потік даних, антена, маячок, іскри лещат -->
 <script src="js/objects/sofa.js"></script>
 <script src="js/objects/cat_corner.js"></script>
 <script src="js/objects/rug_dock.js"></script>
