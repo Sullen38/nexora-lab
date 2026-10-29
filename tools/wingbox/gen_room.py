@@ -7,9 +7,11 @@
 #   аналітика -> AI-центр (від вікна до глядача); "H" — висоти головних частин зон на екрані (px), по позиціях
 #   [дальня, середня, найближча] або одне число для всіх (власник: перші — найбільші, далі на ~25 % менші: [h, .75h, .56h]).
 #   Крок 1 (29.10) — перші зони: майстерня й маркетинг (n 1). "zones" у крила — які заготовки брати (за замовчуванням нові).
-#   Крок 5–6 (29.10) — середні зони: аналітика й інструменти (n 2, H 200); як їх ставити — "mid" у крила: {"turn": 20} — спиною
-#   до дуги, але повернуті лише на 20° (у бік середини кімнати; без turn — лицем до центру дуги, ~52°: --preset arc), {"fv": 1} —
-#   фронтально (front_items: --preset front); "gs" у mid — свій проміжок на екрані (< 0 — трішки заходить на дальню зону).
+#   Кроки 5–7 (29.10) — середні зони: аналітика й інструменти (n 2, H 265); як їх ставити — "mid" у крила: {"turn": 20, "fv": 1.25}
+#   — намальовані так, ніби ми стоїмо перед ними (фронтальний зсув, як перші зони; fv > 1 — око ще трохи назовні), і повернуті на
+#   20° до середини кімнати: видно ЗОВНІШНІЙ бік (front_items); без fv — у перспективі кімнати (chain: {"turn": 20} — крок 6,
+#   --preset turn6; без turn — лицем до центру дуги, ~52°: --preset arc); {"fv": 1} без turn — просто фронтально (--preset front);
+#   "gs" у mid — свій проміжок на екрані (< 0 — трішки заходить на дальню зону).
 #   Решта (екран на стіні "hub", антресоль "mz", колони "cols", настінні полиці "shelves", підвіси "hang") — так само за
 #   параметрами, коли знадобляться.
 #   Попередня спроба (28.10: усі 6 зон однакові, H 173) — PRESETS['v1'] (--preset v1), щоб було з чого брати й з чим порівнювати.
@@ -22,7 +24,7 @@
 # Перспектива — як у кімнаті (core/persp.js): VP (774, 220), D 520, око (774, 220, -520); підлога y = 372.
 # Межі вікна беруться з js/core/config.js (NX.cfg.WIN) — стіни крил починаються від відкосів.
 #
-#   python3 tools/wingbox/gen_room.py [out.json] [--params p.json | --preset v1|all3|front|arc] [--plan plan.png] [--write]
+#   python3 tools/wingbox/gen_room.py [out.json] [--params p.json | --preset v1|all3|front|arc|turn6] [--plan plan.png] [--write]
 #     --write — вшити розкладку в js/objects/arc_layout.js;   --plan — план зверху (PNG)
 #   Перевірки друкуються: висоти зон, проміжки (SEP), перетини об'ємів (INTERSECT), що за стіною (BEHIND WALL) — мають бути none.
 #   На плані диван — там, де він у кімнаті (NX.cfg.SOFA_Y: лінія підлоги на екрані -> глибина в кімнаті).
@@ -180,14 +182,14 @@ def analytics():
       світяться), стовпчик між екранами (an_mid), нижня полиця (an_bb) -> два утоплені голо-екрани: an_scrL — відвідувачі
       (стовпчики по днях і мови), an_scrR — тренд виручки й «пончик» конверсії (живі: an_paint.js).
     Рамка широка, а шапка висока, бо вивіска на екрані однакова для всіх зон (150 × 30, sign_size): шапка — більша за неї."""
-    Z = Zone('analytics', 399, 340, ('an_cap', 'an_desk')); dd = zscale(Z, 286)
+    Z = Zone('analytics', 399, 340, ('an_cap', 'an_desk')); dd = zscale(Z, 282)
     FS = dict(sty=dict(FRAME_STY, neon=NEON_C))
-    Z.add('an_desk', 272, 526, 286, 340, 0, dd, 'desk')                              # фасад — малюнок (an_paint.js: an_desk)
+    Z.add('an_desk', 240, 558, 282, 340, 0, dd, 'desk')                              # фасад — малюнок (an_paint.js: an_desk); крок 7: ширший (1.4× рамки) і вищий — більший за стіл маркетингу
     bv = dd + 3                                                                      # рамка — одразу за столом
     Z.add('an_cap', 284, 514, 110, 162, bv, 20, 'frame', ch=(14, 14), **FS)          # шапка з вивіскою (вища й ширша за вивіску)
     mirror(Z, 'an_bp', 284, 296, 162, 340, bv, 20, 'frame', **FS)                    # стовпи рамки (внутрішні грані — світло)
     Z.add('an_mid', 396, 402, 162, 272, bv, 20, 'frame', **FS)                       # стовпчик між екранами
-    Z.add('an_bb', 296, 502, 272, 340, bv, 20, 'frame', **FS)                        # нижня полиця рамки (за столом)
+    Z.add('an_bb', 296, 502, 272, 340, bv, 20, 'frame', **FS)                        # нижня полиця рамки (за столом; верх видно над стільницею)
     Z.add('an_scrL', 296, 396, 162, 272, bv + 8, 5, 'screen')                         # утоплені голо-екрани
     Z.add('an_scrR', 402, 502, 162, 272, bv + 8, 5, 'screen')
     sign(Z, 'an_sign', 304, 494, 123, 149, bv - 2.4, 2.4, 'nav.analytics', NEON_C)
@@ -202,9 +204,9 @@ def tools():
       середня планка (tl_rail), нижня (tl_bb), стовпчик між екранами (tl_mid) -> утоплені: ряд плиток інтеграцій (tl_tiles:
       пошта, календар, CRM) і два екрани: tl_scrL — автоматизація (вузли й потік), tl_scrR — голограма маніпулятора.
     Панель широка, а шапка висока, бо вивіска на екрані однакова для всіх зон (150 × 30, sign_size): шапка — більша за неї."""
-    Z = Zone('tools', 1230, 357, ('tl_cap', 'tl_bench')); dd = zscale(Z, 306)
+    Z = Zone('tools', 1230, 357, ('tl_cap', 'tl_bench')); dd = zscale(Z, 301)
     FS = dict(sty=FRAME_STY)
-    Z.add('tl_bench', 1104, 1356, 306, 357, 0, dd, 'bench')                           # фасад — малюнок (tl_paint.js: tl_bench)
+    Z.add('tl_bench', 1071, 1389, 301, 357, 0, dd, 'bench')                           # фасад — малюнок (tl_paint.js: tl_bench); крок 7: ширший (1.4× панелі) і вищий
     bv = dd + 3
     Z.add('tl_cap', 1115, 1345, 132, 184, bv, 18, 'board', ch=(14, 14), **FS)         # шапка з вивіскою (вища й ширша за вивіску)
     mirror(Z, 'tl_bp', 1115, 1127, 184, 357, bv, 18, 'board', **FS)                  # стовпи панелі
@@ -379,12 +381,11 @@ def sign_size(items):
     отримує той самий розмір на екрані SIGN_W × SIGN_H (середина — на місці), шрифт — спільний (arc_paint.js: signFit)"""
     for it in items:
         if not it['id'].endswith('_sign'): continue
-        k = s(it['z']); yc = (it['yt'] + it['yb']) / 2; h = SIGN_H / k; w = SIGN_W / k
-        if it.get('turn'):                                                         # зона повернута (лицем до центру дуги): ширина — та, що на екрані
-            a = math.radians(it['turn']); r = (math.cos(a), -math.sin(a))
-            for _ in range(4):
-                p0 = P3(it['x'] - r[0] * w / 2, yc, it['z'] - r[1] * w / 2); p1 = P3(it['x'] + r[0] * w / 2, yc, it['z'] + r[1] * w / 2); w *= SIGN_W / abs(p1[0] - p0[0])
-        it['w'] = round(w, 2); it['yt'] = round(yc - h / 2, 2); it['yb'] = round(yc + h / 2, 2)
+        k = s(it['z']); yc = (it['yt'] + it['yb']) / 2; h = SIGN_H / k; it['yt'] = round(yc - h / 2, 2); it['yb'] = round(yc + h / 2, 2)
+        it['w'] = round(SIGN_W / k, 2)
+        if it.get('turn') or it.get('sh'):                                         # повернута / зсунута зона: ширина — та, що на екрані (за лицем)
+            for _ in range(5):
+                xs = [P3(*q)[0] for q in faces(it)[0]['front']]; it['w'] = round(it['w'] * SIGN_W / (max(xs) - min(xs)), 3)
     return items
 def cfaces(it):
     if it.get('cyl'):
@@ -459,8 +460,9 @@ def vcenter(Z, items):
             d = cx([ref]) - cx(grp); g0 = by[grp[0]]; a = math.radians(g0.get('turn', 0)); r = (math.cos(a), -math.sin(a)); u = d / (s(g0['z']) * max(.3, r[0]))
             for i in grp: by[i]['x'] = round(by[i]['x'] + r[0] * u, 3); by[i]['z'] = round(by[i]['z'] + r[1] * u, 3)
             tx += r[0] * u; tz += r[1] * u
+        K = (by[grp[0]].get('sh') or [0, 0])[0]                                    # фронтальний зсув: x точки ще й залежить від її глибини
         for nm in getattr(Z, 'vca', ()):                                           # якорі на зсунутій групі (екран) — разом із нею
-            if nm in getattr(Z, 'anchw', {}): p = Z.anchw[nm]; Z.anchw[nm] = [round(p[0] + tx, 2), p[1], round(p[2] + tz, 2)]
+            if nm in getattr(Z, 'anchw', {}): p = Z.anchw[nm]; Z.anchw[nm] = [round(p[0] + tx + K * tz, 2), p[1], round(p[2] + tz, 2)]
     return items
 def far_items(Z, far, sgn):
     """дальня зона: прямо (лицем до глядача) біля стіни з вікном. far: X_in — її край біля дивану на екрані (найближча до
@@ -493,17 +495,20 @@ def arc_items(Z, a, C, R, sgn, gap, turn=None):
     Z.xf = dict(ax=round(ax, 3), az=round(az, 3), m=round(Z.m, 5), Xref=Z.Xref, Yf=Z.Yfloor, sh=None, turn=round(t, 3))   # px картинки зони -> світ (з поворотом)
     return sign_size(vcenter(Z, place(Z, ax, az, t, Z.m)))
 def front_items(prev, Z, C, R, sgn, gz, gw, gs, mq):
-    """СЕРЕДНЯ ЗОНА ФРОНТАЛЬНО (варіант «як перші зони»): поворот 0 і фронтальний зсув (frontal, mq.fv; 1 — повністю прямо) —
-    дивимося прямо на неї, як на маркетинг і майстерню. На екрані — впритул до попередньої зони (gs px); у плані — якомога
-    глибше, спиною в бік стіни: найдальша точка сліду — за gw од. від дуги, до попередньої зони — щонайменше gz од.
-    (mq.front — натомість лінія підлоги під передом зони на екрані). Фронтальна зона тягнеться вглиб уздовж променя від ока,
-    тож біля дуги її задній зовнішній кут упирається в стіну раніше, ніж перед: «якомога глибше» — бісекцією."""
-    m = Z.m; fv = mq.get('fv', 1.); e0 = screen_ext(prev); H0 = zhull(prev)
+    """СЕРЕДНЯ ЗОНА ФРОНТАЛЬНО (як перші зони: дивимося прямо на неї — frontal, mq.fv; 1 — око прямо перед серединою зони,
+    більше — око ще далі назовні) І ТРОХИ ПОВЕРНУТА до середини кімнати (mq.turn, °). Крок 7 (власник: «бокова частина має бути
+    з іншого боку; розмір столу — більше, ніж попередній, бо ближче до користувача»): справжнє око стоїть посередині кімнати, і
+    в нього зона, повернута менше, ніж на ~52°, показує ВНУТРІШНІЙ бік (до вікна) — так було в кроці 6. Тут зона намальована так,
+    ніби ми стоїмо перед нею (як маркетинг і майстерню), а сама вона повернута до центру: її ближчий кінець — ЗОВНІШНІЙ, він
+    більший, і видно саме його бік. На екрані — до попередньої зони gs px (< 0 — трішки заходить на неї); у плані — якомога
+    глибше, спиною до стіни: найдальша точка сліду — за gw од. від дуги, до попередньої зони — щонайменше gz од. (mq.front —
+    натомість лінія підлоги під передом зони на екрані). Рамка з екранами — по центру стола на екрані (Z.vc, vcenter)."""
+    m = Z.m; fv = mq.get('fv', 1.); t = sgn * mq.get('turn', 0.); e0 = screen_ext(prev); H0 = zhull(prev)
     def placed(ax, az):
-        it = place(Z, ax, az, 0, m)
+        it = place(Z, ax, az, t, m)
         if fv: it = frontal(Z, it, ax, az, fv)
-        Z.xf = dict(ax=round(ax, 3), az=round(az, 3), m=round(m, 5), Xref=Z.Xref, Yf=Z.Yfloor, sh=it[0].get('sh'), turn=0)
-        return sign_size(it)
+        Z.xf = dict(ax=round(ax, 3), az=round(az, 3), m=round(m, 5), Xref=Z.Xref, Yf=Z.Yfloor, sh=it[0].get('sh'), turn=round(t, 3))
+        return sign_size(vcenter(Z, it))
     def at(az):                                                                    # на глибині az: x — щоб на екрані до попередньої було gs px
         lo, hi = 774 - 1600., 774 + 1600.
         for _ in range(40):
@@ -572,7 +577,7 @@ def build_side(p, sgn):
         Z = builders[i]()
         mq = q.get(('far', 'mid', 'near')[i]) or {}
         if i == 0: it = fit_far(Z, q['far'], sgn, Hs[0])
-        elif mq.get('fv') is not None: it = fit_front(zones[-1], Z, C, R, sgn, gz, gw, gs, Hs[i], mq); angles[('mid', 'near')[i - 1]] = 'front'   # фронтально (як перші зони)
+        elif mq.get('fv') is not None: it = fit_front(zones[-1], Z, C, R, sgn, gz, gw, mq.get('gs', gs), Hs[i], mq); angles[('mid', 'near')[i - 1]] = 'front'   # фронтально (як перші зони), трохи повернута (turn)
         else:                                                                       # спиною до дуги: лицем до її центру або (turn) повернута менше
             a_, it = fit_chain(zones[-1], Z, C, R, sgn, gz, gw, mq.get('gs', gs), Hs[i], turn=mq.get('turn')); angles[('mid', 'near')[i - 1]] = round(a_, 2)
         zs.append(Z); zones.append(it)
@@ -670,6 +675,7 @@ def check(L):
         for p_ in fpr(it):
             if any(crosses(eye, p_, W[k], W[k + 1]) for k in range(len(W) - 1)): behind.add(it['id'])
     return bad, sorted(behind)
+DESKS = ('mk_desk', 'ws_base', 'an_desk', 'tl_bench')                              # столи / основи зон — для порівняння розмірів на екрані
 def report(L, name):
     """друк: масштаби зон, висоти головних частин (L.mains — головні частини кожної зони; за ними міряється H), межі на екрані,
     проміжок до стіни, проміжки між зонами (SEP), перетини (INTERSECT) і що за стіною (BEHIND WALL)"""
@@ -697,6 +703,11 @@ def report(L, name):
         P = [P3(*p) for p in L['armRig']['pts']]; print(f"  arm: x {min(p[0] for p in P):.0f}..{max(p[0] for p in P):.0f} y {min(p[1] for p in P):.0f}..{max(p[1] for p in P):.0f} (осі ланок, спокій)")
     for k, p in sorted(L.get('anchors', {}).items()):
         X, Y = P3(*p); print(f"  anchor {k:10s} screen ({X:.0f}, {Y:.0f})  world ({p[0]:.0f}, {p[1]:.0f}, {p[2]:.0f})")
+    for it in L['items']:                                                          # столи зон на екрані (власник, крок 7: ближчий стіл — більший)
+        if it['id'] in DESKS:
+            F = faces(it)[0]['front']; P = [P3(*q) for q in F]; xs = [p[0] for p in P]
+            hl = abs(P3(*F[0])[1] - P3(*F[3])[1]); hr = abs(P3(*F[1])[1] - P3(*F[2])[1])
+            print(f"  desk {it['id']:9s} screen w {max(xs) - min(xs):5.0f}  h {hl:4.0f} (left) / {hr:4.0f} (right)")
     ks = sorted(ext, key=lambda k: ext[k][1][0])
     for a_, b_ in zip(ks, ks[1:]):
         print(f"  SEP {a_} | {b_}: main {ext[b_][1][0] - ext[a_][1][1]:+.0f}  all {ext[b_][0][0] - ext[a_][0][1]:+.0f}")
@@ -743,11 +754,16 @@ DEFAULT = {
  # Крок 5 (29.10): n 2 — середні зони: інструменти (праворуч) і аналітика (ліворуч). Показано два варіанти: А — фронтально
  #   (--preset front), Б — лицем до центру дуги (--preset arc). Крок 6 (власник: «трохи повернутим до центру дуги — не так, як
  #   у Б, там перебор, але ефект має бути; рівне не катить; і трохи більше; трохи зайде на попередню — не страшно, але зовсім
- #   трішки»): "mid": {"turn": 20, "gs": -6} — спиною до дуги, але повернуті лише на 20° (у Б — ~52°), у перспективі кімнати,
- #   рамка — по центру стола на екрані (vcenter); на екрані можуть зайти на дальню зону до 6 px; H середніх — 200 (було 180).
- "R": 225, "xf": 1200, "H": [240, 200, 135],
- "right": {"n": 2, "far": {"X_in": 893, "gap": 6, "front": 355, "fv": 1}, "mid": {"turn": 20, "gs": -6}, "gz": 3, "gw": 4, "gs": 2},
- "left": {"n": 2, "far": {"X_in": 655, "gap": 6, "fv": 1}, "mid": {"turn": 20, "gs": -6}, "gz": 3, "gw": 4, "gs": 2},
+ #   трішки»): спиною до дуги, повернуті лише на 20° (у Б — ~52°), рамка — по центру стола на екрані (vcenter), на екрані
+ #   можуть зайти на дальню зону до 6 px. Але справжнє око — посередині кімнати, і зона, повернута менше, ніж на ~52°, показує
+ #   йому ВНУТРІШНІЙ бік. Крок 7 (власник: «бокова частина має бути з іншого боку, подумай сам; стіл — більше, ніж попередній,
+ #   бо ближче до користувача; об'єкти трохи більше»): "mid": {"turn": 20, "fv": 1.25, "gs": -6} — зона намальована так, ніби
+ #   ми стоїмо перед нею (як маркетинг і майстерня: фронтальний зсув, fv 1.25 — око ще трохи назовні), а сама повернута на 20°
+ #   до центру: її ближчий кінець — ЗОВНІШНІЙ (більший), і видно саме його бік. H середніх — 265 (було 200: ближчі — більші);
+ #   столи ширші (1.4× рамки) і вищі — на екрані більші за стіл маркетингу й основу майстерні (report: desk …).
+ "R": 225, "xf": 1200, "H": [240, 265, 135],
+ "right": {"n": 2, "far": {"X_in": 893, "gap": 6, "front": 355, "fv": 1}, "mid": {"turn": 20, "fv": 1.25, "gs": -6}, "gz": 3, "gw": 4, "gs": 2},
+ "left": {"n": 2, "far": {"X_in": 655, "gap": 6, "fv": 1}, "mid": {"turn": 20, "fv": 1.25, "gs": -6}, "gz": 3, "gw": 4, "gs": 2},
 }
 V1 = {
  # ПОПЕРЕДНЯ СПРОБА (28.10). Тоді власник: «усі 6 зон важливі — однакові за розміром, кожна — як та, що навпроти; рівномірно, впритул; лише столи й
@@ -773,8 +789,9 @@ V1 = {
 ALL3 = json.loads(json.dumps(DEFAULT)); ALL3['right']['n'] = ALL3['left']['n'] = 3   # перевірка наперед: чи вмістяться наступні зони (заготовки 28.10)
 ARC = json.loads(json.dumps(DEFAULT)); ARC['H'] = [240, 180, 135]                  # крок 5, варіант Б (відхилено: «перебор»): лицем до центру дуги
 FRONT = json.loads(json.dumps(ARC))                                                 # крок 5, варіант А (відхилено: «рівне не катить»): фронтально
-for _sd in ('right', 'left'): ARC[_sd].pop('mid', None); FRONT[_sd]['mid'] = {'fv': 1}
-PRESETS = {'base': DEFAULT, 'v1': V1, 'all3': ALL3, 'arc': ARC, 'front': FRONT}
+TURN6 = json.loads(json.dumps(ARC)); TURN6['H'] = [240, 200, 135]                   # крок 6 (відхилено: «бокова частина має бути з іншого боку»): 20° у перспективі кімнати
+for _sd in ('right', 'left'): ARC[_sd].pop('mid', None); FRONT[_sd]['mid'] = {'fv': 1}; TURN6[_sd]['mid'] = {'turn': 20, 'gs': -6}
+PRESETS = {'base': DEFAULT, 'v1': V1, 'all3': ALL3, 'arc': ARC, 'front': FRONT, 'turn6': TURN6}
 
 def write_js(out):
     """вшити розкладку в js/objects/arc_layout.js (рядок NX.arcLayout = {...};) — її малює 3D (objects/arc_scene.js)"""
@@ -788,7 +805,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='розкладка обох крил «по дузі» для js/objects/arc_layout.js')
     ap.add_argument('out', nargs='?', default=os.path.join(HERE, 'layout.json'), help='куди записати розкладку (JSON)')
     ap.add_argument('--params', help='JSON з параметрами (за замовчуванням — DEFAULT у цьому файлі)')
-    ap.add_argument('--preset', choices=sorted(PRESETS), default='base', help='готові параметри: base — поточна розкладка (DEFAULT), v1 — попередня спроба з 6 зонами (28.10), all3 — DEFAULT з усіма трьома зонами на крило (перевірка, чи вмістяться наступні), front / arc — варіанти А / Б кроку 5 (середні зони фронтально / лицем до центру дуги, H 180)')
+    ap.add_argument('--preset', choices=sorted(PRESETS), default='base', help='готові параметри: base — поточна розкладка (DEFAULT), v1 — попередня спроба з 6 зонами (28.10), all3 — DEFAULT з усіма трьома зонами на крило (перевірка, чи вмістяться наступні), front / arc — варіанти А / Б кроку 5 (середні зони фронтально / лицем до центру дуги, H 180), turn6 — крок 6 (20° у перспективі кімнати, H 200)')
     ap.add_argument('--write', action='store_true', help='також вшити в js/objects/arc_layout.js')
     ap.add_argument('--plan', help='намалювати план зверху (PNG)')
     a = ap.parse_args()
