@@ -25,6 +25,7 @@ NX.nexi = {
     this.taskOpt = opt.task || null;   // конкретна задача зони (ui/zones.js)
     if (byUser) this.lastCmd = NX.time;
     this.finishTask(false);
+    this.autoRun = !byUser;                                                           // сценарій знає, чи це вільний час (майстерня: без лабораторії скінів)
     this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
     this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
     NX.ui.hud.setActive(A.nav || null);
@@ -34,8 +35,11 @@ NX.nexi = {
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };
-    return ({                                                                         // місця зон (стіл, крісло, сканер...) — разом із зонами
+    const ch = NX.objects.mkChair, ws = NX.objects.workshop;
+    return ({                                                                         // місця зон: крісло маркетингу, капсула майстерні
       sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }],
+      mkChair: ch ? [{ do: () => ch.standUp() }, up, { hop: ch.side() }] : [],
+      wsPad: ws ? [up, { do: () => ws.leave() }, { fly: ws.front() }] : [],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
@@ -128,8 +132,10 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
-      if (Math.random() < .3) { this.do('sofaWork', false); return; }                // сам працює (з дивану; у зонах — коли зони повернуться)
-      const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie'];
+      const r = Math.random();                                                        // сам працює: у маркетингу — за своїм столом, решта зон — з дивану
+      if (r < .17 && NX.acts.marketing && NX.objects.mkChair && NX.objects.mkChair.ready()) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
+      if (r < .32) { this.do('sofaWork', false); return; }
+      const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
   },

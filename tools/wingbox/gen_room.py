@@ -46,11 +46,14 @@ def FP(x, y, X0, X1, Y0, Y1): return [round((x - X0) / (X1 - X0), 4), round((y -
 class Zone:
     def __init__(self, name, Xref, Yfloor, main):
         self.name, self.Xref, self.Yfloor, self.main, self.comps = name, Xref, Yfloor, main, []
-        self.arm = None; self.armv = 0; self.m = 1.
+        self.arm = None; self.armv = 0; self.m = 1.; self.anchors = {}
     def add(self, id, X0, X1, Y0, Y1, v, d, st, **kw):
         self.comps.append(dict(id=id, X=(X0, X1), Y=(Y0, Y1), v=v, d=d, st=st, **kw)); return (X0, X1, Y0, Y1)
     def plant(self, id, X0, X1, Y0, Y1, v, d, fw, fh, st='pot', **kw):
         return self.add(id, X0, X1, Y0, Y1, v, d, st, plant=1, fw=fw, fh=fh, cyl=kw.pop('cyl', 10), **kw)
+    def anchor(self, name, X, Y, v):
+        """точка зони для живого шару й Nexi (голограма, крісло, де стати…): px картинки (X, Y) і відступ углиб v"""
+        self.anchors[name] = (X, Y, v)
 
 NEON_C, NEON_P = '#3be8ff', '#ff4fd8'
 def sign(Z, id, X0, X1, Y0, Y1, v, d, key, line, st='dark', icon=True, **kw):
@@ -88,7 +91,7 @@ def drawers(de, xs, ys=(304, 318)):
 # змалюй з оригінального зображення — більшою, масивнішою, ближчою, як на картинці; спершу лише столи й екрани».
 # Координати — пікселі картинки кімнати (assets/room.webp, 1 = 1 од. кімнати), заміряні з оригіналу; масштаб зони підбирає
 # fit_far під висоту H головних частин на екрані. Усе симетричне — дзеркально відносно середини зони (Xref).
-FRAME_STY = dict(bev=1.6, ins=3.8, nIn=1.4, nW=1.0)                                # px картинки (place переводить в од. світу)
+FRAME_STY = dict(bev=1.8, ins=3.6, nIn=1.4, nW=1.1)                                # px картинки (place переводить в од. світу)
 def mirror(Z, id_, X0, X1, *a, **kw):
     """частина й її дзеркальна пара відносно Xref зони: id_ + 'L' / 'R' (оздоби лиця, ch і on — дзеркально)"""
     def flip(d):
@@ -106,51 +109,57 @@ def mirror(Z, id_, X0, X1, *a, **kw):
     Z.add(id_ + 'L', X0, X1, *a, **kl); Z.add(id_ + 'R', round(2 * Z.Xref - X1, 2), round(2 * Z.Xref - X0, 2), *a, **kr)
 
 def workshop():
-    """МАЙСТЕРНЯ — як на оригінальній картинці, але більша й масивніша: широка глибока платформа з помаранчевою щілиною,
-    на ній подіум; капсула-сканер — товсті стійки, балка зі зрізаними кутами й вивіскою, рожеве скло сканера (перед ним
-    стоятиме Nexi); бічні панелі-«крила»; планшети скінів на ніжках обабіч (перед стійками); на балці — купол із
-    кріпленням робота-маніпулятора: рука аркою йде праворуч і вниз (як на картинці). Ближча до глядача — far.front."""
+    """МАЙСТЕРНЯ (СКІНИ) — крок 2 (власник, 29.10: «краще в 4 рази; дивимося прямо; голограма Nexi з різними скінами; щоб він
+    туди ставати міг»). Фронтально (far.fv): видно лице й ВНУТРІШНІ грані капсули — глибина без бокових стінок.
+      платформа (фасад — arc_paint.js ws_base) -> подіум капсули -> світний пад (тут стає Nexi, з нього б'є голограма)
+      -> стійки (внутрішні грані — світлові панелі) -> рожеве скло сканера в глибині -> балка (знизу — панель світла) з
+      вивіскою -> купол з кріпленням маніпулятора; бічні панелі; планшети скінів на ніжках (живі: міні-Nexi в скінах).
+    Живе (objects/workshop.js): голограма Nexi, що змінює скіни, маніпулятор (рухається), сканування, «встановлення» скіна."""
     Z = Zone('workshop', 1005, 358, ('ws_base', 'ws_beam', 'ws_postL')); Z.m = 1.4
     FS = dict(sty=FRAME_STY)                                                         # великі частини — товщі фаска, шов і неоновий кант
-    Z.add('ws_base', 900, 1110, 330, 358, 0, 70, 'base', deco=[dict(t='l', f=[0, .05, 1, .05], col=NEON_P, lw=1.3)])   # фасад — arc_paint.js: ws_base
-    Z.add('ws_dais', 922, 1088, 320, 330, 7, 56, 'base', on='ws_base', deco=[dict(t='l', f=[.02, .34, .98, .34], col=NEON_C, lw=1.1)])
-    mirror(Z, 'ws_wing', 900, 922, 226, 330, 15, 46, 'frame', ch=(9, 0), on='ws_base', **FS,
-           deco=[dict(t='l', f=[.36, .1, .36, .92], col=NEON_P, lw=1.3), dict(t='r', f=[.56, .86, .16, .34], fill='#0a0620', line=NEON_C)])
-    mirror(Z, 'ws_post', 922, 956, 210, 320, 11, 49, 'frame', on='ws_dais', **FS,
-           deco=[dict(t='l', f=[.8, .07, .8, .93], col=NEON_C, lw=1.5), dict(t='r', f=[.18, .58, .62, .7], fill='#0a0620', line=NEON_P),
-                 dict(t='r', f=[.18, .58, .74, .82], fill='#0a0620', line='#6a4ab0')])
-    # рожеве скло сканера — задня стінка капсули, неглибоко за лицем стійок (v 20): інакше в перспективі скло «з'їжджає» до
-    # середини кімнати й виглядає не по центру капсули (власник: «екрани — по центру»)
-    bk = (956, 1054, 210, 320)
-    Z.add('ws_back', *bk, 20, 8, 'frame', on='ws_dais', deco=[dict(t='ch', f=F(958, 1052, 212, 319, *bk), k=.12, fill='#a0208a', line='#ff7af0', lw=1.1)])
-    Z.add('ws_beam', 912, 1098, 170, 210, 9, 53, 'frame', ch=(18, 18), **FS, deco=[dict(t='l', f=[.08, .86, .92, .86], col=NEON_P, lw=1.2)])
-    sign(Z, 'ws_sign', 948, 1062, 168, 202, 7.4, 1.5, 'nav.workshop', NEON_P)
-    # купол на балці (три зрізані конуси — округлий, як на картинці) і кріплення маніпулятора; центр у плані — v 35.5
-    Z.add('ws_dome', 961, 1049, 154, 170, 13.5, 44, 'dome', on='ws_beam', cyl=24, kt=.84, band=1)
-    Z.add('ws_dome2', 968, 1042, 144, 154, 17, 37, 'dome', on='ws_dome', cyl=22, kt=.7)
-    Z.add('ws_cap', 979, 1031, 138, 144, 22.5, 26, 'dome', on='ws_dome2', cyl=18, kt=.62)
-    Z.add('ws_mount', 994, 1016, 126, 138, 26.5, 18, 'dark', on='ws_cap', cyl=14)
-    # планшети скінів на ніжках — на платформі перед стійками (як на картинці)
-    for id_, X0, X1, Y0 in (('ws_tabL', 907, 947, 244), ('ws_tabR', 1063, 1103, 244)):
+    Z.add('ws_base', 896, 1114, 328, 358, 0, 76, 'base')                             # фасад — малюнок (arc_paint.js: ws_base)
+    Z.add('ws_dais', 920, 1090, 320, 328, 6, 64, 'base', on='ws_base')
+    Z.add('ws_pad', 983, 1027, 316, 320, 12, 32, 'dark', on='ws_dais', cyl=24, band=1)   # пад: середина в плані — v 28
+    mirror(Z, 'ws_wing', 896, 920, 224, 328, 14, 54, 'frame', ch=(10, 0), on='ws_base', **FS)
+    mirror(Z, 'ws_post', 920, 958, 206, 320, 10, 54, 'frame', on='ws_dais', **FS)
+    Z.add('ws_back', 958, 1052, 206, 320, 46, 8, 'frame', on='ws_dais')              # рожеве скло сканера — глибоко: капсула об'ємна
+    Z.add('ws_beam', 908, 1102, 166, 206, 6, 58, 'frame', ch=(16, 16), **FS)
+    sign(Z, 'ws_sign', 948, 1062, 168, 202, 3.4, 2.4, 'nav.workshop', NEON_P)
+    # купол на балці (три зрізані конуси — округлий, як на картинці) і кріплення маніпулятора; середина в плані — v 36.5
+    Z.add('ws_dome', 963, 1047, 152, 166, 14.5, 44, 'dome', on='ws_beam', cyl=24, kt=.84, band=1)
+    Z.add('ws_dome2', 970, 1040, 142, 152, 18, 37, 'dome', on='ws_dome', cyl=22, kt=.7)
+    Z.add('ws_cap', 980, 1030, 136, 142, 23.5, 26, 'dome', on='ws_dome2', cyl=18, kt=.62)
+    Z.add('ws_mount', 995, 1015, 124, 136, 27.5, 18, 'dark', on='ws_cap', cyl=14)
+    # планшети скінів на ніжках — на передньому краї платформи перед стійками (як на картинці)
+    for id_, X0, X1 in (('ws_tabL', 899, 943), ('ws_tabR', 1067, 1111)):
         cx = (X0 + X1) / 2
-        Z.add(id_ + 's', cx - 5, cx + 5, 304, 330, 2, 5, 'dark', on='ws_base')
-        Z.add(id_, X0, X1, Y0, 304, 1.2, 4.6, 'tablet', on=id_ + 's', deco=[dict(t='r', f=[.08, .92, .05, .95], fill='#0c4a8a', line='#7af4ff')])
-    Z.arm = [(1005, 128), (1062, 96), (1128, 134), (1114, 158)]; Z.armv = 35.5   # маніпулятор: база на кріпленні, плече, лікоть, захват
+        Z.add(id_ + 's', cx - 4, cx + 4, 300, 328, 1.5, 4, 'dark', on='ws_base')
+        Z.add(id_, X0, X1, 236, 300, 1.4, 4.4, 'tablet', on=id_ + 's')
+    Z.anchor('wsPad', 1005, 316, 28); Z.anchor('wsFront', 1005, 358, -9); Z.anchor('wsArm', 1005, 125, 36.5)
+    Z.anchor('wsBeamBot', 1005, 206, 30); Z.anchor('wsTabL', 921, 268, 1.4); Z.anchor('wsTabR', 1089, 268, 1.4)
+    Z.arm = [(1005, 128), (1062, 96), (1128, 134), (1114, 158)]; Z.armv = 36.5    # маніпулятор (спокій): база, плече, лікоть, захват
     return Z
 
 def marketing():
-    """МАРКЕТИНГ — стіл з шухлядами на обох кінцях і великий екран-будка за ним; будка, вивіска й обидві голо-панелі —
-    РІВНО ПО ЦЕНТРУ стола (власник: «екрани основні — по центру столів»); по монітору на кінцях стола — симетрично."""
+    """МАРКЕТИНГ — крок 2 (власник, 29.10: «краще в 4 рази; крісло, на яке Nexi сідає; монітори — трохи голограмні;
+    дивимося прямо»). Фронтально (far.fv). Стіл з шухлядами на обох кінцях і панеллю посередині; за ним — екран-будка
+    з ГЛИБОКОЮ РАМКОЮ (видно внутрішні грані: світлові смуги) — вивіска вгорі, утоплений голо-екран (стрічка постів, реклама,
+    лічильники охоплення); на столі — проєктори голо-моніторів (самі голо-панелі — живі: objects/marketing.js) і голо-клавіатура;
+    перед столом — крісло (objects/mk_chair.js), на яке сідає Nexi."""
     Z = Zone('marketing', 589, 337, ('mk_booth', 'mk_desk')); dd = zscale(Z, 282)
-    de = (466, 712, 282, 337)
-    Z.add('mk_desk', *de, 0, dd, 'desk', deco=drawers(de, ((473, 507), (671, 705))))
-    bv = dd + 2; bo = (503, 675, 100, 337)                                            # будка: 172 × 237, середина — 589 (як стіл)
-    Z.add('mk_booth', *bo, bv, 16, 'frame', ch=(10, 10), sty=dict(FRAME_STY, neon=NEON_C), deco=[dict(t='r', f=[.07, .93, .2, .72], fill='#0c3a7a', line=NEON_C),
-        dict(t='r', f=[.1, .486, .235, .69], fill='#1a5ab0', line='#7af4ff'), dict(t='r', f=[.514, .9, .235, .69], fill='#1a5ab0', line='#7af4ff')])
-    sign(Z, 'mk_sign', 515, 663, 107, 139, bv - 2.6, 2.5, 'nav.marketing', NEON_P)
-    for id_, X0 in (('mk_scr2', 474), ('mk_scr', 666)):                               # монітори на кінцях стола — симетрично
-        Z.add(id_, X0, X0 + 38, 246, 282, dd * .36, 6, 'screen', on='mk_desk', deco=[dict(t='r', f=[.1, .9, .1, .8], fill='#3be8ff')])
-    Z.vc = [('mk_desk', ('mk_booth', 'mk_sign')), ('mk_desk', ('mk_scr2', 'mk_scr'))]   # на екрані — рівно по центру стола (vcenter)
+    FS = dict(sty=dict(FRAME_STY, neon=NEON_C))
+    de = (460, 718, 282, 337)
+    Z.add('mk_desk', *de, 0, dd, 'desk')                                             # фасад — малюнок (arc_paint.js: mk_desk)
+    bv = dd + 3                                                                      # будка — одразу за столом
+    Z.add('mk_booth', 495, 683, 96, 142, bv, 22, 'frame', ch=(12, 12), **FS)         # шапка з вивіскою
+    mirror(Z, 'mk_bp', 495, 509, 142, 337, bv, 22, 'frame', **FS)                    # бічні стовпи рамки (внутрішні грані — світло)
+    Z.add('mk_bb', 509, 669, 272, 337, bv, 22, 'frame', **FS)                        # нижня полиця рамки (за столом)
+    Z.add('mk_screen', 509, 669, 142, 272, bv + 9, 6, 'screen')                       # утоплений голо-екран
+    sign(Z, 'mk_sign', 520, 658, 103, 135, bv - 2.4, 2.4, 'nav.marketing', NEON_P)
+    for id_, X0 in (('mk_projL', 470), ('mk_projR', 670)):                            # проєктори голо-моніторів на кінцях стола
+        Z.add(id_, X0, X0 + 38, 276, 282, dd * .42, 11, 'dark', on='mk_desk')
+    Z.anchor('mkChair', 589, 337, -24); Z.anchor('mkKeys', 589, 282, 9); Z.anchor('mkProjL', 489, 276, dd * .42 + 5.5); Z.anchor('mkProjR', 689, 276, dd * .42 + 5.5)
+    Z.anchor('mkScreen', 589, 207, bv + 9); Z.anchor('mkDeskTop', 589, 282, 0)
     return Z
 
 # ===================================== ЗАГОТОВКИ 28.10 (попередня спроба, --preset v1) =====================================
@@ -292,9 +301,30 @@ def place(Z, ax, az, turn, m, kx=1.):
         if c.get('cyl'): it['w'] = round(abs(u1 - u0), 2)
         if 'sty' in c: it['sty'] = {k: round(v * m, 2) if isinstance(v, (int, float)) else v for k, v in c['sty'].items()}   # фаска, шов, неоновий кант — px картинки -> од. світу; колір канта (neon) — як є
         out.append(it)
-    if Z.arm:
-        Z.armw = [[round(ax + r[0] * (X - Z.Xref) * m * kx - f[0] * Z.armv * m, 2), round(FL - (Z.Yfloor - Y) * m, 2), round(az + r[1] * (X - Z.Xref) * m * kx - f[1] * Z.armv * m, 2)] for X, Y in Z.arm]
+    W = lambda X, Y, v: [round(ax + r[0] * (X - Z.Xref) * m * kx - f[0] * v * m, 2), round(FL - (Z.Yfloor - Y) * m, 2), round(az + r[1] * (X - Z.Xref) * m * kx - f[1] * v * m, 2)]
+    if Z.arm: Z.armw = [W(X, Y, Z.armv) for X, Y in Z.arm]
+    Z.anchw = {k: W(*a) for k, a in Z.anchors.items()}
     return out
+def frontal(Z, items, ax, az, fv=1.):
+    """ФРОНТАЛЬНИЙ ВИГЛЯД ДАЛЬНЬОЇ ЗОНИ (власник, 29.10: «на ці відділи ми дивимося прямо — перспектива пряма»).
+    Зсув у плані x + K·(z − z0) (z0 — передня лінія зони) з K = fv · (xc − 774) / (D + z0): тоді в перспективі кімнати зона
+    виглядає так, ніби око стоїть прямо перед її серединою xc — бокових граней не видно, дальнє рівно за ближнім (fv 1 —
+    повністю прямо). Рушій (arc_kit.js basis, plan.py frame) зсуває грані за B.sh = [K, z0]; точки руки й якорі — тут."""
+    K = fv * (ax - 774) / (D + az); sh = [round(K, 6), round(az, 3)]
+    for it in items: it['sh'] = sh
+    shp = lambda p: [round(p[0] + K * (p[2] - az), 2), p[1], p[2]]
+    if Z.arm: Z.armw = [shp(p) for p in Z.armw]
+    Z.anchw = {k: shp(p) for k, p in Z.anchw.items()}
+    return items
+SIGN_W, SIGN_H = 150, 30                                                            # вивіска зони на екрані — ОДНАКОВА для всіх зон (од. кімнати)
+def sign_size(items):
+    """власник, 29.10: «заголовки об'єктів взаємодії — однакові всюди, незалежно від розмірів об'єкта»: вивіска (id *_sign)
+    отримує той самий розмір на екрані SIGN_W × SIGN_H (середина — на місці), шрифт — спільний (arc_paint.js: signFit)"""
+    for it in items:
+        if not it['id'].endswith('_sign'): continue
+        k = s(it['z']); yc = (it['yt'] + it['yb']) / 2; h = SIGN_H / k
+        it['w'] = round(SIGN_W / k, 2); it['yt'] = round(yc - h / 2, 2); it['yb'] = round(yc + h / 2, 2)
+    return items
 def cfaces(it):
     if it.get('cyl'):
         jt = dict(it); jt.pop('cyl'); return faces(jt)                          # циліндр -> обрис як у коробки (для оцінок досить)
@@ -374,15 +404,20 @@ def far_items(Z, far, sgn):
     «майстерня — ближча»), але не далі від стіни, ніж дозволяє її глибина (спина — щонайбільше JZ − gap)."""
     m = Z.m; vmax = max(c['v'] + c['d'] for c in Z.comps); zb = JZ - far.get('gap', 6)
     if far.get('front'): zb = min(zb, D * (FL - 220) / (far['front'] - 220) - D + vmax * m)
-    az = zb - vmax * m
+    az = zb - vmax * m; fv = far.get('fv', 0.)
+    def placed(ax):
+        it = place(Z, ax, az, 0, m)
+        if fv: it = frontal(Z, it, ax, az, fv)
+        Z.xf = dict(ax=round(ax, 3), az=round(az, 3), m=round(m, 5), Xref=Z.Xref, Yf=Z.Yfloor, sh=it[0].get('sh'))   # як перевести px картинки зони в світ (JS: NX.arc.zone)
+        return sign_size(it)
     def edge(ax):                                                                  # найближча до середини точка зони на екрані
-        e = screen_ext(place(Z, ax, az, 0, m)); return e[0] if sgn > 0 else e[1]
+        e = screen_ext(placed(ax)); return e[0] if sgn > 0 else e[1]
     lo, hi = 774 - 900, 774 + 900                                                  # X краю росте з ax — бісекція
     for _ in range(40):
         mid = (lo + hi) / 2
         if edge(mid) < far['X_in']: lo = mid
         else: hi = mid
-    return vcenter(Z, place(Z, (lo + hi) / 2, az, 0, m))
+    return vcenter(Z, placed((lo + hi) / 2))
 def arc_items(Z, a, C, R, sgn, gap):
     """зона спиною до дуги під кутом a (поворот = a: задня грань — уздовж стіни, лицем до центру дуги), впритул до стіни"""
     return place(Z, *wall_place(Z, {'a': a, 'gap': gap}, C, R, sgn)(Z.m), Z.m)
@@ -449,8 +484,12 @@ def build_side(p, sgn):
     col_a = {i: a for i, (a, c_) in cand.items() if not any(hit(c_, it) for it in items)}
     L = dict(wall=wall, items=items, cols=cols, armZone=zs[0].name if zs else None, scales={k: Z.m for k, Z in zip(('far', 'mid', 'near'), zs)}, angles=angles,
              mains={Z.name: list(Z.main) for Z in zs})
-    if zs and zs[0].arm:                                                             # маніпулятор майстерні: точки світу + товщина під масштаб зони
-        L['arm'] = zs[0].armw; L['armk'] = round(zs[0].m / 1.2, 3)
+    anch = {k: v for Z in zs for k, v in getattr(Z, 'anchw', {}).items()}           # якорі зон (голограма, крісло, де стати…) — світ, уже зі зсувом
+    if anch: L['anchors'] = anch
+    L['zoneXf'] = {Z.name: Z.xf for Z in zs if getattr(Z, 'xf', None)}               # px картинки зони -> світ (лише дальні, фронтальні зони)
+    L['zoneBox'] = {Z.name: [round(v, 1) for v in screen_ext(it)] for Z, it in zip(zs, zones)}   # межі зони на екрані (тап, span)
+    if zs and zs[0].arm:                                                             # маніпулятор майстерні — ЖИВИЙ (objects/arc_holo.js): точки спокою + товщина
+        L['armRig'] = dict(pts=zs[0].armw, k=round(zs[0].m / 1.2, 3), zone=zs[0].name)
     def upbox(id, a, rad, w, dep, yb, h, st, **kw):
         x, z = arcpt(C, rad, a, sgn); up.append(dict(id=id, layer='up', x=round(x, 1), z=round(z, 1), turn=sgn * a, w=w, dep=dep, yb=yb, yt=yb - h, st=st, **kw))
     # ---- антресоль (праве крило) ----
@@ -548,8 +587,10 @@ def report(L, name):
         gap = min(seg_d((px, pz), Wl[i], Wl[i + 1]) for it in v for px, pz in fpr(it) for i in range(len(Wl) - 1))   # до стіни (з вікном і дуги)
         zf = min(pz for it in v for px, pz in fpr(it)); yf = 220 + (FL - 220) * s(zf)
         print(f"  {k:9s} wall gap {gap:5.1f} | main x {m[0]:.0f}..{m[1]:.0f} | front: z {zf:.0f}, floor line y {yf:.0f}")
-    if L.get('arm'):
-        P = [P3(*p) for p in L['arm']]; print(f"  arm: x {min(p[0] for p in P):.0f}..{max(p[0] for p in P):.0f} y {min(p[1] for p in P):.0f}..{max(p[1] for p in P):.0f} (осі ланок)")
+    if L.get('armRig'):
+        P = [P3(*p) for p in L['armRig']['pts']]; print(f"  arm: x {min(p[0] for p in P):.0f}..{max(p[0] for p in P):.0f} y {min(p[1] for p in P):.0f}..{max(p[1] for p in P):.0f} (осі ланок, спокій)")
+    for k, p in sorted(L.get('anchors', {}).items()):
+        X, Y = P3(*p); print(f"  anchor {k:10s} screen ({X:.0f}, {Y:.0f})  world ({p[0]:.0f}, {p[1]:.0f}, {p[2]:.0f})")
     ks = sorted(ext, key=lambda k: ext[k][1][0])
     for a_, b_ in zip(ks, ks[1:]):
         print(f"  SEP {a_} | {b_}: main {ext[b_][1][0] - ext[a_][1][1]:+.0f}  all {ext[b_][0][0] - ext[a_][0][1]:+.0f}")
@@ -592,9 +633,10 @@ DEFAULT = {
  # gap — до стіни з вікном, front — лінія підлоги під її передом на екрані (ближче до глядача); gz / gs — проміжок до
  # попередньої зони (у плані / на екрані), gw — до стіни.
  # Крок 1 (29.10): перші зони — майстерня (ближча: front 355 — Nexi ходить від y 358, тож завжди перед нею) і маркетинг.
+ # Крок 2 (29.10): fv 1 — дальні зони ФРОНТАЛЬНО (власник: «на ці відділи ми дивимося прямо»); вивіски — однакові (sign_size).
  "R": 225, "xf": 1200, "H": [240, 180, 135],
- "right": {"n": 1, "far": {"X_in": 893, "gap": 6, "front": 355}, "gz": 3, "gw": 4, "gs": 2},
- "left": {"n": 1, "far": {"X_in": 655, "gap": 6}, "gz": 3, "gw": 4, "gs": 2},
+ "right": {"n": 1, "far": {"X_in": 893, "gap": 6, "front": 355, "fv": 1}, "gz": 3, "gw": 4, "gs": 2},
+ "left": {"n": 1, "far": {"X_in": 655, "gap": 6, "fv": 1}, "gz": 3, "gw": 4, "gs": 2},
 }
 V1 = {
  # ПОПЕРЕДНЯ СПРОБА (28.10). Тоді власник: «усі 6 зон важливі — однакові за розміром, кожна — як та, що навпроти; рівномірно, впритул; лише столи й

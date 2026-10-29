@@ -111,7 +111,8 @@ NX.arc = NX.arc || {};
   // ---------- ВИВІСКИ (єдиний стиль, як NX.kit.sign) ----------
   const SIGN = { mk_sign: ['nav.marketing', 'target', '#ff4fd8'], an_sign: ['nav.analytics', 'chart', '#3be8ff'], ai_sign: ['nav.ai', 'ai', '#3be8ff'],
     ws_sign: ['nav.workshop', 'bot', '#ff4fd8'], tl_sign: ['nav.tools', 'gear', '#3be8ff'], pt_sign: ['nav.portal', 'spiral', '#d98aff'] };
-  Object.entries(SIGN).forEach(([id, [key, ic, acc]]) => { PAINT[id] = (c, fw, fh) => A.signPlate(c, 0, 0, fw, fh, { key, icon: ic, acc }); });
+  const UNI = Object.values(SIGN).map(v => v[0]);                                      // усі назви зон: шрифт — один на всіх (під найдовшу)
+  Object.entries(SIGN).forEach(([id, [key, ic, acc]]) => { PAINT[id] = (c, fw, fh) => A.signPlate(c, 0, 0, fw, fh, { key, icon: ic, acc, uni: UNI }); });
 
   // ---------- ЛІВЕ КРИЛО ----------
   /** AI-центр: великий голо-екран (рожевий неоновий кант — матеріал): графіки ліворуч, мозок по центру, іконки праворуч, еквалайзер. */

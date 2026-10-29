@@ -1,6 +1,6 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
@@ -17,7 +17,7 @@ NX.i18n.add('en', {
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'MAP', users: 'USERS', trend: 'TREND' },
-    marketing: { tags: 'AI TAGS', ads: 'ADS' },
+    marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
     wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
       msg: { reply: 'chat.reply', intent: 'intent: price', sync: 'sync', mail: 'mail.sent', summary: 'summary.ready', lead: 'crm.lead', api: 'api 200', cpu: 'cpu', langUk: 'lang: uk', post: 'post.queued',
@@ -33,14 +33,15 @@ NX.i18n.add('en', {
     go: { projects: 'Off to the projects! I will check the deadlines.', team: "I'll drop by the team and see who's doing what.", clients: 'Flying to the clients to collect new messages.' },
     res: { projects: 'Projects: 3 active, one deadline tomorrow. Noted everything.', team: 'Team: 4 people online, two are waiting for your reply.', clients: 'Clients: 3 new requests, I already answered two.' } },
   chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', skin: 'Skin' },
-    fallback: 'Right now I can: work and rest on the sofa, watch the city, dance and play with Ginger. Work zones are coming soon! What shall we do?',
-    greet: "Hi! I'm Nexi. Tap the sofa or the window and I'll go there. Tap me to change my skin." },
+    fallback: 'Right now I can: work in marketing at my desk, change skins in the workshop, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
+    greet: "Hi! I'm Nexi. Tap a zone, the sofa or the window and I'll go there. Tap me to change my skin." },
   act: {
-    home: { title: 'Charging dock', steps: ['Heading to the dock', 'Charging'], lines: ["Hi! I'm Nexi, your AI business assistant. Tap the sofa or the window and I'll go there.", "I'm home, charging. What's next?"] },
+    home: { title: 'Charging dock', steps: ['Heading to the dock', 'Charging'], lines: ["Hi! I'm Nexi, your AI business assistant. Tap a zone, the sofa or the window and I'll go there.", "I'm home, charging. What's next?"] },
     ai: { title: 'AI center: client reply', steps: ['Jetting onto the desk', 'Reading the request', 'Writing a reply', 'Sent ✓'], lines: ['AI center: I answer clients, write emails and meeting summaries.', 'I read your documents and find what you need in seconds.', 'I generate ideas for promos and names. Describe the task and I am on it.'] },
     analytics: { title: 'Analytics: sales report', steps: ['Taking a seat', 'Collecting data', 'Building a chart', 'Report ready ✓'], lines: ['Analytics: I gather sales, traffic and costs into one report.', 'I can see where conversion drops and suggest a fix.'] },
-    marketing: { title: 'Marketing: campaign', steps: ['Taking a seat', 'Writing a post', 'Launching ads', 'Reach is growing ✓'], lines: ['Marketing: I write posts, newsletters and ads in your style.', "I'll find the audience and plan the week's campaigns."] },
-    workshop: { title: 'Workshop: new skin', steps: ['Stepping on the scanner', 'Scanning body', 'Pick a skin ✓'], lines: ['Workshop! Pick a skin on the right and the arm will install it.', 'Scanning body... Ready for a new look!'] },
+    marketing: { title: 'Marketing: campaign', steps: ['Taking my chair', 'Writing a post', 'Launching ads', 'Reach is growing ✓'], lines: ['Marketing: I write posts, newsletters and ads in your style.', "I'll find the audience and plan the week's campaigns."] },
+    wsLook: { lines: ['What a hologram! That skin suits me.', 'So many skins… Tap the workshop and I will try a new one!'] },
+    workshop: { title: 'Workshop: new skin', steps: ['Flying into the capsule', 'Scanning body', 'Pick a skin ✓'], lines: ['Workshop! Pick a skin on the right and the arm will install it.', 'Scanning body... Ready for a new look!'] },
     tools: { title: 'Tools: integrations', steps: ['Flying to the panel', 'Connecting email', 'Connecting calendar', 'Connecting CRM ✓'], lines: ['Tools: I connect your CRM, email, messengers and calendar.', 'I automate routine: reminders, invoices, website leads.'] },
     portal: { title: 'Portal: business space', steps: ['Setting the console', 'Charging the portal', 'Travelling', 'Back ✓'] },
     sofa: { title: 'Rest on the sofa', steps: ['Sitting down', 'Reading the news'], lines: ["I'll rest a bit and read business news.", 'The sofa is the best place for new ideas.'] },

@@ -5,7 +5,7 @@
  * Меню: кожна кнопка запускає сценарій з actors/nexi/activities.js.
  * ========================================================================== */
 NX.ui.hud = {
-  NAV: ['home'],                // кнопки зон (ai, analytics, marketing, workshop, tools, portal) — разом із зонами
+  NAV: ['home', 'marketing', 'workshop'],   // кнопки зон — разом із зонами (крок 2: маркетинг, майстерня; далі ai, analytics, tools, portal)
   $: id => document.getElementById(id), typed: null,
   init() {
     const nav = this.$('nav');

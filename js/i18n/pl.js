@@ -1,6 +1,6 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
+  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
@@ -17,7 +17,7 @@ NX.i18n.add('pl', {
   scene: {
     ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
     analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND' },
-    marketing: { tags: 'TAGI AI', ads: 'REKLAMY' },
+    marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
     wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
     log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
       msg: { reply: 'odpowiedź w czacie', intent: 'intencja: cena', sync: 'synchronizacja', mail: 'mail wysłany', summary: 'podsumowanie gotowe', lead: 'CRM: nowy lead', api: 'API 200', cpu: 'procesor', langUk: 'język: uk', post: 'post w kolejce',
@@ -33,14 +33,15 @@ NX.i18n.add('pl', {
     go: { projects: 'Lecę do projektów! Sprawdzę terminy.', team: 'Zajrzę do zespołu — kto co robi.', clients: 'Lecę do klientów po nowe wiadomości.' },
     res: { projects: 'Projekty: 3 aktywne, jeden termin jutro. Wszystko zapisałem.', team: 'Zespół: 4 osoby online, dwie czekają na Twoją odpowiedź.', clients: 'Klienci: 3 nowe zgłoszenia, na dwa już odpowiedziałem.' } },
   chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', skin: 'Skórka' },
-    fallback: 'Na razie umiem: pracować i odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Strefy pracy już wkrótce! Co robimy?',
-    greet: 'Cześć! Jestem Nexi. Dotknij kanapy lub okna, a pójdę tam. Dotknij mnie, aby zmienić skórkę.' },
+    fallback: 'Na razie umiem: pracować w marketingu przy swoim biurku, zmieniać skórki w warsztacie, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
+    greet: 'Cześć! Jestem Nexi. Dotknij strefy, kanapy lub okna, a pójdę tam. Dotknij mnie, aby zmienić skórkę.' },
   act: {
-    home: { title: 'Stacja dokująca', steps: ['Wracam do stacji', 'Ładuję się'], lines: ['Cześć! Jestem Nexi, Twój asystent AI dla biznesu. Dotknij kanapy lub okna, a pójdę tam.', 'Jestem w domu, ładuję się. Co robimy?'] },
+    home: { title: 'Stacja dokująca', steps: ['Wracam do stacji', 'Ładuję się'], lines: ['Cześć! Jestem Nexi, Twój asystent AI dla biznesu. Dotknij strefy, kanapy lub okna, a pójdę tam.', 'Jestem w domu, ładuję się. Co robimy?'] },
     ai: { title: 'Centrum AI: odpowiedź klientowi', steps: ['Lecę na biurko', 'Czytam zapytanie', 'Piszę odpowiedź', 'Wysłane ✓'], lines: ['Centrum AI: odpowiadam klientom, piszę maile i podsumowania spotkań.', 'Czytam Twoje dokumenty i w sekundę znajduję to, czego trzeba.', 'Wymyślam pomysły na promocje i nazwy. Opisz zadanie, a się nim zajmę.'] },
     analytics: { title: 'Analityka: raport sprzedaży', steps: ['Siadam przy ekranach', 'Zbieram dane', 'Rysuję wykres', 'Raport gotowy ✓'], lines: ['Analityka: zbieram sprzedaż, ruch i koszty w jeden raport.', 'Widzę, gdzie spada konwersja, i podpowiem, co poprawić.'] },
-    marketing: { title: 'Marketing: kampania', steps: ['Siadam przy ekranie', 'Piszę post', 'Uruchamiam reklamę', 'Zasięg rośnie ✓'], lines: ['Marketing: piszę posty, newslettery i reklamy w Twoim stylu.', 'Dobiorę odbiorców i zaplanuję kampanie na tydzień.'] },
-    workshop: { title: 'Warsztat: nowa skórka', steps: ['Staję na skanerze', 'Skanuję korpus', 'Wybierz skórkę ✓'], lines: ['Warsztat! Wybierz skórkę po prawej, a ramię ją zamontuje.', 'Skanuję korpus... Gotowy na nowy wygląd!'] },
+    marketing: { title: 'Marketing: kampania', steps: ['Siadam w fotelu', 'Piszę post', 'Uruchamiam reklamę', 'Zasięg rośnie ✓'], lines: ['Marketing: piszę posty, newslettery i reklamy w Twoim stylu.', 'Dobiorę odbiorców i zaplanuję kampanie na tydzień.'] },
+    wsLook: { lines: ['Co za hologram! Ta skórka mi pasuje.', 'Tyle skórek… Dotknij warsztatu, a przymierzę nową!'] },
+    workshop: { title: 'Warsztat: nowa skórka', steps: ['Wlatuję do kapsuły', 'Skanuję korpus', 'Wybierz skórkę ✓'], lines: ['Warsztat! Wybierz skórkę po prawej, a ramię ją zamontuje.', 'Skanuję korpus... Gotowy na nowy wygląd!'] },
     tools: { title: 'Narzędzia: integracje', steps: ['Lecę do panelu', 'Podłączam pocztę', 'Podłączam kalendarz', 'Podłączam CRM ✓'], lines: ['Narzędzia: podłączam CRM, pocztę, komunikatory i kalendarz.', 'Automatyzuję rutynę: przypomnienia, faktury, zgłoszenia ze strony.'] },
     portal: { title: 'Portal: przestrzeń firmy', steps: ['Ustawiam konsolę', 'Ładuję portal', 'Podróż', 'Wróciłem ✓'] },
     sofa: { title: 'Odpoczynek na kanapie', steps: ['Siadam na kanapie', 'Czytam wiadomości'], lines: ['Odpocznę chwilę i poczytam wiadomości biznesowe.', 'Kanapa to najlepsze miejsce na nowe pomysły.'] },

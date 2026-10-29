@@ -8,12 +8,16 @@ def s(z): return D / (D + z)
 def P3(x, y, z): k = s(z); return (VP[0] + (x - VP[0]) * k, VP[1] + (y - VP[1]) * k)
 def xworld(X, z): return VP[0] + (X - VP[0]) / s(z)                         # x світу, що видно в стовпчику X на глибині z
 
-def frame(B):
+def frame(B, shear=True):
+    """базис коробки; shear — фронтальний вигляд зони (B['sh'] = [K, z0]: x + K·(z − z0), як у js/objects/arc_kit.js basis)"""
     a = math.radians(B.get('turn', 0)); f = (-math.sin(a), -math.cos(a)); r = (-f[1], f[0])
-    c = (B['x'] - f[0] * B.get('back', 0), B['z'] - f[1] * B.get('back', 0))
-    def P(u, v, y): return (c[0] + r[0] * u - f[0] * v, y, c[1] + r[1] * u - f[1] * v)
+    c = (B['x'] - f[0] * B.get('back', 0), B['z'] - f[1] * B.get('back', 0)); sh = B.get('sh') if shear else None
+    def P(u, v, y):
+        x, z = c[0] + r[0] * u - f[0] * v, c[1] + r[1] * u - f[1] * v
+        return (x + sh[0] * (z - sh[1]) if sh else x, y, z)
     return f, r, P
 def footprint(B):
+    """слід коробки в плані — як її намальовано (зі зсувом фронтального вигляду, якщо він є): перетини й «за стіною» — по ньому"""
     f, r, P = frame(B); w = B['w'] / 2; d = B['dep']
     return [(P(-w, 0, 0)[0], P(-w, 0, 0)[2]), (P(w, 0, 0)[0], P(w, 0, 0)[2]), (P(w, d, 0)[0], P(w, d, 0)[2]), (P(-w, d, 0)[0], P(-w, d, 0)[2])]
 def faces(B):
@@ -23,7 +27,12 @@ def faces(B):
          'right': [P(w, 0, yb), P(w, d, yb), P(w, d, yt), P(w, 0, yt)],
          'top': [P(-w, d, yt), P(w, d, yt), P(w, 0, yt), P(-w, 0, yt)]}
     def vis(name, n):
-        m = [sum(q[i] for q in F[name]) / 4 for i in range(3)]; v = (EYE[0] - m[0], EYE[1] - m[2]); return n[0] * v[0] + n[1] * v[1] > 0
+        m = [sum(q[i] for q in F[name]) / 4 for i in range(3)]; v = (EYE[0] - m[0], EYE[1] - m[2])
+        if B.get('sh'):                                                           # фронтальний вигляд: нормаль зсунутої грані в плані
+            q = F[name]; e = (q[1][0] - q[0][0], q[1][2] - q[0][2]); nn = (e[1], -e[0])
+            if nn[0] * n[0] + nn[1] * n[1] < 0: nn = (-nn[0], -nn[1])
+            n = nn
+        return n[0] * v[0] + n[1] * v[1] > 1e-9
     V = {'front': vis('front', f), 'left': vis('left', (-r[0], -r[1])), 'right': vis('right', r), 'top': yt > VP[1]}
     return F, V
 

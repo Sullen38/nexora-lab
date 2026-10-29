@@ -52,10 +52,14 @@ NX.arc.kit = (() => {
     : /^#(d98aff|c86aff|c8a0ff|e0a0ff)/i.test(h) ? NEON.lil : /^#(ff9a3a|ffb24a)/i.test(h) ? NEON.orange : /^#(ffd27a)/i.test(h) ? NEON.gold : NEON.cyan;
 
   // ---------- геометрія предмета розкладки ----------
-  /** Базис предмета: f — нормаль лиця в плані, r — праворуч; P(u, v, y) — точка: u від середини лиця, v — углиб. */
+  /** Базис предмета: f — нормаль лиця в плані, r — праворуч; P(u, v, y) — точка: u від середини лиця, v — углиб.
+   *  B.sh = [K, z0] — ФРОНТАЛЬНИЙ ВИГЛЯД ЗОНИ (власник: «на ці відділи ми дивимося прямо»): зсув x + K·(z − z0). Тоді
+   *  зона в перспективі кімнати виглядає так, ніби око стоїть прямо перед її серединою (K = (xc − 774) / (D + z0)):
+   *  бокових граней не видно, дальнє — рівно за ближнім, видно лише верх / низ і внутрішні грані (капсула, ніша). */
   function basis(B) {
-    const a = (B.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]], c = [B.x - f[0] * (B.back || 0), B.z - f[1] * (B.back || 0)];
-    return { a, f, r, c, P: (u, v, y) => [c[0] + r[0] * u - f[0] * v, y, c[1] + r[1] * u - f[1] * v] };
+    const a = (B.turn || 0) * Math.PI / 180, f = [-Math.sin(a), -Math.cos(a)], r = [-f[1], f[0]], c = [B.x - f[0] * (B.back || 0), B.z - f[1] * (B.back || 0)], sh = B.sh;
+    return { a, f, r, c, P: sh ? (u, v, y) => { const z = c[1] + r[1] * u - f[1] * v; return [c[0] + r[0] * u - f[0] * v + sh[0] * (z - sh[1]), y, z]; }
+      : (u, v, y) => [c[0] + r[0] * u - f[0] * v, y, c[1] + r[1] * u - f[1] * v] };
   }
   /** Грані коробки / циліндра. k: front, back, left, right, top, bottom, chL, chR, side (циліндр; u — по колу 0..1). */
   function faces(B) {
@@ -90,6 +94,7 @@ NX.arc.kit = (() => {
     out.push({ k: 'bottom', n: [0, 1, 0], poly: [Ob, P(w, 0, yb), P(w, d, yb), P(-w, d, yb)], O: Ob, A: sub(P(w, 0, yb), Ob), B: sub(P(-w, d, yb), Ob), fw: B.w, fh: d });
     if (cl) { const O = P(-w, 0, yt + cl); out.push({ k: 'chL', n: [-r[0], -1, -r[1]], poly: [O, P(-w + cl, 0, yt), P(-w + cl, d, yt), P(-w, d, yt + cl)], O, A: sub(P(-w + cl, 0, yt), O), B: sub(P(-w, d, yt + cl), O), fw: cl * 1.41, fh: d }); }
     if (cr) { const O = P(w - cr, 0, yt); out.push({ k: 'chR', n: [r[0], -1, r[1]], poly: [O, P(w, 0, yt + cr), P(w, d, yt + cr), P(w - cr, d, yt)], O, A: sub(P(w, 0, yt + cr), O), B: sub(P(w - cr, d, yt), O), fw: cr * 1.41, fh: d }); }
+    if (B.sh) out.forEach(F => { let nn = X.newell(F.poly); if (dot(nn, F.n) < 0) nn = [-nn[0], -nn[1], -nn[2]]; const l = Math.hypot(...nn) || 1; F.n = [nn[0] / l, nn[1] / l, nn[2] / l]; });   // фронтальний вигляд: грані зсунуті — нормалі наново
     return out;
   }
   /** Чи видно грань з ока (зовнішня нормаль до ока). */
@@ -210,7 +215,11 @@ NX.arc.kit = (() => {
       const ix = x + h * .62, iy = y + h / 2, ir = h * .28; c.strokeStyle = acc; c.lineWidth = Math.max(.4, h * .05); c.beginPath(); c.arc(ix, iy, ir, 0, 7); c.stroke();
       c.fillStyle = '#06102e'; c.beginPath(); c.arc(ix, iy, ir - h * .04, 0, 7); c.fill(); icon7(c, NX.kit.ICON[o.icon] || NX.kit.ICON.ai, ix, iy, ir * 1.25, acc); tx0 = x + h * 1.05;
     }
-    const tw = x + w - h * .45 - tx0; txt(c, o.text != null ? o.text : NX.t(o.key), tx0 + tw / 2, y + h / 2, tw, h * .4, o.tcol || '#bff8ff', { glow: acc });
+    const tw = x + w - h * .45 - tx0; let sz = h * .4;
+    if (o.uni) {                                                                         // ОДНАКОВИЙ шрифт на всіх вивісках зон (власник, 29.10): під найдовшу назву
+      c.font = `${sz}px "Press Start 2P", monospace`; const wm = Math.max(...o.uni.map(k => c.measureText(NX.t(k)).width)); if (wm > tw) sz *= tw / wm;
+    }
+    txt(c, o.text != null ? o.text : NX.t(o.key), tx0 + tw / 2, y + h / 2, tw, sz, o.tcol || '#bff8ff', { glow: acc });
     c.fillStyle = '#3bff8a'; c.fillRect(x + w - h * .36, y + h / 2 - h * .07, h * .14, h * .14);
   }
 

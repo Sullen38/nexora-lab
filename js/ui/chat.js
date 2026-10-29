@@ -12,13 +12,15 @@ NX.ui.chat = {
   init() {
     const $ = id => document.getElementById(id);
     $('tg').onclick = () => $('panel').classList.toggle('open');
-    this.QUICK.forEach(([n, id]) => { const b = document.createElement('button'); b.dataset.k = n; b.onclick = () => { this.add('u', b.textContent); id === 'skin' ? NX.ui.skinlab.show() : NX.nexi.do(id); }; $('chips').appendChild(b); });
+    this.QUICK.forEach(([n, id]) => { const b = document.createElement('button'); b.dataset.k = n; b.onclick = () => { this.add('u', b.textContent); this.go(id === 'skin' ? 'workshop' : id); }; $('chips').appendChild(b); });
     this.relabel();
     $('ask').onsubmit = e => { e.preventDefault(); const v = $('q').value.trim(); if (!v) return; $('q').value = ''; this.add('u', v); this.reply(v); };
   },
+  /** Запустити сценарій: зона з задачами — з наступною задачею по черзі (ui/zones.js), скін — у майстерню (капсула + лабораторія). */
+  go(id) { if (!NX.acts[id]) return NX.ui.skinlab.show(); NX.ui.zones.has(id) ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); },
   relabel() { document.querySelectorAll('#chips button').forEach(b => b.textContent = NX.t('chat.quick.' + b.dataset.k)); },
   reply(v) {
-    const m = this.kw().find(k => (k[0] === 'skin' || NX.acts[k[0]]) && k[1].test(v)); if (m) return m[0] === 'skin' ? NX.ui.skinlab.show() : NX.nexi.do(m[0]);   // ключі зон, яких ще немає, — пропускаються
+    const m = this.kw().find(k => (k[0] === 'skin' || NX.acts[k[0]]) && k[1].test(v)); if (m) return this.go(m[0] === 'skin' ? 'workshop' : m[0]);   // ключі зон, яких ще немає, — пропускаються
     NX.nexi.lastCmd = NX.time; NX.nexi.temp = 'think'; NX.nexi.tempT = NX.time + 3;
     NX.nexi.say(NX.t('chat.fallback'));
   },

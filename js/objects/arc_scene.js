@@ -19,11 +19,22 @@
  * плавно переходять у передню підлогу кімнати (fadeFloor). Передня підлога кімнати на всю ширину бере віддзеркалення з
  * картинки, міста, рами вікна й цього злиття (patchFront — замість латки міста).
  * Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
+ * Живі частини зон (голограма й маніпулятор майстерні, голо-монітори й крісло маркетингу) — окремі об'єкти поверх цього
+ * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче).
  * ========================================================================== */
 (() => {
   const X = NX.px3d, A = NX.arc.kit, K = NX.kit, F = NX.furn, PZ = NX.persp, { col, pal, ramp, mixc, dim, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
+  const R_HERO = { workshop: 4, marketing: 4 };            // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
+  /** ЗОНА -> СВІТ (для живих частин зон: objects/workshop.js, marketing.js, mk_chair.js): px картинки зони (X, Y) і відступ
+   *  углиб v -> точка світу — як у генераторі (place + фронтальний зсув frontal). Повертає null, якщо зони ще немає. */
+  NX.arc.zone = name => {
+    const pick = k => ['right', 'left'].map(sd => ALL[sd] && ALL[sd][k] && ALL[sd][k][name]).find(Boolean), Z = pick('zoneXf'); if (!Z) return null;
+    const anch = Object.assign({}, ALL.right && ALL.right.anchors, ALL.left && ALL.left.anchors);
+    const W = (Xi, Yi, v = 0) => { let x = Z.ax + (Xi - Z.Xref) * Z.m; const z = Z.az + v * Z.m; if (Z.sh) x += Z.sh[0] * (z - Z.sh[1]); return [x, FL - (Z.Yf - Yi) * Z.m, z]; };
+    return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az };
+  };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
   if (window.ARC_PROF) {                                                              // заміри збірки (лише для відлагодження: window.ARC_PROF = 1)
     const PR = NX.arc.prof = {}, wrap = (o, k, nm) => { const f = o[k]; o[k] = function () { const a = performance.now(), r = f.apply(this, arguments); PR[nm] = (PR[nm] || 0) + performance.now() - a; return r; }; };
@@ -265,7 +276,8 @@
     const out = [], ctr = B => { const { P } = A.basis(B); return P(0, B.dep / 2, (B.yt + B.yb) / 2); }, add = (p, r, k, h) => out.push({ x: p[0], y: p[1], z: p[2], r, k, c: col(h) });
     (Ls.items || []).forEach(B => {
       if (B.glow) add(ctr(B), Math.max(60, (B.gr || 30) * 2.6), .34, B.st === 'clamp' ? '#3be8ff' : B.st === 'neon' ? '#ff4fd8' : B.st === 'gold' ? '#ffd27a' : '#ffb24a');
-      else if (/_booth$|ai_screen|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
+      else if (/_booth$|_screen$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
+      else if (B.id === 'ws_pad') add(ctr(B), 120, .24, '#ff6ae0');                                             // пад капсули — рожеве світло на стіну й підлогу
     });
     (Ls.hang || []).forEach(h => { if (h.kind !== 'vine') add([h.x, (h.from != null ? h.from : 56) + h.len + 8, h.z], 70, .3, h.kind === 'red' ? '#ff4a3a' : '#ffb24a'); });
     if (Ls.hub) add([Ls.hub.x, (Ls.hub.y0 + Ls.hub.y1) / 2, Ls.hub.z - 10], 170, .26, '#3b8aff');
@@ -404,7 +416,7 @@
     const byId = {}; items.forEach(B => byId[B.id] = B);
     const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) { const pad = 12 * (Ls.armk || 1); Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - pad, q[1] - pad, q[0] + pad, q[1] + pad]); }); }
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
-    const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
+    const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_HERO[zn] || R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
     order.forEach(B => drawItem(L, B, reg, side, byId));

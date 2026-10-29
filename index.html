@@ -66,8 +66,8 @@
 <script src="js/actors/nexi/poses.js"></script>
 <script src="js/actors/nexi/physics.js"></script>
 <script src="js/actors/cat/cat_sprite.js"></script>
-<!-- об'єкти кімнати (кожен — окремий блок). Зараз — ЧИСТА ОСНОВА (власник, 29.10): стіни й підлога (3D «по дузі»),
-     вікно з рамами, диван; зони додаємо по черзі (див. docs/HANDOFF.md) -->
+<!-- об'єкти кімнати (кожен — окремий блок). ЧИСТА ОСНОВА (власник, 29.10): стіни й підлога (3D «по дузі»), вікно з рамами,
+     диван; зони додаємо по черзі (див. docs/HANDOFF.md): крок 1–2 — майстерня (скіни) й маркетинг -->
 <script src="js/objects/kit.js"></script>           <!-- NX.kit: кольори, іконки, вивіска зони -->
 <script src="js/objects/screens.js"></script>       <!-- NX.kit: живі екрани (мапа світу — і для планети за вікном) -->
 <script src="js/world/floor_tiles.js"></script>     <!-- плитка передньої підлоги -->
@@ -78,6 +78,12 @@
 <script src="js/objects/arc_paint.js"></script>
 <script src="js/objects/arc_scene.js"></script>
 <script src="js/objects/arc_live.js"></script>
+<!-- ЗОНИ (по черзі, docs/HANDOFF.md): малюнки граней і живі екрани -> живі об'єкти (голограма, маніпулятор, голо-монітори, крісло) -->
+<script src="js/objects/ws_paint.js"></script>      <!-- майстерня (скіни): платформа, капсула, скло сканера, планшети -->
+<script src="js/objects/mk_paint.js"></script>      <!-- маркетинг: стіл, будка з утопленим голо-екраном, проєктори -->
+<script src="js/objects/workshop.js"></script>      <!-- майстерня: голограма Nexi в різних скінах, маніпулятор, сканер -->
+<script src="js/objects/marketing.js"></script>     <!-- маркетинг: голо-монітори, голо-клавіатура, пости й лайки -->
+<script src="js/objects/mk_chair.js"></script>      <!-- крісло маркетингу (3D, обертається; Nexi сідає) -->
 <script src="js/objects/sofa.js"></script>
 <script src="js/objects/cat_corner.js"></script>
 <script src="js/objects/rug_dock.js"></script>
