@@ -20,7 +20,7 @@
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k);
   const { glass, icon, rr, drawer, inset, bolt, led, vent, innerLight } = T;
   const TL = () => NX.objects.tools || {};                                                                  // живий об'єкт зони (наступний крок)
-  const BX0 = 1071, BW = 318, U = X => (X - BX0) / BW;                                                      // частка ширини верстака з px картинки
+  const BX0 = 1118, BW = 224, U = X => (X - BX0) / BW;                                                      // частка ширини верстака з px картинки
   const CY = '#3be8ff', OR = '#ff9a3a', GR = '#3bff8a', PK = '#ff4fd8';
   const PANEL = { r: .8, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .45 };
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
@@ -43,11 +43,11 @@
   PAINT.tl_bench = (c, fw, fh) => {
     c.fillStyle = 'rgba(255,220,170,.25)'; c.fillRect(0, 0, fw, fh * .04); A.neon(c, 0, fh * .08, fw, fh * .08, OR, 1.5);
     c.fillStyle = 'rgba(0,0,0,.42)'; c.fillRect(0, fh * .12, fw, fh * .03);
-    [[1080, 1134], [1326, 1380]].forEach(([a, b], s) => {                                                         // тумби з шухлядами
+    [[1124, 1166], [1294, 1336]].forEach(([a, b], s) => {                                                         // тумби з шухлядами
       const x = fw * U(a), w = fw * (U(b) - U(a)); inset(c, x - 1, fh * .17, w + 2, fh * .76, 'rgba(4,2,14,.65)');
       for (let k = 0; k < 3; k++) drawer(c, x, fh * (.19 + k * .245), w, fh * .225, { led: k === 0 ? (s ? CY : OR) : null, a: '#262060', b: '#151040' });
     });
-    const x0 = fw * U(1146), x1 = fw * U(1314), w = x1 - x0; inset(c, x0, fh * .19, w, fh * .7, 'rgba(6,4,22,.85)', 1.2);   // перфодошка
+    const x0 = fw * U(1174), x1 = fw * U(1286), w = x1 - x0; inset(c, x0, fh * .19, w, fh * .7, 'rgba(6,4,22,.85)', 1.2);   // перфодошка
     for (let y = fh * .25; y < fh * .78; y += 2.6) for (let x = x0 + 2.2; x < x1 - 1.5; x += 2.6) { c.fillStyle = 'rgba(1,1,8,.95)'; c.fillRect(x, y, .75, .75); c.fillStyle = 'rgba(150,130,240,.22)'; c.fillRect(x + .2, y + .75, .55, .25); }
     [['wrench', .14], ['driver', .33], ['hammer', .56], ['pliers', .8]].forEach(([k, f]) => tool(c, k, x0 + w * f, fh * .52, fh * .56, '#d0d8f8'));
     hazard(c, x0 + 1, fh * .8, w * .18, fh * .06); hazard(c, x1 - 1 - w * .18, fh * .8, w * .18, fh * .06);
@@ -56,7 +56,7 @@
   /** Верстак живе: робоче світло кромки ледь «дихає», на тумбах перемигуються світлодіоди. */
   LIVE.tl_bench = { every: 4, draw(c, fw, fh, t) {
     const p = .5 + .5 * Math.sin(t * 1.8); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,80,${.08 + .1 * p})`; c.fillRect(0, fh * .05, fw, fh * .06); c.restore();
-    [[1080, 1134], [1326, 1380]].forEach(([a, b], s) => { const x = fw * U(a), w = fw * (U(b) - U(a)), on = Math.floor(t * 2 + s) % 3; led(c, x + w - 2, fh * (.19 + on * .245) + 1.8, on ? '#ffffff' : (s ? CY : OR), .45); });
+    [[1124, 1166], [1294, 1336]].forEach(([a, b], s) => { const x = fw * U(a), w = fw * (U(b) - U(a)), on = Math.floor(t * 2 + s) % 3; led(c, x + w - 2, fh * (.19 + on * .245) + 1.8, on ? '#ffffff' : (s ? CY : OR), .45); });
   } };
 
   // ---------- ПАНЕЛЬ: шапка, стовпи, планка, низ ----------
