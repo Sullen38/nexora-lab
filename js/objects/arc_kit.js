@@ -132,7 +132,6 @@ NX.arc.kit = (() => {
     neon: { pal: PAL.PFR, q: .46, bev: 1, ins: 0 }, stone: { pal: PAL.STONE, q: .5, bev: 1.6, ins: 0, round: 1 },
     glass: { pal: PAL.GLASS, q: .5, bev: .6, ins: 0, glass: 1 }, chair: { pal: PAL.DESK, q: .5, bev: 1.2, ins: 0 },
   };
-  const BAY = NX.art.BAYER, hsh = NX.art.hash;
   /** Матеріал грані: (u, v, i, j, t) -> колір. o: {tex — текстура грані {d, w, h}, pal/q/neon/... — заміна налаштувань стилю,
    *  side — бічна/верхня грань (без канта, тонша фаска), fog — серпанок за глибиною}. */
   function shader(st, F, B, o = {}) {
@@ -228,7 +227,7 @@ NX.arc.kit = (() => {
    *  txt — напис (key -> NX.t), arch — арка (з вихором), p — многокутник. */
   const isScreen = h => /^#(0a1a5a|0c3a7a|0c2a5a|0a2a7a|0e2a6a|1a5ab0|1a6ab0|0c4a8a|14306a|0a1440|0c3a7a|071a5a)$/i.test(h || '');
   function decos(c, list, fw, fh, t = 0) {
-    const asp = fw / Math.max(1, fh), X0 = u => u * fw, Y0 = v => v * fh;
+    const X0 = u => u * fw, Y0 = v => v * fh;
     for (const d of list || []) {
       const f = d.f;
       switch (d.t) {

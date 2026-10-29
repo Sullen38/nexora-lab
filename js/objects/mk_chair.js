@@ -158,7 +158,7 @@
     return out;
   }
 
-  const ch = NX.addObject({
+  NX.addObject({
     id: 'mkChair', name: 'obj.marketing', act: 'marketing',
     a: 166, tgt: 166, seated: false, idleT: 4,
     ready() { return !!zone(); },

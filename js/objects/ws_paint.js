@@ -228,7 +228,6 @@
     const k = JSON.stringify(look); if (MINI[k]) return MINI[k];
     const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', 0, false), 0, cv); return MINI[k] = cv;
   }
-  NX.arc.wsMini = mini;                                                                                          // і для голограми (objects/workshop.js)
   LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) {
     const { page, sel, since } = pager(t, SKINS.length);
     SKINS[page].forEach((look, q) => { const [x, y, w, h] = cell(fw, fh, q), cv = mini(look), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0;
@@ -243,7 +242,6 @@
   const bbox = cv => { const W = cv.width, H = cv.height, d = cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); } return x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; };
   const itemCv = (id, t) => { const f = Math.floor(t * 10), o = ICV[id] || (ICV[id] = { cv: document.createElement('canvas'), f: -1 }); if (o.f !== f) { o.f = f; renderItem(id, t, o.cv); if (!o.bb) o.bb = bbox(o.cv); } return o; };
-  NX.arc.wsItems = ITEMS;
   LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) {
     const { page, sel, since } = pager(t, ITEMS.length, 3);
     ITEMS[page].forEach((id, q) => { const [x, y, w, h] = cell(fw, fh, q), o = itemCv(id, t), [bx0, by0, bx1, by1] = o.bb, on = q === sel, bob = on ? Math.sin(t * 5) * .5 - .4 : Math.sin(t * 2 + q) * .25, [k, fl] = pop(since, q);

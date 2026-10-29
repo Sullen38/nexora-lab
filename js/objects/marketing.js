@@ -41,7 +41,7 @@
     c.fillStyle = 'rgba(0,0,0,.22)'; for (let y = 0; y < h; y += 3) c.fillRect(0, y, w, 1);   // скан-лінії
   }
 
-  const M = NX.addObject({
+  NX.addObject({
     id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0, boost: 0,
     get span() { const z = zone(); return z && z.box ? [z.box[0] - 40, z.box[1] + 50] : null; },              // box (розкладка) — [x0, x1, y0, y1] на екрані
     get hit() { const z = zone(); if (!z || !z.box) return null; const [x0, x1, y0, y1] = z.box; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 - 8 }; },
@@ -70,7 +70,7 @@
       PANES.forEach((p, n) => {
         const lens = proj(z.anchor(sd2(p)) || z.W(p.X, 276, 26)), sd = p.side, cx = lens[0] + sd * 5, by = lens[1] - 8, Wd = 56, Hd = 39;   // панель трохи назовні від лінзи
         if ((NX.loop.frames + n) % 3 === 0 || !p.ok) { paintPane(p, t); p.ok = 1; }
-        const xo = cx - Wd / 2, xi = cx + Wd / 2, inner = sd < 0 ? xi : xo, dyI = 2.2;                       // внутрішній край (до крісла) — далі й нижчий
+        const xo = cx - Wd / 2, xi = cx + Wd / 2, dyI = 2.2;                       // внутрішній край (до крісла) — далі й нижчий
         const q = sd < 0 ? [[xo, by - Hd], [xi, by - Hd + dyI], [xi, by - dyI * .6], [xo, by]] : [[xo, by - Hd + dyI], [xi, by - Hd], [xi, by], [xo, by - dyI * .6]];
         const fl = .82 + .18 * Math.sin(t * 19 + n) * Math.sin(t * 5.3), gl = Math.sin(t * 1.3 + n * 2) > .985 ? (Math.random() - .5) * 3 : 0;
         c.save(); c.globalCompositeOperation = 'lighter';                                                      // конус світла з лінзи

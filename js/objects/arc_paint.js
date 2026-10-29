@@ -3,8 +3,9 @@
  * ----------------------------------------------------------------------------
  * Пласкі текстури лицьових граней головних частин зон — у стилі картинки кімнати: голо-екрани (скло з переливом
  * і скан-лініями, світні графіки, карта світу, мозок-голограма, іконки), вивіски з NX.t, шухляди з ручками й LED,
- * сканер майстерні, вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій
- * кладе їх у перспективу); живі екрани поверх — objects/arc_live.js.
+ * вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу);
+ * живі екрани поверх — objects/arc_live.js. Майстерня й маркетинг (нові, 29.10) — у своїх файлах: objects/ws_paint.js,
+ * mk_paint.js (вони визначають ws_* / mk_* самі).
  *   NX.arc.paint[id] = (c, fw, fh, B, F) => {...}   — c уже масштабоване: 1 = одиниця грані; fw × fh — розмір грані
  * Усі написи — NX.t (4 мови): nav.* (вивіски), scene.* (екрани). Ключі розкладки — objects/arc_layout.js.
  * ========================================================================== */
@@ -166,18 +167,6 @@ NX.arc = NX.arc || {};
   /** Монітор маркетингу на столі: стрічка постів із сердечками. */
   PAINT.mk_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); for (let k = 0; k < 3; k++) { const y = fh * (.2 + k * .2); c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); icon(c, 'heart', fw * .78, y + fh * .06, fh * .12, '#ff4fd8'); } };
   PAINT.an_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9); };
-  /** Будка маркетингу: ліворуч — стрічка постів з сердечками, праворуч — AI-теги / реклама (мішень, воронка). */
-  PAINT.mk_booth = (c, fw, fh, B) => {
-    const O = R(F(B, 0), fw, fh), L = R(F(B, 1), fw, fh), Rr = R(F(B, 2), fw, fh);
-    if (O) { c.fillStyle = '#060c2e'; rr(c, O[0], O[1], O[2], O[3], 1.6); c.fill(); A.neonRect(c, O[0] + .6, O[1] + .6, O[2] - 1.2, O[3] - 1.2, '#3be8ff', .7, 1.4); }
-    if (L) { glass(c, ...L, { r: 1.2 }); A.txt(c, t('scene.marketing.tags'), L[0] + L[2] / 2, L[1] + L[3] * .1, L[2] * .8, L[3] * .08, '#bff8ff');
-      for (let k = 0; k < 3; k++) { const y = L[1] + L[3] * (.22 + k * .26), h = L[3] * .21; c.fillStyle = 'rgba(30,70,170,.85)'; rr(c, L[0] + L[2] * .08, y, L[2] * .84, h, .8); c.fill();
-        c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(L[0] + L[2] * .12, y + h * .18, h * .64, h * .64); c.fillStyle = 'rgba(200,240,255,.7)'; c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .25, L[2] * .4, .9); c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .55, L[2] * .28, .9);
-        icon(c, 'heart', L[0] + L[2] * .8, y + h * .5, h * .44, '#ff4fd8'); } }
-    if (Rr) { glass(c, ...Rr, { r: 1.2 }); A.txt(c, t('scene.marketing.ads'), Rr[0] + Rr[2] / 2, Rr[1] + Rr[3] * .1, Rr[2] * .8, Rr[3] * .08, '#bff8ff');
-      const cx = Rr[0] + Rr[2] / 2, cy = Rr[1] + Rr[3] * .42, r = Math.min(Rr[2], Rr[3]) * .22; [[1, '#ff4fd8'], [.66, '#7af4ff'], [.33, '#ff4fd8']].forEach(([k, col]) => { c.strokeStyle = col; c.lineWidth = r * .14; c.beginPath(); c.arc(cx, cy, r * k, 0, 7); c.stroke(); }); c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, r * .12, 0, 7); c.fill();
-      [.8, .6, .42].forEach((k, n) => { const w = Rr[2] * k * .8, y = Rr[1] + Rr[3] * (.7 + n * .085); c.fillStyle = ['#3be8ff', '#7a8aff', '#ff7ad0'][n]; c.fillRect(cx - w / 2, y, w, Rr[3] * .06); }); }
-  };
   /** Фасади столів: шухляди з ручками, неонова кромка плити — з розкладки (лінія 'l' угорі). */
   const deskFront = (c, fw, fh, B) => {
     (B.deco || []).forEach(d => {
@@ -186,7 +175,7 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_desk', 'mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
+  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });   // стіл маркетингу — objects/mk_paint.js
   PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
@@ -243,34 +232,6 @@ NX.arc = NX.arc || {};
     lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6, '#ff4fd8', 'rgba(255,80,220,.15)');
   };
   PAINT.hub_strip = (c, fw, fh) => { c.fillStyle = '#0c1238'; c.fillRect(0, 0, fw, fh); for (let k = 0; k < 6; k++) { const y = fh * (.05 + k * .155), h = fh * .13; c.fillStyle = '#140c34'; c.fillRect(fw * .14, y, fw * .72, h); A.neonRect(c, fw * .16, y + .4, fw * .68, h - .8, '#ff4fd8', .5, .6); for (let q = 0; q < 3; q++) { c.fillStyle = hash(k, q) > .4 ? '#3bff8a' : '#ff9af0'; c.fillRect(fw * (.28 + q * .16), y + h * .4, 1.2, 1.2); } } };
-  /** Сканер майстерні: рожеве голо-скло, емблема Nexi з кільцями, іконки скінів, смуга сканування. */
-  PAINT.ws_back = (c, fw, fh, B) => {
-    const d = (B.deco || [])[0], [x, y, w, h] = d ? R(d.f, fw, fh) : [fw * .02, fh * .02, fw * .96, fh * .96], k = (d && d.k || .1) * w;
-    c.beginPath(); c.moveTo(x, y + h); c.lineTo(x + w, y + h); c.lineTo(x + w, y + k); c.lineTo(x + w - k, y); c.lineTo(x + k, y); c.lineTo(x, y + k); c.closePath();
-    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#d03ab8'); g.addColorStop(.5, '#8a1a8a'); g.addColorStop(1, '#4a0a5a'); c.fillStyle = g; c.fill();
-    c.save(); c.clip(); c.fillStyle = 'rgba(255,190,245,.12)'; for (let yy = y; yy < y + h; yy += 1.6) c.fillRect(x, yy, w, .55);
-    const cx = x + w / 2, cy = y + h * .3, r = w * .16; [[1.6, 'rgba(255,170,240,.5)', .8], [1.25, '#ff9af0', .9], [1, '#ffd6f6', 1.2]].forEach(([q, col, lw]) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); c.arc(cx, cy, r * q, 0, 7); c.stroke(); });
-    c.fillStyle = 'rgba(255,214,246,.95)'; c.beginPath(); c.arc(cx, cy, r * .8, 0, 7); c.fill(); icon(c, 'bot', cx, cy, r * 1.1, '#8a1a8a');
-    ['ai', 'heart', 'bolt', 'gear'].forEach((ic, n) => icon(c, ic, x + w * (.14 + n * .24), y + h * .62 + (n % 2) * 4, w * .09, 'rgba(255,200,245,.85)'));
-    c.fillStyle = 'rgba(255,220,250,.6)'; c.fillRect(x, y + h * .5, w, .8); c.restore();
-    c.strokeStyle = '#ff7af0'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y + k); c.lineTo(x + k, y); c.lineTo(x + w - k, y); c.lineTo(x + w, y + k); c.lineTo(x + w, y + h); c.stroke();
-  };
-  /** Платформа майстерні (фасад, як на картинці): рожева неонова кромка, панелі зі швами, бічні блоки з ґратками вентиляції,
-   *  посередині — помаранчева світна щілина в темній ніші (з ґраткою й світлою серцевиною), блакитні LED. Решта — матеріал. */
-  PAINT.ws_base = (c, fw, fh) => {
-    A.neon(c, 0, fh * .05 + .6, fw, fh * .05 + .6, '#ff4fd8', 1.3);
-    const seam = x => { c.fillStyle = 'rgba(3,2,14,.9)'; c.fillRect(x - .5, fh * .16, 1, fh * .8); c.fillStyle = 'rgba(160,140,255,.22)'; c.fillRect(x + .5, fh * .16, .5, fh * .8); };
-    [.17, .3, .7, .83].forEach(f => seam(fw * f));
-    [[.05, .14], [.86, .95]].forEach(([a, b]) => { for (let k = 0; k < 4; k++) { const y = fh * (.36 + k * .13); c.fillStyle = 'rgba(3,2,14,.85)'; rr(c, fw * a, y, fw * (b - a), fh * .06, .4); c.fill(); c.fillStyle = 'rgba(160,140,255,.18)'; c.fillRect(fw * a, y + fh * .06, fw * (b - a), .35); } });
-    const sw = fw * .2, sh = fh * .2, sx = fw / 2 - sw / 2, sy = fh * .46;                      // щілина
-    c.fillStyle = '#07030e'; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.fill(); c.strokeStyle = 'rgba(170,150,255,.35)'; c.lineWidth = .4; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.stroke();
-    const g = c.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#fff0c8'); g.addColorStop(.3, '#ffbe5a'); g.addColorStop(.75, '#ff8a2a'); g.addColorStop(1, '#b8460a'); c.fillStyle = g; rr(c, sx, sy, sw, sh, 1); c.fill();
-    c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(sx + 1.2, sy + sh * .22, sw - 2.4, .6);
-    c.fillStyle = 'rgba(120,40,4,.45)'; for (let x = sx + 2.2; x < sx + sw - 1; x += 2.4) c.fillRect(x, sy + .4, .55, sh - .8);
-    [.22, .245, .755, .78].forEach(f => { c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw * f, fh * .56, .95, 0, 7); c.fill(); c.fillStyle = '#e4fdff'; c.fillRect(fw * f - .3, fh * .56 - .3, .6, .6); });
-  };
-  ['ws_tabL', 'ws_tabR'].forEach((id, n) => { PAINT[id] = (c, fw, fh) => { glass(c, fw * .08, fh * .05, fw * .84, fh * .9, { r: 1, a: '#1a62c8', b: '#0f3a96', c: '#0a2470' }); A.txt(c, t('scene.ws.skins'), fw / 2, fh * .12, fw * .7, fh * .05, '#bff8ff');
-    for (let q = 0; q < 6; q++) { const cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.fillStyle = 'rgba(30,80,180,.8)'; rr(c, cx - fw * .15, cy - fh * .1, fw * .3, fh * .2, .6); c.fill(); icon(c, 'bot', cx, cy, fw * .18, ['#9af8ff', '#ff9af0', '#ffd27a', '#3bff8a', '#c8a0ff', '#ffffff'][(q + n * 2) % 6]); } }; });
   PAINT.ws_term = (c, fw, fh) => { c.fillStyle = '#0c1430'; c.fillRect(0, 0, fw, fh); [[.12, .36], [.42, .66], [.72, .94]].forEach(([a, b], k) => { const y = fh * a, h = fh * (b - a); glass(c, fw * .14, y, fw * .72, h, { r: 1 }); if (k === 0) bars(c, fw * .2, y + h * .3, fw * .6, h * .55, 5, 11); else if (k === 1) for (let q = 0; q < 4; q++) { c.fillStyle = q === 1 ? '#3bff8a' : 'rgba(190,240,255,.7)'; c.fillRect(fw * .2, y + h * (.22 + q * .18), fw * (.5 - q * .06), 1); } else lineChart(c, fw * .2, y + h * .2, fw * .6, h * .6, 3, '#7af4ff', 'rgba(90,220,255,.15)'); }); };
   PAINT.ws_ped = (c, fw, fh) => { c.fillStyle = '#0c2a5a'; rr(c, fw * .1, fh * .46, fw * .8, fh * .46, 1); c.fill(); A.neonRect(c, fw * .1, fh * .46, fw * .8, fh * .46, '#3be8ff', .6, 1); c.strokeStyle = '#7af4ff'; c.lineWidth = .8; c.beginPath(); c.arc(fw / 2, fh * .7, fw * .17, 0, 7); c.stroke(); icon(c, 'gear', fw / 2, fh * .7, fw * .2, '#7af4ff'); };
   /** Дошка інструментів: перфодошка (дірочки), інструменти на гачках у помаранчевій рамці, неонові канти. */

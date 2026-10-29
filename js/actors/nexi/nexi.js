@@ -146,7 +146,8 @@ NX.nexi = {
 
   /* ---------------- МАЛЮВАННЯ ---------------- */
   layer() {
-    return { y: this.depthY(), refl: this.dy == null, draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
+    const s0 = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, hw = SW * s0 / 2 + 24, tp = FOOT * s0;   // межі малюнка (кімната) — для віддзеркалення (core/loop.js)
+    return { y: this.depthY(), refl: this.dy == null, box: [this.x - hw, this.y - tp - 36, this.x + hw, this.y + SH * s0 - tp + 4], draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
       let pname = this.pose || 'stand';
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));

@@ -16,7 +16,6 @@
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
-  const celebrate = () => [{ spin: .5 }, { do: () => { NX.nexi.emote('happy'); NX.nexi.say(NX.pick('act.done')); } }];
   NX.acts = {
     home: { nav: 'home', route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
 

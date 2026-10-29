@@ -85,7 +85,9 @@ NX.room = {
    * Запас — на півширини персонажа, щоб не «влізти» в бік меблів. Задні кути зазвичай за межами підлоги (меблі
    * стоять від стіни), тож обхід — спереду, як ходять люди. */
   obstacles(who) {
-    const cat = who === 'cat', px = cat ? 6 : 13, out = [];
+    const cat = who === 'cat', fr = NX.loop && NX.loop.frames, C = this._obs || (this._obs = {}), key = cat ? 'cat' : 'nexi';
+    if (C[key] && C[key].fr === fr && fr !== undefined) return C[key].list;                 // за кадр рахуємо раз (м'ячик питає щокадру)
+    const px = cat ? 6 : 13, out = []; C[key] = { fr, list: out };
     for (const id in NX.objects) {
       const o = NX.objects[id]; if (cat && o.catOk) continue;                          // свій куточок коту не заважає
       const f = o.foot; if (!f) continue;

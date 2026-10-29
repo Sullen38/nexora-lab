@@ -1244,14 +1244,28 @@ NX.loop = {
     objs.forEach(o => { if (!o.drawBack) return; if (!all && o.span && (o.span[1] < vx0 || o.span[0] > vx1)) return; o.drawBack(c, t); });
     const list = [NX.nexi.layer(), NX.cat.layer()];
     objs.forEach(o => o.layers && list.push(...o.layers(t)));
-    // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true),
-    // малюється ще раз догори дриґом напівпрозоро — предмети "вростають" у стиль картинки
-    // (малюємо в окремий шар, потім кладемо його на підлогу прозоро й з затуханням донизу)
-    const R = this.refl || (this.refl = document.createElement('canvas')); if (R.width !== this.canvas.width || R.height !== this.canvas.height) { R.width = this.canvas.width; R.height = this.canvas.height; }
-    const rc = R.getContext('2d'); rc.isRefl = true; rc.setTransform(1, 0, 0, 1, 0, 0); rc.clearRect(0, 0, R.width, R.height); rc.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k); rc.imageSmoothingEnabled = false;
-    list.filter(l => l && l.refl && l.y > NX.cfg.ROOM_H).forEach(l => { rc.save(); rc.translate(0, 2 * l.y + 1); rc.scale(1, .55 * -1 / .55); rc.scale(1, .55); rc.translate(0, 0); l.draw(rc, t); rc.restore(); });
-    rc.setTransform(1, 0, 0, 1, 0, 0); rc.globalCompositeOperation = 'destination-in'; const fy = (NX.cfg.ROOM_H + NX.cam.top) * k, fg = rc.createLinearGradient(0, fy, 0, R.height); fg.addColorStop(0, 'rgba(0,0,0,.9)'); fg.addColorStop(1, 'rgba(0,0,0,0)'); rc.fillStyle = fg; rc.fillRect(0, 0, R.width, R.height); rc.globalCompositeOperation = 'source-over';
-    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .22; c.drawImage(R, 0, 0); c.restore();
+    // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true), малюється ще раз догори дриґом
+    // напівпрозоро, сплюснуте (SQ) відносно лінії ніг — прямо під персонажем (до 29.10 дзеркалилось відносно y 0, і
+    // «привид» з'являвся далеко внизу екрана). Шар малюється окремо й кладеться на підлогу з затуханням донизу — лише в
+    // прямокутнику, де щось віддзеркалюється (шар дає box — [x0, y0, x1, y1] кімнати), і полотно — розміром з цей
+    // прямокутник, а не з екран: повноекранне полотно щокадру коштувало ~8 мс на телефоні (очищення, маска й копія
+    // всього полотна при кожному drawImage). Немає кого віддзеркалювати — нічого не робимо.
+    const RL = list.filter(l => l && l.refl && l.y > NX.cfg.ROOM_H), SQ = .55, CW = this.canvas.width, CH = this.canvas.height;
+    if (RL.length) {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const l of RL) { const b = l.box; if (!b) { x0 = y0 = -Infinity; x1 = y1 = Infinity; break; }        // без box — увесь екран
+        const yF = l.y + .5, m0 = (1 + SQ) * yF - SQ * b[3], m1 = (1 + SQ) * yF - SQ * b[1]; x0 = Math.min(x0, b[0]); x1 = Math.max(x1, b[2]); y0 = Math.min(y0, m0); y1 = Math.max(y1, m1); }
+      const rx = Math.max(0, Math.floor((x0 - NX.cam.x) * k) - 2), ry = Math.max(0, Math.floor((y0 + NX.cam.top) * k) - 2);
+      const rw = Math.min(CW, Math.ceil((x1 - NX.cam.x) * k) + 2) - rx, rh = Math.min(CH, Math.ceil((y1 + NX.cam.top) * k) + 2) - ry;
+      if (rw > 0 && rh > 0) {
+        const R = this.refl || (this.refl = document.createElement('canvas')), up = v => Math.ceil(v / 64) * 64;   // полотно росте шматками по 64 px
+        if (R.width < rw || R.height < rh || R.width * R.height > 4 * up(rw) * up(rh)) { R.width = Math.max(64, up(rw)); R.height = Math.max(64, up(rh)); }
+        const rc = R.getContext('2d'); rc.isRefl = true; rc.setTransform(1, 0, 0, 1, 0, 0); rc.clearRect(0, 0, rw, rh); rc.setTransform(k, 0, 0, k, -NX.cam.x * k - rx, NX.cam.top * k - ry); rc.imageSmoothingEnabled = false;
+        RL.forEach(l => { rc.save(); rc.translate(0, (1 + SQ) * (l.y + .5)); rc.scale(1, -SQ); l.draw(rc, t); rc.restore(); });
+        rc.setTransform(1, 0, 0, 1, 0, 0); rc.globalCompositeOperation = 'destination-in'; const fy = (NX.cfg.ROOM_H + NX.cam.top) * k - ry, fg = rc.createLinearGradient(0, fy, 0, CH - ry); fg.addColorStop(0, 'rgba(0,0,0,.9)'); fg.addColorStop(1, 'rgba(0,0,0,0)'); rc.fillStyle = fg; rc.fillRect(0, 0, rw, rh); rc.globalCompositeOperation = 'source-over';
+        c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .22; c.drawImage(R, 0, 0, rw, rh, rx, ry, rw, rh); c.restore();
+      }
+    }
     list.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(c, t));
     NX.fx.draw(c);
     NX.input.drawHover(c, t);
@@ -1350,7 +1364,9 @@ NX.room = {
    * Запас — на півширини персонажа, щоб не «влізти» в бік меблів. Задні кути зазвичай за межами підлоги (меблі
    * стоять від стіни), тож обхід — спереду, як ходять люди. */
   obstacles(who) {
-    const cat = who === 'cat', px = cat ? 6 : 13, out = [];
+    const cat = who === 'cat', fr = NX.loop && NX.loop.frames, C = this._obs || (this._obs = {}), key = cat ? 'cat' : 'nexi';
+    if (C[key] && C[key].fr === fr && fr !== undefined) return C[key].list;                 // за кадр рахуємо раз (м'ячик питає щокадру)
+    const px = cat ? 6 : 13, out = []; C[key] = { fr, list: out };
     for (const id in NX.objects) {
       const o = NX.objects[id]; if (cat && o.catOk) continue;                          // свій куточок коту не заважає
       const f = o.foot; if (!f) continue;
@@ -3297,7 +3313,6 @@ function hsl2hex(h, s, l) { const k = n => (n + h / 30) % 12, a = s * Math.min(l
  * дивляться руки (вектор від плеча), підйом ніг, обличчя, предмет у руці.
  * Рухи однакові для всіх скінів, тому скін ніколи не ламає анімацію.
  * ========================================================================== */
-const REST={la:{x:-2,y:7},ra:{x:2,y:7}};
 function poseFor(a,t,moving){
  const p={bob:0,hx:0,hy:0,ll:{dx:0,lift:0},rl:{dx:0,lift:0},la:{x:-2,y:7},ra:{x:2,y:7},blink:(t%4)<.12,moving};
  const s=Math.sin;
@@ -4048,7 +4063,6 @@ NX.arc.kit = (() => {
     neon: { pal: PAL.PFR, q: .46, bev: 1, ins: 0 }, stone: { pal: PAL.STONE, q: .5, bev: 1.6, ins: 0, round: 1 },
     glass: { pal: PAL.GLASS, q: .5, bev: .6, ins: 0, glass: 1 }, chair: { pal: PAL.DESK, q: .5, bev: 1.2, ins: 0 },
   };
-  const BAY = NX.art.BAYER, hsh = NX.art.hash;
   /** Матеріал грані: (u, v, i, j, t) -> колір. o: {tex — текстура грані {d, w, h}, pal/q/neon/... — заміна налаштувань стилю,
    *  side — бічна/верхня грань (без канта, тонша фаска), fog — серпанок за глибиною}. */
   function shader(st, F, B, o = {}) {
@@ -4144,7 +4158,7 @@ NX.arc.kit = (() => {
    *  txt — напис (key -> NX.t), arch — арка (з вихором), p — многокутник. */
   const isScreen = h => /^#(0a1a5a|0c3a7a|0c2a5a|0a2a7a|0e2a6a|1a5ab0|1a6ab0|0c4a8a|14306a|0a1440|0c3a7a|071a5a)$/i.test(h || '');
   function decos(c, list, fw, fh, t = 0) {
-    const asp = fw / Math.max(1, fh), X0 = u => u * fw, Y0 = v => v * fh;
+    const X0 = u => u * fw, Y0 = v => v * fh;
     for (const d of list || []) {
       const f = d.f;
       switch (d.t) {
@@ -4206,8 +4220,9 @@ NX.arc.kit = (() => {
  * ----------------------------------------------------------------------------
  * Пласкі текстури лицьових граней головних частин зон — у стилі картинки кімнати: голо-екрани (скло з переливом
  * і скан-лініями, світні графіки, карта світу, мозок-голограма, іконки), вивіски з NX.t, шухляди з ручками й LED,
- * сканер майстерні, вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій
- * кладе їх у перспективу); живі екрани поверх — objects/arc_live.js.
+ * вихор порталу, перфодошка з інструментами. Малюються раз (у полотно в одиницях грані, рушій кладе їх у перспективу);
+ * живі екрани поверх — objects/arc_live.js. Майстерня й маркетинг (нові, 29.10) — у своїх файлах: objects/ws_paint.js,
+ * mk_paint.js (вони визначають ws_* / mk_* самі).
  *   NX.arc.paint[id] = (c, fw, fh, B, F) => {...}   — c уже масштабоване: 1 = одиниця грані; fw × fh — розмір грані
  * Усі написи — NX.t (4 мови): nav.* (вивіски), scene.* (екрани). Ключі розкладки — objects/arc_layout.js.
  * ========================================================================== */
@@ -4369,18 +4384,6 @@ NX.arc = NX.arc || {};
   /** Монітор маркетингу на столі: стрічка постів із сердечками. */
   PAINT.mk_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); for (let k = 0; k < 3; k++) { const y = fh * (.2 + k * .2); c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); icon(c, 'heart', fw * .78, y + fh * .06, fh * .12, '#ff4fd8'); } };
   PAINT.an_scr = (c, fw, fh) => { glass(c, fw * .08, fh * .08, fw * .84, fh * .78, { r: 1, a: '#1a5ad0' }); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9); };
-  /** Будка маркетингу: ліворуч — стрічка постів з сердечками, праворуч — AI-теги / реклама (мішень, воронка). */
-  PAINT.mk_booth = (c, fw, fh, B) => {
-    const O = R(F(B, 0), fw, fh), L = R(F(B, 1), fw, fh), Rr = R(F(B, 2), fw, fh);
-    if (O) { c.fillStyle = '#060c2e'; rr(c, O[0], O[1], O[2], O[3], 1.6); c.fill(); A.neonRect(c, O[0] + .6, O[1] + .6, O[2] - 1.2, O[3] - 1.2, '#3be8ff', .7, 1.4); }
-    if (L) { glass(c, ...L, { r: 1.2 }); A.txt(c, t('scene.marketing.tags'), L[0] + L[2] / 2, L[1] + L[3] * .1, L[2] * .8, L[3] * .08, '#bff8ff');
-      for (let k = 0; k < 3; k++) { const y = L[1] + L[3] * (.22 + k * .26), h = L[3] * .21; c.fillStyle = 'rgba(30,70,170,.85)'; rr(c, L[0] + L[2] * .08, y, L[2] * .84, h, .8); c.fill();
-        c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][k]; c.fillRect(L[0] + L[2] * .12, y + h * .18, h * .64, h * .64); c.fillStyle = 'rgba(200,240,255,.7)'; c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .25, L[2] * .4, .9); c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .55, L[2] * .28, .9);
-        icon(c, 'heart', L[0] + L[2] * .8, y + h * .5, h * .44, '#ff4fd8'); } }
-    if (Rr) { glass(c, ...Rr, { r: 1.2 }); A.txt(c, t('scene.marketing.ads'), Rr[0] + Rr[2] / 2, Rr[1] + Rr[3] * .1, Rr[2] * .8, Rr[3] * .08, '#bff8ff');
-      const cx = Rr[0] + Rr[2] / 2, cy = Rr[1] + Rr[3] * .42, r = Math.min(Rr[2], Rr[3]) * .22; [[1, '#ff4fd8'], [.66, '#7af4ff'], [.33, '#ff4fd8']].forEach(([k, col]) => { c.strokeStyle = col; c.lineWidth = r * .14; c.beginPath(); c.arc(cx, cy, r * k, 0, 7); c.stroke(); }); c.fillStyle = '#fff'; c.beginPath(); c.arc(cx, cy, r * .12, 0, 7); c.fill();
-      [.8, .6, .42].forEach((k, n) => { const w = Rr[2] * k * .8, y = Rr[1] + Rr[3] * (.7 + n * .085); c.fillStyle = ['#3be8ff', '#7a8aff', '#ff7ad0'][n]; c.fillRect(cx - w / 2, y, w, Rr[3] * .06); }); }
-  };
   /** Фасади столів: шухляди з ручками, неонова кромка плити — з розкладки (лінія 'l' угорі). */
   const deskFront = (c, fw, fh, B) => {
     (B.deco || []).forEach(d => {
@@ -4389,7 +4392,7 @@ NX.arc = NX.arc || {};
         for (let k = 0; k + 1 < cuts.length; k++) drawer(c, x + .4, cuts[k] + .4, w - .8, cuts[k + 1] - cuts[k] - .8, { led: k === 0 ? '#3bff8a' : null }); }
     });
   };
-  ['mk_desk', 'mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });
+  ['mk_deskL', 'mk_deskR', 'an_desk'].forEach(id => { PAINT[id] = deskFront; });   // стіл маркетингу — objects/mk_paint.js
   PAINT.an_scr2 = PAINT.an_scr; PAINT.mk_scr2 = PAINT.mk_scr;                     // другі монітори на столах аналітики й маркетингу
   PAINT.ai_drawers = (c, fw, fh, B) => (B.deco || []).forEach((d, k) => { const [x, y, w, h] = R(d.f, fw, fh); drawer(c, x, y, w, h, { led: k === 0 ? '#3bff8a' : null }); });
   PAINT.ai_top = (c, fw, fh) => { const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#ffc4f2'); g.addColorStop(.3, '#ff6ad5'); g.addColorStop(.75, '#c83aa8'); g.addColorStop(1, '#5a1060'); c.fillStyle = g; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(0, fh * .18, fw, .5); };
@@ -4446,34 +4449,6 @@ NX.arc = NX.arc || {};
     lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6, '#ff4fd8', 'rgba(255,80,220,.15)');
   };
   PAINT.hub_strip = (c, fw, fh) => { c.fillStyle = '#0c1238'; c.fillRect(0, 0, fw, fh); for (let k = 0; k < 6; k++) { const y = fh * (.05 + k * .155), h = fh * .13; c.fillStyle = '#140c34'; c.fillRect(fw * .14, y, fw * .72, h); A.neonRect(c, fw * .16, y + .4, fw * .68, h - .8, '#ff4fd8', .5, .6); for (let q = 0; q < 3; q++) { c.fillStyle = hash(k, q) > .4 ? '#3bff8a' : '#ff9af0'; c.fillRect(fw * (.28 + q * .16), y + h * .4, 1.2, 1.2); } } };
-  /** Сканер майстерні: рожеве голо-скло, емблема Nexi з кільцями, іконки скінів, смуга сканування. */
-  PAINT.ws_back = (c, fw, fh, B) => {
-    const d = (B.deco || [])[0], [x, y, w, h] = d ? R(d.f, fw, fh) : [fw * .02, fh * .02, fw * .96, fh * .96], k = (d && d.k || .1) * w;
-    c.beginPath(); c.moveTo(x, y + h); c.lineTo(x + w, y + h); c.lineTo(x + w, y + k); c.lineTo(x + w - k, y); c.lineTo(x + k, y); c.lineTo(x, y + k); c.closePath();
-    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#d03ab8'); g.addColorStop(.5, '#8a1a8a'); g.addColorStop(1, '#4a0a5a'); c.fillStyle = g; c.fill();
-    c.save(); c.clip(); c.fillStyle = 'rgba(255,190,245,.12)'; for (let yy = y; yy < y + h; yy += 1.6) c.fillRect(x, yy, w, .55);
-    const cx = x + w / 2, cy = y + h * .3, r = w * .16; [[1.6, 'rgba(255,170,240,.5)', .8], [1.25, '#ff9af0', .9], [1, '#ffd6f6', 1.2]].forEach(([q, col, lw]) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); c.arc(cx, cy, r * q, 0, 7); c.stroke(); });
-    c.fillStyle = 'rgba(255,214,246,.95)'; c.beginPath(); c.arc(cx, cy, r * .8, 0, 7); c.fill(); icon(c, 'bot', cx, cy, r * 1.1, '#8a1a8a');
-    ['ai', 'heart', 'bolt', 'gear'].forEach((ic, n) => icon(c, ic, x + w * (.14 + n * .24), y + h * .62 + (n % 2) * 4, w * .09, 'rgba(255,200,245,.85)'));
-    c.fillStyle = 'rgba(255,220,250,.6)'; c.fillRect(x, y + h * .5, w, .8); c.restore();
-    c.strokeStyle = '#ff7af0'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y + k); c.lineTo(x + k, y); c.lineTo(x + w - k, y); c.lineTo(x + w, y + k); c.lineTo(x + w, y + h); c.stroke();
-  };
-  /** Платформа майстерні (фасад, як на картинці): рожева неонова кромка, панелі зі швами, бічні блоки з ґратками вентиляції,
-   *  посередині — помаранчева світна щілина в темній ніші (з ґраткою й світлою серцевиною), блакитні LED. Решта — матеріал. */
-  PAINT.ws_base = (c, fw, fh) => {
-    A.neon(c, 0, fh * .05 + .6, fw, fh * .05 + .6, '#ff4fd8', 1.3);
-    const seam = x => { c.fillStyle = 'rgba(3,2,14,.9)'; c.fillRect(x - .5, fh * .16, 1, fh * .8); c.fillStyle = 'rgba(160,140,255,.22)'; c.fillRect(x + .5, fh * .16, .5, fh * .8); };
-    [.17, .3, .7, .83].forEach(f => seam(fw * f));
-    [[.05, .14], [.86, .95]].forEach(([a, b]) => { for (let k = 0; k < 4; k++) { const y = fh * (.36 + k * .13); c.fillStyle = 'rgba(3,2,14,.85)'; rr(c, fw * a, y, fw * (b - a), fh * .06, .4); c.fill(); c.fillStyle = 'rgba(160,140,255,.18)'; c.fillRect(fw * a, y + fh * .06, fw * (b - a), .35); } });
-    const sw = fw * .2, sh = fh * .2, sx = fw / 2 - sw / 2, sy = fh * .46;                      // щілина
-    c.fillStyle = '#07030e'; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.fill(); c.strokeStyle = 'rgba(170,150,255,.35)'; c.lineWidth = .4; rr(c, sx - 1.6, sy - 1.6, sw + 3.2, sh + 3.2, 1.6); c.stroke();
-    const g = c.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#fff0c8'); g.addColorStop(.3, '#ffbe5a'); g.addColorStop(.75, '#ff8a2a'); g.addColorStop(1, '#b8460a'); c.fillStyle = g; rr(c, sx, sy, sw, sh, 1); c.fill();
-    c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(sx + 1.2, sy + sh * .22, sw - 2.4, .6);
-    c.fillStyle = 'rgba(120,40,4,.45)'; for (let x = sx + 2.2; x < sx + sw - 1; x += 2.4) c.fillRect(x, sy + .4, .55, sh - .8);
-    [.22, .245, .755, .78].forEach(f => { c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw * f, fh * .56, .95, 0, 7); c.fill(); c.fillStyle = '#e4fdff'; c.fillRect(fw * f - .3, fh * .56 - .3, .6, .6); });
-  };
-  ['ws_tabL', 'ws_tabR'].forEach((id, n) => { PAINT[id] = (c, fw, fh) => { glass(c, fw * .08, fh * .05, fw * .84, fh * .9, { r: 1, a: '#1a62c8', b: '#0f3a96', c: '#0a2470' }); A.txt(c, t('scene.ws.skins'), fw / 2, fh * .12, fw * .7, fh * .05, '#bff8ff');
-    for (let q = 0; q < 6; q++) { const cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.fillStyle = 'rgba(30,80,180,.8)'; rr(c, cx - fw * .15, cy - fh * .1, fw * .3, fh * .2, .6); c.fill(); icon(c, 'bot', cx, cy, fw * .18, ['#9af8ff', '#ff9af0', '#ffd27a', '#3bff8a', '#c8a0ff', '#ffffff'][(q + n * 2) % 6]); } }; });
   PAINT.ws_term = (c, fw, fh) => { c.fillStyle = '#0c1430'; c.fillRect(0, 0, fw, fh); [[.12, .36], [.42, .66], [.72, .94]].forEach(([a, b], k) => { const y = fh * a, h = fh * (b - a); glass(c, fw * .14, y, fw * .72, h, { r: 1 }); if (k === 0) bars(c, fw * .2, y + h * .3, fw * .6, h * .55, 5, 11); else if (k === 1) for (let q = 0; q < 4; q++) { c.fillStyle = q === 1 ? '#3bff8a' : 'rgba(190,240,255,.7)'; c.fillRect(fw * .2, y + h * (.22 + q * .18), fw * (.5 - q * .06), 1); } else lineChart(c, fw * .2, y + h * .2, fw * .6, h * .6, 3, '#7af4ff', 'rgba(90,220,255,.15)'); }); };
   PAINT.ws_ped = (c, fw, fh) => { c.fillStyle = '#0c2a5a'; rr(c, fw * .1, fh * .46, fw * .8, fh * .46, 1); c.fill(); A.neonRect(c, fw * .1, fh * .46, fw * .8, fh * .46, '#3be8ff', .6, 1); c.strokeStyle = '#7af4ff'; c.lineWidth = .8; c.beginPath(); c.arc(fw / 2, fh * .7, fw * .17, 0, 7); c.stroke(); icon(c, 'gear', fw / 2, fh * .7, fw * .2, '#7af4ff'); };
   /** Дошка інструментів: перфодошка (дірочки), інструменти на гачках у помаранчевій рамці, неонові канти. */
@@ -4705,7 +4680,7 @@ NX.arc = NX.arc || {};
   }
   function wallLayer(Ls, side, clipPoly) {
     const W = catmull(Ls.wall, 4), sgn = side === 'right' ? 1 : -1, b = side === 'right' ? [MID - SEAM, -2, 1547, 478] : [-12, -2, MID + SEAM, 478];   // підлога — і під вікном, до середини
-    const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 }), fidW = wid;
+    const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 });
     const lights = lightsOf(Ls, side);
     // довжина дуги й точка стіни за відстанню s від відкосу
     const SEG = []; let tot = 0; for (let k = 0; k + 1 < W.length; k++) { const len = Math.hypot(W[k + 1][0] - W[k][0], W[k + 1][1] - W[k][1]); SEG.push([tot, len, W[k], W[k + 1]]); tot += len; }
@@ -5048,7 +5023,8 @@ NX.arc = NX.arc || {};
  * objects/arc_live.js — ЖИВЕ НА КРИЛАХ «ПО ДУЗІ»: екрани, сканер, вихор (оживає, коли в розкладці є предмет з таким id)
  * ----------------------------------------------------------------------------
  * Нерухоме обох крил — одне полотно (objects/arc_scene.js). Поверх нього тут малюється те, що рухається:
- * вміст екранів (графіки, журнали, карта з пінгами, мозок із нейронами), скло сканера майстерні, вихор порталу.
+ * вміст екранів (графіки, журнали, карта з пінгами, мозок із нейронами), вихор порталу. Живе майстерні й маркетингу —
+ * у їхніх файлах (objects/ws_paint.js, mk_paint.js).
  *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
  *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
@@ -5061,7 +5037,7 @@ NX.arc = NX.arc || {};
 (() => {
   const K = NX.kit, F = NX.furn, X = NX.px3d, hash = NX.art.hash, T = NX.arc.pt, LIVE = NX.arc.LIVE = {};
   const { glass, bars, lineChart, donut, icon } = T, Fd = T.F, Rr = T.R;
-  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
   const PANEL = { r: 1, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .5 };
 
   /** Журнал подій «рядками»: кольорова мітка рівня (OK / AI / NET / WARN / ERR) і сіра лінія-повідомлення; новий рядок
@@ -5105,35 +5081,10 @@ NX.arc = NX.arc || {};
     for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
   LIVE.an_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .2, fw * .76, fh * .6, PANEL); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9 + t * .5); } };
   LIVE.an_scr2 = LIVE.an_scr; LIVE.mk_scr2 = LIVE.mk_scr;
-  LIVE.mk_booth = { every: 3, draw(c, fw, fh, t, B) {
-    const L = Rr(Fd(B, 1), fw, fh), R2 = Rr(Fd(B, 2), fw, fh);
-    if (L) {                                                                                                                         // стрічка постів повзе вгору, сердечка спливають
-      const y0 = L[1] + L[3] * .2, h0 = L[3] * .76; glass(c, L[0] + L[2] * .04, y0, L[2] * .92, h0, PANEL); c.save(); c.beginPath(); c.rect(L[0] + L[2] * .04, y0, L[2] * .92, h0); c.clip();
-      const step = L[3] * .26, off = (t * 4) % step;
-      for (let k = -1; k < 4; k++) { const y = y0 + k * step - off + 1, h = L[3] * .21, n = Math.floor(t * 4 / step) + k; c.fillStyle = 'rgba(30,70,170,.85)'; c.fillRect(L[0] + L[2] * .08, y, L[2] * .84, h);
-        c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][((n % 3) + 3) % 3]; c.fillRect(L[0] + L[2] * .12, y + h * .18, h * .64, h * .64); c.fillStyle = 'rgba(200,240,255,.7)'; c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .25, L[2] * .4, .9); c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .55, L[2] * .28, .9);
-        icon(c, 'heart', L[0] + L[2] * .8, y + h * .5, h * .44, '#ff4fd8'); }
-      c.restore();
-      for (let k = 0; k < 3; k++) { const ph = (t * .5 + k * .33) % 1, x = L[0] + L[2] * (.7 + .1 * Math.sin(k * 3 + t)), y = L[1] + L[3] * (.9 - ph * .7); c.globalAlpha = 1 - ph; icon(c, 'heart', x, y, 2.2, '#ff9af0'); c.globalAlpha = 1; }
-    }
-    if (R2) { const cx = R2[0] + R2[2] / 2, cy = R2[1] + R2[3] * .42, r = Math.min(R2[2], R2[3]) * .22, p = .5 + .5 * Math.sin(t * 2.4);
-      glass(c, cx - r * 1.35, cy - r * 1.35, r * 2.7, r * 2.7, { r: r * 1.3, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .01 });
-      [[1, '#ff4fd8'], [.66, '#7af4ff'], [.33, '#ff4fd8']].forEach(([k, col]) => { c.strokeStyle = col; c.lineWidth = r * .14; c.beginPath(); c.arc(cx, cy, r * k * (.92 + .08 * p), 0, 7); c.stroke(); });
-      c.strokeStyle = `rgba(255,150,240,${1 - (t * .8) % 1})`; c.lineWidth = .6; c.beginPath(); c.arc(cx, cy, r * (1 + (t * .8) % 1 * .3), 0, 7); c.stroke(); }
-  } };
   // ---------- праве крило ----------
   LIVE.hub = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .085, fh * .27, fw * .62, fh * .385, PANEL); K.scrMap(c, fw * .09, fh * .28, fw * .6, fh * .36, t, { hot: ['kyiv', 'warsaw', 'amsterdam'] });
     glass(c, fw * .065, fh * .775, fw * .87, fh * .15, { r: .6, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .01 }); lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6 + t * .8, '#ff4fd8', 'rgba(255,80,220,.15)');
     c.fillStyle = Math.sin(t * 3) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(fw * .08, fh * .72, 2, 2); } };
-  LIVE.ws_back = { every: 3, draw(c, fw, fh, t, B) {
-    const d = (B.deco || [])[0], [x, y, w, h] = d ? Rr(d.f, fw, fh) : [fw * .02, fh * .02, fw * .96, fh * .96], cx = x + w / 2, cy = y + h * .3, r = w * .16;
-    c.save(); c.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 3; k++) { const a = t * (k % 2 ? -1.2 : .9) + k; c.strokeStyle = ['rgba(255,170,240,.8)', 'rgba(255,214,246,.7)', 'rgba(120,230,255,.6)'][k]; c.lineWidth = .9; c.setLineDash([3, 2.4]); c.beginPath(); c.arc(cx, cy, r * (1.35 + k * .22), a, a + 4.6); c.stroke(); }
-    c.setLineDash([]); const sy = y + h * ((t * .35) % 1), g = c.createLinearGradient(0, sy - 6, 0, sy + 1); g.addColorStop(0, 'rgba(255,120,240,0)'); g.addColorStop(1, 'rgba(255,200,250,.7)'); c.fillStyle = g; c.fillRect(x + 1, sy - 6, w - 2, 7);
-    for (let k = 0; k < 6; k++) { const ph = (t * .3 + k / 6) % 1; c.globalAlpha = Math.sin(ph * Math.PI); icon(c, ['ai', 'heart', 'bolt', 'gear', 'bot', 'chart'][k], x + w * (.15 + .7 * hash(k, 2)), y + h * (.95 - ph * .55), w * .07, '#ffd6f6'); }
-    c.restore();
-  } };
-  [['ws_tabL', 0], ['ws_tabR', 3]].forEach(([id, sh]) => { LIVE[id] = { every: 4, draw(c, fw, fh, t) { const q = (Math.floor(t * 1.5) + sh) % 6, cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.strokeStyle = '#ffffff'; c.lineWidth = .7; c.strokeRect(cx - fw * .16, cy - fh * .11, fw * .32, fh * .22); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(cx - fw * .15, cy - fh * .1, fw * .3, fh * .2); } }; });
   LIVE.ws_term = { every: 4, draw(c, fw, fh, t) { const y = fh * .42, h = fh * .24; glass(c, fw * .14, y, fw * .72, h, { r: 1 }); logLines(c, fw * .16, y + h * .08, fw * .68, h * .84, t, 5); } };
   LIVE.tl_tiles = { every: 3, draw(c, fw, fh, t) { const k = Math.floor(t * .8) % 3, f = (t * .8) % 1, x = fw * (.03 + k * .325); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,240,255,${.28 * Math.sin(f * Math.PI)})`; c.fillRect(x, fh * .08, fw * .3, fh * .84);
     c.fillStyle = '#3bff8a'; c.fillRect(x + fw * .24, fh * .12, 2, 2); c.restore(); } };
@@ -5424,7 +5375,6 @@ NX.arc = NX.arc || {};
     const k = JSON.stringify(look); if (MINI[k]) return MINI[k];
     const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', 0, false), 0, cv); return MINI[k] = cv;
   }
-  NX.arc.wsMini = mini;                                                                                          // і для голограми (objects/workshop.js)
   LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) {
     const { page, sel, since } = pager(t, SKINS.length);
     SKINS[page].forEach((look, q) => { const [x, y, w, h] = cell(fw, fh, q), cv = mini(look), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0;
@@ -5439,7 +5389,6 @@ NX.arc = NX.arc || {};
   const bbox = cv => { const W = cv.width, H = cv.height, d = cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); } return x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; };
   const itemCv = (id, t) => { const f = Math.floor(t * 10), o = ICV[id] || (ICV[id] = { cv: document.createElement('canvas'), f: -1 }); if (o.f !== f) { o.f = f; renderItem(id, t, o.cv); if (!o.bb) o.bb = bbox(o.cv); } return o; };
-  NX.arc.wsItems = ITEMS;
   LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) {
     const { page, sel, since } = pager(t, ITEMS.length, 3);
     ITEMS[page].forEach((id, q) => { const [x, y, w, h] = cell(fw, fh, q), o = itemCv(id, t), [bx0, by0, bx1, by1] = o.bb, on = q === sel, bob = on ? Math.sin(t * 5) * .5 - .4 : Math.sin(t * 2 + q) * .25, [k, fl] = pop(since, q);
@@ -5470,7 +5419,7 @@ NX.arc = NX.arc || {};
  * ========================================================================== */
 (() => {
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k);
-  const { glass, bars, lineChart, icon, rr, drawer } = T;
+  const { glass, icon, rr, drawer } = T;
   // додаткові іконки 7×7 (до NX.arc.pt.IC): око (охоплення), курсор (кліки), «поділитись», @
   Object.assign(T.IC, {
     eye: ['.......', '..XXX..', '.X...X.', 'X..X..X', '.X...X.', '..XXX..', '.......'], cursor: ['X......', 'XX.....', 'XXX....', 'XXXX...', 'XXXXX..', '..XX...', '...XX..'],
@@ -5901,7 +5850,7 @@ NX.arc = NX.arc || {};
     c.fillStyle = 'rgba(0,0,0,.22)'; for (let y = 0; y < h; y += 3) c.fillRect(0, y, w, 1);   // скан-лінії
   }
 
-  const M = NX.addObject({
+  NX.addObject({
     id: 'marketing', name: 'obj.marketing', act: 'marketing', active: false, prog: 0, boost: 0,
     get span() { const z = zone(); return z && z.box ? [z.box[0] - 40, z.box[1] + 50] : null; },              // box (розкладка) — [x0, x1, y0, y1] на екрані
     get hit() { const z = zone(); if (!z || !z.box) return null; const [x0, x1, y0, y1] = z.box; return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 - 8 }; },
@@ -5930,7 +5879,7 @@ NX.arc = NX.arc || {};
       PANES.forEach((p, n) => {
         const lens = proj(z.anchor(sd2(p)) || z.W(p.X, 276, 26)), sd = p.side, cx = lens[0] + sd * 5, by = lens[1] - 8, Wd = 56, Hd = 39;   // панель трохи назовні від лінзи
         if ((NX.loop.frames + n) % 3 === 0 || !p.ok) { paintPane(p, t); p.ok = 1; }
-        const xo = cx - Wd / 2, xi = cx + Wd / 2, inner = sd < 0 ? xi : xo, dyI = 2.2;                       // внутрішній край (до крісла) — далі й нижчий
+        const xo = cx - Wd / 2, xi = cx + Wd / 2, dyI = 2.2;                       // внутрішній край (до крісла) — далі й нижчий
         const q = sd < 0 ? [[xo, by - Hd], [xi, by - Hd + dyI], [xi, by - dyI * .6], [xo, by]] : [[xo, by - Hd + dyI], [xi, by - Hd], [xi, by], [xo, by - dyI * .6]];
         const fl = .82 + .18 * Math.sin(t * 19 + n) * Math.sin(t * 5.3), gl = Math.sin(t * 1.3 + n * 2) > .985 ? (Math.random() - .5) * 3 : 0;
         c.save(); c.globalCompositeOperation = 'lighter';                                                      // конус світла з лінзи
@@ -6136,7 +6085,7 @@ NX.arc = NX.arc || {};
     return out;
   }
 
-  const ch = NX.addObject({
+  NX.addObject({
     id: 'mkChair', name: 'obj.marketing', act: 'marketing',
     a: 166, tgt: 166, seated: false, idleT: 4,
     ready() { return !!zone(); },
@@ -6689,7 +6638,8 @@ NX.nexi = {
 
   /* ---------------- МАЛЮВАННЯ ---------------- */
   layer() {
-    return { y: this.depthY(), refl: this.dy == null, draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
+    const s0 = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, hw = SW * s0 / 2 + 24, tp = FOOT * s0;   // межі малюнка (кімната) — для віддзеркалення (core/loop.js)
+    return { y: this.depthY(), refl: this.dy == null, box: [this.x - hw, this.y - tp - 36, this.x + hw, this.y + SH * s0 - tp + 4], draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
       let pname = this.pose || 'stand';
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
@@ -6741,7 +6691,6 @@ NX.nexi = {
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
-  const celebrate = () => [{ spin: .5 }, { do: () => { NX.nexi.emote('happy'); NX.nexi.say(NX.pick('act.done')); } }];
   NX.acts = {
     home: { nav: 'home', route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
 
@@ -6886,7 +6835,8 @@ NX.cat = {
   },
   layer() {
     const onSofa = NX.objects.sofa && NX.objects.sofa.holds(this.x, this.y, this.ground);   // на дивані — поверх нього (диван може стояти ближче до глядача)
-    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, draw: c => {
+    const bs = NX.room.scaleAt(this.depthY()) * .82, bw = CAT_W * bs / 2 + 3;                // межі малюнка — для віддзеркалення (core/loop.js)
+    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, box: [this.x - bw, this.y - CAT_H * bs - 3, this.x + bw, this.y + 3], draw: c => {
       const s = NX.room.scaleAt(this.depthY()) * .82, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
       if (this._rt !== NX.time) { this._rt = NX.time; drawCat(this.pose, this.frame, NX.time, this.cv); }
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();

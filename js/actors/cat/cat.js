@@ -73,7 +73,8 @@ NX.cat = {
   },
   layer() {
     const onSofa = NX.objects.sofa && NX.objects.sofa.holds(this.x, this.y, this.ground);   // на дивані — поверх нього (диван може стояти ближче до глядача)
-    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, draw: c => {
+    const bs = NX.room.scaleAt(this.depthY()) * .82, bw = CAT_W * bs / 2 + 3;                // межі малюнка — для віддзеркалення (core/loop.js)
+    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, box: [this.x - bw, this.y - CAT_H * bs - 3, this.x + bw, this.y + 3], draw: c => {
       const s = NX.room.scaleAt(this.depthY()) * .82, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
       if (this._rt !== NX.time) { this._rt = NX.time; drawCat(this.pose, this.frame, NX.time, this.cv); }
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();

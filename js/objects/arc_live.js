@@ -2,7 +2,8 @@
  * objects/arc_live.js — ЖИВЕ НА КРИЛАХ «ПО ДУЗІ»: екрани, сканер, вихор (оживає, коли в розкладці є предмет з таким id)
  * ----------------------------------------------------------------------------
  * Нерухоме обох крил — одне полотно (objects/arc_scene.js). Поверх нього тут малюється те, що рухається:
- * вміст екранів (графіки, журнали, карта з пінгами, мозок із нейронами), скло сканера майстерні, вихор порталу.
+ * вміст екранів (графіки, журнали, карта з пінгами, мозок із нейронами), вихор порталу. Живе майстерні й маркетингу —
+ * у їхніх файлах (objects/ws_paint.js, mk_paint.js).
  *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
  *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
@@ -15,7 +16,7 @@ NX.arc = NX.arc || {};
 (() => {
   const K = NX.kit, F = NX.furn, X = NX.px3d, hash = NX.art.hash, T = NX.arc.pt, LIVE = NX.arc.LIVE = {};
   const { glass, bars, lineChart, donut, icon } = T, Fd = T.F, Rr = T.R;
-  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
   const PANEL = { r: 1, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .5 };
 
   /** Журнал подій «рядками»: кольорова мітка рівня (OK / AI / NET / WARN / ERR) і сіра лінія-повідомлення; новий рядок
@@ -59,35 +60,10 @@ NX.arc = NX.arc || {};
     for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
   LIVE.an_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .2, fw * .76, fh * .6, PANEL); bars(c, fw * .16, fh * .26, fw * .68, fh * .5, 5, 9 + t * .5); } };
   LIVE.an_scr2 = LIVE.an_scr; LIVE.mk_scr2 = LIVE.mk_scr;
-  LIVE.mk_booth = { every: 3, draw(c, fw, fh, t, B) {
-    const L = Rr(Fd(B, 1), fw, fh), R2 = Rr(Fd(B, 2), fw, fh);
-    if (L) {                                                                                                                         // стрічка постів повзе вгору, сердечка спливають
-      const y0 = L[1] + L[3] * .2, h0 = L[3] * .76; glass(c, L[0] + L[2] * .04, y0, L[2] * .92, h0, PANEL); c.save(); c.beginPath(); c.rect(L[0] + L[2] * .04, y0, L[2] * .92, h0); c.clip();
-      const step = L[3] * .26, off = (t * 4) % step;
-      for (let k = -1; k < 4; k++) { const y = y0 + k * step - off + 1, h = L[3] * .21, n = Math.floor(t * 4 / step) + k; c.fillStyle = 'rgba(30,70,170,.85)'; c.fillRect(L[0] + L[2] * .08, y, L[2] * .84, h);
-        c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff'][((n % 3) + 3) % 3]; c.fillRect(L[0] + L[2] * .12, y + h * .18, h * .64, h * .64); c.fillStyle = 'rgba(200,240,255,.7)'; c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .25, L[2] * .4, .9); c.fillRect(L[0] + L[2] * .12 + h * .8, y + h * .55, L[2] * .28, .9);
-        icon(c, 'heart', L[0] + L[2] * .8, y + h * .5, h * .44, '#ff4fd8'); }
-      c.restore();
-      for (let k = 0; k < 3; k++) { const ph = (t * .5 + k * .33) % 1, x = L[0] + L[2] * (.7 + .1 * Math.sin(k * 3 + t)), y = L[1] + L[3] * (.9 - ph * .7); c.globalAlpha = 1 - ph; icon(c, 'heart', x, y, 2.2, '#ff9af0'); c.globalAlpha = 1; }
-    }
-    if (R2) { const cx = R2[0] + R2[2] / 2, cy = R2[1] + R2[3] * .42, r = Math.min(R2[2], R2[3]) * .22, p = .5 + .5 * Math.sin(t * 2.4);
-      glass(c, cx - r * 1.35, cy - r * 1.35, r * 2.7, r * 2.7, { r: r * 1.3, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .01 });
-      [[1, '#ff4fd8'], [.66, '#7af4ff'], [.33, '#ff4fd8']].forEach(([k, col]) => { c.strokeStyle = col; c.lineWidth = r * .14; c.beginPath(); c.arc(cx, cy, r * k * (.92 + .08 * p), 0, 7); c.stroke(); });
-      c.strokeStyle = `rgba(255,150,240,${1 - (t * .8) % 1})`; c.lineWidth = .6; c.beginPath(); c.arc(cx, cy, r * (1 + (t * .8) % 1 * .3), 0, 7); c.stroke(); }
-  } };
   // ---------- праве крило ----------
   LIVE.hub = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .085, fh * .27, fw * .62, fh * .385, PANEL); K.scrMap(c, fw * .09, fh * .28, fw * .6, fh * .36, t, { hot: ['kyiv', 'warsaw', 'amsterdam'] });
     glass(c, fw * .065, fh * .775, fw * .87, fh * .15, { r: .6, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .01 }); lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6 + t * .8, '#ff4fd8', 'rgba(255,80,220,.15)');
     c.fillStyle = Math.sin(t * 3) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(fw * .08, fh * .72, 2, 2); } };
-  LIVE.ws_back = { every: 3, draw(c, fw, fh, t, B) {
-    const d = (B.deco || [])[0], [x, y, w, h] = d ? Rr(d.f, fw, fh) : [fw * .02, fh * .02, fw * .96, fh * .96], cx = x + w / 2, cy = y + h * .3, r = w * .16;
-    c.save(); c.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 3; k++) { const a = t * (k % 2 ? -1.2 : .9) + k; c.strokeStyle = ['rgba(255,170,240,.8)', 'rgba(255,214,246,.7)', 'rgba(120,230,255,.6)'][k]; c.lineWidth = .9; c.setLineDash([3, 2.4]); c.beginPath(); c.arc(cx, cy, r * (1.35 + k * .22), a, a + 4.6); c.stroke(); }
-    c.setLineDash([]); const sy = y + h * ((t * .35) % 1), g = c.createLinearGradient(0, sy - 6, 0, sy + 1); g.addColorStop(0, 'rgba(255,120,240,0)'); g.addColorStop(1, 'rgba(255,200,250,.7)'); c.fillStyle = g; c.fillRect(x + 1, sy - 6, w - 2, 7);
-    for (let k = 0; k < 6; k++) { const ph = (t * .3 + k / 6) % 1; c.globalAlpha = Math.sin(ph * Math.PI); icon(c, ['ai', 'heart', 'bolt', 'gear', 'bot', 'chart'][k], x + w * (.15 + .7 * hash(k, 2)), y + h * (.95 - ph * .55), w * .07, '#ffd6f6'); }
-    c.restore();
-  } };
-  [['ws_tabL', 0], ['ws_tabR', 3]].forEach(([id, sh]) => { LIVE[id] = { every: 4, draw(c, fw, fh, t) { const q = (Math.floor(t * 1.5) + sh) % 6, cx = fw * (.32 + (q % 2) * .36), cy = fh * (.3 + Math.floor(q / 2) * .24); c.strokeStyle = '#ffffff'; c.lineWidth = .7; c.strokeRect(cx - fw * .16, cy - fh * .11, fw * .32, fh * .22); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(cx - fw * .15, cy - fh * .1, fw * .3, fh * .2); } }; });
   LIVE.ws_term = { every: 4, draw(c, fw, fh, t) { const y = fh * .42, h = fh * .24; glass(c, fw * .14, y, fw * .72, h, { r: 1 }); logLines(c, fw * .16, y + h * .08, fw * .68, h * .84, t, 5); } };
   LIVE.tl_tiles = { every: 3, draw(c, fw, fh, t) { const k = Math.floor(t * .8) % 3, f = (t * .8) % 1, x = fw * (.03 + k * .325); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(120,240,255,${.28 * Math.sin(f * Math.PI)})`; c.fillRect(x, fh * .08, fw * .3, fh * .84);
     c.fillStyle = '#3bff8a'; c.fillRect(x + fw * .24, fh * .12, 2, 2); c.restore(); } };

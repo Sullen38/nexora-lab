@@ -12,7 +12,7 @@
  * ========================================================================== */
 (() => {
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash, t_ = k => NX.t(k);
-  const { glass, bars, lineChart, icon, rr, drawer } = T;
+  const { glass, icon, rr, drawer } = T;
   // додаткові іконки 7×7 (до NX.arc.pt.IC): око (охоплення), курсор (кліки), «поділитись», @
   Object.assign(T.IC, {
     eye: ['.......', '..XXX..', '.X...X.', 'X..X..X', '.X...X.', '..XXX..', '.......'], cursor: ['X......', 'XX.....', 'XXX....', 'XXXX...', 'XXXXX..', '..XX...', '...XX..'],

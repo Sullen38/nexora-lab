@@ -196,7 +196,7 @@
   }
   function wallLayer(Ls, side, clipPoly) {
     const W = catmull(Ls.wall, 4), sgn = side === 'right' ? 1 : -1, b = side === 'right' ? [MID - SEAM, -2, 1547, 478] : [-12, -2, MID + SEAM, 478];   // підлога — і під вікном, до середини
-    const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 }), fidW = wid;
+    const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 });
     const lights = lightsOf(Ls, side);
     // довжина дуги й точка стіни за відстанню s від відкосу
     const SEG = []; let tot = 0; for (let k = 0; k + 1 < W.length; k++) { const len = Math.hypot(W[k + 1][0] - W[k][0], W[k + 1][1] - W[k][1]); SEG.push([tot, len, W[k], W[k + 1]]); tot += len; }
