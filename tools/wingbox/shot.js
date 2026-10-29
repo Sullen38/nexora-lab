@@ -6,7 +6,7 @@
 // --layout підставляє розкладку генератора (window.RWBOX) без перебудови сайту; без нього — та, що вшита в arc_layout.js.
 // --hash — додаток до адреси (мова: lang-en / lang-pl / lang-nl; за замовчуванням українська).
 // --clean 1 — без бабла Nexi над сценою (щоб на знімку було видно зони цілком).
-// Перед знімками: python3 tools/build.py (знімки беруть dist/). Знімок — коли 3D зібралось. Помилки сторінки друкуються в кінці.
+// Перед знімками: python3 tools/build.py (знімки беруть dist/). Знімок — коли 3D зібралось і вітальна заставка зникла. Помилки сторінки друкуються в кінці.
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
@@ -23,7 +23,7 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
     p.on('pageerror', e => errs.push(e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e.message));
     p.on('console', m => { if (m.type() === 'error' && !/fonts|ERR_TUNNEL|net::/.test(m.text())) errs.push(m.text()); });
     await p.goto(HTML + '#' + hash); if (opt.clean) await p.addStyleTag({ content: '#bub{display:none!important}' }); await p.waitForTimeout(1500);
-    await p.waitForFunction(() => NX.arc && NX.arc.built && NX.arc.built.left && NX.arc.built.right, null, { timeout: 30000 }); await p.waitForTimeout(600);   // 3D: дочекатися збірки (по шару за кадр)
+    await p.waitForFunction(() => NX.arc && NX.arc.built && NX.arc.built.left && NX.arc.built.right && (!NX.boot || NX.boot.done), null, { timeout: 90000 }); await p.waitForTimeout(600);   // 3D зібрано, вітальна заставка зникла
     return p;
   }
   const crop = async (p, x0, y0, x1, y1, file) => {

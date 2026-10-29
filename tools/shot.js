@@ -17,7 +17,8 @@ const { chromium } = require('playwright');
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}).catch(() => chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }));
   const p = await (await b.newContext({ viewport: { width: +W, height: +H }, deviceScaleFactor: +dpr })).newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/fonts|ERR_TUNNEL/.test(m.text())) errs.push(m.text()); });
-  await p.goto('file://' + require('path').resolve(__dirname, '../dist/nexora-lab.html')); await p.waitForTimeout(1500);
+  await p.goto('file://' + require('path').resolve(__dirname, '../dist/nexora-lab.html'));
+  await p.waitForFunction(() => window.NX && NX.boot && NX.boot.done, null, { timeout: 90000 }); await p.waitForTimeout(500);   // вітальна заставка зникла — кімната готова
   if (act !== '-') await p.evaluate(a => NX.nexi.do(a), act);
   await p.waitForTimeout(+wait);
   let opt = { path: 'shot.png' };

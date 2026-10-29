@@ -14,13 +14,32 @@
  * ========================================================================== */
 NX.loop = {
   canvas: null, c: null, last: 0, dpr: 1, frames: 0,
-  start() {
+  /** Підготовка без циклу: полотно, розмір екрана (камера, стеля й підлога, layout об'єктів), дотики. js/main.js кличе її
+   *  під вітальною заставкою ще до збірки 3D-крил (їм потрібен масштаб екрана); start() — те саме + головний цикл. */
+  prep() {
+    if (this.c) return;
     this.canvas = document.getElementById('world');
     this.c = this.canvas.getContext('2d');
     this.resize(); addEventListener('resize', () => this.resize());
     NX.cam.bindInput(this.canvas);
+  },
+  start() {
+    this.prep();
     this.last = performance.now() / 1000;
     requestAnimationFrame(() => this.frame());
+  },
+  /** ПЕРШИЙ КАДР ПО ШМАТКАХ (генератор, yield — частка 0..1) — під заставкою (js/main.js): той самий порядок малювання, що
+   *  й frame(), але з паузою після кожного об'єкта. Растри й кеші, що будуються при першому малюванні (місто під масштаб
+   *  екрана, рама вікна, диван, крісло…), готові ще до показу кімнати — перший справжній кадр легкий. */
+  *warmG() {
+    const t = NX.time, c = this.c, k = NX.cam.k * this.dpr, objs = Object.values(NX.objects), T = () => c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
+    NX.nexi.update(0, t); NX.cat.update(0, t); objs.forEach(o => o.update && o.update(0, t)); yield .05;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#050818'; c.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    T(); c.imageSmoothingEnabled = false; NX.room.draw(c, t); yield .1;
+    T(); NX.city.draw(c, t, 0); yield .3;
+    const back = objs.filter(o => o.drawBack); for (let n = 0; n < back.length; n++) { T(); back[n].drawBack(c, t); yield .3 + .35 * (n + 1) / back.length; }
+    const list = [NX.nexi.layer(), NX.cat.layer()]; objs.forEach(o => o.layers && list.push(...o.layers(t)));
+    const L = list.filter(Boolean).sort((a, b) => a.y - b.y); for (let n = 0; n < L.length; n++) { T(); L[n].draw(c, t); yield .65 + .35 * (n + 1) / L.length; }
   },
   resize() {
     this.dpr = Math.min(2, devicePixelRatio || 1);   // рідна роздільність екрана (до 2×); чіткість дає картинка кімнати 2× (3072×736)

@@ -17,6 +17,8 @@
  * Швидкодія: жодного clip() за складною формою на великі шари — форма вікна запечена в растри (maskOut).
  * NX.city.fireworks(сек) — феєрверк (коли Nexi дивиться у вікно, сценарій `window`).
  * NX.city.paint(c, t, mode) — нерухома копія міста: для віддзеркалення в передній підлозі (objects/arc_scene.js patchFront).
+ * NX.city.buildGen() — збірка дрібними шматками (генератор; що будується — NX.city.step) під вітальною заставкою (js/main.js);
+ * без неї (зміна мови) — одним шматком на першому кадрі.
  * ========================================================================== */
 NX.city = (() => {
   const P = NX.px, F = NX.furn, CK = NX.ckit, SK = NX.citySky, CB = NX.cityBuild, { FAC, NEON } = CB;
@@ -75,18 +77,20 @@ NX.city = (() => {
     { skyline: ['near', 33, { w: [12, 26], top: [226, 246], bot: 258, lit: [.2, .34], step: .92, antP: .4, antH: 9, boxes: true, signP: .5, shapes: [['box', 5], ['dome', 2], ['round', 2], ['setback', 1]] }] },
   ];
   const NEAR_LOW = CK.pal(['#1a1250', '#120c3c', '#0c082c', '#08061e']);
-  /** Растр плану з переліку: {skyline}, {b: будинок}, {haze}, {fx}. */
-  function megaLayer(x0, y0, x1, y1, items, seed, pre, U = BU, live = { lights: [], win: [], signs: [], holo: [], pad: [] }) {
+  /** Растр плану з переліку: {skyline}, {b: будинок}, {haze}, {fx}. Генератором: пауза після кожного пункту й кожного
+   *  будинку горизонту (yield — частка 0..1) — місто будується дрібними шматками під вітальною заставкою (js/main.js). */
+  function* megaLayerG(x0, y0, x1, y1, items, seed, pre, U = BU, live = { lights: [], win: [], signs: [], holo: [], pad: [] }) {
     const R = CK.Ras(x0, y0, x1, y1, U); let n = 0;
     if (U < .5) R.own = new Uint16Array(R.W * R.H);                                 // чий піксель (номер будинку) — щоб живі вікна не світили крізь ближчі вежі
-    if (pre) pre(R);
-    items.forEach(it => { const tt = performance.now();
+    if (pre) { pre(R); yield 0; }
+    for (let q = 0; q < items.length; q++) { const it = items[q], tt = performance.now();
       if (it.fx) it.fx(R, live);
       else if (it.haze) CM.haze(R, ...it.haze);
       else if (it.b) CM.building(R, it.b, live, seed * 1000 + (n++) * 37 + 11);
-      else if (it.skyline) CM.skyline(it.skyline[0], x0, x1, it.skyline[1], it.skyline[2]).forEach(b => CM.building(R, b, live, seed * 1000 + (n++) * 37 + 11));
+      else if (it.skyline) { const bs = CM.skyline(it.skyline[0], x0, x1, it.skyline[1], it.skyline[2]); for (let k = 0; k < bs.length; k++) { CM.building(R, bs[k], live, seed * 1000 + (n++) * 37 + 11); yield (q + (k + 1) / bs.length) / items.length; } }
       if (window.CITY_LOG) console.log('  layer item', Object.keys(it)[0], (it.skyline || [it.b && it.b.shape || ''])[0], Math.round(performance.now() - tt), 'ms');
-    });
+      yield (q + 1) / items.length;
+    }
     return { R, live };
   }
   // монорейка й шосе над диваном: опори з тим самим кроком (74 і 78), симетрично відносно центру вікна, скільки влізе
@@ -232,15 +236,19 @@ NX.city = (() => {
     for (let j = Math.max(0, R.J(y0)); j < R.H; j++) { const Y = R.Y(j); let s = 0; while (s < G.length - 2 && Y >= G[s + 1][0]) s++;
       const t2 = CK.clamp((Y - G[s][0]) / (G[s + 1][0] - G[s][0]), 0, 1); for (let i = 0; i < R.W; i++) R.d[j * R.W + i] = CK.fade(G[s][1], G[s + 1][1], t2, i, j, 1.5); }
   }
-  function build() {
-    const t0 = performance.now();
-    const sky = SK.sky(GL.x0, FAR_Y0, GL.x1, FAR_Y0 + FAR_H, { seed: 7, sun: SUN });
-    const planet = SK.Planet(PL.x, PL.y, PL.r), ring = SK.Ring(PL.x, PL.y, RING.a, RING.e, RING.th, PL.r);
-    const far = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, FAR, 3, R => skyFill(R, 150), BU * 2);
-    const back = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, BACK, 5, R => {                     // підкладка — дальні плани (кожен їхній піксель = 2×2)
-      const fw = far.R.W, fd = far.R.d, d = R.d; for (let j = 0; j < R.H; j++) { const fr = Math.min(far.R.H - 1, j >> 1) * fw, row = j * R.W; for (let i = 0; i < R.W; i++) d[row + i] = fd[fr + Math.min(fw - 1, i >> 1)]; } }, BU, far.live);
-    const front = megaLayer(GL.x0, 150, GL.x1, GL.y1, FRONT, 9);                          // низ над диваном: шосе, монорейка, низькі дахи
+  /** Збірка міста генератором (yield — частка 0..1; що саме будується — NX.city.step: небо, планета, плани будинків, сяйво)
+   *  — під вітальною заставкою дрібними шматками (js/main.js: NX.city.buildGen()); build() — те саме одним шматком (зміна мови). */
+  function* buildG() {
+    const t0 = performance.now(), note = k => { NX.city.step = k; };
+    const sub = function* (g, a, b) { for (;;) { const r = g.next(); if (r.done) return r.value; yield a + (b - a) * r.value; } };
+    note('sky'); const sky = SK.sky(GL.x0, FAR_Y0, GL.x1, FAR_Y0 + FAR_H, { seed: 7, sun: SUN }); yield .04;
+    note('planet'); const planet = SK.Planet(PL.x, PL.y, PL.r); yield .07; const ring = SK.Ring(PL.x, PL.y, RING.a, RING.e, RING.th, PL.r); yield .09;
+    note('far'); const far = yield* sub(megaLayerG(GL.x0, BLD_Y0, GL.x1, 252, FAR, 3, R => skyFill(R, 150), BU * 2), .09, .3);
+    note('towers'); const back = yield* sub(megaLayerG(GL.x0, BLD_Y0, GL.x1, 252, BACK, 5, R => {                     // підкладка — дальні плани (кожен їхній піксель = 2×2)
+      const fw = far.R.W, fd = far.R.d, d = R.d; for (let j = 0; j < R.H; j++) { const fr = Math.min(far.R.H - 1, j >> 1) * fw, row = j * R.W; for (let i = 0; i < R.W; i++) d[row + i] = fd[fr + Math.min(fw - 1, i >> 1)]; } }, BU, far.live), .3, .72);
+    note('near'); const front = yield* sub(megaLayerG(GL.x0, 150, GL.x1, GL.y1, FRONT, 9), .72, .8);                          // низ над диваном: шосе, монорейка, низькі дахи
     [back.R, front.R].forEach(maskOut);                                              // форма вікна запікається в растри — щокадру без дорогого clip()
+    yield .82; note('glow');
     // обидва плани — в одне полотно (щокадру один drawImage); живі точки дальнього плану, які закриває ближній, — прибираємо
     const bld = document.createElement('canvas'); bld.width = back.R.W; bld.height = Math.round((GL.y1 - BLD_Y0) / BU); const bx = bld.getContext('2d');
     bx.drawImage(back.R.canvas(), 0, 0); bx.drawImage(front.R.canvas(), 0, Math.round((150 - BLD_Y0) / BU));
@@ -253,42 +261,46 @@ NX.city = (() => {
     const signOk = (R, sg) => [[sg.x + .1, sg.y + .1], [sg.x + sg.w - .1, sg.y + .1], [sg.x + .1, sg.y + sg.h - .1], [sg.x + sg.w - .1, sg.y + sg.h - .1]].filter(([x, y]) => { const v = R.get(R.I(x), R.J(y)); return v && Math.max(...CK.rgb(v)) > 110; }).length >= 3;
     liveB.lights = liveB.lights.filter(l => vis(l) && !covered(l.x, l.y)); liveB.signs = liveB.signs.filter(sg => signOk(back.R, sg) && !covered(sg.x + sg.w / 2, sg.y + sg.h - 1));
     liveF.win = liveF.win.filter(w => mine(front.R, w)); ['win', 'lights'].forEach(k => { liveF[k] = liveF[k].filter(vis); }); liveF.signs = liveF.signs.filter(sg => signOk(front.R, sg));
+    yield .83; const clouds = CLOUDS.map(cl => L(SK.Cloud(cl))), cars = CARC.map(carSprite); yield .84;   // спрайти — кількома шматками
+    const airship = airshipSprite(), ship = shipSprite(), trainSp = trainSprite(); yield .85; const elev = elevSprite(), plat = platformSprite(), whale = whaleSprite(); yield .855;
     const r = CK.rng(77);
     S = {
       sky: L(sky), ringB: L(ring.back), ringF: L(ring.front), planet, prot: -1, pfit: null,
-      clouds: CLOUDS.map(cl => L(SK.Cloud(cl))), bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
-      liveB, liveF, cars: CARC.map(carSprite), airship: airshipSprite(), ship: shipSprite(),
+      clouds, bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
+      liveB, liveF, cars, airship, ship,
       ad: textCanvas(txt('ad', 'NEXORA AI · NEXI ♥ · '), ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas(txt('zep', 'NEXORA AI ♥ '), ['#9af6ff', '#ff8ade']),   // тексти — зі словника мов
       beam: beamSprite(),
       tw: Array.from({ length: 22 }, () => [GL.x0 + 6 + r() * (GW - 12), 4 + r() * 84, r() * 6.28, .9 + r() * 1.4]).filter(([x, y]) => Math.hypot(x - PL.x, y - PL.y) > PL.r + 5).slice(0, 16),
       lanes: LANES.map(Ln => Array.from({ length: Ln.n }, (_, k) => ({ x: GL.x0 + (k + r() * .6) * GW / Ln.n, c: (k + Ln.st) % 4, dy: (r() - .5) * 3 }))),
-      train: null, trainT: 6 + r() * 10, trainSp: trainSprite(), skyC: null,
-      elev: elevSprite(), plat: platformSprite(), whale: whaleSprite(), tube: TUBE,
+      train: null, trainT: 6 + r() * 10, trainSp, skyC: null,
+      elev, plat, whale, tube: TUBE,
     };
-    planet.update(0); bloom();
+    yield .86; planet.update(0); yield .88;
+    yield* sub(bloomG(), .88, 1);
     NX.room.pieces = PIECES;                                                         // кімната більше не малює картинку під вікном — там усе кодом
     S.ms = Math.round(performance.now() - t0); if (window.CITY_LOG) console.log("city build ms", S.ms);
   }
+  const build = () => NX.px3d.drain(buildG());
   // що кімната ще малює з картинки: ліворуч (під лівим крилом) і підлогу під вікном до правого краю дивана (далі — підлога правого крила)
   const PIECES = [[0, 0, GL.x0, 368], [GL.x0, GL.y1, 891, 368]];
   /** Сяйво міста (bloom): яскраві пікселі нерухомої копії, зменшені й розмиті в 3 масштабах (як у крила),
    *  ЗАПІКАЄТЬСЯ в небо (skyCache) і в будинки (лише на самі будинки) — щокадру нічого не коштує. На всю ширину скла. */
-  function bloom() {
+  function* bloomG() {                                                             // генератором: кроки з паузами (заставка, js/main.js)
     try {
       const w = Math.round(GW), h = Math.round(GL.y1 + 2), a = document.createElement('canvas'); a.width = w; a.height = h;   // 1 px/од.
-      const x = a.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.translate(-GL.x0, 2); paint(x, 0, 'bloom', 1);
+      const x = a.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.translate(-GL.x0, 2); paint(x, 0, 'bloom', 1); yield .3;
       const down = (src, f) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / f)); o.height = Math.max(1, Math.round(src.height / f)); const ox = o.getContext('2d', { willReadFrequently: true }); ox.imageSmoothingEnabled = true; ox.imageSmoothingQuality = 'high'; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
       const b1 = down(a, 4), bx = b1.getContext('2d', { willReadFrequently: true }), im = bx.getImageData(0, 0, b1.width, b1.height), d = im.data;
       for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }   // лише яскраве світиться
-      bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2);
+      bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2); yield .5;
       const bc = document.createElement('canvas'); bc.width = b1.width; bc.height = b1.height; const cx2 = bc.getContext('2d'); cx2.globalCompositeOperation = 'lighter'; cx2.imageSmoothingEnabled = true;
       [[b1, .14], [b2, .26], [b3, .36]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
-      S.bloom = bc;
+      S.bloom = bc; yield .6;
       // у будинки: сяйво лише поверх самих будинків (маска — їхня непрозорість), додаванням кольору
       const B = S.bld.cv, m = document.createElement('canvas'); m.width = B.width; m.height = B.height; const mx = m.getContext('2d'); mx.imageSmoothingEnabled = true;
       mx.drawImage(bc, 0, 0, bc.width, bc.height, 0, (-2 - BLD_Y0) / BU, B.width, (GL.y1 + 2) / BU);   // сяйво (y -2..345) -> пікселі будинків (y 2..345, 4 px/од.)
       mx.globalCompositeOperation = 'destination-in'; mx.drawImage(B, 0, 0);
-      const bxx = B.getContext('2d'); bxx.globalCompositeOperation = 'lighter'; bxx.drawImage(m, 0, 0);
+      yield .8; const bxx = B.getContext('2d'); bxx.globalCompositeOperation = 'lighter'; bxx.drawImage(m, 0, 0);
       bxx.globalCompositeOperation = 'source-atop'; bxx.setTransform(1 / BU, 0, 0, 1 / BU, -GL.x0 / BU, -BLD_Y0 / BU); glassStatic(bxx, false); bxx.setTransform(1, 0, 0, 1, 0, 0); bxx.globalCompositeOperation = 'source-over';   // відблиски скла — і на будинках
     } catch (e) { S.bloom = null; }
   }
@@ -492,6 +504,10 @@ NX.city = (() => {
   return {
     GL, CLIP, CLIPP,
     init() {},
+    /** Збірка міста дрібними шматками (генератор, yield — частка 0..1) — під вітальною заставкою (js/main.js); null — уже є. */
+    buildGen() { return S ? null : buildG(); },
+    /** Передню підлогу-дзеркало вже зібрано (js/main.js при завантаженні) — на 8-му кадрі не перебудовувати вдруге. */
+    markPatched() { frames = Math.max(frames, 8); },
     /** Мову змінено: вивіски й реклама — іншими словами, тож місто збирається заново (наступного кадру). */
     relang() { if (S) { S = null; frames = 0; } },
     fireworks(sec) { fwUntil = NX.time + sec; },

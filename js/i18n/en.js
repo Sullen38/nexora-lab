@@ -1,6 +1,11 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
   ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
+    aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK',
+    st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },
+    say: { js: 'Loading my code...', img: 'Looking around the room...', city: 'Switching on the city...', wings: 'Building the 3D wings...', ready: 'Ready! Come on in!' },
+    step: { sky: 'sky & stars', planet: 'planet', far: 'far blocks', towers: 'skyscrapers', near: 'highway & monorail', glow: 'neon glow', wall: 'walls & floor', back: 'by the walls', finish: 'polishing details', compose: 'light & glow', mirror: 'mirror floor', warm: 'first frame' } },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },

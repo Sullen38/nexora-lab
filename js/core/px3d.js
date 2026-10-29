@@ -19,6 +19,8 @@
  *   reflect(L, sup, o)        — ВІДДЗЕРКАЛЕННЯ в глянці (o.streak — вертикальні смуги мокрого глянцю): кожен піксель предмета «відбивається» в площині, на якій він
  *                               стоїть (підлога y 372 або глянцевий верх стола) — точно, як справжнє дзеркало, без ще
  *                               одного проходу сцени: точка (x, y, z) -> (x, 2·yп − y, z) на тому ж стовпчику екрана
+ *   outlineG / reflectG       — те саме генераторами (пауза кожні 16 рядків, yield — частка 0..1): збірка при завантаженні
+ *                               дрібними шматками, щоб вітальна заставка не «замерзала» (js/main.js); drain(g) — прогнати до кінця
  *   canvas(L) / mask(L, fid)  — готове полотно растра / маска видимих пікселів грані (живі екрани)
  *   col(hex) / rgb(r,g,b,a) / mixc(a, b, k) / dim(c, k) — упаковані кольори (ABGR, як у ImageData)
  *   ramp(pal, q, i, j)        — тон палітри за освітленістю q 0..1 + 8-bit дизеринг Байєра (палітра — упаковані кольори)
@@ -134,27 +136,35 @@ NX.px3d = (() => {
   /** Полотно -> {d, w, h} для sprite(). */
   function imgData(cv) { const x = cv.getContext('2d', { willReadFrequently: true }), im = x.getImageData(0, 0, cv.width, cv.height); return { d: new Uint32Array(im.data.buffer), w: cv.width, h: cv.height }; }
 
+  /** Генератор до кінця одним шматком (синхронно) -> його результат. Важкі проходи растра — генератори (*G): збірка
+   *  при завантаженні (вітальна заставка, js/main.js) іде дрібними шматками з паузами для браузера; синхронні версії —
+   *  ті самі генератори, прогнані до кінця. Генератор віддає (yield) частку виконаної роботи 0..1. */
+  const drain = g => { for (;;) { const r = g.next(); if (r.done) return r.value; } };
   /** Контур по силуету: піксель предмета, поруч з яким (на відстані до w) порожньо або інший предмет помітно далі,
    *  стає кольором out (або out(id)). Межі між гранями ОДНОГО предмета не обводяться — там працює фаска матеріалу. */
-  function outline(L, out = col('#060313'), w = 2, rel = .006) {
+  function* outlineG(L, out = col('#060313'), w = 2, rel = .006) {
     const { W, H, id: ID, dep: DP, c: C, fl: FL } = L, mark = new Uint8Array(W * H), oc = typeof out === 'function' ? out : () => out;
-    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
-      const k = j * W + i, a = ID[k]; if (!a || (FL[k] & F_NOOUT)) continue; const d = DP[k] * (1 + rel);
-      let edge = false;
-      for (let s = 1; s <= w && !edge; s++) {
-        if (i - s < 0 || i + s >= W || j - s < 0 || j + s >= H) { edge = true; break; }
-        const q1 = k - s, q2 = k + s, q3 = k - s * W, q4 = k + s * W;
-        if ((ID[q1] !== a && DP[q1] > d) || (ID[q2] !== a && DP[q2] > d) || (ID[q3] !== a && DP[q3] > d) || (ID[q4] !== a && DP[q4] > d)) edge = true;
+    for (let j = 0; j < H; j++) {
+      for (let i = 0; i < W; i++) {
+        const k = j * W + i, a = ID[k]; if (!a || (FL[k] & F_NOOUT)) continue; const d = DP[k] * (1 + rel);
+        let edge = false;
+        for (let s = 1; s <= w && !edge; s++) {
+          if (i - s < 0 || i + s >= W || j - s < 0 || j + s >= H) { edge = true; break; }
+          const q1 = k - s, q2 = k + s, q3 = k - s * W, q4 = k + s * W;
+          if ((ID[q1] !== a && DP[q1] > d) || (ID[q2] !== a && DP[q2] > d) || (ID[q3] !== a && DP[q3] > d) || (ID[q4] !== a && DP[q4] > d)) edge = true;
+        }
+        if (edge) mark[k] = 1;
       }
-      if (edge) mark[k] = 1;
+      if ((j & 15) === 15) yield .92 * j / H;                                   // пауза кожні 16 рядків
     }
     for (let k = 0; k < mark.length; k++) if (mark[k]) { const o = oc(ID[k]); if (o) C[k] = (FL[k] & F_EMIT) ? mixc(C[k], o, .55) : o; }
   }
+  const outline = (...a) => drain(outlineG(...a));
 
   /** ВІДДЗЕРКАЛЕННЯ в глянці. sup(id) -> {y — площина опори (підлога 372 або верх стола), on — id глянцевої опори (0 — підлога)}
    *  або null (не відбивається). Відбиток лягає на пікселі підлоги / глянцю опори цього растра або на порожні (там підлога
    *  іншого растра — тоді піксель напівпрозорий). o: {a — сила біля опори, h — висота згасання, emit — підсилення неону}. */
-  function reflect(L, sup, o = {}) {
+  function* reflectG(L, sup, o = {}) {
     const { W, H, R, x0, y0, id: ID, dep: DP, c: C, fl: FL } = L, A0 = o.a || .42, H0 = o.h || 46, EM = o.emit || 2.1, ST = o.streak ? new Float32Array(W).map((_, i) => .62 + .38 * NX.art.hash(i >> 1, 7) * NX.art.hash(i >> 3, 3)) : null;
     const RD = new Float32Array(W * H).fill(Infinity), RC = new Uint32Array(W * H), RA = new Float32Array(W * H), cache = [];
     for (let j = 0; j < H; j++) {
@@ -170,6 +180,7 @@ NX.px3d = (() => {
         const em = (FL[k] & F_EMIT) ? EM : 1, al = Math.min(.92, A0 * em * Math.exp(-Math.max(0, h) / (sp.h || H0)) * (sp.k || 1) * (ST ? ST[i] : 1));   // streak — «мокрі» смуги глянцю
         RD[k2] = t; RC[k2] = C[k]; RA[k2] = al;
       }
+      if ((j & 15) === 15) yield .8 * j / H;                                    // пауза кожні 16 рядків
     }
     for (let k = 0; k < W * H; k++) {
       const al = RA[k]; if (al <= .004) continue;
@@ -177,6 +188,7 @@ NX.px3d = (() => {
       else C[k] = mixc(C[k], add(C[k], RC[k], .9), al);
     }
   }
+  const reflect = (...a) => drain(reflectG(...a));
 
   /** Растр -> полотно. */
   function canvas(L) {
@@ -195,5 +207,5 @@ NX.px3d = (() => {
     return { cv, x: L.x0 + i0 / L.R, y: L.y0 + j0 / L.R, w: w / L.R, h: h / L.R };
   }
   return { VX, VY, D, EZ, rgb, col, pal, mixc, dim, add, ramp, lum, R_, G_, B_, A_, sub, dot, cross, newell, proj, Layer, face, sprite, tube, disc, imgData, outline, reflect, canvas, mask, SH,
-    F_EMIT, F_FLOOR, F_GLOSS, F_NOOUT, F_REFL };
+    outlineG, reflectG, drain, F_EMIT, F_FLOOR, F_GLOSS, F_NOOUT, F_REFL };
 })();

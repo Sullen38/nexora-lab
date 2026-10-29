@@ -1,6 +1,11 @@
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
   ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
+  splash: {   // WELKOMSTSCHERM (js/ui/splash.js): laadfasen, zinnetjes van Nexi, bouwstappen
+    aria: 'Nexi’s lab wordt geladen', retry: 'Pagina vernieuwen', ok: 'OK',
+    st: { js: 'SCRIPTS', img: 'KAMERBEELD', city: 'STAD', wings: '3D-VLEUGELS', ready: 'KLAAR' },
+    say: { js: 'Mijn code laden...', img: 'Ik kijk rond in de kamer...', city: 'De stad gaat aan...', wings: '3D-vleugels bouwen...', ready: 'Klaar! Kom binnen!' },
+    step: { sky: 'lucht en sterren', planet: 'planeet', far: 'verre wijken', towers: 'wolkenkrabbers', near: 'snelweg en monorail', glow: 'neongloed', wall: 'muren en vloer', back: 'langs de muren', finish: 'details poetsen', compose: 'licht en gloed', mirror: 'spiegelvloer', warm: 'eerste frame' } },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },

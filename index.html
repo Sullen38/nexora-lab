@@ -1,19 +1,313 @@
 <!doctype html>
 <!-- =============================================================================
   index.html — КАРКАС СТОРІНКИ NEXORA AI · ЛАБОРАТОРІЯ NEXI
-  Canvas #world — уся кімната (малює js/core/loop.js).
-  Поверх — HTML-інтерфейс (стилі css/hud.css, логіка js/ui/*).
-  Скрипти підключаються ПО ПОРЯДКУ: ядро -> світ -> персонажі -> об'єкти -> UI -> старт.
+  1) ВІТАЛЬНА ЗАСТАВКА (#splash) — розмітка, стилі й перший скрипт прямо тут, тож вона з'являється МИТТЄВО: шрифти й стилі
+     інтерфейсу не блокують показ, а решта скриптів ще вантажиться. Лоад-бар показує справжні етапи (скрипти -> картинка
+     кімнати -> місто -> 3D-крила -> готово); підписи — зі словників (js/ui/splash.js), важку збірку веде js/main.js.
+  2) Canvas #world — уся кімната (малює js/core/loop.js). Поверх — HTML-інтерфейс (стилі css/hud.css, логіка js/ui/*).
+  Скрипти підключаються ПО ПОРЯДКУ: ядро -> словники -> заставка -> світ -> персонажі -> об'єкти -> UI -> старт.
 ============================================================================== -->
-<html lang="uk">
+<html lang="uk" class="booting">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050818">
 <title>Nexora AI</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="css/hud.css">
+<!-- Шрифти Google і стилі інтерфейсу НЕ блокують показ (media="print" -> "all" після завантаження): спершу — заставка.
+     NX_FONTS_CSS — обіцянка «стилі шрифтів прийшли» (js/ui/splash.js чекає її перед написами; не довше 4 с). -->
+<script>window.NX_FONTS_CSS = new Promise(function (r) { window.NX_FONTS_DONE = r; setTimeout(r, 4000); });</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all';NX_FONTS_DONE()" onerror="NX_FONTS_DONE()">
+<link rel="stylesheet" href="css/hud.css" media="print" onload="this.media='all'">
+<style>
+/* =============================================================================
+   ВІТАЛЬНА ЗАСТАВКА — критичні стилі (без зовнішніх файлів і шрифтів). Кольори кімнати: неон рожевий / блакитний / фіолет
+   на темно-синьому. Усе — піксель-арт, який малює скрипт нижче (і підписи — піксельним шрифтом, js/ui/splash.js).
+   --u — один піксель арту: ціле число пікселів ЕКРАНА (рахує скрипт), тож піксель-арт чіткий на будь-якому телефоні.
+   Прогрес скрипт пише прямо в transform заливки й Nexi на трасі (не змінною в корені — тоді браузер щокадру перераховував
+   би стилі всієї заставки). Безперервний рух — лише transform / opacity: його малює відеокарта, тож він не «замерзає»,
+   навіть коли браузер зайнятий збіркою кімнати. Класи — з префіксом sp- (щоб не зачепити стилі інтерфейсу css/hud.css).
+   Варіанти оформлення (поки обираємо): A «Док-станція», B «Неонова траса», C «Голо-термінал» — адреса #splash-a/-b/-c.
+   ============================================================================= */
+html,body{margin:0;height:100%;background:#050818;overflow:hidden}
+#splash{position:fixed;inset:0;z-index:60;overflow:hidden;--u:3px;--cy:#3be8ff;--pk:#ff4fd8;--dim:#2a3a8a;
+  background:radial-gradient(130% 75% at 50% 40%,#151a5c 0,#0b0f38 40%,#050818 80%);transition:opacity .7s ease;-webkit-user-select:none;user-select:none}
+#splash.out{opacity:0;pointer-events:none}
+#splash canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#splash .sp-v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+/* екранні рядки ЕПТ і віньєтка — поверх усього */
+#splash::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:9;background:repeating-linear-gradient(#0000 0 2px,#00000038 2px 3px),radial-gradient(120% 90% at 50% 50%,#0000 55%,#000a)}
+/* зорі: два шари крапок, мерехтять по черзі */
+#splash .sp-stars,#splash .sp-stars::after{position:absolute;inset:0;pointer-events:none;content:'';
+  background-image:radial-gradient(1.5px 1.5px at 8% 12%,#fff 90%,#0000),radial-gradient(1px 1px at 22% 30%,#9af6ff 90%,#0000),radial-gradient(1.5px 1.5px at 37% 8%,#fff 90%,#0000),radial-gradient(1px 1px at 61% 22%,#ff9af0 90%,#0000),radial-gradient(1.5px 1.5px at 78% 10%,#fff 90%,#0000),radial-gradient(1px 1px at 91% 33%,#9af6ff 90%,#0000),radial-gradient(1px 1px at 50% 3%,#fff 90%,#0000),radial-gradient(1px 1px at 70% 40%,#fff 90%,#0000);
+  animation:spTw 3.2s steps(2) infinite}
+#splash .sp-stars::after{transform:translate(13vw,7vh);animation-delay:-1.6s}
+@keyframes spTw{50%{opacity:.25}}
+/* логотип NEXORA AI (піксельний) — неонове сяйво; Nexi 48×56; відсотки; значки етапів */
+#splash .sp-logo{width:calc(66 * var(--u));height:calc(7 * var(--u));filter:drop-shadow(0 0 calc(2 * var(--u)) #3be8ffaa) drop-shadow(var(--u) var(--u) 0 #ff4fd8)}
+#splash .sp-tag{margin:calc(3 * var(--u)) auto 0;opacity:.85}
+#splash .sp-nexi{width:calc(48 * var(--u));height:calc(56 * var(--u))}
+#splash .sp-pc{width:calc(31 * var(--u) * .75);height:calc(7 * var(--u) * .75);filter:drop-shadow(0 0 calc(2 * var(--u)) #3be8ff88)}
+#splash [data-ico]{width:calc(9 * var(--u));height:calc(9 * var(--u))}
+/* лоад-бар (спільне): заливка росте (scaleX — плавно), поверх — сітка клітинок і відблиск, що пробігає */
+#splash .sp-bar{position:relative;width:100%;height:100%}
+#splash .sp-fill{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);transition:transform .4s linear;background:linear-gradient(90deg,#ff4fd8,#c14bff 35%,#7a6aff 60%,#3be8ff)}
+#splash .sp-shine{position:absolute;inset:0;overflow:hidden}
+#splash .sp-shine::before{content:'';position:absolute;top:0;bottom:0;left:0;width:22%;background:linear-gradient(90deg,#fff0,#ffffff55,#fff0);animation:spShine 1.7s linear infinite}
+@keyframes spShine{from{transform:translateX(-100%)}to{transform:translateX(460%)}}
+#splash .sp-retry{display:none;position:absolute;right:16px;top:16px;z-index:10;background:#070c2c;border:2px solid var(--pk);color:var(--pk);font:16px monospace;padding:6px 10px;cursor:pointer}
+#splash.stall .sp-retry{display:block}
+@keyframes spBob{50%{transform:translateY(calc(-1 * var(--u)))}}
+@keyframes spPip{50%{transform:translateY(calc(-1 * var(--u)))}}
+@keyframes spPulse{50%{opacity:.45;transform:scale(.92)}}
+@keyframes spFlick{0%,100%{opacity:1}61%{opacity:.55}62%{opacity:1}64%{opacity:.7}65%{opacity:1}}
+
+/* ---------- A · ДОК-СТАНЦІЯ: Nexi заряджається на доку, над ним — бабл з етапом, унизу — «батарейка» ---------- */
+.sp-va{gap:calc(5 * var(--u))}
+.sp-va .sp-tubes{position:absolute;left:0;right:0;top:0;height:30px;pointer-events:none;background:linear-gradient(#141c52,#141c52) 0 22px/100% 5px no-repeat,
+  repeating-linear-gradient(90deg,#0000 0 24px,#d94bff 24px 92px,#0000 92px 152px,#3be8ff 152px 220px,#0000 220px 256px) 0 13px/100% 3px no-repeat;filter:drop-shadow(0 0 5px #d94bffaa);animation:spHum 4s steps(1) infinite}
+@keyframes spHum{0%,100%{opacity:1}47%{opacity:.75}48%{opacity:1}}
+.sp-va .sp-hero{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:calc(36 * var(--u))}
+.sp-va .sp-floor{position:absolute;left:50%;top:calc(100% - 9 * var(--u));width:220vw;height:60vh;margin-left:-110vw;pointer-events:none;z-index:-1;
+  background:radial-gradient(40% 18% at 50% 0,#ff4fd855,#0000 70%),radial-gradient(70% 30% at 50% 0,#3b2a9a66,#0000 75%),linear-gradient(#120a34,#06041a 45%,#0000)}
+.sp-va .sp-floor::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(#0000 0 calc(12 * var(--u)),#ffffff0d calc(12 * var(--u)) calc(12 * var(--u) + 1px));-webkit-mask:linear-gradient(#000,#0000 60%);mask:linear-gradient(#000,#0000 60%)}
+.sp-va .sp-bot{position:relative;z-index:2;animation:spBob 2.6s ease-in-out infinite}
+.sp-va .sp-dock{position:relative;z-index:1;width:calc(72 * var(--u));height:calc(14 * var(--u));margin-top:calc(-11 * var(--u))}
+.sp-va .sp-glow{position:absolute;left:50%;bottom:calc(-4 * var(--u));width:calc(110 * var(--u));height:calc(30 * var(--u));margin-left:calc(-55 * var(--u));border-radius:50%;background:radial-gradient(closest-side,#ff4fd866,#3be8ff22 60%,#0000);animation:spPulse 1.8s ease-in-out infinite;pointer-events:none}
+.sp-va .sp-refl{position:absolute;left:50%;bottom:calc(7 * var(--u));margin-left:calc(-24 * var(--u));transform:scaleY(-.5);transform-origin:50% 100%;opacity:.25;-webkit-mask:linear-gradient(#0000 35%,#000);mask:linear-gradient(#0000 35%,#000);pointer-events:none}
+.sp-va .sp-bolt{position:absolute;bottom:calc(10 * var(--u));width:calc(5 * var(--u));height:calc(8 * var(--u));opacity:0;animation:spBolt 2.4s ease-out infinite;filter:drop-shadow(0 0 4px #ffe27a)}
+.sp-va .sp-b1{left:calc(50% - 30 * var(--u))}.sp-va .sp-b2{left:calc(50% + 25 * var(--u));animation-delay:-.8s}.sp-va .sp-b3{left:calc(50% - 4 * var(--u));animation-delay:-1.6s;bottom:calc(4 * var(--u))}
+@keyframes spBolt{0%{opacity:0;transform:translateY(0)}15%{opacity:1}70%{opacity:.9}100%{opacity:0;transform:translateY(calc(-26 * var(--u)))}}
+/* бабл — як бабл Nexi в кімнаті: темне скло, блакитна рамка, хвостик донизу */
+.sp-va .sp-bub{position:absolute;bottom:calc(100% + 2 * var(--u));left:50%;transform:translateX(-50%);z-index:3;box-sizing:border-box;
+  background:#050a26f2;border:2px solid var(--cy);box-shadow:0 0 14px #3be8ff77;padding:calc(3 * var(--u)) calc(4 * var(--u)) calc(3 * var(--u));display:flex;flex-direction:column;gap:calc(2 * var(--u))}
+.sp-va .sp-bub::after{content:'';position:absolute;left:50%;bottom:-8px;width:12px;height:12px;margin-left:-6px;background:#050a26;border:solid var(--cy);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sp-va .sp-bat{position:relative;width:min(520px,78vw);height:calc(9 * var(--u));padding:var(--u);box-sizing:border-box;border:var(--u) solid var(--cy);background:#060a26;box-shadow:0 0 0 var(--u) #0a1240,0 0 18px #3be8ff55,inset 0 0 10px #3be8ff22}
+.sp-va .sp-bat::after{content:'';position:absolute;right:calc(-4 * var(--u));top:28%;bottom:28%;width:calc(2 * var(--u));background:var(--cy);box-shadow:0 0 8px #3be8ff}
+.sp-va .sp-cells{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(5% - var(--u)),#060a26 calc(5% - var(--u)) 5%)}
+.sp-va .sp-meta{display:flex;align-items:center;justify-content:space-between;width:min(520px,78vw)}
+.sp-va .sp-pips{display:flex;gap:calc(4 * var(--u));list-style:none;margin:0;padding:0}
+.sp-va .sp-pips li.cur{animation:spPip .7s steps(2) infinite}
+.v-a.done .sp-bat{animation:spFull .25s steps(2) 3}
+@keyframes spFull{50%{box-shadow:0 0 0 var(--u) #0a1240,0 0 40px #3be8ffcc,inset 0 0 22px #3be8ff88}}
+
+/* ---------- B · НЕОНОВА ТРАСА: Nexi летить на ранці над монорейкою від етапу до етапу, місто внизу засвічує вікна ---------- */
+.sp-vb{justify-content:flex-start;padding-bottom:calc((var(--skyh,46) + 6) * var(--u))}
+.sp-vb .sp-sign{margin-top:max(7vh,calc(10 * var(--u)));padding:calc(5 * var(--u)) calc(7 * var(--u)) calc(4 * var(--u));border:var(--u) solid var(--pk);background:#0a0626e6;
+  box-shadow:0 0 0 var(--u) #3a0f4a,0 0 22px #ff4fd877,inset 0 0 16px #ff4fd833;animation:spFlick 5s steps(1) infinite}
+.sp-vb .sp-track{position:relative;width:min(760px,92vw);height:min(calc(78 * var(--u)),42vh);margin-top:auto;flex:none}
+.sp-vb .sp-rail{position:absolute;left:0;right:0;bottom:calc(12 * var(--u));height:calc(2 * var(--u));background:#1b2a66;box-shadow:0 calc(2 * var(--u)) 0 #0a1240}
+.sp-vb .sp-rail .sp-fill{transition:transform .45s ease-out;box-shadow:0 0 12px #ff4fd8,0 0 18px #3be8ff88}
+.sp-vb .sp-rail::after{content:'';position:absolute;left:0;right:0;top:calc(3 * var(--u));height:calc(2 * var(--u));background:repeating-linear-gradient(90deg,#2a3a8a 0 var(--u),#0000 var(--u) calc(6 * var(--u)))}
+.sp-vb .sp-stations{position:absolute;left:0;right:0;bottom:calc(6 * var(--u));list-style:none;margin:0;padding:0}
+.sp-vb .sp-stations li{position:absolute;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+/* станції — на кінцях п'яти рівних відрізків траси; --ri — відступ від країв траси (півширини Nexi мінус поле екрана; рахує скрипт), щоб він не виходив за край екрана */
+.sp-vb .sp-stations li:nth-child(1){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .2)}.sp-vb .sp-stations li:nth-child(2){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .4)}
+.sp-vb .sp-stations li:nth-child(3){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .6)}.sp-vb .sp-stations li:nth-child(4){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .8)}.sp-vb .sp-stations li:nth-child(5){left:calc(100% - var(--ri,0px))}
+.sp-vb .sp-stations i{display:block;padding:var(--u);border:var(--u) solid var(--dim);background:#070c2c}
+.sp-vb .sp-stations li.cur i{border-color:var(--pk);box-shadow:0 0 12px #ff4fd8;animation:spPip .7s steps(2) infinite}
+.sp-vb .sp-stations li.on i{border-color:var(--cy);box-shadow:0 0 10px #3be8ff88}
+#splash .sp-vb .sp-stations .sp-tx{position:absolute;top:calc(100% + 3 * var(--u));display:none}
+.sp-vb .sp-rider{position:absolute;left:0;bottom:calc(22 * var(--u));transition:transform .45s ease-out;z-index:2}
+.sp-vb .sp-rider .sp-bot{position:relative;margin-left:calc(-19.2 * var(--u));animation:spHover .5s ease-in-out infinite alternate}
+@keyframes spHover{to{transform:translateY(calc(-2 * var(--u)))}}
+.sp-vb .sp-rider .sp-nexi{width:calc(48 * var(--u) * .8);height:calc(56 * var(--u) * .8)}
+.sp-vb .sp-trail{position:absolute;right:100%;bottom:calc(9 * var(--u));width:calc(30 * var(--u));height:var(--u);background:linear-gradient(90deg,#0000,#ff4fd8aa,#ffe27a);transform-origin:100% 50%;animation:spTrail .18s steps(2) infinite}
+.sp-vb .sp-trail+.sp-trail{bottom:calc(5 * var(--u));width:calc(18 * var(--u));background:linear-gradient(90deg,#0000,#3be8ffaa,#fff);animation-delay:-.09s}
+@keyframes spTrail{50%{transform:scaleX(.6);opacity:.7}}
+.sp-vb .sp-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(760px,92vw);margin:calc(10 * var(--u)) 0 auto}
+.sp-vb .sp-meta div{display:flex;flex-direction:column;gap:calc(2 * var(--u));min-width:0}
+.sp-vb .sp-meta [data-sp="stage"]{filter:drop-shadow(0 0 6px #ff4fd8)}
+.sp-vb .sp-skyline{position:absolute;left:0;bottom:0}
+.sp-vb .sp-haze{position:absolute;left:0;right:0;bottom:0;height:calc(70 * var(--u));background:linear-gradient(#0000,#ff4fd822 55%,#3b1a6a44);pointer-events:none}
+@media(min-width:700px){#splash .sp-vb .sp-stations .sp-tx{display:block}}
+@media(max-width:520px){.sp-vb .sp-rider .sp-nexi{width:calc(48 * var(--u) * .7);height:calc(56 * var(--u) * .7)}.sp-vb .sp-rider .sp-bot{margin-left:calc(-16.8 * var(--u))}
+  #splash .sp-vb .sp-stations [data-ico]{width:calc(9 * var(--u) * .75);height:calc(9 * var(--u) * .75)}.sp-vb .sp-stations i{padding:calc(.5 * var(--u))}}   /* вузький телефон: менші Nexi й станції */
+
+/* ---------- C · ГОЛО-ТЕРМІНАЛ: журнал запуску на голо-екрані (як екран маркетингу), блоковий лоад-бар, Nexi набирає ---------- */
+.sp-vc{gap:calc(6 * var(--u))}
+.sp-vc .sp-term{position:relative;width:min(600px,92vw);box-sizing:border-box;padding:calc(4 * var(--u)) calc(5 * var(--u)) calc(5 * var(--u));overflow:hidden;
+  background:linear-gradient(#0b1a5ad9,#071036e6);border:var(--u) solid var(--pk);box-shadow:0 0 0 var(--u) #3a0f4a,0 0 26px #ff4fd855,inset 0 0 30px #3b8aff44;animation:spFlick 7s steps(1) infinite}
+.sp-vc .sp-term::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(#0000 0 3px,#3be8ff10 3px 4px);pointer-events:none}
+.sp-vc .sp-band{position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(#0000,#9af6ff14,#0000);animation:spBand 3.4s linear infinite;pointer-events:none}
+@keyframes spBand{from{transform:translateY(-100%)}to{transform:translateY(560%)}}
+.sp-vc .sp-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:calc(3 * var(--u));margin-bottom:calc(2 * var(--u));border-bottom:var(--u) solid #3be8ff44}
+.sp-vc .sp-head .sp-logo{width:calc(66 * var(--u) * .6);height:calc(7 * var(--u) * .6)}
+.sp-vc .sp-leds{display:flex;gap:calc(2 * var(--u))}
+.sp-vc .sp-leds i{width:calc(3 * var(--u));height:calc(3 * var(--u));background:var(--pk);animation:spPip 1s steps(2) infinite}
+.sp-vc .sp-leds i+i{background:var(--cy);animation-delay:-.33s}.sp-vc .sp-leds i+i+i{background:#ffe27a;animation-delay:-.66s}
+.sp-vc .sp-log{list-style:none;margin:0;padding:0}
+.sp-vc .sp-log li{display:flex;align-items:center;gap:calc(3 * var(--u));padding:var(--u) 0;opacity:.5}
+.sp-vc .sp-log li [data-ico]{width:calc(9 * var(--u) * .7);height:calc(9 * var(--u) * .7);flex:none}
+.sp-vc .sp-log li i{flex:1;min-width:calc(2 * var(--u));height:var(--u);margin-top:calc(2 * var(--u));background:repeating-linear-gradient(90deg,#3a4a9a 0 var(--u),#0000 var(--u) calc(3 * var(--u)))}
+.sp-vc .sp-log li.cur,.sp-vc .sp-log li.on{opacity:1}
+.sp-vc .sp-log li.cur [data-em]{animation:spCur .5s steps(2) infinite}
+@keyframes spCur{50%{opacity:.4}}
+.sp-vc .sp-blocks{height:calc(7 * var(--u));margin-top:calc(4 * var(--u));border:var(--u) solid #3be8ff66;padding:var(--u);background:#050a26}
+.sp-vc .sp-cells{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(6.25% - var(--u)),#050a26 calc(6.25% - var(--u)) 6.25%),linear-gradient(#ffffff40 0 var(--u),#0000 var(--u) calc(100% - var(--u)),#00000060 calc(100% - var(--u)))}
+.sp-vc .sp-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:calc(3 * var(--u))}
+.sp-vc .sp-bot{position:relative;animation:spBob 2.2s ease-in-out infinite}
+.sp-vc .sp-holo{position:absolute;left:50%;bottom:calc(-2 * var(--u));width:calc(40 * var(--u));height:calc(6 * var(--u));margin-left:calc(-20 * var(--u));background:radial-gradient(closest-side,#3be8ff88,#0000);animation:spPulse 1.2s ease-in-out infinite}
+.v-c.glitch .sp-term{animation:spGlitch .3s steps(3) 1}
+@keyframes spGlitch{33%{transform:translateX(calc(2 * var(--u)));filter:drop-shadow(-3px 0 #ff4fd8) drop-shadow(3px 0 #3be8ff)}66%{transform:translateX(calc(-2 * var(--u)))}}
+.v-c.done .sp-term{animation:spOff .45s ease-in forwards}
+@keyframes spOff{60%{transform:scaleY(.04);filter:brightness(2.2)}100%{transform:scaleY(.01) scaleX(0);opacity:0}}
+@media(min-width:900px) and (min-aspect-ratio:4/3){.sp-vc{flex-direction:row;gap:calc(14 * var(--u))}}
+
+@media(prefers-reduced-motion:reduce){#splash *,#splash *::before,#splash *::after,#splash::after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<!-- ============================ ВІТАЛЬНА ЗАСТАВКА ============================
+  data-js — скільки скриптів js/ підключено нижче (оновлює tools/build.py), data-room — картинка кімнати (вантажиться одразу,
+  паралельно зі скриптами, з прогресом за байтами). Варіанти оформлення — .sp-va / .sp-vb / .sp-vc (зайві скрипт прибирає).
+  Підписи — полотна .sp-tx, їх малює піксельним шрифтом js/ui/splash.js: data-sp="say|stage|step" — підпис етапу,
+  data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / відсотки етапу, data-raw — текст як є (NEXI);
+  data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
+  для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
+<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="57" data-room="assets/room.webp">
+ <i class="sp-stars"></i>
+ <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
+ <!-- A · ДОК-СТАНЦІЯ -->
+ <div class="sp-v sp-va">
+  <i class="sp-tubes"></i>
+  <header><canvas class="sp-logo"></canvas><canvas class="sp-tx sp-tag" data-sp-t="ui.tagline" data-tx="s" data-c="#8393cc"></canvas></header>
+  <div class="sp-hero">
+   <i class="sp-floor"></i><i class="sp-glow"></i>
+   <div class="sp-bub" style="width:calc(100 * var(--u))"><canvas class="sp-tx" data-raw="NEXI" data-tx="s" data-c="#3be8ff"></canvas><canvas class="sp-tx" data-sp="say" data-tx="m" data-c="#ffffff" data-w="p"></canvas><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas></div>
+   <div class="sp-bot"><canvas class="sp-nexi"></canvas></div>
+   <canvas class="sp-dock"></canvas>
+   <canvas class="sp-nexi sp-refl"></canvas>
+   <canvas class="sp-bolt sp-b1"></canvas><canvas class="sp-bolt sp-b2"></canvas><canvas class="sp-bolt sp-b3"></canvas>
+  </div>
+  <div class="sp-bat"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-cells"></i><i class="sp-shine"></i></div></div>
+  <div class="sp-meta"><ol class="sp-pips"><li data-st="js"><canvas data-ico="js"></canvas></li><li data-st="img"><canvas data-ico="img"></canvas></li><li data-st="city"><canvas data-ico="city"></canvas></li><li data-st="wings"><canvas data-ico="wings"></canvas></li><li data-st="ready"><canvas data-ico="ready"></canvas></li></ol><canvas class="sp-pc"></canvas></div>
+ </div>
+ <!-- B · НЕОНОВА ТРАСА -->
+ <div class="sp-v sp-vb">
+  <i class="sp-haze"></i>
+  <header class="sp-sign"><canvas class="sp-logo"></canvas><canvas class="sp-tx sp-tag" data-sp-t="ui.tagline" data-tx="s" data-c="#8393cc"></canvas></header>
+  <div class="sp-track">
+   <div class="sp-rail"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-shine"></i></div></div>
+   <ol class="sp-stations"><li data-st="js"><i><canvas data-ico="js"></canvas></i><canvas class="sp-tx" data-sp-st="js" data-tx="s" data-cs="n"></canvas></li><li data-st="img"><i><canvas data-ico="img"></canvas></i><canvas class="sp-tx" data-sp-st="img" data-tx="s" data-cs="n"></canvas></li><li data-st="city"><i><canvas data-ico="city"></canvas></i><canvas class="sp-tx" data-sp-st="city" data-tx="s" data-cs="n"></canvas></li><li data-st="wings"><i><canvas data-ico="wings"></canvas></i><canvas class="sp-tx" data-sp-st="wings" data-tx="s" data-cs="n"></canvas></li><li data-st="ready"><i><canvas data-ico="ready"></canvas></i><canvas class="sp-tx" data-sp-st="ready" data-tx="s" data-cs="n"></canvas></li></ol>
+   <div class="sp-rider"><div class="sp-bot"><i class="sp-trail"></i><i class="sp-trail"></i><canvas class="sp-nexi" data-pose="fly"></canvas></div></div>
+  </div>
+  <div class="sp-meta"><div><canvas class="sp-tx" data-sp="stage" data-tx="m" data-c="#ffffff"></canvas><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas></div><canvas class="sp-pc"></canvas></div>
+  <canvas class="sp-skyline"></canvas>
+ </div>
+ <!-- C · ГОЛО-ТЕРМІНАЛ -->
+ <div class="sp-v sp-vc">
+  <div class="sp-bot"><canvas class="sp-nexi" data-pose="type"></canvas><i class="sp-holo"></i></div>
+  <div class="sp-term">
+   <i class="sp-band"></i>
+   <header class="sp-head"><canvas class="sp-logo"></canvas><span class="sp-leds"><i></i><i></i><i></i></span></header>
+   <ol class="sp-log"><li data-st="js"><canvas data-ico="js"></canvas><canvas class="sp-tx" data-sp-st="js" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="js" data-tx="m" data-cs="e"></canvas></li><li data-st="img"><canvas data-ico="img"></canvas><canvas class="sp-tx" data-sp-st="img" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="img" data-tx="m" data-cs="e"></canvas></li><li data-st="city"><canvas data-ico="city"></canvas><canvas class="sp-tx" data-sp-st="city" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="city" data-tx="m" data-cs="e"></canvas></li><li data-st="wings"><canvas data-ico="wings"></canvas><canvas class="sp-tx" data-sp-st="wings" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="wings" data-tx="m" data-cs="e"></canvas></li><li data-st="ready"><canvas data-ico="ready"></canvas><canvas class="sp-tx" data-sp-st="ready" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="ready" data-tx="m" data-cs="e"></canvas></li></ol>
+   <div class="sp-blocks"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-cells"></i><i class="sp-shine"></i></div></div>
+   <footer class="sp-foot"><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas><canvas class="sp-pc"></canvas></footer>
+  </div>
+ </div>
+</div>
+<script>
+/* ВІТАЛЬНА ЗАСТАВКА — НАЙПЕРШИЙ СКРИПТ (до шрифтів і решти скриптів; не залежить ні від чого):
+   • варіант оформлення (поки обираємо: #splash-a / -b / -c); масштаб пікселя --u — ціле число пікселів екрана;
+   • піксель-арт КОДОМ (fillRect): Nexi, логотип, цифри відсотків, значки етапів, док, блискавки, силует міста. Дані PX
+     (палітра + символ на піксель) генерує tools/splash/gen_splash.js з того самого renderBot, що малює Nexi в кімнаті;
+   • прогрес: NX_SPLASH.set(етап, частка 0..1) -> заливка, відсотки, значки, Nexi на трасі; етапи й ваги — нижче;
+   • етап «скрипти» — рахуємо події load кожного <script src> (усього — data-js), «картинка кімнати» — вантажимо одразу,
+     паралельно зі скриптами, і рахуємо байти; решту етапів повідомляє js/main.js (важку збірку веде js/ui/splash.js). */
+(() => {
+  const el = document.getElementById('splash'); if (!el) return;
+  const qa = s => el.querySelectorAll(s);
+  const vm = location.hash.match(/splash-([abc])/), v = vm ? vm[1] : 'a';
+  qa('.sp-v').forEach(n => { if (!n.classList.contains('sp-v' + v)) n.remove(); });
+  el.classList.add('v-' + v); const V = el.querySelector('.sp-v');
+  /*px:begin*/var PX={"nexi":{"w":48,"h":56,"p":"0a0f2e,3be8ff,8aa0c8,5a6590,eef2fd,f4f7fe,afb3bd,fafbfe,e9eefc,a3a7b0,f5f7fe,16236a,060b2a,66a5ff,9dc6ff,2c69bf,2a3a8a,3b8cff,1e2c70,1b6873,265ba6,ffffff,204d8c,b6bac5,80838b,f6f8fe,f3f6fd,0a1236,5ae8ff,46508a,e3e7f1,edf0f6,a4a8b2,dbe0ed,787b82","d":".....................0111110..........................................01110...........................................0220............................................0220............................................0220............................................0220............................................0220............................................0220...........................................032230..................................0000000003223000000000........................00455555555555555555555600.....................0444477777777777777777744860...................048888899998888888899998888860..................048aa8888888888888888888888860.................0488aabbbbbbbbbbbbbbbbbbbb888860..............000488abccccccccccccccccccccb8886000...........0def488bccgggggcccccccccccccccb886def0.........0dddh488bcciijjjjjccccjjjjjccccb886ddhf0........0dkkk488bcccjj111jjccjj111jjcccb886kkkf0........0dklk488bcccj1ll11jccj1ll11jcccb886klkf0........0dklk488bcccj1l111jccj1l111jcccb886klkf0........0dklk488bcccj11111jccj11111jcccb886klkf0........0dklk488bcccjj111jjccjj111jjcccb886klkf0........0dkkk488bccccjjjjjccccjjjjjccccb886kkkf0........0ffff488bccccccccccccccccccccccb886ffff0.........0mmm488bcccccccccjjjjcccccccccb886mmm0...........000488bccccccccccccccccccccccb886000..............04888bccccccccccccccccccccb88860.................04888bbbbbbbbbbbbbbbbbbbb88860..................048888888888888888888888888860...................0666nnnnnnnnnnnnnnnnnnnn6660.....................00oooooooooooooooooooooo00........................0000000000000000000000........................00045555555555555555556000.....................0def444pppppppppppppp448def0...................0d8q8f8888hhhhhhhhhh8888d8q8f0..................0d8q8f888hrrrrrrrrrrh888d88q80..................08q88f888hrrssrrrsrrh888f88q80..................08q888888hrrsrsrrsrrh8888m88q80................08q8848888hrrsrrsrsrrh8888688q80................0ttt848888hrrsrrrssrrh8888608ttt0...............0ttt048888hrrrrrrrrrrh8888608ttt0..............00ttt04tttttttthhhhtttttttt600ttt0.............0hhhhh06tttttttthhhhtttttttt60hhhhh0.............0uvw800oooooooooooooooooooo0.0uvw0.............0uxxxw0.00ttttt000000ttttt00.0uxxxw0............0uxxxw0..0444860....0444860..0uxxxw0............0wwwww0..0488860....0488860..0wwwww0.............0yyy0.000488860....048886000.0yyy0...............000.0uvvvvvvw0....0uvvvvvvw0.000....................0uxxxxxxw0....0uxxxxxxw0........................0hhhhhhhh0....0hhhhhhhh0.........................00000000......00000000............................................................................................................................................................."},"logo":{"w":66,"h":7,"d":"XX...XX.XXXXXXX.XX...XX..XXXXX..XXXXXX....XXX.........XXX...XXXXXXXXX..XX.XX......XX...XX.XX...XX.XX...XX..XX.XX.......XX.XX....XX..XXXX.XX.XX.......XX.XX..XX...XX.XX...XX.XX...XX.....XX...XX...XX..XX.XXXX.XXXXXX....XXX...XX...XX.XXXXXX..XX...XX.....XX...XX...XX..XX..XXX.XX.......XX.XX..XX...XX.XX.XX...XXXXXXX.....XXXXXXX...XX..XX...XX.XX......XX...XX.XX...XX.XX..XX..XX...XX.....XX...XX...XX..XX...XX.XXXXXXX.XX...XX..XXXXX..XX...XX.XX...XX.....XX...XX.XXXXXX"},"dig":{"0":".XXXXX.XX...XXXX..XXXXX.X.XXXXX..XXXX...XX.XXXXX.","1":"...XX....XXX.....XX.....XX.....XX.....XX...XXXXXX","2":".XXXXX.XX...XX.....XX...XXX..XXX...XX.....XXXXXXX","3":".XXXXX.XX...XX.....XX...XXX......XXXX...XX.XXXXX.","4":"...XXX...XXXX..XX.XX.XX..XX.XXXXXXX....XX.....XX.","5":"XXXXXXXXX.....XXXXXX......XX.....XXXX...XX.XXXXX.","6":"..XXXX..XX....XX.....XXXXXX.XX...XXXX...XX.XXXXX.","7":"XXXXXXXXX...XX....XX....XX....XX.....XX.....XX...","8":".XXXXX.XX...XXXX...XX.XXXXX.XX...XXXX...XX.XXXXX.","9":".XXXXX.XX...XXXX...XX.XXXXXX.....XX....XX..XXXX..","%":"XX....XXX...XX....XX....XX....XX...XX...XXX....XX"},"ico":{"js":"............X.X.....X...X...X..X..X.X..X....X.X..X..X...X...X.....X.X............","img":"XXXXXXXXXX.......XX.....X.XX.......XX..X....XX.XXX.X.XXXXXXXXXXXXXXXXXXX.........","city":"......X........X...XX..XXX..XX..X.X..XXX.XXX.XX.XXX.X.XXXXXXXXXX.XX.XX.XXXXXXXXXX","wings":"....X......XX.XX..XX.....XXX.XX.XX.XX...X...XX...X...XXX..X..XX..XXXXX......X....","ready":"....X........X.......XXX...XXXXXXXXX.XXXXXXX...XXXXX....XX.XX...XX...XX..X.....X."},"bolt":{"w":5,"h":8,"d":"..XXX.XXX.XXX..XXXXX..XX..XX..XX...X...."}};/*px:end*/
+  const AL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$';
+  /** Піксель-арт у полотно: sp = {w, h, d, p?} (d — символ на піксель, '.' — порожньо; p — палітра, інакше колір col). */
+  function art(cv, sp, col) {
+    cv.width = sp.w; cv.height = sp.h; const x = cv.getContext('2d'), pal = sp.p ? sp.p.split(',').map(h => '#' + h) : null, d = sp.d;
+    for (let j = 0; j < sp.h; j++) for (let i = 0; i < sp.w;) { const ch = d[j * sp.w + i]; if (ch === '.') { i++; continue; } let n = 1; while (i + n < sp.w && d[j * sp.w + i + n] === ch) n++; x.fillStyle = pal ? pal[AL.indexOf(ch)] : col; x.fillRect(i, j, n, 1); i += n; }
+    return x;
+  }
+  qa('canvas.sp-nexi').forEach(cv => art(cv, PX.nexi));
+  qa('canvas.sp-logo').forEach(cv => art(cv, PX.logo, '#3be8ff'));
+  qa('canvas.sp-bolt').forEach(cv => art(cv, PX.bolt, '#ffe27a'));
+  /** Док-станція (як килим-док у кімнаті): піксельний еліпс — рожевий обідок, темне коло з дизерингом, блакитне кільце, сяйво. */
+  qa('canvas.sp-dock').forEach(cv => { const w = 72, h = 14; cv.width = w; cv.height = h; const x = cv.getContext('2d');
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const u = (i + .5 - w / 2) / (w / 2), q = (j + .5 - h / 2) / (h / 2), r = Math.hypot(u, q); if (r > 1) continue;
+      x.fillStyle = r > .88 ? (q < 0 ? '#ff9af0' : '#ff4fd8') : r > .8 ? '#7a1f8a' : r > .64 ? ((i + j) & 1 ? '#0c1446' : '#141c5a') : r > .54 ? (q < 0 ? '#9af6ff' : '#3be8ff') : r > .3 ? ((i + j) & 1 ? '#123a7a' : '#1a4a9a') : '#9af6ff';
+      x.fillRect(i, j, 1, 1); } });
+  /** Значки етапів — колір за станом: зроблено (блакитний), зараз (рожевий), попереду (тьмяний). */
+  function icons() { qa('canvas[data-ico]').forEach(cv => { const k = cv.getAttribute('data-ico'), c = F[k] >= 1 ? '#3be8ff' : k === S.stage ? '#ff4fd8' : '#3a4a9a'; if (cv._c !== c) { cv._c = c; art(cv, { w: 9, h: 9, d: PX.ico[k] }, c); } }); }
+  /** Відсотки піксельними цифрами (праворуч). */
+  function pct(n) { qa('canvas.sp-pc').forEach(cv => { cv.width = 31; cv.height = 7; const x = cv.getContext('2d'), s = n + '%'; x.fillStyle = '#9af6ff'; let cx = 31 - (s.length * 8 - 1);
+    for (const ch of s) { const d = PX.dig[ch]; for (let k = 0; k < 49; k++) if (d[k] === 'X') x.fillRect(cx + k % 7, k / 7 | 0, 1, 1); cx += 8; } }); }
+  /** Силует міста (варіант B): вежі з вікнами; вікна засвічуються з прогресом — кожне має свій поріг. */
+  let SKY = null;
+  function skyline(force) {
+    const cv = el.querySelector('canvas.sp-skyline'); if (!cv) return;
+    const w = Math.ceil(innerWidth / U) + 2, h = Math.max(16, Math.min(46, Math.floor(innerHeight * .2 / U)));   // низький екран (телефон боком) — нижче місто
+    if (!SKY || SKY.w !== w || SKY.h !== h) { let s = 11; const rnd = () => (s = s * 16807 % 2147483647) / 2147483647, B = [], WN = [];
+      for (let x = -2; x < w;) { const bw = 6 + (rnd() * 12 | 0), bh = Math.max(4, Math.round((10 + (rnd() * (rnd() < .2 ? 32 : 22) | 0)) * h / 46)); B.push([x, h - bh, bw, bh, rnd() < .5]);
+        for (let j = h - bh + 3; j < h - 2; j += 3) for (let i = x + 2; i < x + bw - 1; i += 2) if (rnd() < .7) WN.push([i, j, rnd(), ['#ffd36a', '#9af6ff', '#ff9af0', '#ffe7a0'][rnd() * 4 | 0]]);
+        if (rnd() < .3) B.push([x + (bw >> 1), h - bh - 4, 1, 4, 2]); x += bw + (rnd() < .3 ? 1 : 0); }
+      SKY = { w, h, B, WN, lit: -1 }; el.style.setProperty('--skyh', h); }
+    const L = Math.round(S.p * 120); if (!force && L === SKY.lit) return; SKY.lit = L;
+    cv.width = w; cv.height = h; cv.style.width = w * U + 'px'; cv.style.height = h * U + 'px'; const x = cv.getContext('2d');
+    SKY.B.forEach(([bx, by, bw, bh, k]) => { x.fillStyle = k === 2 ? '#3a2a8a' : k ? '#140c3a' : '#1b1048'; x.fillRect(bx, by, bw, bh); if (k !== 2) { x.fillStyle = '#2e2278'; x.fillRect(bx, by, bw, 1); x.fillStyle = '#0c0828'; x.fillRect(bx + bw - 1, by + 1, 1, bh); } });
+    SKY.WN.forEach(([i, j, t, c]) => { x.fillStyle = t < S.p * 1.02 ? c : '#241a5a'; x.fillRect(i, j, 1, 1); });
+  }
+  // ---------- прогрес: етапи й ваги (частка лоад-бару) ----------
+  const ORD = ['js', 'img', 'city', 'wings', 'ready'], W = { js: .12, img: .16, city: .26, wings: .39, ready: .07 }, F = { js: 0, img: 0, city: 0, wings: 0, ready: 0 };
+  let shown = -1, sig = '', last = performance.now(), U = 3, TW = 300, RI = 0;
+  const S = window.NX_SPLASH = { el, V, ORD, W, F, v, p: 0, q: 0, U: 3, stage: 'js', on: null, onUnit: null,
+    /** Частка f (0..1) етапу k — лише вперед. */
+    set(k, f) {
+      if (!(k in F) || !(f > F[k])) return; F[k] = Math.min(1, f); last = performance.now(); el.classList.remove('stall');
+      let p = 0; ORD.forEach(s => { p += W[s] * F[s]; }); const st = ORD.find(s => F[s] < 1) || 'ready', i = ORD.indexOf(st);
+      S.p = p; S.q = (i + F[st]) / ORD.length; S.stage = st; move();
+      const n = Math.min(100, Math.floor(p * 100 + 1e-6)); if (n !== shown) { shown = n; pct(n); el.setAttribute('aria-valuenow', n); }
+      const g = st + ORD.map(s => F[s] >= 1 ? 1 : 0).join(''); if (g !== sig) { sig = g; el.setAttribute('data-stage', st); qa('[data-st]').forEach(e => { const s = e.getAttribute('data-st'); e.classList.toggle('on', F[s] >= 1); e.classList.toggle('cur', s === st && F[s] < 1); }); icons(); }
+      skyline(); if (S.on) S.on(st, F[st]);
+    } };
+  /** Масштаб пікселя: ціле число пікселів ЕКРАНА на піксель арту (чітко на будь-якому телефоні); ширина траси (B). */
+  function unit() {
+    const d = devicePixelRatio || 1, t = Math.min(innerWidth / 118, innerHeight / 205), ud = Math.max(2, Math.floor(Math.max(2, Math.min(5, t)) * d + .01));
+    U = S.U = ud / d; el.style.setProperty('--u', U.toFixed(4) + 'px');
+    const tr = el.querySelector('.sp-track'), nx = el.querySelector('.sp-rider .sp-nexi');
+    if (tr) { TW = tr.clientWidth; RI = Math.max(0, (nx ? nx.getBoundingClientRect().width / 2 : 0) - (innerWidth - TW) / 2 + 6); el.style.setProperty('--ri', RI.toFixed(1) + 'px'); }
+    skyline(true); move(); if (S.onUnit) S.onUnit();
+  }
+  /** Заливки лоад-бару й Nexi на трасі — прямо в transform (плавно — CSS transition, малює відеокарта). */
+  const FILLS = [...qa('.sp-fill')], RIDER = el.querySelector('.sp-rider');
+  function move() {
+    const x = RI + S.q * Math.max(0, TW - 2 * RI);                                   // траса B: Nexi не виходить за край екрана
+    FILLS.forEach(f => { f.style.transform = 'scaleX(' + (f.closest('.sp-rail') ? x / TW : S.p).toFixed(4) + ')'; });
+    if (RIDER) RIDER.style.transform = 'translateX(' + x.toFixed(1) + 'px)';
+  }
+  unit(); addEventListener('resize', unit); pct(0); icons();
+  // довго немає руху (щось не завантажилось) — кнопка «оновити»
+  setInterval(() => { if (!S.done && performance.now() - last > 25000) el.classList.add('stall'); }, 2000);
+  // ---------- етап «скрипти»: подія load кожного <script src> (перехоплюємо на document) ----------
+  const NJ = +el.getAttribute('data-js') || 50; let nj = 0;
+  S.NJ = NJ; document.addEventListener('load', e => { const t = e.target; if (t && t.tagName === 'SCRIPT' && t.src) { S.nj = ++nj; S.set('js', Math.min(.98, nj / NJ)); } }, true);
+  // ---------- етап «картинка кімнати»: одразу, паралельно зі скриптами, з прогресом за байтами (decode — у js/main.js) ----------
+  const url = el.getAttribute('data-room');
+  S.room = (async () => {
+    if (!url || !window.fetch) return null;
+    try {
+      const r = await fetch(url, { priority: 'low' }); if (!r.ok) return null;          // скрипти важливіші: місто будується ще до картинки
+      const n = +r.headers.get('content-length') || 680000, rd = r.body && r.body.getReader && r.body.getReader();
+      if (!rd) { const b = await r.blob(); S.set('img', .9); return URL.createObjectURL(b); }
+      const parts = []; let got = 0;
+      for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; S.set('img', Math.min(.9, got / n * .9)); }
+      return URL.createObjectURL(new Blob(parts, { type: r.headers.get('content-type') || 'image/webp' }));
+    } catch (e) { return null; }
+  })();
+})();
+</script>
 <canvas id="world" aria-label="Кімната Nexi"></canvas>
 
 <!-- Верхнє меню: кнопки запускають сценарії Nexi -->
@@ -44,6 +338,7 @@
 <script src="js/i18n/en.js"></script>
 <script src="js/i18n/pl.js"></script>
 <script src="js/i18n/nl.js"></script>
+<script src="js/ui/splash.js"></script>       <!-- вітальна заставка: підписи зі словників, живий Nexi, збірка шматками, перехід у кімнату -->
 <script src="js/core/config.js"></script>
 <script src="js/core/pixel.js"></script>
 <script src="js/core/pixelart.js"></script>

@@ -1,16 +1,24 @@
 <!doctype html>
 <!-- =============================================================================
   index.html — КАРКАС СТОРІНКИ NEXORA AI · ЛАБОРАТОРІЯ NEXI
-  Canvas #world — уся кімната (малює js/core/loop.js).
-  Поверх — HTML-інтерфейс (стилі css/hud.css, логіка js/ui/*).
-  Скрипти підключаються ПО ПОРЯДКУ: ядро -> світ -> персонажі -> об'єкти -> UI -> старт.
+  1) ВІТАЛЬНА ЗАСТАВКА (#splash) — розмітка, стилі й перший скрипт прямо тут, тож вона з'являється МИТТЄВО: шрифти й стилі
+     інтерфейсу не блокують показ, а решта скриптів ще вантажиться. Лоад-бар показує справжні етапи (скрипти -> картинка
+     кімнати -> місто -> 3D-крила -> готово); підписи — зі словників (js/ui/splash.js), важку збірку веде js/main.js.
+  2) Canvas #world — уся кімната (малює js/core/loop.js). Поверх — HTML-інтерфейс (стилі css/hud.css, логіка js/ui/*).
+  Скрипти підключаються ПО ПОРЯДКУ: ядро -> словники -> заставка -> світ -> персонажі -> об'єкти -> UI -> старт.
 ============================================================================== -->
-<html lang="uk">
+<html lang="uk" class="booting">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050818">
 <title>Nexora AI</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<!-- Шрифти Google і стилі інтерфейсу НЕ блокують показ (media="print" -> "all" після завантаження): спершу — заставка.
+     NX_FONTS_CSS — обіцянка «стилі шрифтів прийшли» (js/ui/splash.js чекає її перед написами; не довше 4 с). -->
+<script>window.NX_FONTS_CSS = new Promise(function (r) { window.NX_FONTS_DONE = r; setTimeout(r, 4000); });</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all';NX_FONTS_DONE()" onerror="NX_FONTS_DONE()">
 <style>
 /* ============================================================================
  * css/hud.css — СТИЛІ ІНТЕРФЕЙСУ ПОВЕРХ КІМНАТИ
@@ -97,8 +105,294 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 @media(prefers-reduced-motion:reduce){.result{transition:none}}
 
 </style>
+<style>
+/* =============================================================================
+   ВІТАЛЬНА ЗАСТАВКА — критичні стилі (без зовнішніх файлів і шрифтів). Кольори кімнати: неон рожевий / блакитний / фіолет
+   на темно-синьому. Усе — піксель-арт, який малює скрипт нижче (і підписи — піксельним шрифтом, js/ui/splash.js).
+   --u — один піксель арту: ціле число пікселів ЕКРАНА (рахує скрипт), тож піксель-арт чіткий на будь-якому телефоні.
+   Прогрес скрипт пише прямо в transform заливки й Nexi на трасі (не змінною в корені — тоді браузер щокадру перераховував
+   би стилі всієї заставки). Безперервний рух — лише transform / opacity: його малює відеокарта, тож він не «замерзає»,
+   навіть коли браузер зайнятий збіркою кімнати. Класи — з префіксом sp- (щоб не зачепити стилі інтерфейсу css/hud.css).
+   Варіанти оформлення (поки обираємо): A «Док-станція», B «Неонова траса», C «Голо-термінал» — адреса #splash-a/-b/-c.
+   ============================================================================= */
+html,body{margin:0;height:100%;background:#050818;overflow:hidden}
+#splash{position:fixed;inset:0;z-index:60;overflow:hidden;--u:3px;--cy:#3be8ff;--pk:#ff4fd8;--dim:#2a3a8a;
+  background:radial-gradient(130% 75% at 50% 40%,#151a5c 0,#0b0f38 40%,#050818 80%);transition:opacity .7s ease;-webkit-user-select:none;user-select:none}
+#splash.out{opacity:0;pointer-events:none}
+#splash canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#splash .sp-v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+/* екранні рядки ЕПТ і віньєтка — поверх усього */
+#splash::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:9;background:repeating-linear-gradient(#0000 0 2px,#00000038 2px 3px),radial-gradient(120% 90% at 50% 50%,#0000 55%,#000a)}
+/* зорі: два шари крапок, мерехтять по черзі */
+#splash .sp-stars,#splash .sp-stars::after{position:absolute;inset:0;pointer-events:none;content:'';
+  background-image:radial-gradient(1.5px 1.5px at 8% 12%,#fff 90%,#0000),radial-gradient(1px 1px at 22% 30%,#9af6ff 90%,#0000),radial-gradient(1.5px 1.5px at 37% 8%,#fff 90%,#0000),radial-gradient(1px 1px at 61% 22%,#ff9af0 90%,#0000),radial-gradient(1.5px 1.5px at 78% 10%,#fff 90%,#0000),radial-gradient(1px 1px at 91% 33%,#9af6ff 90%,#0000),radial-gradient(1px 1px at 50% 3%,#fff 90%,#0000),radial-gradient(1px 1px at 70% 40%,#fff 90%,#0000);
+  animation:spTw 3.2s steps(2) infinite}
+#splash .sp-stars::after{transform:translate(13vw,7vh);animation-delay:-1.6s}
+@keyframes spTw{50%{opacity:.25}}
+/* логотип NEXORA AI (піксельний) — неонове сяйво; Nexi 48×56; відсотки; значки етапів */
+#splash .sp-logo{width:calc(66 * var(--u));height:calc(7 * var(--u));filter:drop-shadow(0 0 calc(2 * var(--u)) #3be8ffaa) drop-shadow(var(--u) var(--u) 0 #ff4fd8)}
+#splash .sp-tag{margin:calc(3 * var(--u)) auto 0;opacity:.85}
+#splash .sp-nexi{width:calc(48 * var(--u));height:calc(56 * var(--u))}
+#splash .sp-pc{width:calc(31 * var(--u) * .75);height:calc(7 * var(--u) * .75);filter:drop-shadow(0 0 calc(2 * var(--u)) #3be8ff88)}
+#splash [data-ico]{width:calc(9 * var(--u));height:calc(9 * var(--u))}
+/* лоад-бар (спільне): заливка росте (scaleX — плавно), поверх — сітка клітинок і відблиск, що пробігає */
+#splash .sp-bar{position:relative;width:100%;height:100%}
+#splash .sp-fill{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);transition:transform .4s linear;background:linear-gradient(90deg,#ff4fd8,#c14bff 35%,#7a6aff 60%,#3be8ff)}
+#splash .sp-shine{position:absolute;inset:0;overflow:hidden}
+#splash .sp-shine::before{content:'';position:absolute;top:0;bottom:0;left:0;width:22%;background:linear-gradient(90deg,#fff0,#ffffff55,#fff0);animation:spShine 1.7s linear infinite}
+@keyframes spShine{from{transform:translateX(-100%)}to{transform:translateX(460%)}}
+#splash .sp-retry{display:none;position:absolute;right:16px;top:16px;z-index:10;background:#070c2c;border:2px solid var(--pk);color:var(--pk);font:16px monospace;padding:6px 10px;cursor:pointer}
+#splash.stall .sp-retry{display:block}
+@keyframes spBob{50%{transform:translateY(calc(-1 * var(--u)))}}
+@keyframes spPip{50%{transform:translateY(calc(-1 * var(--u)))}}
+@keyframes spPulse{50%{opacity:.45;transform:scale(.92)}}
+@keyframes spFlick{0%,100%{opacity:1}61%{opacity:.55}62%{opacity:1}64%{opacity:.7}65%{opacity:1}}
+
+/* ---------- A · ДОК-СТАНЦІЯ: Nexi заряджається на доку, над ним — бабл з етапом, унизу — «батарейка» ---------- */
+.sp-va{gap:calc(5 * var(--u))}
+.sp-va .sp-tubes{position:absolute;left:0;right:0;top:0;height:30px;pointer-events:none;background:linear-gradient(#141c52,#141c52) 0 22px/100% 5px no-repeat,
+  repeating-linear-gradient(90deg,#0000 0 24px,#d94bff 24px 92px,#0000 92px 152px,#3be8ff 152px 220px,#0000 220px 256px) 0 13px/100% 3px no-repeat;filter:drop-shadow(0 0 5px #d94bffaa);animation:spHum 4s steps(1) infinite}
+@keyframes spHum{0%,100%{opacity:1}47%{opacity:.75}48%{opacity:1}}
+.sp-va .sp-hero{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:calc(36 * var(--u))}
+.sp-va .sp-floor{position:absolute;left:50%;top:calc(100% - 9 * var(--u));width:220vw;height:60vh;margin-left:-110vw;pointer-events:none;z-index:-1;
+  background:radial-gradient(40% 18% at 50% 0,#ff4fd855,#0000 70%),radial-gradient(70% 30% at 50% 0,#3b2a9a66,#0000 75%),linear-gradient(#120a34,#06041a 45%,#0000)}
+.sp-va .sp-floor::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(#0000 0 calc(12 * var(--u)),#ffffff0d calc(12 * var(--u)) calc(12 * var(--u) + 1px));-webkit-mask:linear-gradient(#000,#0000 60%);mask:linear-gradient(#000,#0000 60%)}
+.sp-va .sp-bot{position:relative;z-index:2;animation:spBob 2.6s ease-in-out infinite}
+.sp-va .sp-dock{position:relative;z-index:1;width:calc(72 * var(--u));height:calc(14 * var(--u));margin-top:calc(-11 * var(--u))}
+.sp-va .sp-glow{position:absolute;left:50%;bottom:calc(-4 * var(--u));width:calc(110 * var(--u));height:calc(30 * var(--u));margin-left:calc(-55 * var(--u));border-radius:50%;background:radial-gradient(closest-side,#ff4fd866,#3be8ff22 60%,#0000);animation:spPulse 1.8s ease-in-out infinite;pointer-events:none}
+.sp-va .sp-refl{position:absolute;left:50%;bottom:calc(7 * var(--u));margin-left:calc(-24 * var(--u));transform:scaleY(-.5);transform-origin:50% 100%;opacity:.25;-webkit-mask:linear-gradient(#0000 35%,#000);mask:linear-gradient(#0000 35%,#000);pointer-events:none}
+.sp-va .sp-bolt{position:absolute;bottom:calc(10 * var(--u));width:calc(5 * var(--u));height:calc(8 * var(--u));opacity:0;animation:spBolt 2.4s ease-out infinite;filter:drop-shadow(0 0 4px #ffe27a)}
+.sp-va .sp-b1{left:calc(50% - 30 * var(--u))}.sp-va .sp-b2{left:calc(50% + 25 * var(--u));animation-delay:-.8s}.sp-va .sp-b3{left:calc(50% - 4 * var(--u));animation-delay:-1.6s;bottom:calc(4 * var(--u))}
+@keyframes spBolt{0%{opacity:0;transform:translateY(0)}15%{opacity:1}70%{opacity:.9}100%{opacity:0;transform:translateY(calc(-26 * var(--u)))}}
+/* бабл — як бабл Nexi в кімнаті: темне скло, блакитна рамка, хвостик донизу */
+.sp-va .sp-bub{position:absolute;bottom:calc(100% + 2 * var(--u));left:50%;transform:translateX(-50%);z-index:3;box-sizing:border-box;
+  background:#050a26f2;border:2px solid var(--cy);box-shadow:0 0 14px #3be8ff77;padding:calc(3 * var(--u)) calc(4 * var(--u)) calc(3 * var(--u));display:flex;flex-direction:column;gap:calc(2 * var(--u))}
+.sp-va .sp-bub::after{content:'';position:absolute;left:50%;bottom:-8px;width:12px;height:12px;margin-left:-6px;background:#050a26;border:solid var(--cy);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sp-va .sp-bat{position:relative;width:min(520px,78vw);height:calc(9 * var(--u));padding:var(--u);box-sizing:border-box;border:var(--u) solid var(--cy);background:#060a26;box-shadow:0 0 0 var(--u) #0a1240,0 0 18px #3be8ff55,inset 0 0 10px #3be8ff22}
+.sp-va .sp-bat::after{content:'';position:absolute;right:calc(-4 * var(--u));top:28%;bottom:28%;width:calc(2 * var(--u));background:var(--cy);box-shadow:0 0 8px #3be8ff}
+.sp-va .sp-cells{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(5% - var(--u)),#060a26 calc(5% - var(--u)) 5%)}
+.sp-va .sp-meta{display:flex;align-items:center;justify-content:space-between;width:min(520px,78vw)}
+.sp-va .sp-pips{display:flex;gap:calc(4 * var(--u));list-style:none;margin:0;padding:0}
+.sp-va .sp-pips li.cur{animation:spPip .7s steps(2) infinite}
+.v-a.done .sp-bat{animation:spFull .25s steps(2) 3}
+@keyframes spFull{50%{box-shadow:0 0 0 var(--u) #0a1240,0 0 40px #3be8ffcc,inset 0 0 22px #3be8ff88}}
+
+/* ---------- B · НЕОНОВА ТРАСА: Nexi летить на ранці над монорейкою від етапу до етапу, місто внизу засвічує вікна ---------- */
+.sp-vb{justify-content:flex-start;padding-bottom:calc((var(--skyh,46) + 6) * var(--u))}
+.sp-vb .sp-sign{margin-top:max(7vh,calc(10 * var(--u)));padding:calc(5 * var(--u)) calc(7 * var(--u)) calc(4 * var(--u));border:var(--u) solid var(--pk);background:#0a0626e6;
+  box-shadow:0 0 0 var(--u) #3a0f4a,0 0 22px #ff4fd877,inset 0 0 16px #ff4fd833;animation:spFlick 5s steps(1) infinite}
+.sp-vb .sp-track{position:relative;width:min(760px,92vw);height:min(calc(78 * var(--u)),42vh);margin-top:auto;flex:none}
+.sp-vb .sp-rail{position:absolute;left:0;right:0;bottom:calc(12 * var(--u));height:calc(2 * var(--u));background:#1b2a66;box-shadow:0 calc(2 * var(--u)) 0 #0a1240}
+.sp-vb .sp-rail .sp-fill{transition:transform .45s ease-out;box-shadow:0 0 12px #ff4fd8,0 0 18px #3be8ff88}
+.sp-vb .sp-rail::after{content:'';position:absolute;left:0;right:0;top:calc(3 * var(--u));height:calc(2 * var(--u));background:repeating-linear-gradient(90deg,#2a3a8a 0 var(--u),#0000 var(--u) calc(6 * var(--u)))}
+.sp-vb .sp-stations{position:absolute;left:0;right:0;bottom:calc(6 * var(--u));list-style:none;margin:0;padding:0}
+.sp-vb .sp-stations li{position:absolute;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+/* станції — на кінцях п'яти рівних відрізків траси; --ri — відступ від країв траси (півширини Nexi мінус поле екрана; рахує скрипт), щоб він не виходив за край екрана */
+.sp-vb .sp-stations li:nth-child(1){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .2)}.sp-vb .sp-stations li:nth-child(2){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .4)}
+.sp-vb .sp-stations li:nth-child(3){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .6)}.sp-vb .sp-stations li:nth-child(4){left:calc(var(--ri,0px) + (100% - 2 * var(--ri,0px)) * .8)}.sp-vb .sp-stations li:nth-child(5){left:calc(100% - var(--ri,0px))}
+.sp-vb .sp-stations i{display:block;padding:var(--u);border:var(--u) solid var(--dim);background:#070c2c}
+.sp-vb .sp-stations li.cur i{border-color:var(--pk);box-shadow:0 0 12px #ff4fd8;animation:spPip .7s steps(2) infinite}
+.sp-vb .sp-stations li.on i{border-color:var(--cy);box-shadow:0 0 10px #3be8ff88}
+#splash .sp-vb .sp-stations .sp-tx{position:absolute;top:calc(100% + 3 * var(--u));display:none}
+.sp-vb .sp-rider{position:absolute;left:0;bottom:calc(22 * var(--u));transition:transform .45s ease-out;z-index:2}
+.sp-vb .sp-rider .sp-bot{position:relative;margin-left:calc(-19.2 * var(--u));animation:spHover .5s ease-in-out infinite alternate}
+@keyframes spHover{to{transform:translateY(calc(-2 * var(--u)))}}
+.sp-vb .sp-rider .sp-nexi{width:calc(48 * var(--u) * .8);height:calc(56 * var(--u) * .8)}
+.sp-vb .sp-trail{position:absolute;right:100%;bottom:calc(9 * var(--u));width:calc(30 * var(--u));height:var(--u);background:linear-gradient(90deg,#0000,#ff4fd8aa,#ffe27a);transform-origin:100% 50%;animation:spTrail .18s steps(2) infinite}
+.sp-vb .sp-trail+.sp-trail{bottom:calc(5 * var(--u));width:calc(18 * var(--u));background:linear-gradient(90deg,#0000,#3be8ffaa,#fff);animation-delay:-.09s}
+@keyframes spTrail{50%{transform:scaleX(.6);opacity:.7}}
+.sp-vb .sp-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(760px,92vw);margin:calc(10 * var(--u)) 0 auto}
+.sp-vb .sp-meta div{display:flex;flex-direction:column;gap:calc(2 * var(--u));min-width:0}
+.sp-vb .sp-meta [data-sp="stage"]{filter:drop-shadow(0 0 6px #ff4fd8)}
+.sp-vb .sp-skyline{position:absolute;left:0;bottom:0}
+.sp-vb .sp-haze{position:absolute;left:0;right:0;bottom:0;height:calc(70 * var(--u));background:linear-gradient(#0000,#ff4fd822 55%,#3b1a6a44);pointer-events:none}
+@media(min-width:700px){#splash .sp-vb .sp-stations .sp-tx{display:block}}
+@media(max-width:520px){.sp-vb .sp-rider .sp-nexi{width:calc(48 * var(--u) * .7);height:calc(56 * var(--u) * .7)}.sp-vb .sp-rider .sp-bot{margin-left:calc(-16.8 * var(--u))}
+  #splash .sp-vb .sp-stations [data-ico]{width:calc(9 * var(--u) * .75);height:calc(9 * var(--u) * .75)}.sp-vb .sp-stations i{padding:calc(.5 * var(--u))}}   /* вузький телефон: менші Nexi й станції */
+
+/* ---------- C · ГОЛО-ТЕРМІНАЛ: журнал запуску на голо-екрані (як екран маркетингу), блоковий лоад-бар, Nexi набирає ---------- */
+.sp-vc{gap:calc(6 * var(--u))}
+.sp-vc .sp-term{position:relative;width:min(600px,92vw);box-sizing:border-box;padding:calc(4 * var(--u)) calc(5 * var(--u)) calc(5 * var(--u));overflow:hidden;
+  background:linear-gradient(#0b1a5ad9,#071036e6);border:var(--u) solid var(--pk);box-shadow:0 0 0 var(--u) #3a0f4a,0 0 26px #ff4fd855,inset 0 0 30px #3b8aff44;animation:spFlick 7s steps(1) infinite}
+.sp-vc .sp-term::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(#0000 0 3px,#3be8ff10 3px 4px);pointer-events:none}
+.sp-vc .sp-band{position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(#0000,#9af6ff14,#0000);animation:spBand 3.4s linear infinite;pointer-events:none}
+@keyframes spBand{from{transform:translateY(-100%)}to{transform:translateY(560%)}}
+.sp-vc .sp-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:calc(3 * var(--u));margin-bottom:calc(2 * var(--u));border-bottom:var(--u) solid #3be8ff44}
+.sp-vc .sp-head .sp-logo{width:calc(66 * var(--u) * .6);height:calc(7 * var(--u) * .6)}
+.sp-vc .sp-leds{display:flex;gap:calc(2 * var(--u))}
+.sp-vc .sp-leds i{width:calc(3 * var(--u));height:calc(3 * var(--u));background:var(--pk);animation:spPip 1s steps(2) infinite}
+.sp-vc .sp-leds i+i{background:var(--cy);animation-delay:-.33s}.sp-vc .sp-leds i+i+i{background:#ffe27a;animation-delay:-.66s}
+.sp-vc .sp-log{list-style:none;margin:0;padding:0}
+.sp-vc .sp-log li{display:flex;align-items:center;gap:calc(3 * var(--u));padding:var(--u) 0;opacity:.5}
+.sp-vc .sp-log li [data-ico]{width:calc(9 * var(--u) * .7);height:calc(9 * var(--u) * .7);flex:none}
+.sp-vc .sp-log li i{flex:1;min-width:calc(2 * var(--u));height:var(--u);margin-top:calc(2 * var(--u));background:repeating-linear-gradient(90deg,#3a4a9a 0 var(--u),#0000 var(--u) calc(3 * var(--u)))}
+.sp-vc .sp-log li.cur,.sp-vc .sp-log li.on{opacity:1}
+.sp-vc .sp-log li.cur [data-em]{animation:spCur .5s steps(2) infinite}
+@keyframes spCur{50%{opacity:.4}}
+.sp-vc .sp-blocks{height:calc(7 * var(--u));margin-top:calc(4 * var(--u));border:var(--u) solid #3be8ff66;padding:var(--u);background:#050a26}
+.sp-vc .sp-cells{position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(6.25% - var(--u)),#050a26 calc(6.25% - var(--u)) 6.25%),linear-gradient(#ffffff40 0 var(--u),#0000 var(--u) calc(100% - var(--u)),#00000060 calc(100% - var(--u)))}
+.sp-vc .sp-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:calc(3 * var(--u))}
+.sp-vc .sp-bot{position:relative;animation:spBob 2.2s ease-in-out infinite}
+.sp-vc .sp-holo{position:absolute;left:50%;bottom:calc(-2 * var(--u));width:calc(40 * var(--u));height:calc(6 * var(--u));margin-left:calc(-20 * var(--u));background:radial-gradient(closest-side,#3be8ff88,#0000);animation:spPulse 1.2s ease-in-out infinite}
+.v-c.glitch .sp-term{animation:spGlitch .3s steps(3) 1}
+@keyframes spGlitch{33%{transform:translateX(calc(2 * var(--u)));filter:drop-shadow(-3px 0 #ff4fd8) drop-shadow(3px 0 #3be8ff)}66%{transform:translateX(calc(-2 * var(--u)))}}
+.v-c.done .sp-term{animation:spOff .45s ease-in forwards}
+@keyframes spOff{60%{transform:scaleY(.04);filter:brightness(2.2)}100%{transform:scaleY(.01) scaleX(0);opacity:0}}
+@media(min-width:900px) and (min-aspect-ratio:4/3){.sp-vc{flex-direction:row;gap:calc(14 * var(--u))}}
+
+@media(prefers-reduced-motion:reduce){#splash *,#splash *::before,#splash *::after,#splash::after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<!-- ============================ ВІТАЛЬНА ЗАСТАВКА ============================
+  data-js — скільки скриптів js/ підключено нижче (оновлює tools/build.py), data-room — картинка кімнати (вантажиться одразу,
+  паралельно зі скриптами, з прогресом за байтами). Варіанти оформлення — .sp-va / .sp-vb / .sp-vc (зайві скрипт прибирає).
+  Підписи — полотна .sp-tx, їх малює піксельним шрифтом js/ui/splash.js: data-sp="say|stage|step" — підпис етапу,
+  data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / відсотки етапу, data-raw — текст як є (NEXI);
+  data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
+  для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
+<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="57" data-room="">
+ <i class="sp-stars"></i>
+ <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
+ <!-- A · ДОК-СТАНЦІЯ -->
+ <div class="sp-v sp-va">
+  <i class="sp-tubes"></i>
+  <header><canvas class="sp-logo"></canvas><canvas class="sp-tx sp-tag" data-sp-t="ui.tagline" data-tx="s" data-c="#8393cc"></canvas></header>
+  <div class="sp-hero">
+   <i class="sp-floor"></i><i class="sp-glow"></i>
+   <div class="sp-bub" style="width:calc(100 * var(--u))"><canvas class="sp-tx" data-raw="NEXI" data-tx="s" data-c="#3be8ff"></canvas><canvas class="sp-tx" data-sp="say" data-tx="m" data-c="#ffffff" data-w="p"></canvas><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas></div>
+   <div class="sp-bot"><canvas class="sp-nexi"></canvas></div>
+   <canvas class="sp-dock"></canvas>
+   <canvas class="sp-nexi sp-refl"></canvas>
+   <canvas class="sp-bolt sp-b1"></canvas><canvas class="sp-bolt sp-b2"></canvas><canvas class="sp-bolt sp-b3"></canvas>
+  </div>
+  <div class="sp-bat"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-cells"></i><i class="sp-shine"></i></div></div>
+  <div class="sp-meta"><ol class="sp-pips"><li data-st="js"><canvas data-ico="js"></canvas></li><li data-st="img"><canvas data-ico="img"></canvas></li><li data-st="city"><canvas data-ico="city"></canvas></li><li data-st="wings"><canvas data-ico="wings"></canvas></li><li data-st="ready"><canvas data-ico="ready"></canvas></li></ol><canvas class="sp-pc"></canvas></div>
+ </div>
+ <!-- B · НЕОНОВА ТРАСА -->
+ <div class="sp-v sp-vb">
+  <i class="sp-haze"></i>
+  <header class="sp-sign"><canvas class="sp-logo"></canvas><canvas class="sp-tx sp-tag" data-sp-t="ui.tagline" data-tx="s" data-c="#8393cc"></canvas></header>
+  <div class="sp-track">
+   <div class="sp-rail"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-shine"></i></div></div>
+   <ol class="sp-stations"><li data-st="js"><i><canvas data-ico="js"></canvas></i><canvas class="sp-tx" data-sp-st="js" data-tx="s" data-cs="n"></canvas></li><li data-st="img"><i><canvas data-ico="img"></canvas></i><canvas class="sp-tx" data-sp-st="img" data-tx="s" data-cs="n"></canvas></li><li data-st="city"><i><canvas data-ico="city"></canvas></i><canvas class="sp-tx" data-sp-st="city" data-tx="s" data-cs="n"></canvas></li><li data-st="wings"><i><canvas data-ico="wings"></canvas></i><canvas class="sp-tx" data-sp-st="wings" data-tx="s" data-cs="n"></canvas></li><li data-st="ready"><i><canvas data-ico="ready"></canvas></i><canvas class="sp-tx" data-sp-st="ready" data-tx="s" data-cs="n"></canvas></li></ol>
+   <div class="sp-rider"><div class="sp-bot"><i class="sp-trail"></i><i class="sp-trail"></i><canvas class="sp-nexi" data-pose="fly"></canvas></div></div>
+  </div>
+  <div class="sp-meta"><div><canvas class="sp-tx" data-sp="stage" data-tx="m" data-c="#ffffff"></canvas><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas></div><canvas class="sp-pc"></canvas></div>
+  <canvas class="sp-skyline"></canvas>
+ </div>
+ <!-- C · ГОЛО-ТЕРМІНАЛ -->
+ <div class="sp-v sp-vc">
+  <div class="sp-bot"><canvas class="sp-nexi" data-pose="type"></canvas><i class="sp-holo"></i></div>
+  <div class="sp-term">
+   <i class="sp-band"></i>
+   <header class="sp-head"><canvas class="sp-logo"></canvas><span class="sp-leds"><i></i><i></i><i></i></span></header>
+   <ol class="sp-log"><li data-st="js"><canvas data-ico="js"></canvas><canvas class="sp-tx" data-sp-st="js" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="js" data-tx="m" data-cs="e"></canvas></li><li data-st="img"><canvas data-ico="img"></canvas><canvas class="sp-tx" data-sp-st="img" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="img" data-tx="m" data-cs="e"></canvas></li><li data-st="city"><canvas data-ico="city"></canvas><canvas class="sp-tx" data-sp-st="city" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="city" data-tx="m" data-cs="e"></canvas></li><li data-st="wings"><canvas data-ico="wings"></canvas><canvas class="sp-tx" data-sp-st="wings" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="wings" data-tx="m" data-cs="e"></canvas></li><li data-st="ready"><canvas data-ico="ready"></canvas><canvas class="sp-tx" data-sp-st="ready" data-tx="m" data-cs="n"></canvas><i></i><canvas class="sp-tx" data-em="ready" data-tx="m" data-cs="e"></canvas></li></ol>
+   <div class="sp-blocks"><div class="sp-bar"><i class="sp-fill"></i><i class="sp-cells"></i><i class="sp-shine"></i></div></div>
+   <footer class="sp-foot"><canvas class="sp-tx" data-sp="step" data-tx="s" data-c="#8393cc"></canvas><canvas class="sp-pc"></canvas></footer>
+  </div>
+ </div>
+</div>
+<script>
+/* ВІТАЛЬНА ЗАСТАВКА — НАЙПЕРШИЙ СКРИПТ (до шрифтів і решти скриптів; не залежить ні від чого):
+   • варіант оформлення (поки обираємо: #splash-a / -b / -c); масштаб пікселя --u — ціле число пікселів екрана;
+   • піксель-арт КОДОМ (fillRect): Nexi, логотип, цифри відсотків, значки етапів, док, блискавки, силует міста. Дані PX
+     (палітра + символ на піксель) генерує tools/splash/gen_splash.js з того самого renderBot, що малює Nexi в кімнаті;
+   • прогрес: NX_SPLASH.set(етап, частка 0..1) -> заливка, відсотки, значки, Nexi на трасі; етапи й ваги — нижче;
+   • етап «скрипти» — рахуємо події load кожного <script src> (усього — data-js), «картинка кімнати» — вантажимо одразу,
+     паралельно зі скриптами, і рахуємо байти; решту етапів повідомляє js/main.js (важку збірку веде js/ui/splash.js). */
+(() => {
+  const el = document.getElementById('splash'); if (!el) return;
+  const qa = s => el.querySelectorAll(s);
+  const vm = location.hash.match(/splash-([abc])/), v = vm ? vm[1] : 'a';
+  qa('.sp-v').forEach(n => { if (!n.classList.contains('sp-v' + v)) n.remove(); });
+  el.classList.add('v-' + v); const V = el.querySelector('.sp-v');
+  /*px:begin*/var PX={"nexi":{"w":48,"h":56,"p":"0a0f2e,3be8ff,8aa0c8,5a6590,eef2fd,f4f7fe,afb3bd,fafbfe,e9eefc,a3a7b0,f5f7fe,16236a,060b2a,66a5ff,9dc6ff,2c69bf,2a3a8a,3b8cff,1e2c70,1b6873,265ba6,ffffff,204d8c,b6bac5,80838b,f6f8fe,f3f6fd,0a1236,5ae8ff,46508a,e3e7f1,edf0f6,a4a8b2,dbe0ed,787b82","d":".....................0111110..........................................01110...........................................0220............................................0220............................................0220............................................0220............................................0220............................................0220...........................................032230..................................0000000003223000000000........................00455555555555555555555600.....................0444477777777777777777744860...................048888899998888888899998888860..................048aa8888888888888888888888860.................0488aabbbbbbbbbbbbbbbbbbbb888860..............000488abccccccccccccccccccccb8886000...........0def488bccgggggcccccccccccccccb886def0.........0dddh488bcciijjjjjccccjjjjjccccb886ddhf0........0dkkk488bcccjj111jjccjj111jjcccb886kkkf0........0dklk488bcccj1ll11jccj1ll11jcccb886klkf0........0dklk488bcccj1l111jccj1l111jcccb886klkf0........0dklk488bcccj11111jccj11111jcccb886klkf0........0dklk488bcccjj111jjccjj111jjcccb886klkf0........0dkkk488bccccjjjjjccccjjjjjccccb886kkkf0........0ffff488bccccccccccccccccccccccb886ffff0.........0mmm488bcccccccccjjjjcccccccccb886mmm0...........000488bccccccccccccccccccccccb886000..............04888bccccccccccccccccccccb88860.................04888bbbbbbbbbbbbbbbbbbbb88860..................048888888888888888888888888860...................0666nnnnnnnnnnnnnnnnnnnn6660.....................00oooooooooooooooooooooo00........................0000000000000000000000........................00045555555555555555556000.....................0def444pppppppppppppp448def0...................0d8q8f8888hhhhhhhhhh8888d8q8f0..................0d8q8f888hrrrrrrrrrrh888d88q80..................08q88f888hrrssrrrsrrh888f88q80..................08q888888hrrsrsrrsrrh8888m88q80................08q8848888hrrsrrsrsrrh8888688q80................0ttt848888hrrsrrrssrrh8888608ttt0...............0ttt048888hrrrrrrrrrrh8888608ttt0..............00ttt04tttttttthhhhtttttttt600ttt0.............0hhhhh06tttttttthhhhtttttttt60hhhhh0.............0uvw800oooooooooooooooooooo0.0uvw0.............0uxxxw0.00ttttt000000ttttt00.0uxxxw0............0uxxxw0..0444860....0444860..0uxxxw0............0wwwww0..0488860....0488860..0wwwww0.............0yyy0.000488860....048886000.0yyy0...............000.0uvvvvvvw0....0uvvvvvvw0.000....................0uxxxxxxw0....0uxxxxxxw0........................0hhhhhhhh0....0hhhhhhhh0.........................00000000......00000000............................................................................................................................................................."},"logo":{"w":66,"h":7,"d":"XX...XX.XXXXXXX.XX...XX..XXXXX..XXXXXX....XXX.........XXX...XXXXXXXXX..XX.XX......XX...XX.XX...XX.XX...XX..XX.XX.......XX.XX....XX..XXXX.XX.XX.......XX.XX..XX...XX.XX...XX.XX...XX.....XX...XX...XX..XX.XXXX.XXXXXX....XXX...XX...XX.XXXXXX..XX...XX.....XX...XX...XX..XX..XXX.XX.......XX.XX..XX...XX.XX.XX...XXXXXXX.....XXXXXXX...XX..XX...XX.XX......XX...XX.XX...XX.XX..XX..XX...XX.....XX...XX...XX..XX...XX.XXXXXXX.XX...XX..XXXXX..XX...XX.XX...XX.....XX...XX.XXXXXX"},"dig":{"0":".XXXXX.XX...XXXX..XXXXX.X.XXXXX..XXXX...XX.XXXXX.","1":"...XX....XXX.....XX.....XX.....XX.....XX...XXXXXX","2":".XXXXX.XX...XX.....XX...XXX..XXX...XX.....XXXXXXX","3":".XXXXX.XX...XX.....XX...XXX......XXXX...XX.XXXXX.","4":"...XXX...XXXX..XX.XX.XX..XX.XXXXXXX....XX.....XX.","5":"XXXXXXXXX.....XXXXXX......XX.....XXXX...XX.XXXXX.","6":"..XXXX..XX....XX.....XXXXXX.XX...XXXX...XX.XXXXX.","7":"XXXXXXXXX...XX....XX....XX....XX.....XX.....XX...","8":".XXXXX.XX...XXXX...XX.XXXXX.XX...XXXX...XX.XXXXX.","9":".XXXXX.XX...XXXX...XX.XXXXXX.....XX....XX..XXXX..","%":"XX....XXX...XX....XX....XX....XX...XX...XXX....XX"},"ico":{"js":"............X.X.....X...X...X..X..X.X..X....X.X..X..X...X...X.....X.X............","img":"XXXXXXXXXX.......XX.....X.XX.......XX..X....XX.XXX.X.XXXXXXXXXXXXXXXXXXX.........","city":"......X........X...XX..XXX..XX..X.X..XXX.XXX.XX.XXX.X.XXXXXXXXXX.XX.XX.XXXXXXXXXX","wings":"....X......XX.XX..XX.....XXX.XX.XX.XX...X...XX...X...XXX..X..XX..XXXXX......X....","ready":"....X........X.......XXX...XXXXXXXXX.XXXXXXX...XXXXX....XX.XX...XX...XX..X.....X."},"bolt":{"w":5,"h":8,"d":"..XXX.XXX.XXX..XXXXX..XX..XX..XX...X...."}};/*px:end*/
+  const AL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$';
+  /** Піксель-арт у полотно: sp = {w, h, d, p?} (d — символ на піксель, '.' — порожньо; p — палітра, інакше колір col). */
+  function art(cv, sp, col) {
+    cv.width = sp.w; cv.height = sp.h; const x = cv.getContext('2d'), pal = sp.p ? sp.p.split(',').map(h => '#' + h) : null, d = sp.d;
+    for (let j = 0; j < sp.h; j++) for (let i = 0; i < sp.w;) { const ch = d[j * sp.w + i]; if (ch === '.') { i++; continue; } let n = 1; while (i + n < sp.w && d[j * sp.w + i + n] === ch) n++; x.fillStyle = pal ? pal[AL.indexOf(ch)] : col; x.fillRect(i, j, n, 1); i += n; }
+    return x;
+  }
+  qa('canvas.sp-nexi').forEach(cv => art(cv, PX.nexi));
+  qa('canvas.sp-logo').forEach(cv => art(cv, PX.logo, '#3be8ff'));
+  qa('canvas.sp-bolt').forEach(cv => art(cv, PX.bolt, '#ffe27a'));
+  /** Док-станція (як килим-док у кімнаті): піксельний еліпс — рожевий обідок, темне коло з дизерингом, блакитне кільце, сяйво. */
+  qa('canvas.sp-dock').forEach(cv => { const w = 72, h = 14; cv.width = w; cv.height = h; const x = cv.getContext('2d');
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const u = (i + .5 - w / 2) / (w / 2), q = (j + .5 - h / 2) / (h / 2), r = Math.hypot(u, q); if (r > 1) continue;
+      x.fillStyle = r > .88 ? (q < 0 ? '#ff9af0' : '#ff4fd8') : r > .8 ? '#7a1f8a' : r > .64 ? ((i + j) & 1 ? '#0c1446' : '#141c5a') : r > .54 ? (q < 0 ? '#9af6ff' : '#3be8ff') : r > .3 ? ((i + j) & 1 ? '#123a7a' : '#1a4a9a') : '#9af6ff';
+      x.fillRect(i, j, 1, 1); } });
+  /** Значки етапів — колір за станом: зроблено (блакитний), зараз (рожевий), попереду (тьмяний). */
+  function icons() { qa('canvas[data-ico]').forEach(cv => { const k = cv.getAttribute('data-ico'), c = F[k] >= 1 ? '#3be8ff' : k === S.stage ? '#ff4fd8' : '#3a4a9a'; if (cv._c !== c) { cv._c = c; art(cv, { w: 9, h: 9, d: PX.ico[k] }, c); } }); }
+  /** Відсотки піксельними цифрами (праворуч). */
+  function pct(n) { qa('canvas.sp-pc').forEach(cv => { cv.width = 31; cv.height = 7; const x = cv.getContext('2d'), s = n + '%'; x.fillStyle = '#9af6ff'; let cx = 31 - (s.length * 8 - 1);
+    for (const ch of s) { const d = PX.dig[ch]; for (let k = 0; k < 49; k++) if (d[k] === 'X') x.fillRect(cx + k % 7, k / 7 | 0, 1, 1); cx += 8; } }); }
+  /** Силует міста (варіант B): вежі з вікнами; вікна засвічуються з прогресом — кожне має свій поріг. */
+  let SKY = null;
+  function skyline(force) {
+    const cv = el.querySelector('canvas.sp-skyline'); if (!cv) return;
+    const w = Math.ceil(innerWidth / U) + 2, h = Math.max(16, Math.min(46, Math.floor(innerHeight * .2 / U)));   // низький екран (телефон боком) — нижче місто
+    if (!SKY || SKY.w !== w || SKY.h !== h) { let s = 11; const rnd = () => (s = s * 16807 % 2147483647) / 2147483647, B = [], WN = [];
+      for (let x = -2; x < w;) { const bw = 6 + (rnd() * 12 | 0), bh = Math.max(4, Math.round((10 + (rnd() * (rnd() < .2 ? 32 : 22) | 0)) * h / 46)); B.push([x, h - bh, bw, bh, rnd() < .5]);
+        for (let j = h - bh + 3; j < h - 2; j += 3) for (let i = x + 2; i < x + bw - 1; i += 2) if (rnd() < .7) WN.push([i, j, rnd(), ['#ffd36a', '#9af6ff', '#ff9af0', '#ffe7a0'][rnd() * 4 | 0]]);
+        if (rnd() < .3) B.push([x + (bw >> 1), h - bh - 4, 1, 4, 2]); x += bw + (rnd() < .3 ? 1 : 0); }
+      SKY = { w, h, B, WN, lit: -1 }; el.style.setProperty('--skyh', h); }
+    const L = Math.round(S.p * 120); if (!force && L === SKY.lit) return; SKY.lit = L;
+    cv.width = w; cv.height = h; cv.style.width = w * U + 'px'; cv.style.height = h * U + 'px'; const x = cv.getContext('2d');
+    SKY.B.forEach(([bx, by, bw, bh, k]) => { x.fillStyle = k === 2 ? '#3a2a8a' : k ? '#140c3a' : '#1b1048'; x.fillRect(bx, by, bw, bh); if (k !== 2) { x.fillStyle = '#2e2278'; x.fillRect(bx, by, bw, 1); x.fillStyle = '#0c0828'; x.fillRect(bx + bw - 1, by + 1, 1, bh); } });
+    SKY.WN.forEach(([i, j, t, c]) => { x.fillStyle = t < S.p * 1.02 ? c : '#241a5a'; x.fillRect(i, j, 1, 1); });
+  }
+  // ---------- прогрес: етапи й ваги (частка лоад-бару) ----------
+  const ORD = ['js', 'img', 'city', 'wings', 'ready'], W = { js: .12, img: .16, city: .26, wings: .39, ready: .07 }, F = { js: 0, img: 0, city: 0, wings: 0, ready: 0 };
+  let shown = -1, sig = '', last = performance.now(), U = 3, TW = 300, RI = 0;
+  const S = window.NX_SPLASH = { el, V, ORD, W, F, v, p: 0, q: 0, U: 3, stage: 'js', on: null, onUnit: null,
+    /** Частка f (0..1) етапу k — лише вперед. */
+    set(k, f) {
+      if (!(k in F) || !(f > F[k])) return; F[k] = Math.min(1, f); last = performance.now(); el.classList.remove('stall');
+      let p = 0; ORD.forEach(s => { p += W[s] * F[s]; }); const st = ORD.find(s => F[s] < 1) || 'ready', i = ORD.indexOf(st);
+      S.p = p; S.q = (i + F[st]) / ORD.length; S.stage = st; move();
+      const n = Math.min(100, Math.floor(p * 100 + 1e-6)); if (n !== shown) { shown = n; pct(n); el.setAttribute('aria-valuenow', n); }
+      const g = st + ORD.map(s => F[s] >= 1 ? 1 : 0).join(''); if (g !== sig) { sig = g; el.setAttribute('data-stage', st); qa('[data-st]').forEach(e => { const s = e.getAttribute('data-st'); e.classList.toggle('on', F[s] >= 1); e.classList.toggle('cur', s === st && F[s] < 1); }); icons(); }
+      skyline(); if (S.on) S.on(st, F[st]);
+    } };
+  /** Масштаб пікселя: ціле число пікселів ЕКРАНА на піксель арту (чітко на будь-якому телефоні); ширина траси (B). */
+  function unit() {
+    const d = devicePixelRatio || 1, t = Math.min(innerWidth / 118, innerHeight / 205), ud = Math.max(2, Math.floor(Math.max(2, Math.min(5, t)) * d + .01));
+    U = S.U = ud / d; el.style.setProperty('--u', U.toFixed(4) + 'px');
+    const tr = el.querySelector('.sp-track'), nx = el.querySelector('.sp-rider .sp-nexi');
+    if (tr) { TW = tr.clientWidth; RI = Math.max(0, (nx ? nx.getBoundingClientRect().width / 2 : 0) - (innerWidth - TW) / 2 + 6); el.style.setProperty('--ri', RI.toFixed(1) + 'px'); }
+    skyline(true); move(); if (S.onUnit) S.onUnit();
+  }
+  /** Заливки лоад-бару й Nexi на трасі — прямо в transform (плавно — CSS transition, малює відеокарта). */
+  const FILLS = [...qa('.sp-fill')], RIDER = el.querySelector('.sp-rider');
+  function move() {
+    const x = RI + S.q * Math.max(0, TW - 2 * RI);                                   // траса B: Nexi не виходить за край екрана
+    FILLS.forEach(f => { f.style.transform = 'scaleX(' + (f.closest('.sp-rail') ? x / TW : S.p).toFixed(4) + ')'; });
+    if (RIDER) RIDER.style.transform = 'translateX(' + x.toFixed(1) + 'px)';
+  }
+  unit(); addEventListener('resize', unit); pct(0); icons();
+  // довго немає руху (щось не завантажилось) — кнопка «оновити»
+  setInterval(() => { if (!S.done && performance.now() - last > 25000) el.classList.add('stall'); }, 2000);
+  // ---------- етап «скрипти»: подія load кожного <script src> (перехоплюємо на document) ----------
+  const NJ = +el.getAttribute('data-js') || 50; let nj = 0;
+  S.NJ = NJ; document.addEventListener('load', e => { const t = e.target; if (t && t.tagName === 'SCRIPT' && t.src) { S.nj = ++nj; S.set('js', Math.min(.98, nj / NJ)); } }, true);
+  // ---------- етап «картинка кімнати»: одразу, паралельно зі скриптами, з прогресом за байтами (decode — у js/main.js) ----------
+  const url = el.getAttribute('data-room');
+  S.room = (async () => {
+    if (!url || !window.fetch) return null;
+    try {
+      const r = await fetch(url, { priority: 'low' }); if (!r.ok) return null;          // скрипти важливіші: місто будується ще до картинки
+      const n = +r.headers.get('content-length') || 680000, rd = r.body && r.body.getReader && r.body.getReader();
+      if (!rd) { const b = await r.blob(); S.set('img', .9); return URL.createObjectURL(b); }
+      const parts = []; let got = 0;
+      for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; S.set('img', Math.min(.9, got / n * .9)); }
+      return URL.createObjectURL(new Blob(parts, { type: r.headers.get('content-type') || 'image/webp' }));
+    } catch (e) { return null; }
+  })();
+})();
+</script>
 <canvas id="world" aria-label="Кімната Nexi"></canvas>
 
 <!-- Верхнє меню: кнопки запускають сценарії Nexi -->
@@ -200,6 +494,11 @@ NX.num = (v, d = 1) => Number(v).toFixed(d).replace('.', NX.t('scene.dec') === '
 /* js/i18n/uk.js — УКРАЇНСЬКА (базова мова: якщо ключа немає в іншій мові, береться звідси) */
 NX.i18n.add('uk', {
   ui: { result: 'РЕЗУЛЬТАТ', resultAuto: 'NEXI ЗРОБИВ САМ', photo: 'ФОТО ЗБЕРЕЖЕНО 📸', tagline: '8-BIT AI АСИСТЕНТ', skins: 'СКІНИ', hint: 'ТАПНИ ПО ЗОНІ, ДИВАНУ ЧИ ВІКНУ — NEXI ПІДЕ ТУДИ. ТАПНИ ПО NEXI — СКІНИ. ТАПНИ ПО КОТУ — ПОГЛАДИТИ.', dialog: 'ДІАЛОГ З NEXI', ask: 'Напиши Nexi...', labTitle: 'СТВОРИ СВОГО NEXI', random: 'ВИПАДКОВИЙ', reset: 'СКИНУТИ', save: 'ЗБЕРЕГТИ', saved: 'NEXI ЗБЕРЕЖЕНО', task: 'ЗАДАЧА', free: 'ВІЛЬНИЙ ЧАС', close: 'Закрити', lang: 'Мова', send: 'Надіслати', room: 'Кімната Nexi', lab: 'Лабораторія скінів', prev: 'Попередній', next: 'Наступний' },
+  splash: {   // ВІТАЛЬНА ЗАСТАВКА (js/ui/splash.js): етапи лоад-бару, слова Nexi, кроки збірки
+    aria: 'Завантаження лабораторії Nexi', retry: 'Оновити сторінку', ok: 'ОК',
+    st: { js: 'СКРИПТИ', img: 'КАРТИНКА КІМНАТИ', city: 'МІСТО', wings: '3D-КРИЛА', ready: 'ГОТОВО' },
+    say: { js: 'Завантажую свій код...', img: 'Розглядаю кімнату...', city: 'Вмикаю місто за вікном...', wings: 'Будую 3D-крила...', ready: 'Готово! Заходь!' },
+    step: { sky: 'небо й зорі', planet: 'планета', far: 'далекі квартали', towers: 'хмарочоси', near: 'шосе й монорейка', glow: 'неонове сяйво', wall: 'стіни й підлога', back: 'біля стін', finish: 'шліфую деталі', compose: 'світло й сяйво', mirror: 'дзеркальна підлога', warm: 'перший кадр' } },
   nav: { home: 'ГОЛОВНА', ai: 'AI-ЦЕНТР', analytics: 'АНАЛІТИКА', marketing: 'МАРКЕТИНГ', workshop: 'МАЙСТЕРНЯ', tools: 'ІНСТРУМЕНТИ', portal: 'ПОРТАЛ' },
   cats: { skin: 'Скіни', relic: 'Реліквії', face: 'Обличчя', ant: 'Антени', body: 'Тулуб', arms: 'Руки', legs: 'Ноги', acc: 'Аксесуари', theme: 'Кольори', fx: 'Ефекти', act: 'Дії', mood: 'Емоції' },
   obj: { pillow: 'Подушка', aiPc: "AI-центр · комп'ютер", analytics: 'Аналітика', marketing: 'Маркетинг', sofa: 'Диван', workshop: 'Майстерня', tools: 'Інструменти', portal: 'Портал', catCorner: 'Куток кота', rug: 'Док-станція', ball: "М'ячик", window: 'Вікно в місто', nexiTag: 'NEXI · СКІНИ', catTag: 'РУДИК · ПОГЛАДИТИ' },
@@ -283,6 +582,11 @@ NX.i18n.add('uk', {
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
   ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
+    aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK',
+    st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },
+    say: { js: 'Loading my code...', img: 'Looking around the room...', city: 'Switching on the city...', wings: 'Building the 3D wings...', ready: 'Ready! Come on in!' },
+    step: { sky: 'sky & stars', planet: 'planet', far: 'far blocks', towers: 'skyscrapers', near: 'highway & monorail', glow: 'neon glow', wall: 'walls & floor', back: 'by the walls', finish: 'polishing details', compose: 'light & glow', mirror: 'mirror floor', warm: 'first frame' } },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
   obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
@@ -366,6 +670,11 @@ NX.i18n.add('en', {
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
   ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
+  splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
+    aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK',
+    st: { js: 'SKRYPTY', img: 'OBRAZ POKOJU', city: 'MIASTO', wings: 'SKRZYDŁA 3D', ready: 'GOTOWE' },
+    say: { js: 'Ładuję swój kod...', img: 'Rozglądam się po pokoju...', city: 'Włączam miasto za oknem...', wings: 'Buduję skrzydła 3D...', ready: 'Gotowe! Wchodź!' },
+    step: { sky: 'niebo i gwiazdy', planet: 'planeta', far: 'dalekie kwartały', towers: 'wieżowce', near: 'autostrada i kolejka', glow: 'neonowa poświata', wall: 'ściany i podłoga', back: 'przy ścianach', finish: 'szlifuję detale', compose: 'światło i blask', mirror: 'lustrzana podłoga', warm: 'pierwsza klatka' } },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
   obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
@@ -449,6 +758,11 @@ NX.i18n.add('pl', {
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
   ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
+  splash: {   // WELKOMSTSCHERM (js/ui/splash.js): laadfasen, zinnetjes van Nexi, bouwstappen
+    aria: 'Nexi’s lab wordt geladen', retry: 'Pagina vernieuwen', ok: 'OK',
+    st: { js: 'SCRIPTS', img: 'KAMERBEELD', city: 'STAD', wings: '3D-VLEUGELS', ready: 'KLAAR' },
+    say: { js: 'Mijn code laden...', img: 'Ik kijk rond in de kamer...', city: 'De stad gaat aan...', wings: '3D-vleugels bouwen...', ready: 'Klaar! Kom binnen!' },
+    step: { sky: 'lucht en sterren', planet: 'planeet', far: 'verre wijken', towers: 'wolkenkrabbers', near: 'snelweg en monorail', glow: 'neongloed', wall: 'muren en vloer', back: 'langs de muren', finish: 'details poetsen', compose: 'licht en gloed', mirror: 'spiegelvloer', warm: 'eerste frame' } },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
   obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
@@ -527,6 +841,187 @@ NX.i18n.add('nl', {
 });
 
 </script>
+<script>
+/* ---- js/ui/splash.js ---- */
+/* ============================================================================
+ * ui/splash.js — ВІТАЛЬНА ЗАСТАВКА: ЛОГІКА (NX.boot)
+ * ----------------------------------------------------------------------------
+ * Розмітка, стилі й найперший скрипт заставки — прямо в index.html (з'являються миттєво, ще до шрифтів і решти скриптів):
+ * там лоад-бар, відсотки, піксель-арт (Nexi, логотип, значки), підрахунок скриптів і завантаження картинки кімнати з
+ * прогресом (window.NX_SPLASH). Цей файл підключається одразу після словників мов і додає:
+ *   • ПІДПИСИ — лише зі словників (splash.* у js/i18n/*.js, 4 мови), а малюються ПІКСЕЛЬНИМ ШРИФТОМ кодом (5×7, великі
+ *     літери: латиниця з польськими, кирилиця, цифри, знаки; дані — FONT нижче, генерує tools/splash/gen_splash.js) у
+ *     полотна .sp-tx — у тому ж масштабі пікселя, що й увесь піксель-арт заставки, і без очікування шрифтів Google;
+ *     слова Nexi (say), назви етапів (st), кроки (step; зони 3D-крил — їхні назви з nav.*), «ОК» у журналі;
+ *   • живого Nexi на заставці — той самий renderBot, що в кімнаті, з твоїм скіном (щойно завантажиться sprite.js);
+ *   • NX.boot.run(gen, етап) — веде важку збірку (місто, 3D-крила, перший кадр) ДРІБНИМИ ШМАТКАМИ: генератор віддає
+ *     частку 0..1, ми працюємо ~40 мс (на слабкому телефоні — довше) і віддаємо браузеру кадр — лоад-бар рухається, а не
+ *     «замерзає»;
+ *   • NX.boot.reveal() — плавний перехід: «Готово!», Nexi на ранці злітає точно на своє місце на доку в кімнаті (того ж
+ *     розміру), заставка тане.
+ * Етапи (ключі): js — скрипти · img — картинка кімнати · city — місто за вікном · wings — 3D-крила · ready — перший кадр.
+ * Варіант оформлення (поки обираємо): адреса #splash-a / #splash-b / #splash-c. Заміри збірки: window.BOOT_LOG = 1.
+ * ========================================================================== */
+NX.boot = (() => {
+  const S = window.NX_SPLASH || { set() {}, F: {}, room: Promise.resolve(null), el: null, stage: 'js', U: 3 }, el = S.el;
+  const all = q => (el ? [...el.querySelectorAll(q)] : []);
+  NX.i18n.lang = NX.i18n.detect();                                                   // мова — уже зараз (main.js визначить ту саму)
+  const T = k => { const v = NX.t(k); return v === k ? '' : v; };                    // немає ключа — порожньо, а не сам ключ
+
+  // ---------- ПІКСЕЛЬНИЙ ШРИФТ ----------
+  // FONT: на кожен знак 14 символів — знак, ширина (1..5), 12 рядків клітинки (3 над літерою, 7 — літера, 2 під нею;
+  // base32, біт c — стовпчик c зліва). Генерує tools/splash/gen_splash.js --write.
+  /*font:begin*/const FONT = "05000ehpljhe0015000464444e0025000ehg842v0035000v848ghe00450008ca9v880055000v1fgghe0065000c21fhhe0075000vg842220085000ehhehhe0095000ehhug8600A5000ehhvhhh00B5000fhhfhhf00C5000eh111he00D5000fhhhhhf00E5000v11f11v00F5000v11f11100G5000eh1thhu00H5000hhhvhhh00I3000722222700J5000s88889600K5000h95359h00L5000111111v00M5000hrllhhh00N5000hjlphhh00O5000ehhhhhe00P5000fhhf11100Q5000ehhhl9m00R5000fhhf59h00S5000u11eggf00T5000v44444400U5000hhhhhhe00V5000hhhhha400W5000hhhllla00X5000hha4ahh00Y5000hha444400Z5000vg8421v00Ą5000ehhvhhh8oĘ5000v11f11v8oĆ5840eh111he00Ń5840hjlphhh00Ó5840ehhhhhe00Ś5840u11eggf00Ź5840vg8421v00Ż5040vg8421v00Ł5000115311v00Б5000v11fhhf00Г5000v11111100Ґ500gv11111100Д5000caaaaavh0Є5000eh1f1he00Ж5000lle4ell00З5000ehgcghe00И5000hhpljhh00Ї3050722222700Й5a40hhpljhh00Л5000siiiiih00П5000vhhhhhh00У5000hhhughe00Ф50004elle4400Ц5000999999vg0Ч5000hhhuggg00Ш5000llllllv00Щ5000llllllvg0Ь5000111fhhf00Ю50009llnll900Я5000uhhukih00 3000000000000.1000000000100,2000000002210!1000111110100?5000ehg840400:1000001001000-4000000f00000&50006952l9m00/5000g88422100%5000jj842pp00'1000110000000(3000421112400)3000124442100+5000044v44000·1000000100000\"3000550000000";/*font:end*/
+  const GLY = new Map(), B32 = '0123456789abcdefghijklmnopqrstuv';
+  for (let i = 0; i + 14 <= FONT.length; i += 14) GLY.set(FONT[i], { w: +FONT[i + 1], r: [...FONT.slice(i + 2, i + 14)].map(c => B32.indexOf(c)) });
+  // кириличні літери, що виглядають як латинські, і типографські знаки -> один малюнок
+  const ALIAS = { 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', 'І': 'I', '’': "'", 'ʼ': "'", '‘': "'", '–': '-', '—': '-', '«': '"', '»': '"', '•': '·' };
+  const glyph = ch => GLY.get(ch) || GLY.get(ALIAS[ch]) || GLY.get(ch.normalize('NFD')[0]) || GLY.get('?');
+  const width = s => { let w = -1; for (const ch of s) w += glyph(ch).w + 1; return Math.max(0, w); };
+  /** Текст s у полотно cv (1 піксель полотна = 1 піксель шрифту): великими літерами мови, перенос по словах на maxW. */
+  function txt(cv, s, col, maxW) {
+    s = String(s).replace(/…/g, '...').toLocaleUpperCase(NX.i18n.lang);
+    const lines = []; let cur = '';
+    for (const wd of s.split(' ')) { const t = cur ? cur + ' ' + wd : wd; if (maxW && cur && width(t) > maxW) { lines.push(cur); cur = wd; } else cur = t; }
+    lines.push(cur);
+    cv.width = Math.max(1, ...lines.map(width)); cv.height = lines.length * 13 - 1;
+    const x = cv.getContext('2d'); x.fillStyle = col;
+    lines.forEach((ln, n) => { let cx = 0; for (const ch of ln) { const g = glyph(ch); g.r.forEach((v, r) => { for (let c = 0; c < g.w; c++) if (v >> c & 1) x.fillRect(cx + c, n * 13 + r, 1, 1); }); cx += g.w + 1; } });
+  }
+  /** Масштаб тексту: b — як піксель арту, m — 2/3, s — 1/2 (ціле число пікселів екрана — чітко). */
+  const scale = sz => { const d = devicePixelRatio || 1; return Math.max(1, Math.round(Math.round((S.U || 3) * d) * ({ m: 2 / 3, s: .5 }[sz] || 1))) / d; };
+  const STC = { n: { on: '#9af6ff', cur: '#ffffff', todo: '#4a5aa8' }, e: { on: '#3be8ff', cur: '#ff4fd8', todo: '#4a5aa8' } };   // кольори за станом етапу
+
+  // ---------- підписи ----------
+  /** Крок усередині етапу — другий рядок підпису: скрипти — «23/54», картинка — відсотки, місто — небо / планета / хмарочоси…,
+   *  3D-крила — стіни й підлога / назва зони (nav.*) / світло…, готово — перший кадр. */
+  function stepText(k) {
+    if (k === 'js') return S.nj ? S.nj + '/' + S.NJ : '';
+    if (k === 'img') return Math.min(100, Math.round((S.F.img || 0) / .9 * 100)) + '%';
+    if (k === 'city') return NX.city && NX.city.step ? T('splash.step.' + NX.city.step) : '';
+    if (k === 'wings') { const st = NX.arc && NX.arc.step; return !st ? '' : st.k === 'zone' ? T('nav.' + st.x) : T('splash.step.' + st.k); }
+    return T('splash.step.warm');
+  }
+  const stateOf = k => ((S.F[k] || 0) >= 1 ? 'on' : k === S.stage ? 'cur' : 'todo');
+  /** Що й яким кольором написати на полотні підпису. */
+  function textOf(cv) {
+    const d = cv.dataset, k = S.stage || 'js';
+    let s = d.raw != null ? d.raw : d.spT ? T(d.spT) : d.spSt ? T('splash.st.' + d.spSt) : d.sp ? (d.sp === 'step' ? stepText(k) : T('splash.' + (d.sp === 'stage' ? 'st' : d.sp) + '.' + k)) : '';
+    if (d.em) { const f = S.F[d.em] || 0; s = f >= 1 ? T('splash.ok') : d.em === k ? Math.floor(f * 100) + '%' : ''; }
+    const own = d.spSt || d.em, col = d.cs && own ? STC[d.cs][stateOf(own)] : d.c || '#dbe7ff';
+    return [s, col];
+  }
+  /** Усі підписи під поточний етап (кличе inline-скрипт при кожній зміні прогресу; force — після зміни масштабу). */
+  function paint(force) {
+    if (!el) return;
+    all('canvas.sp-tx').forEach(cv => {
+      const [s, col] = textOf(cv), k = scale(cv.dataset.tx), mw = cv.dataset.w === 'p' ? Math.floor((cv.parentNode.clientWidth - 2) / k) : +cv.dataset.w ? Math.floor(cv.dataset.w / k) : 0, key = s + '|' + col + '|' + k + '|' + mw;
+      if (cv._k === key && !force) return; cv._k = key;
+      if (!s) { cv.width = cv.height = 1; cv.style.width = cv.style.height = '0px'; return; }
+      txt(cv, s, col, mw); cv.style.width = cv.width * k + 'px'; cv.style.height = cv.height * k + 'px';
+    });
+    el.setAttribute('aria-valuetext', T('splash.st.' + (S.stage || 'js')));
+  }
+  if (el) { el.setAttribute('aria-label', T('splash.aria')); const r = el.querySelector('.sp-retry'); if (r) r.setAttribute('aria-label', T('splash.retry')); }
+  paint(); S.on = () => paint(); S.onUnit = () => paint(true);
+  if (el && S.v === 'c') (function glitch() { setTimeout(() => { if (!el.isConnected || NX.boot.done) return; el.classList.add('glitch'); setTimeout(() => { el.classList.remove('glitch'); glitch(); }, 320); }, 4000 + Math.random() * 4000); })();
+
+  // ---------- живий Nexi (той самий renderBot, що в кімнаті) ----------
+  let living = false, flying = false;
+  /** Оживити Nexi на заставці, щойно є sprite.js і poses.js: поза з data-pose (стоїть / летить на ранці / набирає), у кінці —
+   *  радіє, у польоті в кімнату — ранець; варіант A — ще й віддзеркалення в підлозі. ~8 кадрів/с (як у 8-bit; браузер у цей
+   *  час будує кімнату), у польоті — щокадру. */
+  function live() {
+    if (living || !el || typeof renderBot !== 'function' || typeof poseFor !== 'function') return;
+    living = true;
+    const cvs = all('canvas.sp-nexi:not(.sp-refl)'), refl = el.querySelector('canvas.sp-refl'), t0 = performance.now();
+    let look; try { look = Object.assign({}, DEFAULT_LOOK, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) { look = Object.assign({}, DEFAULT_LOOK); }
+    let last = -1;
+    const frame = () => {
+      if (NX.boot.done) return;
+      const t = (performance.now() - t0) / 1000;
+      if (t - last < .12 && !flying) { requestAnimationFrame(frame); return; }
+      last = t;
+      cvs.forEach(cv => {
+        let pose = cv.getAttribute('data-pose') || 'stand';
+        if (flying) pose = 'fly'; else if ((S.F.ready || 0) >= 1) pose = 'cheer';
+        const p = poseFor(pose, t, false);
+        if (!flying && S.stage === 'wings' && pose === 'stand' && (t % 7) > 5) p.face = 'think';   // будує 3D — замислився
+        renderBot(look, p, t, cv);
+      });
+      if (refl && cvs[0]) { refl.width = cvs[0].width; refl.height = cvs[0].height; refl.getContext('2d').drawImage(cvs[0], 0, 0); }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+  // sprite.js і poses.js приходять трохи пізніше — оживляємо, щойно завантажиться poses.js (у dist/ — з main.js)
+  document.addEventListener('load', e => { const t = e.target; if (t && t.tagName === 'SCRIPT' && /nexi\/poses\.js/.test(t.src || '')) live(); }, true);
+
+  // ---------- шматки з паузами ----------
+  const mc = new MessageChannel(), q = []; mc.port1.onmessage = () => { const f = q.shift(); f && f(); };
+  const macro = () => new Promise(r => { q.push(r); mc.port2.postMessage(0); });            // задача без затримки (setTimeout має ≥4 мс і гальмує в тлі)
+  /** Віддати браузеру кадр: дочекатися малювання (rAF) і продовжити одразу після нього; у фоновій вкладці rAF спить — тоді просто задача. */
+  const breathe = () => document.hidden ? macro() : new Promise(r => { let done = false; const go = () => { if (!done) { done = true; macro().then(r); } }; requestAnimationFrame(go); setTimeout(go, 60); });
+  const PROF = {};                                                                   // заміри: робота / пауза по етапах (window.BOOT_LOG = 1 — у консоль)
+  let waitAvg = 12;                                                                  // скільки в середньому коштує кадр заставки (мс)
+  /** Прогнати генератор gen дрібними шматками (~budget мс; window.BOOT_BUDGET — інший), показуючи частку етапу stage на
+   *  лоад-барі. Між шматками — кадр: лоад-бар і живий Nexi оновлюються, а безперервний рух (CSS: transform / opacity)
+   *  відеокарта малює й під час шматка. */
+  async function run(gen, stage, budget0 = window.BOOT_BUDGET || 40) {
+    const pr = PROF[stage] = { work: 0, wait: 0, n: 0, max: 0 }, t0 = performance.now();
+    if (gen) for (;;) {
+      // шматок — щонайменше ~40 мс, а на слабкому телефоні (кадр заставки дорожчий) — довший, щоб на паузи йшло ≤ ~20 % часу
+      const budget = Math.max(budget0, Math.min(160, waitAvg * 4)), a = performance.now(); let r, v = -1, c = a;
+      do { r = gen.next(); if (!r.done && typeof r.value === 'number') v = r.value;
+        const e = performance.now(); if (e - c > 40 && window.BOOT_LOG) (pr.slow || (pr.slow = [])).push([Math.round(e - c), stepText(stage)]); c = e;
+      } while (!r.done && c - a < budget);
+      if (v >= 0) S.set(stage, Math.min(.999, v));                                   // лоад-бар — раз за шматок
+      paint();
+      const d = performance.now() - a; pr.work += d; pr.n++; if (d > pr.max) pr.max = d;
+      if (r.done) break;
+      const b = performance.now(); await breathe(); const w = performance.now() - b; pr.wait += w; waitAvg += (w - waitAvg) * .2;
+    }
+    S.set(stage, 1); paint(); await breathe(); pr.wall = performance.now() - t0;
+    if (window.BOOT_LOG) console.log('[boot] ' + stage + ': ' + JSON.stringify(pr, (k, v) => typeof v === 'number' ? Math.round(v) : v));
+  }
+  /** Картинка кімнати: вбудована (dist/ — один файл) або вже завантажена inline-скриптом (blob з прогресом), інакше — за адресою. */
+  async function roomSrc() { if (window.NX_ROOM_SRC) return window.NX_ROOM_SRC; const u = await S.room; return u || 'assets/room.webp'; }
+  /** Шрифт написів у 3D (вивіски зон малюються в canvas шрифтом Press Start 2P) з літерами поточної мови; не довше 3 с. */
+  function fonts() {
+    const tm = new Promise(r => setTimeout(r, 3000));
+    if (!document.fonts || !document.fonts.load) return tm;
+    const sample = ['nav.marketing', 'nav.workshop', 'nav.analytics', 'nav.tools', 'nav.ai', 'nav.portal', 'scene.ws.skins', 'scene.ws.acc'].map(T).join('');
+    return Promise.race([tm, (window.NX_FONTS_CSS || Promise.resolve()).then(() => document.fonts.load('10px "Press Start 2P"', sample)).catch(() => {})]);
+  }
+
+  // ---------- перехід у кімнату ----------
+  /** «Готово!» -> Nexi на ранці злітає ТОЧНО на своє місце в кімнаті (той самий розмір, що там; у кімнаті його поки не
+   *  видно — alpha 0), заставка тане; на місці — передає естафету справжньому Nexi. Без руху (prefers-reduced-motion) — лише тане. */
+  function reveal() {
+    return new Promise(res => {
+      const N = NX.nexi;
+      const finish = fly => { if (fly) fly.remove(); if (el) el.remove(); N.alpha = 1; NX.boot.done = true; S.done = true; document.documentElement.classList.remove('booting'); res(); };
+      if (!el) return finish();
+      S.set('ready', 1); paint(); el.classList.add('done');
+      if (document.hidden) return finish();                                          // вкладка у фоні — без анімації (rAF там спить)
+      const bot = el.querySelector('canvas.sp-nexi:not(.sp-refl)'), still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setTimeout(() => {
+        if (still || !bot || !living) { el.classList.add('out'); setTimeout(finish, 720); return; }
+        // ціль — як Nexi малюється в кімнаті (actors/nexi/nexi.js layer): ноги в (x, y), масштаб за глибиною
+        const s = NX.room.scaleAt(Math.max(N.depthY(), 352)) * N.zoom * SPRITE_K, k = NX.cam.k, [fx, fy] = NX.cam.toScreen(N.x, N.y);
+        const w = SW * s * k, left = fx - w / 2, top = fy - FOOT * s * k, r0 = bot.getBoundingClientRect();
+        const hold = bot.parentNode; hold.style.width = r0.width + 'px'; hold.style.height = r0.height + 'px';   // місце Nexi лишається — заставка не «стрибає»
+        Object.assign(bot.style, { position: 'fixed', left: r0.left + 'px', top: r0.top + 'px', width: r0.width + 'px', height: r0.height + 'px', margin: '0', zIndex: 70, transformOrigin: '0 0', transition: 'transform .7s cubic-bezier(.45,-.25,.35,1)', imageRendering: 'pixelated' });
+        document.body.appendChild(bot); flying = true; N.alpha = 0;
+        requestAnimationFrame(() => requestAnimationFrame(() => { bot.style.transform = `translate(${left - r0.left}px,${top - r0.top}px) scale(${w / r0.width})`; el.classList.add('out'); }));
+        setTimeout(() => { N.alpha = 1; bot.style.transition = 'opacity .2s'; bot.style.opacity = '0'; setTimeout(() => finish(bot), 220); }, 730);
+      }, 320);
+    });
+  }
+  return { run, roomSrc, fonts, reveal, live, txt, set: (k, f) => S.set(k, f), done: false, prof: PROF };
+})();
+
+</script>       <!-- вітальна заставка: підписи зі словників, живий Nexi, збірка шматками, перехід у кімнату -->
 <script>
 /* ---- js/core/config.js ---- */
 /* ============================================================================
@@ -958,6 +1453,8 @@ NX.furn = (() => {
  *   reflect(L, sup, o)        — ВІДДЗЕРКАЛЕННЯ в глянці (o.streak — вертикальні смуги мокрого глянцю): кожен піксель предмета «відбивається» в площині, на якій він
  *                               стоїть (підлога y 372 або глянцевий верх стола) — точно, як справжнє дзеркало, без ще
  *                               одного проходу сцени: точка (x, y, z) -> (x, 2·yп − y, z) на тому ж стовпчику екрана
+ *   outlineG / reflectG       — те саме генераторами (пауза кожні 16 рядків, yield — частка 0..1): збірка при завантаженні
+ *                               дрібними шматками, щоб вітальна заставка не «замерзала» (js/main.js); drain(g) — прогнати до кінця
  *   canvas(L) / mask(L, fid)  — готове полотно растра / маска видимих пікселів грані (живі екрани)
  *   col(hex) / rgb(r,g,b,a) / mixc(a, b, k) / dim(c, k) — упаковані кольори (ABGR, як у ImageData)
  *   ramp(pal, q, i, j)        — тон палітри за освітленістю q 0..1 + 8-bit дизеринг Байєра (палітра — упаковані кольори)
@@ -1073,27 +1570,35 @@ NX.px3d = (() => {
   /** Полотно -> {d, w, h} для sprite(). */
   function imgData(cv) { const x = cv.getContext('2d', { willReadFrequently: true }), im = x.getImageData(0, 0, cv.width, cv.height); return { d: new Uint32Array(im.data.buffer), w: cv.width, h: cv.height }; }
 
+  /** Генератор до кінця одним шматком (синхронно) -> його результат. Важкі проходи растра — генератори (*G): збірка
+   *  при завантаженні (вітальна заставка, js/main.js) іде дрібними шматками з паузами для браузера; синхронні версії —
+   *  ті самі генератори, прогнані до кінця. Генератор віддає (yield) частку виконаної роботи 0..1. */
+  const drain = g => { for (;;) { const r = g.next(); if (r.done) return r.value; } };
   /** Контур по силуету: піксель предмета, поруч з яким (на відстані до w) порожньо або інший предмет помітно далі,
    *  стає кольором out (або out(id)). Межі між гранями ОДНОГО предмета не обводяться — там працює фаска матеріалу. */
-  function outline(L, out = col('#060313'), w = 2, rel = .006) {
+  function* outlineG(L, out = col('#060313'), w = 2, rel = .006) {
     const { W, H, id: ID, dep: DP, c: C, fl: FL } = L, mark = new Uint8Array(W * H), oc = typeof out === 'function' ? out : () => out;
-    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
-      const k = j * W + i, a = ID[k]; if (!a || (FL[k] & F_NOOUT)) continue; const d = DP[k] * (1 + rel);
-      let edge = false;
-      for (let s = 1; s <= w && !edge; s++) {
-        if (i - s < 0 || i + s >= W || j - s < 0 || j + s >= H) { edge = true; break; }
-        const q1 = k - s, q2 = k + s, q3 = k - s * W, q4 = k + s * W;
-        if ((ID[q1] !== a && DP[q1] > d) || (ID[q2] !== a && DP[q2] > d) || (ID[q3] !== a && DP[q3] > d) || (ID[q4] !== a && DP[q4] > d)) edge = true;
+    for (let j = 0; j < H; j++) {
+      for (let i = 0; i < W; i++) {
+        const k = j * W + i, a = ID[k]; if (!a || (FL[k] & F_NOOUT)) continue; const d = DP[k] * (1 + rel);
+        let edge = false;
+        for (let s = 1; s <= w && !edge; s++) {
+          if (i - s < 0 || i + s >= W || j - s < 0 || j + s >= H) { edge = true; break; }
+          const q1 = k - s, q2 = k + s, q3 = k - s * W, q4 = k + s * W;
+          if ((ID[q1] !== a && DP[q1] > d) || (ID[q2] !== a && DP[q2] > d) || (ID[q3] !== a && DP[q3] > d) || (ID[q4] !== a && DP[q4] > d)) edge = true;
+        }
+        if (edge) mark[k] = 1;
       }
-      if (edge) mark[k] = 1;
+      if ((j & 15) === 15) yield .92 * j / H;                                   // пауза кожні 16 рядків
     }
     for (let k = 0; k < mark.length; k++) if (mark[k]) { const o = oc(ID[k]); if (o) C[k] = (FL[k] & F_EMIT) ? mixc(C[k], o, .55) : o; }
   }
+  const outline = (...a) => drain(outlineG(...a));
 
   /** ВІДДЗЕРКАЛЕННЯ в глянці. sup(id) -> {y — площина опори (підлога 372 або верх стола), on — id глянцевої опори (0 — підлога)}
    *  або null (не відбивається). Відбиток лягає на пікселі підлоги / глянцю опори цього растра або на порожні (там підлога
    *  іншого растра — тоді піксель напівпрозорий). o: {a — сила біля опори, h — висота згасання, emit — підсилення неону}. */
-  function reflect(L, sup, o = {}) {
+  function* reflectG(L, sup, o = {}) {
     const { W, H, R, x0, y0, id: ID, dep: DP, c: C, fl: FL } = L, A0 = o.a || .42, H0 = o.h || 46, EM = o.emit || 2.1, ST = o.streak ? new Float32Array(W).map((_, i) => .62 + .38 * NX.art.hash(i >> 1, 7) * NX.art.hash(i >> 3, 3)) : null;
     const RD = new Float32Array(W * H).fill(Infinity), RC = new Uint32Array(W * H), RA = new Float32Array(W * H), cache = [];
     for (let j = 0; j < H; j++) {
@@ -1109,6 +1614,7 @@ NX.px3d = (() => {
         const em = (FL[k] & F_EMIT) ? EM : 1, al = Math.min(.92, A0 * em * Math.exp(-Math.max(0, h) / (sp.h || H0)) * (sp.k || 1) * (ST ? ST[i] : 1));   // streak — «мокрі» смуги глянцю
         RD[k2] = t; RC[k2] = C[k]; RA[k2] = al;
       }
+      if ((j & 15) === 15) yield .8 * j / H;                                    // пауза кожні 16 рядків
     }
     for (let k = 0; k < W * H; k++) {
       const al = RA[k]; if (al <= .004) continue;
@@ -1116,6 +1622,7 @@ NX.px3d = (() => {
       else C[k] = mixc(C[k], add(C[k], RC[k], .9), al);
     }
   }
+  const reflect = (...a) => drain(reflectG(...a));
 
   /** Растр -> полотно. */
   function canvas(L) {
@@ -1134,7 +1641,7 @@ NX.px3d = (() => {
     return { cv, x: L.x0 + i0 / L.R, y: L.y0 + j0 / L.R, w: w / L.R, h: h / L.R };
   }
   return { VX, VY, D, EZ, rgb, col, pal, mixc, dim, add, ramp, lum, R_, G_, B_, A_, sub, dot, cross, newell, proj, Layer, face, sprite, tube, disc, imgData, outline, reflect, canvas, mask, SH,
-    F_EMIT, F_FLOOR, F_GLOSS, F_NOOUT, F_REFL };
+    outlineG, reflectG, drain, F_EMIT, F_FLOOR, F_GLOSS, F_NOOUT, F_REFL };
 })();
 
 </script>       <!-- піксельне 3D (z-буфер): стіни, підлога й зони «по дузі» -->
@@ -1222,13 +1729,32 @@ NX.cam = {
  * ========================================================================== */
 NX.loop = {
   canvas: null, c: null, last: 0, dpr: 1, frames: 0,
-  start() {
+  /** Підготовка без циклу: полотно, розмір екрана (камера, стеля й підлога, layout об'єктів), дотики. js/main.js кличе її
+   *  під вітальною заставкою ще до збірки 3D-крил (їм потрібен масштаб екрана); start() — те саме + головний цикл. */
+  prep() {
+    if (this.c) return;
     this.canvas = document.getElementById('world');
     this.c = this.canvas.getContext('2d');
     this.resize(); addEventListener('resize', () => this.resize());
     NX.cam.bindInput(this.canvas);
+  },
+  start() {
+    this.prep();
     this.last = performance.now() / 1000;
     requestAnimationFrame(() => this.frame());
+  },
+  /** ПЕРШИЙ КАДР ПО ШМАТКАХ (генератор, yield — частка 0..1) — під заставкою (js/main.js): той самий порядок малювання, що
+   *  й frame(), але з паузою після кожного об'єкта. Растри й кеші, що будуються при першому малюванні (місто під масштаб
+   *  екрана, рама вікна, диван, крісло…), готові ще до показу кімнати — перший справжній кадр легкий. */
+  *warmG() {
+    const t = NX.time, c = this.c, k = NX.cam.k * this.dpr, objs = Object.values(NX.objects), T = () => c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
+    NX.nexi.update(0, t); NX.cat.update(0, t); objs.forEach(o => o.update && o.update(0, t)); yield .05;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#050818'; c.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    T(); c.imageSmoothingEnabled = false; NX.room.draw(c, t); yield .1;
+    T(); NX.city.draw(c, t, 0); yield .3;
+    const back = objs.filter(o => o.drawBack); for (let n = 0; n < back.length; n++) { T(); back[n].drawBack(c, t); yield .3 + .35 * (n + 1) / back.length; }
+    const list = [NX.nexi.layer(), NX.cat.layer()]; objs.forEach(o => o.layers && list.push(...o.layers(t)));
+    const L = list.filter(Boolean).sort((a, b) => a.y - b.y); for (let n = 0; n < L.length; n++) { T(); L[n].draw(c, t); yield .65 + .35 * (n + 1) / L.length; }
   },
   resize() {
     this.dpr = Math.min(2, devicePixelRatio || 1);   // рідна роздільність екрана (до 2×); чіткість дає картинка кімнати 2× (3072×736)
@@ -2361,6 +2887,8 @@ NX.cityMega = (() => {
  * Швидкодія: жодного clip() за складною формою на великі шари — форма вікна запечена в растри (maskOut).
  * NX.city.fireworks(сек) — феєрверк (коли Nexi дивиться у вікно, сценарій `window`).
  * NX.city.paint(c, t, mode) — нерухома копія міста: для віддзеркалення в передній підлозі (objects/arc_scene.js patchFront).
+ * NX.city.buildGen() — збірка дрібними шматками (генератор; що будується — NX.city.step) під вітальною заставкою (js/main.js);
+ * без неї (зміна мови) — одним шматком на першому кадрі.
  * ========================================================================== */
 NX.city = (() => {
   const P = NX.px, F = NX.furn, CK = NX.ckit, SK = NX.citySky, CB = NX.cityBuild, { FAC, NEON } = CB;
@@ -2419,18 +2947,20 @@ NX.city = (() => {
     { skyline: ['near', 33, { w: [12, 26], top: [226, 246], bot: 258, lit: [.2, .34], step: .92, antP: .4, antH: 9, boxes: true, signP: .5, shapes: [['box', 5], ['dome', 2], ['round', 2], ['setback', 1]] }] },
   ];
   const NEAR_LOW = CK.pal(['#1a1250', '#120c3c', '#0c082c', '#08061e']);
-  /** Растр плану з переліку: {skyline}, {b: будинок}, {haze}, {fx}. */
-  function megaLayer(x0, y0, x1, y1, items, seed, pre, U = BU, live = { lights: [], win: [], signs: [], holo: [], pad: [] }) {
+  /** Растр плану з переліку: {skyline}, {b: будинок}, {haze}, {fx}. Генератором: пауза після кожного пункту й кожного
+   *  будинку горизонту (yield — частка 0..1) — місто будується дрібними шматками під вітальною заставкою (js/main.js). */
+  function* megaLayerG(x0, y0, x1, y1, items, seed, pre, U = BU, live = { lights: [], win: [], signs: [], holo: [], pad: [] }) {
     const R = CK.Ras(x0, y0, x1, y1, U); let n = 0;
     if (U < .5) R.own = new Uint16Array(R.W * R.H);                                 // чий піксель (номер будинку) — щоб живі вікна не світили крізь ближчі вежі
-    if (pre) pre(R);
-    items.forEach(it => { const tt = performance.now();
+    if (pre) { pre(R); yield 0; }
+    for (let q = 0; q < items.length; q++) { const it = items[q], tt = performance.now();
       if (it.fx) it.fx(R, live);
       else if (it.haze) CM.haze(R, ...it.haze);
       else if (it.b) CM.building(R, it.b, live, seed * 1000 + (n++) * 37 + 11);
-      else if (it.skyline) CM.skyline(it.skyline[0], x0, x1, it.skyline[1], it.skyline[2]).forEach(b => CM.building(R, b, live, seed * 1000 + (n++) * 37 + 11));
+      else if (it.skyline) { const bs = CM.skyline(it.skyline[0], x0, x1, it.skyline[1], it.skyline[2]); for (let k = 0; k < bs.length; k++) { CM.building(R, bs[k], live, seed * 1000 + (n++) * 37 + 11); yield (q + (k + 1) / bs.length) / items.length; } }
       if (window.CITY_LOG) console.log('  layer item', Object.keys(it)[0], (it.skyline || [it.b && it.b.shape || ''])[0], Math.round(performance.now() - tt), 'ms');
-    });
+      yield (q + 1) / items.length;
+    }
     return { R, live };
   }
   // монорейка й шосе над диваном: опори з тим самим кроком (74 і 78), симетрично відносно центру вікна, скільки влізе
@@ -2576,15 +3106,19 @@ NX.city = (() => {
     for (let j = Math.max(0, R.J(y0)); j < R.H; j++) { const Y = R.Y(j); let s = 0; while (s < G.length - 2 && Y >= G[s + 1][0]) s++;
       const t2 = CK.clamp((Y - G[s][0]) / (G[s + 1][0] - G[s][0]), 0, 1); for (let i = 0; i < R.W; i++) R.d[j * R.W + i] = CK.fade(G[s][1], G[s + 1][1], t2, i, j, 1.5); }
   }
-  function build() {
-    const t0 = performance.now();
-    const sky = SK.sky(GL.x0, FAR_Y0, GL.x1, FAR_Y0 + FAR_H, { seed: 7, sun: SUN });
-    const planet = SK.Planet(PL.x, PL.y, PL.r), ring = SK.Ring(PL.x, PL.y, RING.a, RING.e, RING.th, PL.r);
-    const far = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, FAR, 3, R => skyFill(R, 150), BU * 2);
-    const back = megaLayer(GL.x0, BLD_Y0, GL.x1, 252, BACK, 5, R => {                     // підкладка — дальні плани (кожен їхній піксель = 2×2)
-      const fw = far.R.W, fd = far.R.d, d = R.d; for (let j = 0; j < R.H; j++) { const fr = Math.min(far.R.H - 1, j >> 1) * fw, row = j * R.W; for (let i = 0; i < R.W; i++) d[row + i] = fd[fr + Math.min(fw - 1, i >> 1)]; } }, BU, far.live);
-    const front = megaLayer(GL.x0, 150, GL.x1, GL.y1, FRONT, 9);                          // низ над диваном: шосе, монорейка, низькі дахи
+  /** Збірка міста генератором (yield — частка 0..1; що саме будується — NX.city.step: небо, планета, плани будинків, сяйво)
+   *  — під вітальною заставкою дрібними шматками (js/main.js: NX.city.buildGen()); build() — те саме одним шматком (зміна мови). */
+  function* buildG() {
+    const t0 = performance.now(), note = k => { NX.city.step = k; };
+    const sub = function* (g, a, b) { for (;;) { const r = g.next(); if (r.done) return r.value; yield a + (b - a) * r.value; } };
+    note('sky'); const sky = SK.sky(GL.x0, FAR_Y0, GL.x1, FAR_Y0 + FAR_H, { seed: 7, sun: SUN }); yield .04;
+    note('planet'); const planet = SK.Planet(PL.x, PL.y, PL.r); yield .07; const ring = SK.Ring(PL.x, PL.y, RING.a, RING.e, RING.th, PL.r); yield .09;
+    note('far'); const far = yield* sub(megaLayerG(GL.x0, BLD_Y0, GL.x1, 252, FAR, 3, R => skyFill(R, 150), BU * 2), .09, .3);
+    note('towers'); const back = yield* sub(megaLayerG(GL.x0, BLD_Y0, GL.x1, 252, BACK, 5, R => {                     // підкладка — дальні плани (кожен їхній піксель = 2×2)
+      const fw = far.R.W, fd = far.R.d, d = R.d; for (let j = 0; j < R.H; j++) { const fr = Math.min(far.R.H - 1, j >> 1) * fw, row = j * R.W; for (let i = 0; i < R.W; i++) d[row + i] = fd[fr + Math.min(fw - 1, i >> 1)]; } }, BU, far.live), .3, .72);
+    note('near'); const front = yield* sub(megaLayerG(GL.x0, 150, GL.x1, GL.y1, FRONT, 9), .72, .8);                          // низ над диваном: шосе, монорейка, низькі дахи
     [back.R, front.R].forEach(maskOut);                                              // форма вікна запікається в растри — щокадру без дорогого clip()
+    yield .82; note('glow');
     // обидва плани — в одне полотно (щокадру один drawImage); живі точки дальнього плану, які закриває ближній, — прибираємо
     const bld = document.createElement('canvas'); bld.width = back.R.W; bld.height = Math.round((GL.y1 - BLD_Y0) / BU); const bx = bld.getContext('2d');
     bx.drawImage(back.R.canvas(), 0, 0); bx.drawImage(front.R.canvas(), 0, Math.round((150 - BLD_Y0) / BU));
@@ -2597,42 +3131,46 @@ NX.city = (() => {
     const signOk = (R, sg) => [[sg.x + .1, sg.y + .1], [sg.x + sg.w - .1, sg.y + .1], [sg.x + .1, sg.y + sg.h - .1], [sg.x + sg.w - .1, sg.y + sg.h - .1]].filter(([x, y]) => { const v = R.get(R.I(x), R.J(y)); return v && Math.max(...CK.rgb(v)) > 110; }).length >= 3;
     liveB.lights = liveB.lights.filter(l => vis(l) && !covered(l.x, l.y)); liveB.signs = liveB.signs.filter(sg => signOk(back.R, sg) && !covered(sg.x + sg.w / 2, sg.y + sg.h - 1));
     liveF.win = liveF.win.filter(w => mine(front.R, w)); ['win', 'lights'].forEach(k => { liveF[k] = liveF[k].filter(vis); }); liveF.signs = liveF.signs.filter(sg => signOk(front.R, sg));
+    yield .83; const clouds = CLOUDS.map(cl => L(SK.Cloud(cl))), cars = CARC.map(carSprite); yield .84;   // спрайти — кількома шматками
+    const airship = airshipSprite(), ship = shipSprite(), trainSp = trainSprite(); yield .85; const elev = elevSprite(), plat = platformSprite(), whale = whaleSprite(); yield .855;
     const r = CK.rng(77);
     S = {
       sky: L(sky), ringB: L(ring.back), ringF: L(ring.front), planet, prot: -1, pfit: null,
-      clouds: CLOUDS.map(cl => L(SK.Cloud(cl))), bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
-      liveB, liveF, cars: CARC.map(carSprite), airship: airshipSprite(), ship: shipSprite(),
+      clouds, bld: { cv: bld, x: GL.x0, y: BLD_Y0, w: GW, h: GL.y1 - BLD_Y0 },
+      liveB, liveF, cars, airship, ship,
       ad: textCanvas(txt('ad', 'NEXORA AI · NEXI ♥ · '), ['#ff6ad8', '#5aeaff', '#ff6ad8', '#5aeaff', '#ffe27a', '#ff6ad8']), zep: textCanvas(txt('zep', 'NEXORA AI ♥ '), ['#9af6ff', '#ff8ade']),   // тексти — зі словника мов
       beam: beamSprite(),
       tw: Array.from({ length: 22 }, () => [GL.x0 + 6 + r() * (GW - 12), 4 + r() * 84, r() * 6.28, .9 + r() * 1.4]).filter(([x, y]) => Math.hypot(x - PL.x, y - PL.y) > PL.r + 5).slice(0, 16),
       lanes: LANES.map(Ln => Array.from({ length: Ln.n }, (_, k) => ({ x: GL.x0 + (k + r() * .6) * GW / Ln.n, c: (k + Ln.st) % 4, dy: (r() - .5) * 3 }))),
-      train: null, trainT: 6 + r() * 10, trainSp: trainSprite(), skyC: null,
-      elev: elevSprite(), plat: platformSprite(), whale: whaleSprite(), tube: TUBE,
+      train: null, trainT: 6 + r() * 10, trainSp, skyC: null,
+      elev, plat, whale, tube: TUBE,
     };
-    planet.update(0); bloom();
+    yield .86; planet.update(0); yield .88;
+    yield* sub(bloomG(), .88, 1);
     NX.room.pieces = PIECES;                                                         // кімната більше не малює картинку під вікном — там усе кодом
     S.ms = Math.round(performance.now() - t0); if (window.CITY_LOG) console.log("city build ms", S.ms);
   }
+  const build = () => NX.px3d.drain(buildG());
   // що кімната ще малює з картинки: ліворуч (під лівим крилом) і підлогу під вікном до правого краю дивана (далі — підлога правого крила)
   const PIECES = [[0, 0, GL.x0, 368], [GL.x0, GL.y1, 891, 368]];
   /** Сяйво міста (bloom): яскраві пікселі нерухомої копії, зменшені й розмиті в 3 масштабах (як у крила),
    *  ЗАПІКАЄТЬСЯ в небо (skyCache) і в будинки (лише на самі будинки) — щокадру нічого не коштує. На всю ширину скла. */
-  function bloom() {
+  function* bloomG() {                                                             // генератором: кроки з паузами (заставка, js/main.js)
     try {
       const w = Math.round(GW), h = Math.round(GL.y1 + 2), a = document.createElement('canvas'); a.width = w; a.height = h;   // 1 px/од.
-      const x = a.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.translate(-GL.x0, 2); paint(x, 0, 'bloom', 1);
+      const x = a.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; x.translate(-GL.x0, 2); paint(x, 0, 'bloom', 1); yield .3;
       const down = (src, f) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / f)); o.height = Math.max(1, Math.round(src.height / f)); const ox = o.getContext('2d', { willReadFrequently: true }); ox.imageSmoothingEnabled = true; ox.imageSmoothingQuality = 'high'; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
       const b1 = down(a, 4), bx = b1.getContext('2d', { willReadFrequently: true }), im = bx.getImageData(0, 0, b1.width, b1.height), d = im.data;
       for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.max(0, (m - 125) / 130); d[i] *= k; d[i + 1] *= k; d[i + 2] *= k; }   // лише яскраве світиться
-      bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2);
+      bx.putImageData(im, 0, 0); const b2 = down(b1, 2), b3 = down(b2, 2); yield .5;
       const bc = document.createElement('canvas'); bc.width = b1.width; bc.height = b1.height; const cx2 = bc.getContext('2d'); cx2.globalCompositeOperation = 'lighter'; cx2.imageSmoothingEnabled = true;
       [[b1, .14], [b2, .26], [b3, .36]].forEach(([b, k]) => { cx2.globalAlpha = k; cx2.drawImage(b, 0, 0, bc.width, bc.height); });
-      S.bloom = bc;
+      S.bloom = bc; yield .6;
       // у будинки: сяйво лише поверх самих будинків (маска — їхня непрозорість), додаванням кольору
       const B = S.bld.cv, m = document.createElement('canvas'); m.width = B.width; m.height = B.height; const mx = m.getContext('2d'); mx.imageSmoothingEnabled = true;
       mx.drawImage(bc, 0, 0, bc.width, bc.height, 0, (-2 - BLD_Y0) / BU, B.width, (GL.y1 + 2) / BU);   // сяйво (y -2..345) -> пікселі будинків (y 2..345, 4 px/од.)
       mx.globalCompositeOperation = 'destination-in'; mx.drawImage(B, 0, 0);
-      const bxx = B.getContext('2d'); bxx.globalCompositeOperation = 'lighter'; bxx.drawImage(m, 0, 0);
+      yield .8; const bxx = B.getContext('2d'); bxx.globalCompositeOperation = 'lighter'; bxx.drawImage(m, 0, 0);
       bxx.globalCompositeOperation = 'source-atop'; bxx.setTransform(1 / BU, 0, 0, 1 / BU, -GL.x0 / BU, -BLD_Y0 / BU); glassStatic(bxx, false); bxx.setTransform(1, 0, 0, 1, 0, 0); bxx.globalCompositeOperation = 'source-over';   // відблиски скла — і на будинках
     } catch (e) { S.bloom = null; }
   }
@@ -2836,6 +3374,10 @@ NX.city = (() => {
   return {
     GL, CLIP, CLIPP,
     init() {},
+    /** Збірка міста дрібними шматками (генератор, yield — частка 0..1) — під вітальною заставкою (js/main.js); null — уже є. */
+    buildGen() { return S ? null : buildG(); },
+    /** Передню підлогу-дзеркало вже зібрано (js/main.js при завантаженні) — на 8-му кадрі не перебудовувати вдруге. */
+    markPatched() { frames = Math.max(frames, 8); },
     /** Мову змінено: вивіски й реклама — іншими словами, тож місто збирається заново (наступного кадру). */
     relang() { if (S) { S = null; frames = 0; } },
     fireworks(sec) { fwUntil = NX.time + sec; },
@@ -4630,7 +5172,9 @@ NX.arc = NX.arc || {};
  *   2. БІЛЯ СТІНИ (3 px/од.) — колони, антресоль, настінні полиці, підвіси, оздоби (DECOR) — лише якщо є в розкладці;
  *   3–5. ЗОНИ (3 px/од.) — дальня, середня, найближча; у кожної — свій z-буфер, контур і віддзеркалення в підлозі
  *      та на глянцевих стільницях; маніпулятор майстерні — у шарі майстерні.
- * Збірка — по шару за кадр (сторінка не «замерзає»); готові шари зливаються ОДИН раз в одне полотно під масштаб екрана
+ * Збірка — генераторами дрібними шматками (стовпчики, рядки, грані; yield — частка 0..1): при завантаженні її веде js/main.js
+ * під вітальною заставкою (NX.arc.scene.bootG — і злиття, і передня підлога-дзеркало; що зараз будується — NX.arc.step для
+ * підпису), потім (зміна мови) — по ~30 мс за кадр; готові шари зливаються ОДИН раз в одне полотно під масштаб екрана
  * (+ сяйво — bloom); щокадру — один drawImage на крило й живі екрани поверх (під маскою видимих пікселів). Підлоги крил
  * ідуть і під вікно (за диваном: він ближче до глядача, core/config.js SOFA) і сходяться посередині (x 774 ± 10), унизу
  * плавно переходять у передню підлогу кімнати (fadeFloor). Передня підлога кімнати на всю ширину бере віддзеркалення з
@@ -4716,7 +5260,12 @@ NX.arc = NX.arc || {};
   /** Відкладене малювання: грані й спрайти шару збираються, а малюються ВІД БЛИЖЧИХ ДО ДАЛЬШИХ (run) — тоді
    *  z-буфер відкидає закриті пікселі ще до матеріалу, і збірка в рази швидша (матеріал — найдорожче). */
   function cmd(L, poly, f) { let k = 1e9; for (const q of poly) { const t = (PZ.D + q[2]) / PZ.D; if (t < k) k = t; } (L.cmds || (L.cmds = [])).push([k, f]); }
-  function run(L) { if (!L.cmds) return; L.cmds.sort((a, b) => a[0] - b[0]).forEach(c => c[1]()); L.cmds = null; }
+  /** Те саме генератором: пауза після кожної грані (yield — частка 0..1) — збірка дрібними шматками (заставка, js/main.js). */
+  function* runG(L) { if (!L.cmds) return; const list = L.cmds.sort((a, b) => a[0] - b[0]); L.cmds = null; for (let k = 0; k < list.length; k++) { list[k][1](); yield (k + 1) / list.length; } }
+  /** Підзадача-генератор у діапазоні прогресу [a, b]: її частки 0..1 -> частки батька; повертає її результат. */
+  function* sub(g, a, b) { for (;;) { const r = g.next(); if (r.done) return r.value; yield a + (b - a) * (typeof r.value === 'number' ? r.value : 0); } }
+  /** Що зараз будується (для підпису на заставці: js/ui/splash.js) — ключ кроку й крило/зона. */
+  const note = (k, x) => { NX.arc.step = { k, x }; };
   /** Щільність текстури грані: тексель ≈ піксель растра (з урахуванням глибини). */
   const TSof = (L, Fc) => clamp(Math.round(L.R * s(A.centre(Fc)[2]) * 2) / 2, 2, 6);
   /** Набір для форм (NX.arc.shape — зараз немає; старі — коміт a941612, objects/arc_shapes.js): частини-об'єми, трубки, диски
@@ -4814,7 +5363,7 @@ NX.arc = NX.arc || {};
     if (((i * 7 + j * 3) % 41) === 0) q += .25;                                                              // іскорки глянцю
     return ramp(FLOORP, q, i, j);
   }
-  function wallLayer(Ls, side, clipPoly) {
+  function* wallLayerG(Ls, side, clipPoly) {
     const W = catmull(Ls.wall, 4), sgn = side === 'right' ? 1 : -1, b = side === 'right' ? [MID - SEAM, -2, 1547, 478] : [-12, -2, MID + SEAM, 478];   // підлога — і під вікном, до середини
     const L = X.Layer(b[0], b[1], b[2], b[3], R_WALL), reg = Reg(), wid = reg.add({ wall: 1, sup: { y: FL, on: 0 }, out: 0 });
     const lights = lightsOf(Ls, side);
@@ -4852,6 +5401,7 @@ NX.arc = NX.arc || {};
         }
         CC[k] = c; DEP[k] = bt; ID[k] = wid; FID[k] = wid; FLG[k] = fl;
       }
+      if ((i & 15) === 15) yield .5 * i / LW;                                                               // пауза кожні 16 стовпчиків
     }
     for (let j = 0; j < LH; j++) {
       const Y = ly0 + (j + .5) / R; if (Y <= VY + .5) continue;
@@ -4861,12 +5411,13 @@ NX.arc = NX.arc || {};
         const x = VX + (lx0 + (i + .5) / R - VX) * t, b4 = BAY[(j & 3) * 4 + (i & 3)], ix = Math.max(0, Math.min(FM.nx - 1, Math.round((x - fx0) / CELL + b4)));
         CC[k] = lightAdd(floorAt(x, z, i, j, side), FM, jy * FM.nx + ix); DEP[k] = t; ID[k] = flid; FID[k] = flid; FLG[k] = X.F_FLOOR | X.F_NOOUT;
       }
+      if ((j & 15) === 15) yield .5 + .25 * j / LH;
     }
     // екран NEXORA AI (праворуч) і стрічка машинерії — у шарі стіни
     if (Ls.hub) { const H = Ls.hub, B = { id: 'hub', x: H.x, z: H.z, turn: H.turn, w: H.w, dep: 3, yb: H.y1, yt: H.y0, st: 'screen', deco: H.deco }; drawItem(L, B, reg, side, {}); }
-    run(L);
-    clipLayer(L, clipPoly);
-    X.reflect(L, a => reg.get(a) && reg.get(a).sup, { a: .55, h: 50, streak: 1 });
+    yield* sub(runG(L), .75, .8);
+    clipLayer(L, clipPoly); yield .82;
+    yield* sub(X.reflectG(L, a => reg.get(a) && reg.get(a).sup, { a: .55, h: 50, streak: 1 }), .82, 1);
     return { L, reg };
   }
   /** Маска растра за многокутником на екрані (поза ним — прозоро). */
@@ -4906,7 +5457,7 @@ NX.arc = NX.arc || {};
   }
 
   // ---------- БІЛЯ СТІНИ: колони, антресоль, полиці з вазонами, підвіси ----------
-  function backLayer(Ls, side, zclip) {
+  function* backLayerG(Ls, side, zclip) {
     const UP = (Ls.items || []).filter(B => B.layer === 'up'), byId = {}; UP.forEach(B => byId[B.id] = B);
     const es = [...UP.map(ext), ...(Ls.cols || []).map(ext)];
     if (Ls.mezz) Ls.mezz.edge.forEach(p => { const a = X.proj([p[0], Ls.mezz.yt - 30, p[1]]), b = X.proj([p[0], Ls.mezz.yb + 4, p[1]]); es.push([a[0] - 30, a[1] - 40, a[0] + 30, b[1] + 40]); });
@@ -4919,9 +5470,10 @@ NX.arc = NX.arc || {};
     if (Ls.mezz) mezz(L, Ls, reg);
     UP.forEach(B => drawItem(L, B, reg, side, byId));
     (Ls.hang || []).forEach(h => hang(L, Ls, h, reg));
-    run(L);
-    X.outline(L, a => (reg.get(a) || {}).out, 2);
-    X.reflect(L, a => reg.get(a) && reg.get(a).sup, { a: .5, h: 60, streak: 1 });
+    yield .1;
+    yield* sub(runG(L), .1, .6);
+    yield* sub(X.outlineG(L, a => (reg.get(a) || {}).out, 2), .6, .8);
+    yield* sub(X.reflectG(L, a => reg.get(a) && reg.get(a).sup, { a: .5, h: 60, streak: 1 }), .8, 1);
     return { L, reg };
   }
   // ---------- ОЗДОБИ СТІНИ (лише в 3D, пласкі — на самій стіні): гірлянда, постери в рамках ----------
@@ -5032,19 +5584,19 @@ NX.arc = NX.arc || {};
   }
 
   // ---------- ЗОНИ ----------
-  function zoneLayer(items, side, zclip, Ls, zn) {
+  function* zoneLayerG(items, side, zclip, Ls, zn) {
     const byId = {}; items.forEach(B => byId[B.id] = B);
     const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) { const pad = 12 * (Ls.armk || 1); Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - pad, q[1] - pad, q[0] + pad, q[1] + pad]); }); }
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
     const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_HERO[zn] || R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
-    order.forEach(B => drawItem(L, B, reg, side, byId));
+    for (let k = 0; k < order.length; k++) { drawItem(L, order[k], reg, side, byId); yield .12 * (k + 1) / order.length; }   // предмет за предметом (текстури лиць)
     if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg, Ls.armk || 1);                              // маніпулятор майстерні — у z-буфері зони
-    run(L);
-    X.outline(L, a => (reg.get(a) || {}).out, 2);
-    X.reflect(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 });   // глянець стільниць
-    X.reflect(L, a => { const r = reg.get(a); return r && r.sup ? { y: FL, on: 0 } : null; }, { a: .62, h: 62, streak: 1 });   // підлога
+    yield* sub(runG(L), .12, .55);
+    yield* sub(X.outlineG(L, a => (reg.get(a) || {}).out, 2), .55, .75);
+    yield* sub(X.reflectG(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 }), .75, .85);   // глянець стільниць
+    yield* sub(X.reflectG(L, a => { const r = reg.get(a); return r && r.sup ? { y: FL, on: 0 } : null; }, { a: .62, h: 62, streak: 1 }), .85, 1);   // підлога
     return { L, reg };
   }
 
@@ -5067,81 +5619,112 @@ NX.arc = NX.arc || {};
 
   // ---------- ЗЛИТТЯ крила ----------
   const SIDES = {};
-  /** Збірка крила ПО КРОКАХ (генератор): після кожного шару — пауза до наступного кадру, щоб сторінка не «замерзала»
-   *  на кілька секунд (кожен шар — 0.1..0.4 с). Результат: {side, box, live, layers: [{cv, x0, y0, x1, y1}], ms}. */
+  /** Генератор g із заміром часу: скільки він працював (між паузами) — у acc (ms, tm — підсумок для консолі). */
+  function* timed(nm, g, acc) {
+    let d = 0, r; for (;;) { const a = performance.now(); r = g.next(); d += performance.now() - a; if (r.done) break; yield r.value; }
+    acc.ms += d; acc.tm.push(nm + ' ' + d.toFixed(0) + (r.value && r.value.L ? '(' + (r.value.L.W * r.value.L.H / 1e6).toFixed(2) + 'MP)' : '')); return r.value;
+  }
+  /** Збірка крила ПО КРОКАХ (генератор): шар за шаром, а всередині шару — стовпчиками, рядками й гранями з паузами (yield —
+   *  частка 0..1), щоб сторінка не «замерзала» (шар цілком — 0.1..0.5 с, на слабкому телефоні — до 2.5 с).
+   *  Результат: {side, box, live, layers: [{cv, x0, y0, x1, y1}], ms}. */
   function* buildSide(side) {
     const Ls = ALL[side]; if (!Ls) return null;
-    let ms = 0;
+    const acc = { ms: 0, tm: [] };
     // стіна — від відкосу; підлога — і під вікном (з-під порога), до середини кімнати: там підлоги крил сходяться (fadeFloor)
     const clip = side === 'right' ? [[WIN.R, -2], [1547, -2], [1547, 478], [MID - SEAM, 478], [MID - SEAM, 346], [WIN.R, 346]] : [[-12, -2], [WIN.L, -2], [WIN.L, 346], [MID + SEAM, 346], [MID + SEAM, 478], [-12, 478]];
     const zclip = side === 'right' ? [MID - SEAM, -2, 1550, 478] : [-12, -2, MID + SEAM, 478];   // дальні зони ширші — заходять за диван
-    const tm = [], T = (nm, f) => { const a = performance.now(), r = f(), d = performance.now() - a; ms += d; tm.push(nm + ' ' + d.toFixed(0) + (r && r.L ? '(' + (r.L.W * r.L.H / 1e6).toFixed(2) + 'MP)' : '')); return r; };
-    const layers = [T('wall', () => wallLayer(Ls, side, clip))]; yield;
-    const bk = T('back', () => backLayer(Ls, side, zclip)); if (bk) { layers.push(bk); yield; }
     const ZN = side === 'right' ? ['workshop', 'tools', 'portal'] : ['marketing', 'analytics', 'ai'];
-    for (const z of ZN) { const it = (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up'); if (it.length) { layers.push(T(z, () => zoneLayer(it, side, zclip, Ls, z))); yield; } }
+    const zs = ZN.map(z => [z, (Ls.items || []).filter(B => B.zone === z && B.layer !== 'up')]).filter(e => e[1].length);
+    // частки прогресу крила: стіна й підлога .3, біля стіни .06, зони — порівну .5, фініш .14
+    note('wall', side); const layers = [yield* sub(timed('wall', wallLayerG(Ls, side, clip), acc), 0, .3)];
+    note('back', side); const bk = yield* sub(timed('back', backLayerG(Ls, side, zclip), acc), .3, .36); if (bk) layers.push(bk);
+    for (let n = 0; n < zs.length; n++) { const [z, it] = zs[n]; note('zone', z); layers.push(yield* sub(timed(z, zoneLayerG(it, side, zclip, Ls, z), acc), .36 + .5 * n / zs.length, .36 + .5 * (n + 1) / zs.length)); }
     const box = side === 'right' ? [MID - SEAM, -2, 1547, 478] : [-12, -2, MID + SEAM, 478];
-    const live = [], out = T('finish', () => {
-      layers.forEach(l => fadeFloor(l.L, side));
-      layers.forEach((l, li) => (l.L.live || []).forEach(E => { const m = liveMask(layers, li, E.fid); if (m) live.push(Object.assign(E, { mask: m })); }));   // живі екрани: маски з z-буфера
-      return { side, box, live, layers: layers.map(l => ({ cv: X.canvas(l.L), x0: l.L.x0, y0: l.L.y0, x1: l.L.x1, y1: l.L.y1 })) };   // буфери растрів далі не потрібні
-    });
-    if (window.ARC_LOG !== 0) console.log('[arc] ' + side + ': ' + tm.join(', '));
-    out.ms = ms; return out;
+    note('finish', side); const out = yield* sub(timed('finish', finishG(layers, side, box), acc), .86, 1);
+    if (window.ARC_LOG !== 0) console.log('[arc] ' + side + ': ' + acc.tm.join(', '));
+    out.ms = acc.ms; return out;
   }
-  /** Шари -> одне полотно під масштаб Rd (+ сяйво). */
-  function compose(S, Rd) {
+  /** Фініш крила: підлоги плавно в передню, маски живих екранів, растри -> полотна (буфери далі не потрібні). */
+  function* finishG(layers, side, box) {
+    const n = layers.length, live = [], cvs = [];
+    for (let k = 0; k < n; k++) { fadeFloor(layers[k].L, side); yield .3 * (k + 1) / n; }
+    for (let li = 0; li < n; li++) { for (const E of (layers[li].L.live || [])) { const m = liveMask(layers, li, E.fid); if (m) live.push(Object.assign(E, { mask: m })); yield .3 + .2 * (li + 1) / n; } }   // живі екрани: маски з z-буфера
+    for (let k = 0; k < n; k++) { const l = layers[k]; cvs.push({ cv: X.canvas(l.L), x0: l.L.x0, y0: l.L.y0, x1: l.L.x1, y1: l.L.y1 }); yield .5 + .5 * (k + 1) / n; }
+    return { side, box, live, layers: cvs };
+  }
+  /** Шари -> одне полотно під масштаб Rd (+ сяйво). Генератором: шар за шаром, сяйво — кроками. */
+  function* composeG(S, Rd) {
     const [x0, y0, x1, y1] = S.box, w = Math.round((x1 - x0) * Rd), h = Math.round((y1 - y0) * Rd), cv = document.createElement('canvas'); cv.width = w; cv.height = h;
     const c = cv.getContext('2d'); c.setTransform(Rd, 0, 0, Rd, -x0 * Rd, -y0 * Rd); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
-    S.layers.forEach(l => c.drawImage(l.cv, l.x0, l.y0, l.x1 - l.x0, l.y1 - l.y0));
-    bloom(cv); return cv;
+    for (let k = 0; k < S.layers.length; k++) { const l = S.layers[k]; c.drawImage(l.cv, l.x0, l.y0, l.x1 - l.x0, l.y1 - l.y0); yield .45 * (k + 1) / S.layers.length; }
+    yield* sub(bloomG(cv), .45, 1); return cv;
   }
+  const compose = (S, Rd) => X.drain(composeG(S, Rd));
   /** Сяйво: яскраві пікселі -> 3 масштаби розмиття -> додати світлом (запікається в злиття). */
-  function bloom(cv) {
+  function* bloomG(cv) {
     const w = cv.width, h = cv.height, f = 6, bw = Math.max(1, Math.round(w / f)), bh = Math.max(1, Math.round(h / f)), b1 = document.createElement('canvas'); b1.width = bw; b1.height = bh;
-    const bx = b1.getContext('2d', { willReadFrequently: true }); bx.imageSmoothingEnabled = true; bx.drawImage(cv, 0, 0, bw, bh);
+    const bx = b1.getContext('2d', { willReadFrequently: true }); bx.imageSmoothingEnabled = true; bx.drawImage(cv, 0, 0, bw, bh); yield .3;
     const im = bx.getImageData(0, 0, bw, bh), d = im.data;
     // яскравість -> прозорість (колір лишається): у режимі 'lighter' темне нічого не додає й не робить прозоре (вікно) непрозорим
     for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]), k = Math.min(1, Math.max(0, (m - 120) / 135)) * (d[i + 3] / 255); d[i + 3] = Math.round(k * 255); }
-    bx.putImageData(im, 0, 0);
+    bx.putImageData(im, 0, 0); yield .5;
     const down = (src, k) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(src.width / k)); o.height = Math.max(1, Math.round(src.height / k)); const ox = o.getContext('2d'); ox.imageSmoothingEnabled = true; ox.drawImage(src, 0, 0, o.width, o.height); return o; };
-    const b2 = down(b1, 2), b3 = down(b2, 2), c = cv.getContext('2d'); c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
-    [[b1, .22], [b2, .3], [b3, .34]].forEach(([b, k]) => { c.globalAlpha = k; c.drawImage(b, 0, 0, w, h); }); c.restore();
+    const b2 = down(b1, 2), b3 = down(b2, 2), c = cv.getContext('2d'); yield .6;
+    const L3 = [[b1, .22], [b2, .3], [b3, .34]];
+    for (let n = 0; n < 3; n++) { const [b, k] = L3[n]; c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.globalAlpha = k; c.drawImage(b, 0, 0, w, h); c.restore(); yield .6 + .4 * (n + 1) / 3; }
   }
   /** Передня підлога кімнати на всю ширину — віддзеркалення нових крил і міста за вікном (копія розміром з картинку
    *  кімнати: картинка -> місто (усе скло: диван тепер стоїть ближче й сам віддзеркалюється) -> рама вікна -> крила).
    *  Замість латки міста (world/cityscape.js patchFloor кличе цю, коли вона є). */
-  function patchFront() {
+  function* patchFrontG() {
     const img = NX.room.img, RS = NX.room.RS; if (!img.naturalWidth || !['left', 'right'].every(sd => !ALL[sd] || (SIDES[sd] && SIDES[sd].comp))) return;
     const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; const x = cv.getContext('2d');
-    x.drawImage(img, 0, 0); x.scale(RS, RS); x.imageSmoothingEnabled = true;
-    if (NX.city && NX.city.paint) NX.city.paint(x, NX.time, 'full', RS);
-    const fr = NX.objects.windowFrame; if (fr && fr.drawBack) fr.drawBack(x, NX.time);
-    ['left', 'right'].forEach(sd => { const S = SIDES[sd]; if (S && S.comp) x.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]); });
+    const flush = () => x.getImageData(0, 0, 1, 1);                                   // браузер малює в полотно відкладено — виконати зараз, щоб шматки були дрібні
+    x.drawImage(img, 0, 0); x.scale(RS, RS); x.imageSmoothingEnabled = true; flush(); yield .15;
+    if (NX.city && NX.city.paint) NX.city.paint(x, NX.time, 'full', RS); flush(); yield .4;
+    const fr = NX.objects.windowFrame; if (fr && fr.drawBack) fr.drawBack(x, NX.time); flush(); yield .55;
+    ['left', 'right'].forEach(sd => { const S = SIDES[sd]; if (S && S.comp) x.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]); }); flush(); yield .7;
     NX.room.patchFront(cv, 0, NX.cfg.ROOM_W);
   }
+  /** Те саме одним шматком (після зміни мови чи масштабу). Генератором — під заставкою (bootG). */
+  const patchFront = () => X.drain(patchFrontG());
   NX.arc.patchFront = patchFront;
 
   // ---------- збірка вразбіг, показ, перебудова ----------
-  // JOB — збірка обох крил кроками (по шару за кадр); поки нова збірка не готова, показується попередня (зміна мови — без блимання)
-  let JOB = null, NEXT = null, want = true;
+  // JOB — збірка обох крил кроками (по ~30 мс за кадр); поки нова збірка не готова, показується попередня (зміна мови — без блимання)
+  let JOB = null, want = true;
+  function* jobG() {
+    const NEXT = {};
+    for (const sd of ['left', 'right']) NEXT[sd] = yield* sub(buildSide(sd), sd === 'left' ? 0 : .5, sd === 'left' ? .5 : 1);
+    Object.assign(SIDES, NEXT); NX.arc.built = SIDES;
+    console.log('[arc] built', Object.values(SIDES).map(S => S && S.side + ' ' + S.ms.toFixed(0) + 'ms').join(', '), NX.arc.prof ? JSON.stringify(NX.arc.prof, (k, v) => typeof v === 'number' ? Math.round(v) : v) : '');
+  }
   function step() {
     if (!JOB) {
       if (!want) return;
       if (document.fonts && document.fonts.status !== 'loaded' && performance.now() - t0 < 2500) return;   // написи — коли шрифт готовий
-      want = false; NEXT = {}; JOB = (function* () { for (const sd of ['left', 'right']) NEXT[sd] = yield* buildSide(sd); })();
+      want = false; JOB = jobG();
     }
     const a = performance.now();
-    while (performance.now() - a < 30) { const r = JOB.next(); if (r.done) {
-      JOB = null; Object.assign(SIDES, NEXT); NEXT = null; NX.arc.built = SIDES;
-      console.log('[arc] built', Object.values(SIDES).map(S => S && S.side + ' ' + S.ms.toFixed(0) + 'ms').join(', '), NX.arc.prof ? JSON.stringify(NX.arc.prof, (k, v) => typeof v === 'number' ? Math.round(v) : v) : '');
-      break; } }
+    while (performance.now() - a < 30) { if (JOB.next().done) { JOB = null; break; } }
+  }
+  /** Масштаб злиття під екран (px растра на одиницю кімнати). */
+  const rdNow = () => Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);
+  /** ЗБІРКА ПРИ ЗАВАНТАЖЕННІ (js/main.js — під вітальною заставкою): обидва крила, злиття під масштаб екрана й передня
+   *  підлога-дзеркало — генератором дрібними шматками (yield — частка 0..1; що саме будується — NX.arc.step). Потрібні
+   *  готові місто (NX.city) і розмір екрана (NX.loop.prep). Після неї draw() нічого не добудовує — перший кадр легкий. */
+  function* bootG() {
+    want = false; JOB = null;
+    yield* sub(jobG(), 0, .86);
+    const Rd = rdNow(), sds = ['left', 'right'].filter(sd => SIDES[sd]);
+    for (let n = 0; n < sds.length; n++) { const S = SIDES[sds[n]]; note('compose', sds[n]); S.comp = yield* sub(composeG(S, Rd), .86 + .12 * n / sds.length, .86 + .12 * (n + 1) / sds.length); S.Rd = Rd; }
+    note('mirror'); yield* sub(patchFrontG(), .98, 1);
   }
   let lastFr = -1;
   function draw(c, side) {
     if (NX.loop.frames !== lastFr) { lastFr = NX.loop.frames; step(); }                                       // один крок збірки на кадр
     const S = SIDES[side]; if (!S) return;
-    const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100);
+    const Rd = rdNow();
     if (!S.comp || S.Rd !== Rd) { S.comp = compose(S, Rd); S.Rd = Rd; if (side === 'right' || !ALL.right) setTimeout(patchFront, 0); }
     c.save(); c.imageSmoothingEnabled = false; c.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]); c.restore();
     if (NX.arc.live) NX.arc.live(c, side, S, NX.time);
@@ -5161,7 +5744,7 @@ NX.arc = NX.arc || {};
       if (y1 > NX.cfg.FLOOR_Y + 6) NX.addObject({ id: 'foot_' + zn, foot: [x0, x1, y0, y1] });
     });
   });
-  NX.arc.scene = { SIDES, compose, rebuild() { want = true; } };
+  NX.arc.scene = { SIDES, compose, rebuild() { want = true; }, bootG };
 })();
 
 </script>
@@ -7715,20 +8298,48 @@ NX.ui.zones = {
 <script>
 /* ---- js/main.js ---- */
 /* ============================================================================
- * main.js — ЗАПУСК
- * Порядок: завантажити картинку кімнати -> підготувати "життя" фону ->
- * відновити збережений скін -> інтерфейс -> головний цикл -> привітання.
+ * main.js — ЗАПУСК ПІД ВІТАЛЬНОЮ ЗАСТАВКОЮ
+ * Заставка (index.html + js/ui/splash.js) з'являється одразу й показує справжні етапи на лоад-барі:
+ *   скрипти -> картинка кімнати -> місто за вікном -> 3D-крила -> перший кадр («готово»).
+ * Важке (місто, 3D-крила, злиття під екран, перший кадр) — генераторами ДРІБНИМИ ШМАТКАМИ з паузами для браузера
+ * (NX.boot.run): лоад-бар рухається, а не «замерзає». Далі — збережений скін, інтерфейс, головний цикл і плавний
+ * перехід заставки в кімнату (NX.boot.reveal), привітання.
  * ========================================================================== */
 (async () => {
-  await NX.room.load(window.NX_ROOM_SRC || 'assets/room.webp');
-  NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
-  NX.city.init();
-  try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
-  NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init();
+  const B = NX.boot; let ui = false, placed = false;
+  B.set('js', 1);                                                                    // останній скрипт — отже, усі завантажені
+  B.live();                                                                          // Nexi на заставці оживає (якщо ще ні)
+  if (/hold/.test(location.hash)) return;                                            // знімки заставки (tools/splash/shot.js, адреса #splash-a-hold): лишити її як є, етапи ставить інструмент
+  try {
+    // 1) КАРТИНКА КІМНАТИ — вантажиться з самого початку (index.html), паралельно зі скриптами; тут її декодуємо — теж
+    //    паралельно: місту вона не потрібна, тож на повільному інтернеті місто будується, поки картинка ще йде
+    const img = (async () => { await NX.room.load(await B.roomSrc()); try { await NX.room.img.decode(); } catch (e) {} B.set('img', 1); })();
+    NX.i18n.lang = NX.i18n.detect(); document.documentElement.lang = NX.i18n.lang;   // мова телефону / збережена
+    // 2) МІСТО ЗА ВІКНОМ
+    NX.city.init();
+    await B.run(NX.city.buildGen(), 'city');
+    await img;
+    // 3) 3D-КРИЛА: потрібні картинка кімнати (дзеркальна підлога), розмір екрана (камера, стеля, підлога) і шрифт написів
+    NX.loop.prep();
+    await B.fonts();
+    await B.run(NX.arc.scene.bootG(), 'wings');
+    NX.city.markPatched();                                                           // передня підлога-дзеркало вже зібрана
+    // 4) ГОТОВО: скін, інтерфейс, Nexi на доку, камера на ньому, перший кадр по шматках
+    try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
+    NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init(); ui = true;
+    [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; placed = true;
+    NX.cam.x = NX.px.clamp(NX.nexi.x - NX.cam.viewW / 2, 0, Math.max(0, NX.cfg.ROOM_W - NX.cam.viewW));   // телефон: одразу на Nexi
+    await B.run(NX.loop.warmG(), 'ready');
+  } catch (e) {
+    console.error('[boot]', e);                                                       // щось не так — кімната однаково запуститься,
+    if (NX.arc.scene) NX.arc.scene.rebuild();                                         // а недобудоване добудується по ходу (як до заставки)
+    if (!ui) try { NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init(); } catch (e2) { console.error(e2); }
+  }
   NX.loop.start();
-  [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y;
+  if (!placed) { [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; }
   NX.ui.chat.add('b', NX.t('chat.greet'));
-  setTimeout(() => NX.nexi.do('home', false), 600);
+  await B.reveal();                                                                  // плавний перехід заставки в кімнату
+  setTimeout(() => NX.nexi.do('home', false), 300);
 })();
 
 </script>
