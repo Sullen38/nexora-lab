@@ -10,13 +10,15 @@
  *   ws_wingL/R, ws_postL/R — бічні панелі й стійки капсули (внутрішні грані стійок — світлові панелі)
  *   ws_back   — рожеве скло сканера: сітка, кільця емблеми, іконки скінів
  *   ws_beam   — балка: заклепки, ґратки; знизу — панель світла над капсулою
- *   ws_tabL   — планшет СКІНИ (живий: готові скіни на міні-Nexi, рамка кольору рідкості, сторінки)
- *   ws_tabR   — планшет АКСЕСУАРИ (живий: міні-Nexi в рюкзаку, плащі, крилах, шоломах…; реліквії — на орбіті голограми)
+ *   ws_projL/R — плоскі проєктори на передньому краї платформи (лінза-смуга зверху), з яких б'ють голо-панелі
+ *   NX.arc.wsPane(side, …) — ВМІСТ ГОЛО-ПАНЕЛЕЙ без корпусу й рамки (Правки зон · 2): СКІНИ (готові скіни на міні-Nexi,
+ *               колір рідкості, сторінки) і АКСЕСУАРИ (міні-Nexi в рюкзаку, плащі, крилах, шоломах…; реліквії — на орбіті
+ *               голограми); саму голограму (світло, прозорість, мерехтіння) кладе objects/workshop.js
  * c уже масштабоване: 1 = одиниця світу на грані; fw × fh — розмір грані. Усі написи — NX.t (4 мови).
  * ========================================================================== */
 (() => {
   const A = NX.arc.kit, T = NX.arc.pt, PAINT = NX.arc.paint, LIVE = NX.arc.LIVE, hash = NX.art.hash;
-  const { glass, icon, rr } = T;
+  const { icon, rr } = T;
 
   // ---------- дрібниці піксельного «заліза» ----------
   /** Заклепка: темне кільце, світлий блік угорі ліворуч. */
@@ -193,32 +195,43 @@
     for (let y = fh * .2; y < fh * .82; y += 2.6) for (let x = x0 + 1.4; x < x1 - .5; x += 2.6) { c.fillStyle = (Math.round(x * 3 + y * 7) % 5) ? '#ffd6f6' : '#9af6ff'; c.fillRect(x - .55, y - .55, 1.1, 1.1); }
   } };
 
-  // ---------- ПЛАНШЕТИ: ліворуч — СКІНИ (готові скіни з рідкістю), праворуч — АКСЕСУАРИ (те, що він вдягає) ----------
-  // Власник (29.10): «аксесуари й предмети розділи; предмети — це реліквії, вони окремо» — реліквії тепер кружляють навколо
-  // голограми (objects/workshop.js), а планшети показують скіни й аксесуари. Обидва гортаються сторінками.
-  const TAB = { [-1]: { title: 'scene.ws.skins', glass: ['#1a62c8', '#0f3a96', '#0a2470'], line: '#7af4ff', glow: '#3be8ff', card: 'rgba(16,40,120,.85)', edge: 'rgba(150,230,255,.5)', hi: '150,240,255' },
-    [1]: { title: 'scene.ws.acc', glass: ['#4a1c9a', '#2c1274', '#1a0c52'], line: '#ff9af0', glow: '#ff4fd8', card: 'rgba(44,18,104,.85)', edge: 'rgba(255,180,240,.5)', hi: '255,160,240' } };
-  /** Планшет (нерухоме): корпус, скло з переливом, заголовок, сітка карток 2 × 3. */
-  const tablet = side => (c, fw, fh) => {
-    const S = TAB[side];
-    c.fillStyle = '#0a0a2a'; rr(c, 0, 0, fw, fh, 2.2); c.fill(); c.strokeStyle = '#3b4aa8'; c.lineWidth = .6; rr(c, .4, .4, fw - .8, fh - .8, 2); c.stroke();
-    glass(c, fw * .07, fh * .05, fw * .86, fh * .88, { r: 1.4, a: S.glass[0], b: S.glass[1], c: S.glass[2], line: S.line });
-    A.txt(c, NX.t(S.title), fw / 2, fh * .1, fw * .6, fh * .045, '#f4fbff', { glow: S.glow });
-    for (let q = 0; q < 6; q++) { const [x, y, w, h] = cell(fw, fh, q); c.fillStyle = S.card; rr(c, x, y, w, h, .8); c.fill(); c.strokeStyle = S.edge; c.lineWidth = .35; rr(c, x, y, w, h, .8); c.stroke(); }
-    c.fillStyle = '#05030f'; c.fillRect(fw * .4, fh * .952, fw * .2, fh * .026); led(c, side > 0 ? fw * .15 : fw * .85, fh * .965, '#3bff8a', .55);
+  // ---------- ПРОЄКТОРИ ГОЛО-ПАНЕЛЕЙ (на передньому краї платформи, під панелями) ----------
+  /** Кришка проєктора спереду: темне тіло, дві ґратки, світлодіод кольору панелі. */
+  const proj = side => (c, fw, fh) => {
+    vent(c, fw * .07, fh * .22, fw * .3, fh * .56, 2); vent(c, fw * .63, fh * .22, fw * .3, fh * .56, 2);
+    led(c, fw * .5, fh * .5, side > 0 ? '#ff4fd8' : '#3be8ff', .55);
   };
-  const cell = (fw, fh, q) => [fw * (.13 + (q % 2) * .38), fh * (.17 + Math.floor(q / 2) * .26), fw * .36, fh * .23];
-  PAINT.ws_tabL = tablet(-1); PAINT.ws_tabR = tablet(1);
+  /** Верх кришки: темне гніздо й світна лінза-смуга, з якої б'є голо-панель (саме світло — objects/workshop.js). */
+  const projTop = side => (c, fw, fh) => {
+    c.fillStyle = '#05030f'; rr(c, fw * .08, fh * .2, fw * .84, fh * .6, .6); c.fill();
+    const g = c.createLinearGradient(fw * .1, 0, fw * .9, 0), col = side > 0 ? '#ffb4f2' : '#bff8ff';
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.2, col); g.addColorStop(.8, col); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g; c.fillRect(fw * .1, fh * .36, fw * .8, fh * .28);
+  };
+  PAINT.ws_projL = proj(-1); PAINT.ws_projL.sides = { top: projTop(-1) };
+  PAINT.ws_projR = proj(1); PAINT.ws_projR.sides = { top: projTop(1) };
+
+  // ---------- ГОЛО-ПАНЕЛІ: ліворуч — СКІНИ (готові скіни з рідкістю), праворуч — АКСЕСУАРИ (те, що він вдягає) ----------
+  // Власник (29.10): «аксесуари й предмети розділи; предмети — це реліквії, вони окремо» — реліквії кружляють навколо
+  // голограми (objects/workshop.js). Правки зон · 2 (власник: «панелі зі скінами та аксесуарами зроби голографічними та
+  // безрамочними — так буде краще; довшими до низу й трохи ширшими»): корпусу, скла й рамки немає — це світло з проєктора.
+  // Тут — лише вміст на прозорому полотні (легка завіса світла, заголовок, картки 2 × 3, крапки сторінок): NX.arc.wsPane;
+  // голографічність (напівпрозорість, розчинені краї, сяйво, скан-лінії, мерехтіння, глітч, промінь з проєктора) додає
+  // objects/workshop.js. Обидві гортаються сторінками, картки «вистрибують».
+  const TAB = { [-1]: { title: 'scene.ws.skins', tint: '70,190,255', line: '#7af4ff', glow: '#3be8ff', hi: '150,240,255' },
+    [1]: { title: 'scene.ws.acc', tint: '200,110,255', line: '#ff9af0', glow: '#ff4fd8', hi: '255,160,240' } };
+  const cell = (fw, fh, q) => [fw * (.07 + (q % 2) * .45), fh * (.15 + Math.floor(q / 2) * .265), fw * .41, fh * .24];
   /** Гортання: картка підсвічується по черзі (per с), після шести — наступна сторінка (по колу: на останній — знову перші). */
   const pager = (t, n, shift = 0) => { const per = 1.6, k = Math.floor(t / per) + shift, pages = Math.ceil(n / 6), page = Math.floor(k / 6) % pages, since = (t + shift * per) - Math.floor(k / 6) * 6 * per; return { page, pages, sel: k % 6, since }; };
   /** Поява картки q нової сторінки: масштаб з легким «перестрибуванням» (0..1+), спалах на мить. */
   const pop = (since, q) => { const k = Math.max(0, Math.min(1, (since - q * .07) / .32)); if (k >= 1) return [1, 0]; const s = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); return [Math.max(0, s), 1 - k]; };
-  /** Рамка вибраної картки, сяйво, крапки сторінок, скан-лінія по екрану. */
+  /** Підсвітка вибраної картки (світлий обвід і сяйво), крапки сторінок, скан-лінія, що пробігає панеллю. */
   function chrome(c, fw, fh, t, S, sel, page, pages) {
-    const [x, y, w, h] = cell(fw, fh, sel); c.strokeStyle = '#ffffff'; c.lineWidth = .6; rr(c, x - .3, y - .3, w + .6, h + .6, .9); c.stroke();
-    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${.12 + .1 * Math.sin(t * 5)})`; rr(c, x, y, w, h, .8); c.fill(); c.restore();
-    for (let k = 0; k < pages; k++) { c.fillStyle = k === page ? S.line : 'rgba(255,255,255,.3)'; c.fillRect(fw / 2 - pages * 1.6 + k * 3.2 + .4, fh * .96, 1.6, fh * .012); }
-    const sy = fh * (.15 + ((t * .25) % 1) * .8); c.fillStyle = `rgba(${S.hi},.2)`; c.fillRect(fw * .08, sy, fw * .84, .6);
+    const [x, y, w, h] = cell(fw, fh, sel); c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = .55; rr(c, x - .3, y - .3, w + .6, h + .6, 1.1); c.stroke();
+    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${.14 + .1 * Math.sin(t * 5)})`; rr(c, x, y, w, h, 1); c.fill(); c.restore();
+    for (let k = 0; k < pages; k++) { c.fillStyle = k === page ? S.line : `rgba(${S.hi},.35)`; c.fillRect(fw / 2 - pages * 1.8 + k * 3.6 + .4, fh * .955, 1.8, fh * .011); }
+    const sy = fh * (.13 + ((t * .22) % 1) * .82), g = c.createLinearGradient(fw * .04, 0, fw * .96, 0);
+    g.addColorStop(0, `rgba(${S.hi},0)`); g.addColorStop(.5, `rgba(${S.hi},.32)`); g.addColorStop(1, `rgba(${S.hi},0)`); c.fillStyle = g; c.fillRect(fw * .04, sy, fw * .92, .7);
   }
   /** Міні-Nexi для карток: кожен образ малюється раз (renderBot) і береться з кешу. */
   const MINI = {};
@@ -226,21 +239,35 @@
     const k = JSON.stringify(look); if (MINI[k]) return MINI[k];
     const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', .5, false), .5, cv); return MINI[k] = cv;   // t .5 — очі відкриті (у t 0 Nexi кліпає)
   }
-  /** Сторінка карток: міні-Nexi в образі look(id), «вистрибують» при гортанні; frame(id) — колір рамки картки (рідкість). */
+  /** Сторінка карток: міні-Nexi в образі look(id), «вистрибують» при гортанні; frame(id) — колір рідкості (світлий обвід,
+   *  сяйво знизу й рисочка). Картка — лише легкий світлий «відбиток» без рамки (рідкість — тонкий напівпрозорий обвід). */
   function cards(c, fw, fh, t, ids, shift, S, look, frame) {
     const { page, pages, sel, since } = pager(t, ids.length, shift);
     for (let q = 0; q < 6; q++) {
-      const id = ids[(page * 6 + q) % ids.length], [x, y, w, h] = cell(fw, fh, q), cv = mini(look(id)), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0, col = frame && frame(id);
+      const id = ids[(page * 6 + q) % ids.length], [x, y, w, h] = cell(fw, fh, q), cv = mini(look(id)), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.2 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0, col = frame && frame(id);
       c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
-      if (col) { const g = c.createLinearGradient(0, y + h * .55, 0, y + h); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, col + '66'); c.fillStyle = g; c.fillRect(x, y, w, h); }   // сяйво рідкості знизу
-      if (s > .01) c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .98 - SH * s * .93 + bob, SW * s, SH * s);
-      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); }
+      const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, `rgba(${S.tint},.1)`); g.addColorStop(1, `rgba(${S.tint},.26)`); c.fillStyle = g; rr(c, x, y, w, h, 1); c.fill();
+      if (col) { const g2 = c.createLinearGradient(0, y + h * .5, 0, y + h); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, col + '77'); c.fillStyle = g2; c.fillRect(x, y, w, h); }   // сяйво рідкості знизу
+      c.fillStyle = `rgba(${S.hi},.35)`; c.beginPath(); c.ellipse(x + w / 2, y + h * .93, w * .32, h * .05, 0, 0, 7); c.fill();   // світлий «п'єдестал» під міні-Nexi
+      if (s > .01) c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .97 - SH * s * .93 + bob, SW * s, SH * s);
+      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${fl * .5})`; rr(c, x, y, w, h, 1); c.fill(); }
       c.restore();
-      if (col) { c.strokeStyle = col; c.lineWidth = .45; rr(c, x + .2, y + .2, w - .4, h - .4, .8); c.stroke(); c.fillStyle = col; c.fillRect(x + w * .3, y + h - .9, w * .4, .6); }   // рамка й рисочка кольору рідкості
+      if (col) { c.strokeStyle = col + 'aa'; c.lineWidth = .4; rr(c, x + .2, y + .2, w - .4, h - .4, 1); c.stroke(); c.fillStyle = col; c.fillRect(x + w * .3, y + h - .9, w * .4, .6); }   // обвід і рисочка кольору рідкості
     }
     chrome(c, fw, fh, t, S, sel, page, pages);
   }
   const PRESETS = Object.keys(SKINS);
-  LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) { cards(c, fw, fh, t, PRESETS, 0, TAB[-1], id => skinLook(id), id => RARITY[SKINS[id].rar]); } };
-  LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) { cards(c, fw, fh, t, WEAR_ACCS, 3, TAB[1], id => ({ [ACCS[id].slot]: id })); } };
+  /** ВМІСТ ГОЛО-ПАНЕЛІ (side: −1 — СКІНИ, 1 — АКСЕСУАРИ) на прозорому полотні; c — у од. світу, fw × fh — розмір панелі.
+   *  Легка завіса світла (краї розчиняє workshop.js), заголовок зі світлою рискою, картки, крапки сторінок. */
+  NX.arc.wsPane = (side, c, fw, fh, t) => {
+    const S = TAB[side], g = c.createLinearGradient(0, 0, 0, fh);
+    g.addColorStop(0, `rgba(${S.tint},.26)`); g.addColorStop(.55, `rgba(${S.tint},.11)`); g.addColorStop(1, `rgba(${S.tint},.3)`); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    const hg = c.createRadialGradient(fw / 2, fh * .066, 0, fw / 2, fh * .066, fw * .42); hg.addColorStop(0, `rgba(${S.tint},.45)`); hg.addColorStop(1, `rgba(${S.tint},0)`);
+    c.fillStyle = hg; c.fillRect(0, 0, fw, fh * .14);                                                                // сяйво під заголовком
+    A.txt(c, NX.t(S.title), fw / 2, fh * .064, fw * .88, fh * .062, '#ffffff', { glow: S.glow });
+    const ln = c.createLinearGradient(fw * .08, 0, fw * .92, 0); ln.addColorStop(0, `rgba(${S.hi},0)`); ln.addColorStop(.5, `rgba(${S.hi},.95)`); ln.addColorStop(1, `rgba(${S.hi},0)`);
+    c.fillStyle = ln; c.fillRect(fw * .08, fh * .118, fw * .84, .55);
+    if (side < 0) cards(c, fw, fh, t, PRESETS, 0, S, id => skinLook(id), id => RARITY[SKINS[id].rar]);
+    else cards(c, fw, fh, t, WEAR_ACCS, 3, S, id => ({ [ACCS[id].slot]: id }));
+  };
 })();

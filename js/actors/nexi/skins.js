@@ -71,9 +71,9 @@ const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'bac
 hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},
 kabuto:{n:'Шолом самурая',slot:'head',noAnt:1},helmet:{n:'Шолом астронавта',slot:'head',noAnt:1},tricorn:{n:'Капітанка',slot:'head',noAnt:1},bandana:{n:'Пов\'язка',slot:'head'},flowers:{n:'Вінок',slot:'head'},
 // РЕЛІКВІЇ — предмети в руках (малюються в sprite.js → drawHandItem; назви — js/i18n/*.js → skin.acc)
-hammer:{n:'Громовий молот',slot:'hand'},blade:{n:'Неоновий клинок',slot:'hand'},gauntlet:{n:'Силова рукавиця',slot:'hand'},excalibur:{n:'Екскалібур',slot:'hand'},
+hammer:{n:'Громовий молот',slot:'hand'},blade:{n:'Лазерний меч',slot:'hand'},gauntlet:{n:'Золота рукавиця',slot:'hand'},excalibur:{n:'Екскалібур',slot:'hand'},
 staff:{n:'Кришталевий посох',slot:'hand'},trident:{n:'Морський тризуб',slot:'hand'},wand:{n:'Зоряна паличка',slot:'hand'},balloon:{n:'Кулька',slot:'hand'},
-torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
+torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит Nexi',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
 const HAND_ITEMS=Object.keys(ACCS).filter(k=>ACCS[k].slot==='hand');            // реліквії
 const WEAR_ACCS=Object.keys(ACCS).filter(k=>ACCS[k].slot!=='hand');              // аксесуари (спина, голова)
 const ACC_ITEMS=Object.fromEntries(WEAR_ACCS.map(k=>[k,ACCS[k]])), RELICS=Object.fromEntries(HAND_ITEMS.map(k=>[k,ACCS[k]]));

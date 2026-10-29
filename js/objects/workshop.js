@@ -1,7 +1,7 @@
 /* ============================================================================
  * objects/workshop.js — МАЙСТЕРНЯ (СКІНИ): ЖИВИЙ ОБ'ЄКТ
  * ----------------------------------------------------------------------------
- * Нерухома частина майстерні (платформа, капсула, балка, купол, планшети) — у 3D-розкладці (gen_room.py: workshop(),
+ * Нерухома частина майстерні (платформа, капсула, балка, купол, проєктори) — у 3D-розкладці (gen_room.py: workshop(),
  * малюнки граней — objects/ws_paint.js). Тут — те, що живе поверх неї (власник, 29.10: «голограма Nexi з різними скінами;
  * ефекти, фішечки; щоб Nexi міг туди ставати»):
  *   ГОЛОГРАМА NEXI на паді капсули: стоїть у конусі світла, показує ГОТОВІ СКІНИ по черзі (повний оберт — на ребрі змінює
@@ -12,7 +12,9 @@
  *   МАНІПУЛЯТОР на куполі: дихає в спокої, час від часу сканує голограму променем, а коли Nexi в капсулі міняє скін —
  *     нахиляється й «встановлює» його блискавкою (іскри, спалах);
  *   СКАНУВАННЯ: коли Nexi в капсулі — голограма гасне, кільця сканера бігають по ньому, пад горить яскравіше;
- *   світло: сяйво пада, рожеве світло на підлогу перед платформою, частинки в конусі.
+ *   світло: сяйво пада, рожеве світло на підлогу перед платформою, частинки в конусі;
+ *   ГОЛО-ПАНЕЛІ СКІНИ й АКСЕСУАРИ обабіч капсули (Правки зон · 2: «голографічними та безрамочними, довшими до низу й
+ *     трохи ширшими»): світять з проєкторів на платформі — напівпрозорі, без рамки, з розчиненими краями, мерехтять.
  * Nexi: activities.js -> workshop (злітає на пад: pad(), depth(); enter() / leave(); install() — з ui/skinlab.js).
  * Координати — px картинки зони -> світ -> екран (NX.arc.zone, як у генераторі). Усе кодом, без картинок.
  * ========================================================================== */
@@ -74,6 +76,67 @@
     c.strokeStyle = `rgba(255,214,150,${a * (front ? .5 : .28)})`; c.beginPath(); c.ellipse(cx, cy, RX, RY, 0, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2); c.stroke(); c.restore();
   }
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+
+  // ГОЛО-ПАНЕЛІ СКІНИ / АКСЕСУАРИ (Правки зон · 2, власник: «панелі зі скінами та аксесуарами зроби голографічними та
+  // безрамочними — так буде краще; довшими до низу й трохи ширшими»): прямокутник у px картинки зони (X, Y — було 899..943 ×
+  // 236..300) і відступ углиб HV; вміст — ws_paint.js NX.arc.wsPane, тут — сама голограма: напівпрозоро, краї розчиняються
+  // (рамки немає), сяйво, скан-лінії, мерехтіння, зрідка глітч; знизу — промінь із проєктора на платформі (якорі wsProjL/R).
+  const HPANES = [{ side: -1, X: [896, 950], lens: 'wsProjL', rgb: '150,240,255' }, { side: 1, X: [1060, 1114], lens: 'wsProjR', rgb: '255,160,240' }];
+  const HY = [236, 318], HV = 3, HR = 4;                                                   // HR — px полотна на од. екрана
+  let FEATHER = null;
+  /** Маска «розчинених країв» (біле з м'якими краями) — одна на обидві панелі. */
+  function feather(W, H) {
+    if (FEATHER && FEATHER.width === W && FEATHER.height === H) return FEATHER;
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.globalCompositeOperation = 'destination-in';
+    let g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.06, '#000'); g.addColorStop(.94, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.035, '#000'); g.addColorStop(.93, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    return FEATHER = cv;
+  }
+  /** Полотна панелі (раз): межі на екрані й розмір у од. світу; вміст (cv), готова голограма (k) і тінь-підкладка з
+   *  розчиненими краями (shade). */
+  function paneInit(p) {
+    const z = zone(), a = z.S(p.X[0], HY[0], HV), b = z.S(p.X[1], HY[1], HV), mk = () => { const cv = document.createElement('canvas'); cv.width = Math.ceil(p.r[2] * HR); cv.height = Math.ceil(p.r[3] * HR); return cv; };
+    p.r = [a[0], a[1], b[0] - a[0], b[1] - a[1]]; p.fw = (p.X[1] - p.X[0]) * z.m; p.fh = (HY[1] - HY[0]) * z.m;
+    p.cv = mk(); p.x = p.cv.getContext('2d'); p.k = mk(); p.kx = p.k.getContext('2d'); p.shade = mk();
+    const s = p.shade.getContext('2d'); s.drawImage(feather(p.shade.width, p.shade.height), 0, 0); s.globalCompositeOperation = 'source-in'; s.fillStyle = 'rgba(6,2,24,.42)'; s.fillRect(0, 0, p.shade.width, p.shade.height);
+  }
+  /** Голограма панелі (раз на 3 кадри): вміст NX.arc.wsPane, відтінок кольору панелі, скан-лінії, краї розчиняються; потім
+   *  зведення в одне полотно k — тінь-підкладка + вміст + сяйво (щокадру кладеться лише воно — так дешевше на телефоні). */
+  function panePaint(p, t) {
+    const x = p.x, W = p.cv.width, H = p.cv.height;
+    x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over'; x.clearRect(0, 0, W, H);
+    x.setTransform(W / p.fw, 0, 0, H / p.fh, 0, 0); NX.arc.wsPane(p.side, x, p.fw, p.fh, t); x.setTransform(1, 0, 0, 1, 0, 0);
+    x.globalCompositeOperation = 'source-atop'; const g = x.createLinearGradient(0, 0, 0, H);                         // голографічний відтінок кольору панелі
+    g.addColorStop(0, `rgba(${p.rgb},.26)`); g.addColorStop(.5, `rgba(${p.rgb},.12)`); g.addColorStop(1, `rgba(${p.rgb},.3)`); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,.32)'; for (let y = (Math.floor(t * 20) & 1) * 2; y < H; y += 4) x.fillRect(0, y, W, 2);
+    x.globalCompositeOperation = 'destination-in'; x.drawImage(feather(W, H), 0, 0); x.globalCompositeOperation = 'source-over';
+    const k = p.kx, o = HR * .7; k.globalCompositeOperation = 'source-over'; k.globalAlpha = 1; k.clearRect(0, 0, W, H); k.drawImage(p.shade, 0, 0); k.drawImage(p.cv, 0, 0);
+    k.globalCompositeOperation = 'lighter'; k.globalAlpha = .32; k.drawImage(p.cv, o, 0); k.drawImage(p.cv, -o, -o * .6);   // сяйво
+    k.globalCompositeOperation = 'source-over'; k.globalAlpha = 1;
+  }
+  /** Голо-панель: промінь із лінзи проєктора, готова голограма (мерехтить; зрідка глітч — зсув смуг і світла смуга),
+   *  пікселі даних летять з лінзи вгору. */
+  function drawPane(c, t, p, n) {
+    if (!p.cv) paneInit(p);
+    if ((NX.loop.frames + n) % 3 === 0 || !p.ok) { panePaint(p, t); p.ok = 1; }
+    const [x, y, w, h] = p.r, L = NX.px3d.proj(zone().anchor(p.lens));
+    const fl = (.86 + .14 * Math.sin(t * 17 + n * 2) * Math.sin(t * 4.3 + n)) * (NX.art.hash(Math.floor(t * 9), n + 11) > .985 ? .55 : 1), gl = Math.sin(t * 1.1 + n * 2.4) > .992;
+    c.save(); c.globalCompositeOperation = 'lighter';                                          // промінь: з лінзи — віялом угору в панель
+    const g = c.createLinearGradient(0, L[1], 0, y + h * .45); g.addColorStop(0, `rgba(${p.rgb},.42)`); g.addColorStop(.35, `rgba(${p.rgb},.16)`); g.addColorStop(1, `rgba(${p.rgb},0)`);
+    c.fillStyle = g; c.beginPath(); c.moveTo(L[0] - w * .3, L[1]); c.lineTo(L[0] + w * .3, L[1]); c.lineTo(x + w * .98, y + h * .45); c.lineTo(x + w * .02, y + h * .45); c.closePath(); c.fill();
+    P.glow(c, L[0], L[1], 16, `rgba(${p.rgb},.9)`, .55 + .2 * Math.sin(t * 3 + n));
+    c.fillStyle = `rgba(${p.rgb},.9)`; c.fillRect(L[0] - w * .28, L[1] - .4, w * .56, .8);
+    c.restore();
+    c.save(); c.imageSmoothingEnabled = true; c.globalAlpha = .96 * fl;
+    if (gl) { const k = 3; for (let s2 = 0; s2 < k; s2++) { const sy = p.k.height * s2 / k, sh = p.k.height / k, dx = (s2 % 2 ? 1 : -1) * (1 + Math.random() * 1.6); c.drawImage(p.k, 0, sy, p.k.width, sh, x + dx, y + h * s2 / k, w, h / k); } }
+    else c.drawImage(p.k, x, y, w, h);
+    c.globalCompositeOperation = 'lighter';
+    if (gl) { c.globalAlpha = .35; c.fillStyle = `rgba(${p.rgb},.5)`; c.fillRect(x, y + h * ((t * 7) % 1), w, 1.2); }
+    for (let k = 0; k < 7; k++) { const ph = (t * .45 + k / 7 + n * .3) % 1, xx = L[0] + (x + w * (.12 + .76 * NX.art.hash(k, n + 7)) - L[0]) * Math.min(1, ph * 2.2), yy = L[1] - (L[1] - y - h * .1) * ph;   // пікселі даних
+      c.globalAlpha = Math.sin(ph * Math.PI) * .85; c.fillStyle = k % 2 ? 'rgba(220,252,255,1)' : `rgba(${p.rgb},1)`; c.fillRect(xx - .5, yy - .5, 1, 1); }
+    c.restore();
+  }
 
   /** Кадр голограми (48×56): Nexi в скіні -> голографічний відтінок, скан-лінії, «збирання» знизу вгору, глітч. */
   function holoFrame(t, back, pose) {
@@ -177,6 +240,7 @@
     drawBack(c, t) {
       const z = zone(); if (!z) return;
       const [px, py] = this.pad(), hs = NX.room.scaleAt(357) * SPRITE_K * 1.16, fy = 359;
+      HPANES.forEach((p, n) => drawPane(c, t, p, n));                                       // голо-панелі СКІНИ / АКСЕСУАРИ
       c.save();
       // рожеве світло на підлогу перед платформою й сяйво пада
       const fl = c.createRadialGradient(px, fy + 3, 4, px, fy + 3, 120); fl.addColorStop(0, 'rgba(255,90,220,.22)'); fl.addColorStop(1, 'rgba(255,90,220,0)');
@@ -191,7 +255,7 @@
       // кільця, що підіймаються конусом (з них «збирається» голограма)
       if (S.holoA > .1) for (let k = 0; k < 3; k++) { const ph = (t * .42 + k / 3) % 1, yy = py - 3 - ph * 60, rx = 17 + ph * 9, al = Math.sin(ph * Math.PI) * .55 * S.holoA;
         c.strokeStyle = k % 2 ? `rgba(130,240,255,${al})` : `rgba(255,160,240,${al})`; c.lineWidth = .7; c.beginPath(); c.ellipse(px, yy, rx, rx * .2, 0, 0, 7); c.stroke(); }
-      // новий скін «збирається»: потік пікселів з обох планшетів дугою в голограму
+      // новий скін «збирається»: потік пікселів з обох голо-панелей дугою в голограму
       if (S.mat < 1 && S.holoA > .3 && z.anchor('wsTabL')) {
         const TL = NX.px3d.proj(z.anchor('wsTabL')), TR = NX.px3d.proj(z.anchor('wsTabR')), to = [px, py - 34];
         for (let q = 0; q < 16; q++) { const u = (S.mat * 1.6 + q / 16) % 1, fr = q % 2 ? TL : TR, x = fr[0] + (to[0] - fr[0]) * u, y = fr[1] + (to[1] - fr[1]) * u - Math.sin(u * Math.PI) * 16;
