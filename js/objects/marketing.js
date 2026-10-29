@@ -76,7 +76,10 @@
         c.save(); c.globalCompositeOperation = 'lighter';                                                      // конус світла з лінзи
         const g = c.createLinearGradient(0, lens[1], 0, by); g.addColorStop(0, 'rgba(150,240,255,.45)'); g.addColorStop(1, 'rgba(90,190,255,.08)'); c.fillStyle = g;
         c.beginPath(); c.moveTo(lens[0] - 4, lens[1]); c.lineTo(lens[0] + 4, lens[1]); c.lineTo(q[2][0], q[2][1]); c.lineTo(q[3][0], q[3][1]); c.closePath(); c.fill();
-        P.glow(c, lens[0], lens[1], 10, 'rgba(150,240,255,.9)', .7); c.restore();
+        P.glow(c, lens[0], lens[1], 10, 'rgba(150,240,255,.9)', .7);
+        for (let k = 0; k < 6; k++) { const ph = (t * .7 + k / 6 + n * .3) % 1, x = lens[0] + (q[3][0] + (q[2][0] - q[3][0]) * NX.art.hash(k, n + 3) - lens[0]) * ph, y = lens[1] + (by - lens[1]) * ph;   // пікселі даних летять з лінзи в панель
+          c.fillStyle = `rgba(${k % 2 ? '200,250,255' : '255,180,245'},${Math.sin(ph * Math.PI) * .9})`; c.fillRect(x - .5, y - .5, 1, 1); }
+        c.restore();
         c.save(); c.globalAlpha = .9 * fl; c.imageSmoothingEnabled = true; c.translate(gl, 0); F.warp(c, p.cv, q, 1.2);
         c.globalCompositeOperation = 'lighter'; c.globalAlpha = .3 * fl; F.warp(c, p.cv, q, 2.4); c.restore();
       });

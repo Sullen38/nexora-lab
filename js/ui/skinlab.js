@@ -18,7 +18,7 @@ NX.ui.skinlab = {
     $('save').onclick = () => { try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love'); };
     $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
-      NX.nexi.look = { face: p(FACES), ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? ['backpack', 'cape', 'wings'][r() * 3 | 0] : null, head: r() < .3 ? ['hood', 'hat', 'goggles', 'phones'][r() * 4 | 0] : null, hand: r() < .3 ? ['shield', 'sword'][r() * 2 | 0] : null, fx: r() < .5 ? p(FX) : 'none' };
+      NX.nexi.look = { face: p(FACES), ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? ['backpack', 'cape', 'wings'][r() * 3 | 0] : null, head: r() < .3 ? ['hood', 'hat', 'goggles', 'phones'][r() * 4 | 0] : null, hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: r() < .5 ? p(FX) : 'none' };
       this.grid(); NX.nexi.emote('surprise', 1.5); };
     this.relabel();
     this.pv = $('pv').getContext('2d'); this.pscr = document.createElement('canvas'); this.tcr = document.createElement('canvas');

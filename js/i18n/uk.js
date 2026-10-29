@@ -24,7 +24,7 @@ NX.i18n.add('uk', {
         mood: 'настрій +', cache: 'кеш', invoice: 'рахунок.pdf', tokens: 'токени', backup: 'резервна копія', ping: 'пінг', draft: 'чернетка відповіді', retry: 'повтор 1/3', report: 'звіт.xlsx', langPl: 'мова: pl' } },
     seen: { face: 'ОБЛИЧЧЯ', user: 'ЛЮДИНА', bot: 'БОТ', cat: 'КІТ', fox: 'ЛИС', dog: 'ПЕС', logo: 'ЛОГО', icon: 'ІКОНКА', text: 'ТЕКСТ', doc: 'ДОК', form: 'ФОРМА', photo: 'ФОТО', match: 'ЗНАЙДЕНО', scan: 'СКАН' },   // розпізнавання
     hub: { online: 'ОНЛАЙН', tasks: 'ЗАДАЧ' },   // екран NEXORA AI на стіні (objects/arc_paint.js: hub)
-    ws: { skins: 'СКІНИ', fit: 'ПРИМІРКА' },        // майстерня: каталог скінів, голо-стійка примірки
+    ws: { skins: 'СКІНИ', fit: 'ПРИМІРКА', items: 'ПРЕДМЕТИ' },        // майстерня: планшети «скіни» й «предмети», голо-стійка примірки
     tools: { mail: 'ПОШТА', cal: 'КАЛЕНДАР', crm: 'CRM', auto: 'АВТО' },   // інструменти: плитки інтеграцій, екран автоматизації (objects/arc_paint.js)
     poster: { meow: 'МЯУ', tag: '8-БІТ AI' },
     unit: { ms: 'мс', k: 'тис', K: 'ТИС' }, dec: ',',   // одиниці й десятковий знак
@@ -66,7 +66,7 @@ NX.i18n.add('uk', {
     body: { standard: 'Стандарт', techno: 'Техно', energy: 'Енергія', holo: 'Голограма', camo: 'Камуфляж', premium: 'Преміум', cyborg: 'Кіборг', cosmos: 'Космос' },
     arms: { base: 'Базові', gloves: 'Рукавиці', tools: 'Інструменти', holo: 'Голограма', armor: 'Броня', power: 'Енергія', neon: 'Неон', gold: 'Золото' },
     legs: { standard: 'Стандарт', boots: 'Черевики', sneakers: 'Кросівки', armor: 'Броня', neon: 'Неон', jet: 'Реактивні', magnet: 'Магнітні', gold: 'Золоті' },
-    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', shield: 'Щит', sword: 'Меч' },
+    acc: { backpack: 'Рюкзак', cape: 'Плащ', wings: 'Крила', hood: 'Капюшон', hat: 'Шапка', goggles: 'Окуляри', phones: 'Навушники', hammer: 'Громовий молот', blade: 'Неоновий клинок', gauntlet: 'Силова рукавиця', excalibur: 'Екскалібур', staff: 'Кришталевий посох', trident: 'Морський тризуб', wand: 'Зоряна паличка', balloon: 'Кулька', torch: 'Факел', magnet: 'Магніт', shield: 'Щит', sword: 'Меч' },
     theme: { standard: 'Стандарт', techno: 'Техно', neon: 'Неон', camo: 'Камуфляж', gamer: 'Геймер', space: 'Космос', desert: 'Пустеля', forest: 'Ліс', winter: 'Зима', fire: 'Вогонь', water: 'Вода', gold: 'Золото', evil: 'Злий', shadow: 'Тінь', rainbow: 'Райдуга', military: 'Військовий', premium: 'Преміум' },
     fx: { none: 'Без ефекту', sparks: 'Іскри', energy: 'Енергія', aura: 'Аура', trail: 'Слід', rain: 'Дощ', snow: 'Сніг', fire: 'Вогонь', water: 'Вода', neon: 'Неон' },
     mood: { happy: 'Радість', love: 'Любов', surprise: 'Сюрприз', idea: 'Ідея', sleepy: 'Сон', sad: 'Сум', angry: 'Злість', cool: 'Круто' },

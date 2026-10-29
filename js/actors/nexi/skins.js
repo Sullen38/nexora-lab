@@ -52,7 +52,12 @@ armor:{n:'Броня',col:'#8a93b8',pad:'#c3cbea',foot:'#5a6590'},neon:{n:'Не�
 magnet:{n:'Магнітні',foot:'#d93a4a',acc:'#c3cbea'},gold:{n:'Золоті',col:'#ffd45a',foot:'#e0902a',acc:'#fff0a0'}};
 const FACES={standard:'Стандарт',happy:'Щасливий',think:'Думка',surprised:'Сюрприз',talk:'Говорить',serious:'Серйозний',sleepy:'Сонний',hearts:'Сердечка'};
 const ANTS={standard:'Стандарт',techno:'Техно',holo:'Голограма',gamer:'Геймер',premium:'Преміум',horns:'Роги',crown:'Корона',neon:'Неон'};
-const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'back'},wings:{n:'Крила',slot:'back'},hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},shield:{n:'Щит',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
+const ACCS={backpack:{n:'Рюкзак',slot:'back'},cape:{n:'Плащ',slot:'back'},wings:{n:'Крила',slot:'back'},hood:{n:'Капюшон',slot:'head'},hat:{n:'Шапка',slot:'head'},goggles:{n:'Окуляри',slot:'head'},phones:{n:'Навушники',slot:'head'},
+// предмети в руках (малюються в sprite.js → drawHandItem; назви — js/i18n/*.js → skin.acc)
+hammer:{n:'Громовий молот',slot:'hand'},blade:{n:'Неоновий клинок',slot:'hand'},gauntlet:{n:'Силова рукавиця',slot:'hand'},excalibur:{n:'Екскалібур',slot:'hand'},
+staff:{n:'Кришталевий посох',slot:'hand'},trident:{n:'Морський тризуб',slot:'hand'},wand:{n:'Зоряна паличка',slot:'hand'},balloon:{n:'Кулька',slot:'hand'},
+torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
+const HAND_ITEMS=Object.keys(ACCS).filter(k=>ACCS[k].slot==='hand');
 const FX={none:'Без ефекту',sparks:'Іскри',energy:'Енергія',aura:'Аура',trail:'Слід',rain:'Дощ',snow:'Сніг',fire:'Вогонь',water:'Вода',neon:'Неон'};
 const MOODS={happy:'Радість',love:'Любов',surprise:'Сюрприз',idea:'Ідея',sleepy:'Сон',sad:'Сум',angry:'Злість',cool:'Круто'};
 const ACTIONS={stand:'Стоїть',walk:'Ходить',run:'Біжить',wave:'Привіт',think:'Думає',point:'Вказує',talk:'Розповідає',cheer:'Радіє',spin:'Оберт',stretch:'Потягується',look:'Роззирається',jump:'Стрибає',work:'Працює',sleep:'Сон',dance:'Танцює',read:'Читає',meditate:'Медитує',bye:'Прощається',drink:'П\'є каву',hammer:'Ремонтує'};

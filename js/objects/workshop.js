@@ -16,10 +16,11 @@
 (() => {
   const P = NX.px;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('workshop'));
-  // скіни голограми (власник: «голограма Nexi з різними скінами»): тема + 1–2 деталі, що добре видно здалеку
-  const LOOKS = [{ theme: 'neon', ant: 'neon', face: 'happy' }, { theme: 'gold', ant: 'crown', body: 'premium', legs: 'gold' }, { theme: 'space', body: 'cosmos', back: 'wings' },
-    { theme: 'fire', ant: 'horns', arms: 'power' }, { theme: 'winter', head: 'hat', legs: 'boots' }, { theme: 'techno', body: 'techno', ant: 'techno', head: 'goggles' },
-    { theme: 'rainbow', back: 'cape' }, { theme: 'gamer', head: 'phones', legs: 'sneakers', ant: 'gamer' }, { theme: 'forest', back: 'backpack' }, { theme: 'water', body: 'holo', arms: 'holo' }];
+  // скіни голограми (власник: «голограма Nexi з різними скінами»): тема + 1–2 деталі, що добре видно здалеку; майже кожен —
+  // з предметом у руці (власник: «предмети, які він тримає в руці»: молот, клинок, рукавиця, екскалібур, посох…)
+  const LOOKS = [{ theme: 'neon', ant: 'neon', face: 'happy', hand: 'blade' }, { theme: 'gold', ant: 'crown', body: 'premium', legs: 'gold', hand: 'excalibur' }, { theme: 'space', body: 'cosmos', back: 'wings', hand: 'staff' },
+    { theme: 'fire', ant: 'horns', arms: 'power', hand: 'hammer' }, { theme: 'winter', head: 'hat', legs: 'boots', hand: 'torch' }, { theme: 'techno', body: 'techno', ant: 'techno', head: 'goggles', hand: 'gauntlet' },
+    { theme: 'rainbow', back: 'cape', hand: 'balloon' }, { theme: 'gamer', head: 'phones', legs: 'sneakers', ant: 'gamer', hand: 'magnet' }, { theme: 'forest', back: 'backpack', hand: 'wand' }, { theme: 'water', body: 'holo', arms: 'holo', hand: 'trident' }];
   const PERIOD = 3.6, SPIN = .9;                                                           // показ скіна, з них оберт (с)
   // маніпулятор (px картинки зони і відступ углиб v): спокій / «сканую голограму» / «встановлюю скін»
   const ARM = { rest: [[1005, 128, 36.5], [1062, 96, 36.5], [1128, 134, 36.5], [1114, 158, 36.5]],
@@ -144,6 +145,15 @@
       c.fillStyle = g; c.beginPath(); c.moveTo(px - 20, py); c.lineTo(px + 20, py); c.lineTo(px + 31, py - H); c.lineTo(px - 31, py - H); c.closePath(); c.fill();
       for (let k = 0; k < 5; k++) { const ph = (t * .6 + k * .2) % 1, xx = px - 18 + 36 * ((k * .37 + t * .05) % 1); c.fillStyle = `rgba(200,250,255,${.25 * Math.sin(ph * Math.PI)})`; c.fillRect(xx, py - H * ph - 8, .6, 8); }
       S.motes.forEach(m => { c.fillStyle = `rgba(${m.c},${Math.sin(m.a / m.ttl * Math.PI) * .9})`; c.fillRect(m.x, m.y, 1, 1); });
+      // кільця, що підіймаються конусом (з них «збирається» голограма)
+      if (S.holoA > .1) for (let k = 0; k < 3; k++) { const ph = (t * .42 + k / 3) % 1, yy = py - 3 - ph * 60, rx = 17 + ph * 9, al = Math.sin(ph * Math.PI) * .55 * S.holoA;
+        c.strokeStyle = k % 2 ? `rgba(130,240,255,${al})` : `rgba(255,160,240,${al})`; c.lineWidth = .7; c.beginPath(); c.ellipse(px, yy, rx, rx * .2, 0, 0, 7); c.stroke(); }
+      // новий скін «збирається»: потік пікселів з обох планшетів дугою в голограму
+      if (S.mat < 1 && S.holoA > .3 && z.anchor('wsTabL')) {
+        const TL = NX.px3d.proj(z.anchor('wsTabL')), TR = NX.px3d.proj(z.anchor('wsTabR')), to = [px, py - 34];
+        for (let q = 0; q < 16; q++) { const u = (S.mat * 1.6 + q / 16) % 1, fr = q % 2 ? TL : TR, x = fr[0] + (to[0] - fr[0]) * u, y = fr[1] + (to[1] - fr[1]) * u - Math.sin(u * Math.PI) * 16;
+          c.fillStyle = q % 2 ? `rgba(160,240,255,${1 - u * .5})` : `rgba(255,170,240,${1 - u * .5})`; c.fillRect(x - .7, y - .7, 1.4, 1.4); }
+      }
       c.restore();
       // ГОЛОГРАМА
       if (S.holoA > .02) {
@@ -157,8 +167,8 @@
         c.globalCompositeOperation = 'lighter'; c.globalAlpha = .28 * fl2; c.drawImage(cv, -w / 2 + .8, -top, w, h); c.drawImage(cv, -w / 2 - .8, -top - .6, w, h);
         c.restore();
         if (S.mat < 1) { const yy = py - hover - top + h * .93 * (1 - ease(S.mat)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(220,255,255,.9)'; c.fillRect(px - w * .32, yy, w * .64, .9); P.glow(c, px, yy, 16, 'rgba(160,240,255,.7)', .5); c.restore(); }
-        // голо-табличка з назвою скіна + каруселька
-        const name = NX.t('skin.theme.' + look(S.shown).theme).toUpperCase(), ty = py - hover - top - 9;
+        // голо-табличка: назва скіна, у другій половині показу — назва предмета в руці; каруселька
+        const Lk = look(S.shown), name = (Lk.hand && ph > .45 && ph < 1 - spin ? NX.t('skin.acc.' + Lk.hand) : NX.t('skin.theme.' + Lk.theme)).toUpperCase(), ty = py - hover - top - 9;
         c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 8);
         c.fillStyle = 'rgba(6,18,60,.72)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = '#7af4ff'; c.lineWidth = .5; c.strokeRect(px - tw / 2 + .25, ty - 4.75, tw - .5, 7.5);
         c.fillStyle = '#e8feff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px, ty - .7, tw - 4); c.textAlign = 'left'; c.textBaseline = 'alphabetic';

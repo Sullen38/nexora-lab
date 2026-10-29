@@ -44,7 +44,8 @@
     petCat: { color: '#ff7a2a', route() { const c = NX.cat, [cx, cg] = c.floorPos(), side = cx > 700 ? -1 : 1, gy = Math.max(cg, 362), [x, y] = NX.room.clampWalk(cx + side * 26, gy);
       return [{ walk: [x, y] }, { face: -side }, line('petCat'), { do: () => NX.cat.purr(4.5) }, { work: { pose: 'pet', dur: 4 } }, { do: () => NX.nexi.emote('love') }]; } },
 
-    feedCat: { color: '#ff7a2a', route() { const b = NX.objects.catCorner.bowl; return [{ walk: [b[0] + 22, b[1] + 2] }, { face: -1 }, line('feedCat'), { work: { pose: 'pour', dur: 3, end: () => { NX.objects.catCorner.food = 1; NX.cat.hunger = .75; } } }]; } },
+    // стає праворуч від мисок (не на них — world/room.js: foot)
+    feedCat: { color: '#ff7a2a', route() { const w = NX.objects.catCorner.water; return [{ walk: [w[0] + 26, w[1] + 3] }, { face: -1 }, line('feedCat'), { work: { pose: 'pour', dur: 3, end: () => { NX.objects.catCorner.food = 1; NX.cat.hunger = .75; } } }]; } },
 
     dance: { color: '#ff4fd8', route() { const h = NX.objects.rug.home; return [{ walk: [h[0] + 40, h[1]] }, line('dance'), { work: { pose: 'dance', dur: 6, tick: () => Math.random() < .05 && NX.fx.emit('note', NX.nexi.x, NX.nexi.y - 50) } }, { spin: .5 }]; } },
 

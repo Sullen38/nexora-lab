@@ -4,11 +4,14 @@
  * Стан, яким користується кіт (actors/cat/cat.js) і Nexi:
  *   food  0..1 — скільки корму в мисці (кіт їсть -> менше; Nexi насипає -> 1)
  *   ball  {x,y,vx,vy} — м'ячик, який кіт ганяє по підлозі
- * Позиції мисок/м'ячика залежать від висоти добудованої підлоги (layout()).
+ * Позиції мисок/м'ячика залежать від висоти добудованої підлоги (layout()). foot — лежанка й миски (Nexi обходить);
+ * м'ячик відскакує від меблів (сліди foot інших об'єктів).
  * ========================================================================== */
 NX.addObject({
   id: 'catCorner', name: 'obj.catCorner', act: 'feedCat',
   hit: { x: 36, y: 366, w: 48, h: 40 }, food: .7,
+  /** Слід на підлозі (Nexi обходить; коту — свій куточок, catOk): лежанка з дряпкою, миски. */
+  catOk: true, get foot() { return [[38, 84, 364, 405], [this.bowl[0] - 11, this.water[0] + 10, this.bowl[1] - 7, this.bowl[1] + 1]]; },
   bowl: [130, 400], water: [154, 400], platform: [70, 366], bed: [60, 392],
   ball: { x: 300, y: 430, vx: 0, vy: 0 },
   layout() { const F = NX.cam.front, y = 368 + Math.min(34, F * .2); this.bowl = [130, y]; this.water = [154, y]; this.ball.y = NX.px.clamp(this.ball.y, 372, 368 + F - 30); },
@@ -16,6 +19,10 @@ NX.addObject({
   update(dt) {
     const b = this.ball, B = NX.room.walkBounds(); b.x += b.vx * dt; b.y += b.vy * dt; b.vx *= Math.pow(.25, dt); b.vy *= Math.pow(.25, dt);
     if (b.x < B.minX || b.x > B.maxX) b.vx *= -1; if (b.y < 366 || b.y > B.maxY) b.vy *= -1; [b.x, b.y] = [NX.px.clamp(b.x, B.minX, B.maxX), NX.px.clamp(b.y, 366, B.maxY)];
+    for (const r of NX.room.obstacles('cat')) if (b.x > r[0] && b.x < r[1] && b.y > r[2] && b.y < r[3]) {   // м'ячик відскакує від меблів (диван, крісло), а не котиться під них
+      const d = [b.x - r[0], r[1] - b.x, r[2] < 370 ? Infinity : b.y - r[2], r[3] - b.y], k = d.indexOf(Math.min(...d));
+      if (k === 0) { b.x = r[0]; b.vx = -Math.abs(b.vx); } else if (k === 1) { b.x = r[1]; b.vx = Math.abs(b.vx); } else if (k === 2) { b.y = r[2]; b.vy = -Math.abs(b.vy); } else { b.y = r[3]; b.vy = Math.abs(b.vy); }
+    }
   },
   layers(t) {
     const P = NX.px, s = this, F = NX.furn;

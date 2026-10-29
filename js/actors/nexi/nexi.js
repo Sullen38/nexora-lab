@@ -2,7 +2,7 @@
  * actors/nexi/nexi.js — NEXI: СТАН, ЧЕРГА ДІЙ, МАЛЮВАННЯ В КІМНАТІ
  * ----------------------------------------------------------------------------
  * Nexi виконує ЧЕРГУ ДІЙ (queue). Кожна дія — простий об'єкт:
- *   {walk:[x,y]}  іти по підлозі          {fly:[x,y]}  летіти на ранці
+ *   {walk:[x,y]}  іти по підлозі (шляхом в обхід меблів — NX.room.route)   {fly:[x,y]}  летіти на ранці
  *   {hop:[x,y]}   застрибнути/зістрибнути {face:±1}    повернутись
  *   {loc:'..'}    де він зараз (для виходу) {do:fn}    виконати функцію
  *   {say:'..'}    сказати фразу           {wait:сек}   почекати
@@ -66,7 +66,10 @@ NX.nexi = {
     if (this.fxNow && this.fxNow !== 'none' && this.alpha > .5) NX.fx.skin(this.fxNow, this.x, this.y, NX.room.scaleAt(Math.max(this.depthY(), 352)), !!(this.cur && this.cur.walk), this.dir);
   },
   begin(a) {
-    if (a.walk) { a.from = [this.x, this.y]; a.run = Math.hypot(a.walk[0] - this.x, a.walk[1] - this.y) > 500; }
+    if (a.walk) {                                                                     // шлях в обхід меблів (world/room.js: route)
+      a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk); a.pi = 0;
+      let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > 500;
+    }
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop; a.dur = a.hop ? .45 : Math.max(.5, Math.hypot(to[0] - this.x, to[1] - this.y) / NX.cfg.FLY_SPEED); if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
       if (a.dy !== undefined || this.dy != null) a.dz = [this.depthY(), a.dy !== undefined ? a.dy : to[1]]; }   // глибина на дивані: плавно (dy)
     if (a.face) this.dir = a.face;
@@ -80,9 +83,10 @@ NX.nexi = {
   step(a, dt) {
     if (a.walk) {
       this.dy = null;
-      const [tx, ty] = a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
+      const [tx, ty] = a.path ? a.path[a.pi] : a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
       this.pose = a.run ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
-      if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; return true; } this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
+      if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; if (a.path && a.pi < a.path.length - 1) { a.pi++; return false; } return true; }   // кут обходу — далі до наступної точки
+      this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
     }
     if (a.spin) { this.dir = Math.floor(a._t * 12) % 2 ? 1 : -1; this.pose = 'spin'; if (a._t >= a.spin) { this.dir = 1; return true; } return false; }
     if (a.hop && a._t < .12) { this.pose = 'crouch'; return false; }                   // присід перед стрибком

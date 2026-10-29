@@ -10,7 +10,8 @@
  *   ws_wingL/R, ws_postL/R — бічні панелі й стійки капсули (внутрішні грані стійок — світлові панелі)
  *   ws_back   — рожеве скло сканера: сітка, кільця емблеми, іконки скінів
  *   ws_beam   — балка: заклепки, ґратки; знизу — панель світла над капсулою
- *   ws_tabL/R — планшети скінів (живі: міні-Nexi в різних скінах, рамка вибору)
+ *   ws_tabL   — планшет СКІНИ (живий: міні-Nexi в різних скінах, рамка вибору, дві сторінки)
+ *   ws_tabR   — планшет ПРЕДМЕТИ (живий: молот, клинок, рукавиця, екскалібур, посох… — те, що Nexi тримає в руці)
  * c уже масштабоване: 1 = одиниця світу на грані; fw × fh — розмір грані. Усі написи — NX.t (4 мови).
  * ========================================================================== */
 (() => {
@@ -40,7 +41,7 @@
 
   // ---------- ПЛАТФОРМА ----------
   /** Фасад платформи (як на картинці): кромка з рожевим неоном, панелі зі швами й болтами, ґратки, по центру — ніша з
-   *  помаранчевою світною щілиною й шевронами, блакитні LED, світла смуга знизу на підлогу. */
+   *  помаранчевою світною щілиною й шевронами, блакитні LED. Світлої смуги знизу немає (власник прибрав, крок 3). */
   PAINT.ws_base = (c, fw, fh) => {
     c.fillStyle = 'rgba(210,190,255,.22)'; c.fillRect(0, 0, fw, fh * .045);                                        // світла губа кромки
     A.neon(c, 0, fh * .09, fw, fh * .09, '#ff4fd8', 1.5);
@@ -61,7 +62,6 @@
     c.fillStyle = 'rgba(110,36,4,.5)'; for (let x = sx + 2; x < sx + sw - 1; x += 2.2) c.fillRect(x, sy + .3, .5, sh - .6);
     for (let k = 0; k < 3; k++) { chevron(c, sx - 3 - k * 3.2, sy + sh / 2, 2.4, 1, 'rgba(59,232,255,.35)'); chevron(c, sx + sw + 3 + k * 3.2, sy + sh / 2, 2.4, -1, 'rgba(59,232,255,.35)'); }
     hazard(c, nx + 1, fh * .74, fw * .045, fh * .05); hazard(c, nx + nw - 1 - fw * .045, fh * .74, fw * .045, fh * .05);
-    c.fillStyle = '#3be8ff'; c.fillRect(fw * .06, fh * .945, fw * .88, fh * .03); c.fillStyle = '#d8fcff'; c.fillRect(fw * .2, fh * .95, fw * .6, fh * .012);   // світло знизу
   };
   /** Живе на фасаді: шеврони біжать до щілини, щілина «дихає». */
   LIVE.ws_base = { every: 3, draw(c, fw, fh, t) {
@@ -107,6 +107,13 @@
     bolt(c, X(.66), fh * .08); bolt(c, X(.66), fh * .8); led(c, X(.66), fh * .87, side > 0 ? '#3bff8a' : '#ff9a3a', .7);
   };
   PAINT.ws_wingL = wing(-1); PAINT.ws_wingR = wing(1);
+  /** Живе на бічній панелі: шкала «рівня» гуляє, як еквалайзер; неонова трубка зрідка коротко блимає. */
+  const wingLive = side => ({ every: 4, draw(c, fw, fh, t) {
+    const X = f => side > 0 ? fw * (1 - f) : fw * f, sx = Math.min(X(.48), X(.86)), lv = .55 + .45 * Math.sin(t * 2.3 + side) * Math.sin(t * .9 + side * 2), n = Math.max(1, Math.round(lv * 5));
+    for (let k = 0; k < 5; k++) { c.fillStyle = k < n ? ['#9af6ff', '#9af6ff', '#9af6ff', '#ffe6a8', '#ffb4f2'][k] : 'rgba(5,10,38,.9)'; c.fillRect(sx + fw * .05, fh * (.33 - k * .033), fw * .28, fh * .018); }
+    if (hash(Math.floor(t * 10), side > 0 ? 3 : 4) > .95) { c.fillStyle = 'rgba(10,0,24,.55)'; c.fillRect(X(.3) - 1.4, fh * .12, 2.8, fh * .78); }
+  } });
+  LIVE.ws_wingL = wingLive(-1); LIVE.ws_wingR = wingLive(1);
   /** Стійка капсули спереду: блакитний неон біля внутрішнього краю, два індикатори, значок скінів, ґратка внизу. */
   const post = side => (c, fw, fh) => {
     const X = f => side > 0 ? fw * (1 - f) : fw * f, inner = X(.86);
@@ -127,6 +134,14 @@
   };
   PAINT.ws_postL = post(-1); PAINT.ws_postL.sides = { right: innerLight };
   PAINT.ws_postR = post(1); PAINT.ws_postR.sides = { left: innerLight };
+  /** Живе на стійці: по неоновій трубці біжить світла «крапля», індикатори під значком спалахують по черзі. */
+  const postLive = side => ({ every: 4, draw(c, fw, fh, t) {
+    const X = f => side > 0 ? fw * (1 - f) : fw * f, inner = X(.86), cx = X(.39), y = fh * (.05 + ((t * .32 + (side > 0 ? .5 : 0)) % 1) * .9);
+    c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createLinearGradient(0, y - 7, 0, y + 7); g.addColorStop(0, 'rgba(160,250,255,0)'); g.addColorStop(.5, 'rgba(235,255,255,.95)'); g.addColorStop(1, 'rgba(160,250,255,0)');
+    c.fillStyle = g; c.fillRect(inner - 1.3, y - 7, 2.6, 14); c.restore();
+    const k = (Math.floor(t * 2.5) + (side > 0 ? 1 : 0)) % 3; c.fillStyle = '#ffffff'; c.fillRect(cx - fw * .15 + k * fw * .11, fh * .33, fw * .07, fh * .02);
+  } });
+  LIVE.ws_postL = postLive(-1); LIVE.ws_postR = postLive(1);
 
   // ---------- СКЛО СКАНЕРА ----------
   /** Рожеве скло сканера: перелив, шестикутна сітка, велика емблема-кільце вгорі, іконки скінів, скан-лінії, світлий кант. */
@@ -163,6 +178,14 @@
     A.neon(c, fw * .07, fh * .86, fw * .93, fh * .86, '#ff4fd8', 1.3);
     c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(0, fh * .93, fw, fh * .07);
   };
+  /** Живе на балці: по рожевому неону біжать три вогники; вивіска зрідка ловить відблиск. */
+  LIVE.ws_beam = { every: 4, draw(c, fw, fh, t) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 3; k++) { const x = fw * (.07 + (((t * .22) + k / 3) % 1) * .86), g = c.createLinearGradient(x - 9, 0, x + 9, 0); g.addColorStop(0, 'rgba(255,150,240,0)'); g.addColorStop(.5, 'rgba(255,238,252,.95)'); g.addColorStop(1, 'rgba(255,150,240,0)');
+      c.fillStyle = g; c.fillRect(x - 9, fh * .86 - 1, 18, 2); }
+    c.restore();
+  } };
+  LIVE.ws_sign = NX.arc.glint(6.8, 3.4);
   /** Спід балки (видно знизу, над капсулою): панель світла — сітка світлодіодів над входом. */
   PAINT.ws_beam.sides = { bottom: (c, fw, fh) => {
     c.fillStyle = 'rgba(10,4,26,.7)'; c.fillRect(0, 0, fw, fh);
@@ -170,31 +193,66 @@
     for (let y = fh * .2; y < fh * .82; y += 2.6) for (let x = x0 + 1.4; x < x1 - .5; x += 2.6) { c.fillStyle = (Math.round(x * 3 + y * 7) % 5) ? '#ffd6f6' : '#9af6ff'; c.fillRect(x - .55, y - .55, 1.1, 1.1); }
   } };
 
-  // ---------- ПЛАНШЕТИ СКІНІВ ----------
-  /** Планшет (нерухоме): корпус, скло з переливом, заголовок «СКІНИ», сітка карток 2 × 3 (у картках — живі міні-Nexi). */
+  // ---------- ПЛАНШЕТИ: ліворуч — СКІНИ (міні-Nexi в скінах), праворуч — ПРЕДМЕТИ (що він тримає в руці) ----------
+  // Власник (29.10): «з одного боку видно скіни, з іншого — предмети, які він тримає в руці». Обидва гортаються сторінками.
+  const TAB = { [-1]: { title: 'scene.ws.skins', glass: ['#1a62c8', '#0f3a96', '#0a2470'], line: '#7af4ff', glow: '#3be8ff', card: 'rgba(16,40,120,.85)', edge: 'rgba(150,230,255,.5)', hi: '150,240,255' },
+    [1]: { title: 'scene.ws.items', glass: ['#4a1c9a', '#2c1274', '#1a0c52'], line: '#ff9af0', glow: '#ff4fd8', card: 'rgba(44,18,104,.85)', edge: 'rgba(255,180,240,.5)', hi: '255,160,240' } };
+  /** Планшет (нерухоме): корпус, скло з переливом, заголовок, сітка карток 2 × 3; у предметів — світні п'єдестали в картках. */
   const tablet = side => (c, fw, fh) => {
+    const S = TAB[side];
     c.fillStyle = '#0a0a2a'; rr(c, 0, 0, fw, fh, 2.2); c.fill(); c.strokeStyle = '#3b4aa8'; c.lineWidth = .6; rr(c, .4, .4, fw - .8, fh - .8, 2); c.stroke();
-    glass(c, fw * .07, fh * .05, fw * .86, fh * .88, { r: 1.4, a: '#1a62c8', b: '#0f3a96', c: '#0a2470', line: '#7af4ff' });
-    A.txt(c, NX.t('scene.ws.skins'), fw / 2, fh * .1, fw * .6, fh * .045, '#e8feff', { glow: '#3be8ff' });
-    for (let q = 0; q < 6; q++) { const [x, y, w, h] = cell(fw, fh, q); c.fillStyle = 'rgba(16,40,120,.85)'; rr(c, x, y, w, h, .8); c.fill(); c.strokeStyle = 'rgba(150,230,255,.5)'; c.lineWidth = .35; rr(c, x, y, w, h, .8); c.stroke(); }
-    c.fillStyle = '#05030f'; c.fillRect(fw * .42, fh * .955, fw * .16, fh * .02); led(c, side > 0 ? fw * .15 : fw * .85, fh * .965, '#3bff8a', .55);
+    glass(c, fw * .07, fh * .05, fw * .86, fh * .88, { r: 1.4, a: S.glass[0], b: S.glass[1], c: S.glass[2], line: S.line });
+    A.txt(c, NX.t(S.title), fw / 2, fh * .1, fw * .6, fh * .045, '#f4fbff', { glow: S.glow });
+    for (let q = 0; q < 6; q++) { const [x, y, w, h] = cell(fw, fh, q); c.fillStyle = S.card; rr(c, x, y, w, h, .8); c.fill(); c.strokeStyle = S.edge; c.lineWidth = .35; rr(c, x, y, w, h, .8); c.stroke();
+      if (side > 0) { const g = c.createRadialGradient(x + w / 2, y + h * .84, 0, x + w / 2, y + h * .84, w * .42); g.addColorStop(0, 'rgba(255,150,240,.55)'); g.addColorStop(1, 'rgba(255,150,240,0)'); c.fillStyle = g; c.fillRect(x, y + h * .6, w, h * .4);
+        c.strokeStyle = 'rgba(255,214,246,.75)'; c.lineWidth = .3; c.beginPath(); c.ellipse(x + w / 2, y + h * .86, w * .28, h * .055, 0, 0, 7); c.stroke(); } }
+    c.fillStyle = '#05030f'; c.fillRect(fw * .4, fh * .952, fw * .2, fh * .026); led(c, side > 0 ? fw * .15 : fw * .85, fh * .965, '#3bff8a', .55);
   };
   const cell = (fw, fh, q) => [fw * (.13 + (q % 2) * .38), fh * (.17 + Math.floor(q / 2) * .26), fw * .36, fh * .23];
   PAINT.ws_tabL = tablet(-1); PAINT.ws_tabR = tablet(1);
+  /** Гортання: картка підсвічується по черзі (per с), після шести — наступна сторінка: картки «вистрибують» по одній. */
+  const pager = (t, pages, shift = 0) => { const per = 1.6, n = Math.floor(t / per) + shift, page = Math.floor(n / 6) % pages, since = (t + shift * per) - Math.floor(n / 6) * 6 * per; return { page, sel: n % 6, since }; };
+  /** Поява картки q нової сторінки: масштаб з легким «перестрибуванням» (0..1+), спалах на мить. */
+  const pop = (since, q) => { const k = Math.max(0, Math.min(1, (since - q * .07) / .32)); if (k >= 1) return [1, 0]; const s = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); return [Math.max(0, s), 1 - k]; };
+  /** Рамка вибраної картки, сяйво, крапки сторінок, скан-лінія по екрану. */
+  function chrome(c, fw, fh, t, S, sel, page, pages) {
+    const [x, y, w, h] = cell(fw, fh, sel); c.strokeStyle = '#ffffff'; c.lineWidth = .6; rr(c, x - .3, y - .3, w + .6, h + .6, .9); c.stroke();
+    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${S.hi},${.12 + .1 * Math.sin(t * 5)})`; rr(c, x, y, w, h, .8); c.fill(); c.restore();
+    for (let k = 0; k < pages; k++) { c.fillStyle = k === page ? S.line : 'rgba(255,255,255,.3)'; c.fillRect(fw / 2 - pages * 1.6 + k * 3.2 + .4, fh * .96, 1.6, fh * .012); }
+    const sy = fh * (.15 + ((t * .25) % 1) * .8); c.fillStyle = `rgba(${S.hi},.2)`; c.fillRect(fw * .08, sy, fw * .84, .6);
+  }
   /** Міні-Nexi для карток: кожен скін малюється раз (renderBot) і береться з кешу. */
-  const MINI = {}, SKINS_L = [{ theme: 'neon' }, { theme: 'gold', ant: 'crown' }, { theme: 'space', body: 'cosmos' }, { theme: 'forest', back: 'backpack' }, { theme: 'fire', ant: 'horns' }, { theme: 'winter', head: 'hat' }],
-    SKINS_R = [{ theme: 'techno', body: 'techno', ant: 'techno' }, { theme: 'rainbow', back: 'wings' }, { theme: 'gamer', head: 'phones' }, { theme: 'premium', body: 'premium' }, { theme: 'water', body: 'holo' }, { theme: 'shadow', back: 'cape' }];
+  const MINI = {}, SKINS = [[{ theme: 'neon' }, { theme: 'gold', ant: 'crown' }, { theme: 'space', body: 'cosmos' }, { theme: 'forest', back: 'backpack' }, { theme: 'fire', ant: 'horns' }, { theme: 'winter', head: 'hat' }],
+    [{ theme: 'techno', body: 'techno', ant: 'techno' }, { theme: 'rainbow', back: 'wings' }, { theme: 'gamer', head: 'phones' }, { theme: 'premium', body: 'premium' }, { theme: 'water', body: 'holo' }, { theme: 'shadow', back: 'cape' }]];
   function mini(look) {
     const k = JSON.stringify(look); if (MINI[k]) return MINI[k];
     const cv = document.createElement('canvas'); renderBot(Object.assign({}, DEFAULT_LOOK, look), poseFor('stand', 0, false), 0, cv); return MINI[k] = cv;
   }
   NX.arc.wsMini = mini;                                                                                          // і для голограми (objects/workshop.js)
-  [['ws_tabL', SKINS_L, 0], ['ws_tabR', SKINS_R, 3]].forEach(([id, list, sh]) => { LIVE[id] = { every: 4, draw(c, fw, fh, t) {
-    const sel = (Math.floor(t / 1.6) + sh) % 6;
-    list.forEach((look, q) => { const [x, y, w, h] = cell(fw, fh, q), cv = mini(look), s = Math.min(w / SW, h / SH) * 1.25, bob = q === sel ? Math.sin(t * 6) * .4 : 0;
-      c.save(); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .98 - SH * s * .93 + bob, SW * s, SH * s); c.restore(); });
-    const [x, y, w, h] = cell(fw, fh, sel); c.strokeStyle = '#ffffff'; c.lineWidth = .6; rr(c, x - .3, y - .3, w + .6, h + .6, .9); c.stroke();
-    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(150,240,255,${.12 + .1 * Math.sin(t * 5)})`; rr(c, x, y, w, h, .8); c.fill(); c.restore();
-    const sy = fh * (.15 + ((t * .25) % 1) * .8); c.fillStyle = 'rgba(200,250,255,.22)'; c.fillRect(fw * .08, sy, fw * .84, .6);   // скан-лінія по екрану
-  } }; });
+  LIVE.ws_tabL = { every: 4, draw(c, fw, fh, t) {
+    const { page, sel, since } = pager(t, SKINS.length);
+    SKINS[page].forEach((look, q) => { const [x, y, w, h] = cell(fw, fh, q), cv = mini(look), [k, fl] = pop(since, q), s = Math.min(w / SW, h / SH) * 1.25 * k, bob = q === sel ? Math.sin(t * 6) * .4 : 0;
+      c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
+      if (s > .01) c.drawImage(cv, 0, 0, SW, SH, x + w / 2 - SW * s / 2, y + h * .98 - SH * s * .93 + bob, SW * s, SH * s);
+      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(160,240,255,${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); } c.restore(); });
+    chrome(c, fw, fh, t, TAB[-1], sel, page, SKINS.length);
+  } };
+  // предмети (actors/nexi/sprite.js → renderItem): кадр предмета оновлюється 10 разів за секунду (блискавки, полум'я, відблиски)
+  const ITEMS = [['hammer', 'blade', 'gauntlet', 'excalibur', 'staff', 'trident'], ['wand', 'balloon', 'torch', 'magnet', 'shield', 'sword']], ICV = {};
+  /** Межі намальованого на полотні (щоб предмет будь-якої форми заповнив картку). */
+  const bbox = cv => { const W = cv.width, H = cv.height, d = cv.getContext('2d').getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); x1 = Math.max(x1, x + 1); y0 = Math.min(y0, y); y1 = Math.max(y1, y + 1); } return x1 > x0 ? [x0, y0, x1, y1] : [0, 0, W, H]; };
+  const itemCv = (id, t) => { const f = Math.floor(t * 10), o = ICV[id] || (ICV[id] = { cv: document.createElement('canvas'), f: -1 }); if (o.f !== f) { o.f = f; renderItem(id, t, o.cv); if (!o.bb) o.bb = bbox(o.cv); } return o; };
+  NX.arc.wsItems = ITEMS;
+  LIVE.ws_tabR = { every: 4, draw(c, fw, fh, t) {
+    const { page, sel, since } = pager(t, ITEMS.length, 3);
+    ITEMS[page].forEach((id, q) => { const [x, y, w, h] = cell(fw, fh, q), o = itemCv(id, t), [bx0, by0, bx1, by1] = o.bb, on = q === sel, bob = on ? Math.sin(t * 5) * .5 - .4 : Math.sin(t * 2 + q) * .25, [k, fl] = pop(since, q);
+      const s = Math.min(w * .8 / (bx1 - bx0), h * .76 / (by1 - by0), h * .76 / 22) * (on ? 1.08 : 1) * k;
+      c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.imageSmoothingEnabled = false;
+      if (s > .01) c.drawImage(o.cv, x + w / 2 - (bx0 + bx1) / 2 * s, y + h * .88 - by1 * s + bob, o.cv.width * s, o.cv.height * s);
+      if (fl > 0) { c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,170,240,${fl * .5})`; rr(c, x, y, w, h, .8); c.fill(); c.globalCompositeOperation = 'source-over'; }
+      if (on) { const gx = x + w / 2 + Math.sin(t * 3) * w * .2, gy = y + h * (.3 + .2 * Math.sin(t * 2.2)); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(255,240,255,.8)'; c.fillRect(gx - .2, gy - 1, .4, 2); c.fillRect(gx - 1, gy - .2, 2, .4); }   // іскра на вибраному
+      c.restore(); });
+    chrome(c, fw, fh, t, TAB[1], sel, page, ITEMS.length);
+  } };
 })();

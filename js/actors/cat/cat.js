@@ -38,7 +38,8 @@ NX.cat = {
     if (!from) y = Math.max(y, this.FLOOR);
     this.mode = 'walk'; this.run = !!run; this.then = done;
     if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done); }
-    else { this.target = { x, y }; this.afterWalk = null; }
+    else { [x, y] = NX.room.freeAt(x, y, 'cat'); this.target = { x, y }; this.afterWalk = null; }
+    this.path = NX.room.route([this.x, this.y], [this.target.x, this.target.y], 'cat');                // в обхід дивану й крісла (world/room.js)
   },
   /** Стрибок у точку (висота дуги 26, тривалість .5 с). */
   startJump(x, y, done) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5 }; this.then = done; },
@@ -54,9 +55,11 @@ NX.cat = {
     this.ft += dt; const sp = this.mode === 'walk' ? (this.run ? 80 : 34) : 0;
     if (this.ft > (this.run ? .08 : .14)) { this.ft = 0; this.frame++; }
     if (this.mode === 'walk') {
-      const dx = this.target.x - this.x, dy = this.target.y - this.y, d = Math.hypot(dx, dy);
+      const w = this.path && this.path.length > 1 ? { x: this.path[0][0], y: this.path[0][1] } : this.target;   // спершу кути обходу
+      const dx = w.x - this.x, dy = w.y - this.y, d = Math.hypot(dx, dy);
       this.pose = this.run ? 'run' : 'walk';
-      if (d < Math.max(2, sp * dt)) { this.x = this.target.x; this.y = this.target.y; this.ground = this.y; if (this.afterWalk) { const f = this.afterWalk; this.afterWalk = null; f(); } else { this.mode = 'act'; this.pose = 'sit'; this.timer = 0; } }
+      if (w !== this.target && d < Math.max(2, sp * dt)) { this.x = w.x; this.y = w.y; this.ground = this.y; this.path.shift(); }
+      else if (d < Math.max(2, sp * dt)) { this.x = this.target.x; this.y = this.target.y; this.ground = this.y; if (this.afterWalk) { const f = this.afterWalk; this.afterWalk = null; f(); } else { this.mode = 'act'; this.pose = 'sit'; this.timer = 0; } }
       else { this.x += dx / d * sp * dt; this.y += dy / d * sp * dt; this.ground = this.y; if (Math.abs(dx) > .5) this.dir = Math.sign(dx); }
     } else if (this.mode === 'jump') {
       const j = this.jump; j.t += dt / j.dur; const k = Math.min(1, j.t);
