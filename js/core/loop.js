@@ -79,18 +79,35 @@ NX.loop = {
     // всього полотна при кожному drawImage). Немає кого віддзеркалювати — нічого не робимо.
     const RL = list.filter(l => l && l.refl && l.y > NX.cfg.ROOM_H), SQ = .55, CW = this.canvas.width, CH = this.canvas.height;
     if (RL.length) {
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (const l of RL) { const b = l.box; if (!b) { x0 = y0 = -Infinity; x1 = y1 = Infinity; break; }        // без box — увесь екран
-        const yF = l.y + .5, m0 = (1 + SQ) * yF - SQ * b[3], m1 = (1 + SQ) * yF - SQ * b[1]; x0 = Math.min(x0, b[0]); x1 = Math.max(x1, b[2]); y0 = Math.min(y0, m0); y1 = Math.max(y1, m1); }
-      const rx = Math.max(0, Math.floor((x0 - NX.cam.x) * k) - 2), ry = Math.max(0, Math.floor((y0 + NX.cam.top) * k) - 2);
-      const rw = Math.min(CW, Math.ceil((x1 - NX.cam.x) * k) + 2) - rx, rh = Math.min(CH, Math.ceil((y1 + NX.cam.top) * k) + 2) - ry;
-      if (rw > 0 && rh > 0) {
+      // ГРУПИ: кожне віддзеркалення — у своєму прямокутнику (px екрана, з запасом 2 px); ті, що перетинаються, — разом. Досі
+      // бралась спільна рамка всіх: Nexi на одному краю екрана й кіт на другому — полотно на всю ширину (~250 тис. px тричі
+      // щокадру: очищення, маска, накладання). Порожнеча між ними прозора й нічого не додавала, тож результат той самий
+      const px = (x0, y0, x1, y1) => { const rx = Math.floor((x0 - NX.cam.x) * k) - 2, ry = Math.floor((y0 + NX.cam.top) * k) - 2;
+        return { rx, ry, ex: Math.ceil((x1 - NX.cam.x) * k) + 2, ey: Math.ceil((y1 + NX.cam.top) * k) + 2 }; };
+      let G = [];
+      for (const l of RL) { const b = l.box; if (!b) { G = [{ L: RL, rx: -Infinity, ry: -Infinity, ex: Infinity, ey: Infinity }]; break; }        // без box — увесь екран
+        const yF = l.y + .5; G.push(Object.assign({ L: [l] }, px(b[0], (1 + SQ) * yF - SQ * b[3], b[2], (1 + SQ) * yF - SQ * b[1]))); }
+      for (let merged = true; merged;) { merged = false;                                                                     // перетинаються — одна група
+        for (let i = 0; i < G.length && !merged; i++) for (let j = i + 1; j < G.length && !merged; j++) { const a = G[i], b = G[j];
+          if (a.rx < b.ex && b.rx < a.ex && a.ry < b.ey && b.ry < a.ey) { a.L = RL.filter(l => a.L.includes(l) || b.L.includes(l)); a.rx = Math.min(a.rx, b.rx); a.ry = Math.min(a.ry, b.ry); a.ex = Math.max(a.ex, b.ex); a.ey = Math.max(a.ey, b.ey); G.splice(j, 1); merged = true; } } }
+      const clip = g => { g.rx = Math.max(0, g.rx); g.ry = Math.max(0, g.ry); g.rw = Math.min(CW, g.ex) - g.rx; g.rh = Math.min(CH, g.ey) - g.ry; return g; };
+      const U = clip({ rx: Math.min(...G.map(g => g.rx)), ry: Math.min(...G.map(g => g.ry)), ex: Math.max(...G.map(g => g.ex)), ey: Math.max(...G.map(g => g.ey)) });
+      G.forEach(clip); const on = G.filter(g => g.rw > 0 && g.rh > 0);
+      if (U.rw > 0 && U.rh > 0) {                                                                                       // спільна рамка зачіпає екран — як і досі
         const R = this.refl || (this.refl = document.createElement('canvas')), up = v => Math.ceil(v / 64) * 64;   // полотно росте шматками по 64 px
-        if (R.width < rw || R.height < rh || R.width * R.height > 4 * up(rw) * up(rh)) { R.width = Math.max(64, up(rw)); R.height = Math.max(64, up(rh)); }
-        const rc = R.getContext('2d'); rc.isRefl = true; rc.setTransform(1, 0, 0, 1, 0, 0); rc.clearRect(0, 0, rw, rh); rc.setTransform(k, 0, 0, k, -NX.cam.x * k - rx, NX.cam.top * k - ry); rc.imageSmoothingEnabled = false;
-        RL.forEach(l => { rc.save(); rc.translate(0, (1 + SQ) * (l.y + .5)); rc.scale(1, -SQ); l.draw(rc, t); rc.restore(); });
-        rc.setTransform(1, 0, 0, 1, 0, 0); rc.globalCompositeOperation = 'destination-in'; const fy = (NX.cfg.ROOM_H + NX.cam.top) * k - ry, fg = rc.createLinearGradient(0, fy, 0, CH - ry); fg.addColorStop(0, 'rgba(0,0,0,.9)'); fg.addColorStop(1, 'rgba(0,0,0,0)'); rc.fillStyle = fg; rc.fillRect(0, 0, rw, rh); rc.globalCompositeOperation = 'source-over';
-        c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .22; c.drawImage(R, 0, 0, rw, rh, rx, ry, rw, rh); c.restore();
+        const mw = Math.max(1, ...on.map(g => g.rw)), mh = Math.max(1, ...on.map(g => g.rh));
+        if (R.width < mw || R.height < mh || R.width * R.height > 4 * up(mw) * up(mh)) { R.width = Math.max(64, up(mw)); R.height = Math.max(64, up(mh)); }
+        const rc = R.getContext('2d'); rc.isRefl = true;
+        const draw = g => { rc.setTransform(k, 0, 0, k, -NX.cam.x * k - g.rx, NX.cam.top * k - g.ry); rc.imageSmoothingEnabled = false;
+          g.L.forEach(l => { rc.save(); rc.translate(0, (1 + SQ) * (l.y + .5)); rc.scale(1, -SQ); l.draw(rc, t); rc.restore(); }); };
+        for (const g of G) {
+          // група за екраном: її шари однаково малюються (як і досі, коли спільна рамка зачіпала екран) — у них бувають побічні
+          // дії (кубик дощу над Nexi, його box для чату); на екран це не потрапляє
+          if (!on.includes(g)) { draw(g); continue; }
+          const { rx, ry, rw, rh } = g; rc.setTransform(1, 0, 0, 1, 0, 0); rc.clearRect(0, 0, rw, rh); draw(g);
+          rc.setTransform(1, 0, 0, 1, 0, 0); rc.globalCompositeOperation = 'destination-in'; const fy = (NX.cfg.ROOM_H + NX.cam.top) * k - ry, fg = rc.createLinearGradient(0, fy, 0, CH - ry); fg.addColorStop(0, 'rgba(0,0,0,.9)'); fg.addColorStop(1, 'rgba(0,0,0,0)'); rc.fillStyle = fg; rc.fillRect(0, 0, rw, rh); rc.globalCompositeOperation = 'source-over';
+          c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .22; c.drawImage(R, 0, 0, rw, rh, rx, ry, rw, rh); c.restore();
+        }
       }
     }
     list.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(c, t));
