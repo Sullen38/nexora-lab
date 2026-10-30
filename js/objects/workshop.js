@@ -145,8 +145,12 @@
    *  розходяться, сніг; між лагами — мікро-глітч на мить), пікселі даних летять з лінзи вгору. */
   function drawPane(c, t, p, n) {
     if (!p.cv) paneInit(p);
-    const lag = lagOf(p, t, n);
-    if (!lag && ((NX.loop.frames + n) % 3 === 0 || !p.ok)) { panePaint(p, t); p.ok = 1; }          // у лагу кадр «зависає»
+    const lag = lagOf(p, t, n), due = !lag && ((NX.loop.frames + n) % 3 === 0 || !p.ok);           // у лагу кадр «зависає»
+    // поза екраном (телефон бачить ~п'яту частину кімнати) — не перемальовується й не кладеться, лише пам'ятає, на який момент
+    // мала б (p.due); повернулась — перемальовується на той самий момент (і «тіні» лагу з нього): кадр той самий, що без пропуску
+    if (p.r[0] + p.r[2] + 20 < NX.cam.x || p.r[0] - 20 > NX.cam.x + NX.cam.viewW) { if (due) { p.due = t; p.ok = p.dirty = 1; } return; }
+    if (p.dirty) { panePaint(p, p.due); p.dirty = 0; if (lag) ghosts(p); }
+    if (due) { panePaint(p, p.due = t); p.ok = 1; }
     const [x, y, w, h] = p.r, L = NX.px3d.proj(zone().anchor(p.lens)), K = p.k, KW = K.width, KH = K.height;
     const st = Math.floor(t * 14), rnd = s => NX.art.hash(st * 7 + s, n * 13 + 5);                   // «ривки» лагу — 14 разів за секунду
     const micro = !lag && NX.art.hash(Math.floor(t * 8), n + 31) > .982;                                // мікро-глітч на мить

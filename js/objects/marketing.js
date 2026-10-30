@@ -69,10 +69,14 @@
       // ГОЛО-МОНІТОРИ над проєкторами
       PANES.forEach((p, n) => {
         const lens = proj(z.anchor(sd2(p)) || z.W(p.X, 276, 26)), sd = p.side, cx = lens[0] + sd * 5, by = lens[1] - 8, Wd = 56, Hd = 39;   // панель трохи назовні від лінзи
-        if ((NX.loop.frames + n) % 3 === 0 || !p.ok) { paintPane(p, t); p.ok = 1; }
+        const due = (NX.loop.frames + n) % 3 === 0 || !p.ok, fl = .82 + .18 * Math.sin(t * 19 + n) * Math.sin(t * 5.3), gl = Math.sin(t * 1.3 + n * 2) > .985 ? (Math.random() - .5) * 3 : 0;
+        // поза екраном (телефон) — не перемальовується й не кладеться, лише пам'ятає, на який момент мав би (p.due); повернувся —
+        // той самий кадр, що без пропуску (кубик глітчу gl кидається й тут — життя кімнати не розходиться)
+        if (cx + Wd / 2 + 12 < NX.cam.x || cx - Wd / 2 - 12 > NX.cam.x + NX.cam.viewW) { if (due) { p.due = t; p.ok = p.dirty = 1; } return; }
+        if (p.dirty) { paintPane(p, p.due); p.dirty = 0; }
+        if (due) { paintPane(p, p.due = t); p.ok = 1; }
         const xo = cx - Wd / 2, xi = cx + Wd / 2, dyI = 2.2;                       // внутрішній край (до крісла) — далі й нижчий
         const q = sd < 0 ? [[xo, by - Hd], [xi, by - Hd + dyI], [xi, by - dyI * .6], [xo, by]] : [[xo, by - Hd + dyI], [xi, by - Hd], [xi, by], [xo, by - dyI * .6]];
-        const fl = .82 + .18 * Math.sin(t * 19 + n) * Math.sin(t * 5.3), gl = Math.sin(t * 1.3 + n * 2) > .985 ? (Math.random() - .5) * 3 : 0;
         c.save(); c.globalCompositeOperation = 'lighter';                                                      // конус світла з лінзи
         const g = c.createLinearGradient(0, lens[1], 0, by); g.addColorStop(0, 'rgba(150,240,255,.45)'); g.addColorStop(1, 'rgba(90,190,255,.08)'); c.fillStyle = g;
         c.beginPath(); c.moveTo(lens[0] - 4, lens[1]); c.lineTo(lens[0] + 4, lens[1]); c.lineTo(q[2][0], q[2][1]); c.lineTo(q[3][0], q[3][1]); c.closePath(); c.fill();
