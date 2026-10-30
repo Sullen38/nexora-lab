@@ -1,18 +1,18 @@
 /* ============================================================================
  * objects/arc_scene.js — СТІНИ Й ПІДЛОГА КРИЛ «ПО ДУЗІ» (+ зони з розкладки) У ПІКСЕЛЬНОМУ 3D
  * ----------------------------------------------------------------------------
- * Чиста основа (власник, 29.10): стіни й підлога обох крил; зони, полиці, антресоль, підвіси й оздоби з'являються,
+ * Стіни й підлога обох крил; зони й речі біля стіни з'являються,
  * коли їх додає розкладка генератора (objects/arc_layout.js <- tools/wingbox/gen_room.py) — по черзі, див. docs/HANDOFF.md.
  * Рушій — core/px3d.js (z-буфер: хто кого закриває — для кожного пікселя), матеріали — objects/arc_kit.js, малюнки граней
- * за id предмета — arc_paint.js, живі екрани — arc_live.js. Форми (лампи, крісла) й рослини (NX.arc.shape / NX.arc.plant) —
- * необов'язкові: їх зараз немає (старі — в історії git, коміт a941612). Диван, передня підлога кімнати, вікно й рами — свої.
+ * за id предмета — arc_paint.js, живі екрани — arc_live.js, форми частин (NX.arc.shape) — файли зон. Диван, передня підлога
+ * кімнати, вікно й рами — свої. Антресоль, підвіси, вазони, гірлянди, постери й 3D-маніпулятор 28.10 — в історії git (a431f03).
  * Кожне крило складається з растрів (шарів), що малюються по черзі (позаду -> попереду):
  *   1. СТІНА Й ПІДЛОГА (2 px/од.) — дуга від відкосу до глядача: ліворуч цегла (домашнє, теплі відсвіти), праворуч
  *      металеві панелі (технологічне); плінтус з неоном, поручень; глянцева підлога з плиткою; екран на стіні (hub), якщо є.
  *      Стіна — стовпчиками, підлога — рядками (швидко); світло — карта з ламп і екранів розкладки (lightsOf);
- *   2. БІЛЯ СТІНИ (3 px/од.) — колони, антресоль, настінні полиці, підвіси, оздоби (DECOR) — лише якщо є в розкладці;
+ *   2. БІЛЯ СТІНИ (3 px/од.) — колони й предмети шару 'up' (полиці) — лише якщо є в розкладці;
  *   3–5. ЗОНИ (3 px/од.) — дальня, середня, найближча; у кожної — свій z-буфер, контур і віддзеркалення в підлозі
- *      та на глянцевих стільницях; маніпулятор майстерні — у шарі майстерні.
+ *      та на глянцевих стільницях.
  * Збірка — генераторами дрібними шматками (стовпчики, рядки, грані; yield — частка 0..1): при завантаженні її веде js/main.js
  * під вітальною заставкою (NX.arc.scene.bootG — і злиття, і передня підлога-дзеркало; що зараз будується — NX.arc.step для
  * підпису), потім (зміна мови) — по ~30 мс за кадр; готові шари зливаються ОДИН раз в одне полотно під масштаб екрана
@@ -26,7 +26,7 @@
  * і живі екрани зон — *_paint.js (майстерня ws_, маркетинг mk_, аналітика an_, інструменти tl_).
  * ========================================================================== */
 (() => {
-  const X = NX.px3d, A = NX.arc.kit, K = NX.kit, F = NX.furn, PZ = NX.persp, { col, pal, ramp, mixc, dim, add, rgb } = X;
+  const X = NX.px3d, A = NX.arc.kit, PZ = NX.persp, { col, pal, ramp, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
   const R_HERO = { workshop: 4, marketing: 4, analytics: 4, tools: 4 };   // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
@@ -42,10 +42,6 @@
     return { m: Z.m, box: pick('zoneBox'), W, S: (Xi, Yi, v) => X.proj(W(Xi, Yi, v)), anchor: k => anch[k], ax: Z.ax, az: Z.az, Yf: Z.Yf, Xref: Z.Xref, item };
   };
   const MID = 774, SEAM = 10;                             // середина кімнати: тут сходяться крила (підлоги — плавно на MID ± SEAM)
-  if (window.ARC_PROF) {                                                              // заміри збірки (лише для відлагодження: window.ARC_PROF = 1)
-    const PR = NX.arc.prof = {}, wrap = (o, k, nm) => { const f = o[k]; o[k] = function () { const a = performance.now(), r = f.apply(this, arguments); PR[nm] = (PR[nm] || 0) + performance.now() - a; return r; }; };
-    wrap(X, 'face', 'face'); wrap(X, 'sprite', 'sprite'); wrap(X, 'outline', 'outline'); wrap(X, 'reflect', 'reflect'); wrap(A, 'texture', 'texture'); wrap(NX.arc, 'plant', 'plant'); wrap(X, 'canvas', 'canvas'); wrap(X, 'tube', 'tube');
-  }
   // ---------- дрібниці ----------
   function catmull(pts, n = 6) {
     if (!pts || pts.length < 2) return (pts || []).slice();
@@ -59,7 +55,6 @@
   function ext(B) {
     let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const acc = q => { const p = X.proj(q); if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; };
     A.faces(B).forEach(F => F.poly.forEach(acc));
-    if (B.plant) { const { P } = A.basis(B), c = P(0, B.dep / 2, B.yt), k = s(c[2]), X0 = X.proj(c); x0 = Math.min(x0, X0[0] - B.fw * k / 2); x1 = Math.max(x1, X0[0] + B.fw * k / 2); if (B.hangs) y1 = Math.max(y1, X0[1] + B.fh * k); else y0 = Math.min(y0, X0[1] - B.fh * k); }
     if (B.glow) { const pad = (B.gr || 26) * .5; x0 -= pad; x1 += pad; y0 -= pad; y1 += pad; }
     return [x0, y0, x1, y1];
   }
@@ -74,8 +69,6 @@
     if (st === 'frame' || st === 'board') o.neon = acc || (st === 'board' ? '#3be8ff' : '#ff4fd8');
     if (st === 'shelf' && side === 'left') { o.pal = PL.WOOD; o.q = .6; }
     if (st === 'neon') { o.neon = '#ff4fd8'; o.nIn = 1.2; o.nW = 2.2; }
-    if (st === 'pot' && NX.arc.potOf) { const pt = NX.arc.potOf(B); o.pal = pt.pal; o.q = .58; o.topPal = PL.TERRA; }
-    if (st === 'gold' && B.plant) o.topPal = PL.TERRA;
     if (B.band) o.bandC = st === 'fig' ? 'lil' : 'cyan';
     if (st === 'col') o.pal = side === 'left' ? PL.MET : PL.STEEL;
     if (st === 'chair') o.q = .44;
@@ -86,18 +79,6 @@
   function supOf(B, byId, reg) {
     const P = B.on && byId[B.on]; if (P && (P.st === 'desk' || P.st === 'bench') && P._id) return { y: P.yt, on: P._id, h: 16, k: .9 };
     return { y: FL, on: 0 };
-  }
-  /** Вазон: теракота / кераміка / navy з неоновим обідком / хром / золото; ґрунт зверху. */
-  function potShader(B, F) {
-    const pt = NX.arc.potOf(B), base = A.shader('pot', F, B, { pal: pt.pal, q: .56 }), rim = col(pt.rim), band = pt.band ? col(pt.band) : 0, H = F.fh, SOIL = pal(['#120806', '#1e0e08', '#2a1408', '#3a1c0c', '#4a2410']);
-    if (F.k === 'top') return (u, v, i, j) => { const d = (u - .5) ** 2 + (v - .5) ** 2; return d > .2 ? rim : d > .16 ? dim(rim, .55) : ramp(SOIL, .25 + hash(i, j) * .6 - d * 1.2, i, j); };
-    return (u, v, i, j, t) => {
-      const y = v * H; if (y < 1.2) { if (pt.neon) X.SH.fl |= X.F_EMIT; return y < .5 ? X.add(rim, col('#ffffff'), .3) : rim; }
-      if (y < 2) return dim(base(u, v, i, j, t), .55);
-      if (band && Math.abs(y - H * .34) < .55) { if (pt.neon) X.SH.fl |= X.F_EMIT; return band; }
-      if (y > H - 1.2) return dim(base(u, v, i, j, t), .6);
-      return base(u, v, i, j, t);
-    };
   }
   /** Відкладене малювання: грані й спрайти шару збираються, а малюються ВІД БЛИЖЧИХ ДО ДАЛЬШИХ (run) — тоді
    *  z-буфер відкидає закриті пікселі ще до матеріалу, і збірка в рази швидша (матеріал — найдорожче). */
@@ -110,7 +91,7 @@
   const note = (k, x) => { NX.arc.step = { k, x }; };
   /** Щільність текстури грані: тексель ≈ піксель растра (з урахуванням глибини). */
   const TSof = (L, Fc) => clamp(Math.round(L.R * s(A.centre(Fc)[2]) * 2) / 2, 2, 6);
-  /** Набір для форм (NX.arc.shape — зараз немає; старі — коміт a941612, objects/arc_shapes.js): частини-об'єми, трубки, диски
+  /** Набір для форм (NX.arc.shape[id | 'st:стиль'] — у файлах зон): частини-об'єми, трубки, диски, грані-многокутники
    *  в координатах предмета B; усе — один предмет (id). */
   function makeG(L, B, id, side) {
     const { P } = A.basis(B), opt = { id, fid: id };
@@ -127,7 +108,6 @@
       face(poly, O, Au, Bv, shade, n) { cmd(L, poly, () => X.face(L, poly, O, Au, Bv, shade, { id, fid: id, n })); },
     };
   }
-  const POTLIKE = B => !!NX.arc.potOf && (B.st === 'pot' || (B.plant && B.st === 'gold'));   // вазони — лише з модулем рослин (зараз його немає)
   /** Предмет розкладки -> у растр L: видимі грані з матеріалами, текстура лиця (оздоби / власний малюнок), рослина;
    *  предмети з формою (NX.arc.shape[id] або ['st:стиль']) — нею. */
   function drawItem(L, B, reg, side, byId) {
@@ -135,31 +115,18 @@
     const SHP = NX.arc.shape || {}, shp = SHP[B.id] || SHP['st:' + B.st];
     if (shp) shp(makeG(L, B, id, side), B);
     else {
-      const o = styleOf(B, side), paint = NX.arc.paint && NX.arc.paint[B.id], Bf = POTLIKE(B) ? Object.assign({}, B, { kb: .78, cyl: 22 }) : B;
-      for (const Fc of A.faces(Bf)) {
+      const o = styleOf(B, side), paint = NX.arc.paint && NX.arc.paint[B.id];
+      for (const Fc of A.faces(B)) {
         if (!A.visible(Fc)) continue;
         if (B.notop && Fc.k === 'top') continue;
-        let shade;
-        if (POTLIKE(B)) shade = potShader(Bf, Fc);
-        else if (B.plant && B.st === 'stand' && Fc.k === 'top') shade = A.shader(B.st, Fc, B, o);
-        else {
-          let tex = null;
-          if (Fc.k === 'front' && (paint || (B.deco && B.deco.length))) tex = A.texture(B, Fc, TSof(L, Fc), paint);
-          else if (paint && paint.sides && paint.sides[Fc.k]) tex = A.texture(B, Fc, TSof(L, Fc), paint.sides[Fc.k]);
-          shade = A.shader(B.st, Fc, B, Object.assign({}, o, { tex }));
-        }
+        let tex = null;
+        if (Fc.k === 'front' && (paint || (B.deco && B.deco.length))) tex = A.texture(B, Fc, TSof(L, Fc), paint);
+        else if (paint && paint.sides && paint.sides[Fc.k]) tex = A.texture(B, Fc, TSof(L, Fc), paint.sides[Fc.k]);
+        const shade = A.shader(B.st, Fc, B, Object.assign({}, o, { tex }));
         let fid = id;                                                                                            // живий екран: лицьова грань — свій номер (маска видимих пікселів)
         if (Fc.k === 'front' && NX.arc.LIVE && NX.arc.LIVE[B.id]) { fid = reg.add({ live: B.id }); (L.live || (L.live = [])).push({ id: B.id, B, Fc, fid }); }
         cmd(L, Fc.poly, () => X.face(L, Fc.poly, Fc.O, Fc.A, Fc.B, shade, { id, fid, n: Fc.n, fl: 0 }));
       }
-    }
-    if (B.plant && NX.arc.plant) {
-      const big = !B.on && B.yb >= FL - 1 ? 1.3 : B.on && byId[B.on] && byId[B.on].st === 'stand' ? 1.15 : 1, fw = B.fw * big, fh = B.fh * big;
-      const sp = NX.arc.plant(Object.assign({}, B, { fw, fh })), { P } = A.basis(B), top = P(0, B.dep / 2, B.yt), zf = top[2] - B.dep / 2 * .9;
-      const pid = reg.add({ B, plant: 1, out: col('#04140f') });
-      if (sp.hang) cmd(L, [[0, 0, zf - .6]], () => X.sprite(L, sp.img, top[0], B.yt - 2.5, zf - .6, fw, fh, { id: pid, fid: pid, hang: true }));
-      else cmd(L, [[0, 0, zf - .6]], () => X.sprite(L, sp.img, top[0], B.yt + 1.2, zf - .6, fw, fh, { id: pid, fid: pid }));
-      reg.list[pid].sup = { y: FL, on: 0 };
     }
     reg.list[id].sup = supOf(B, byId, reg);
   }
@@ -295,149 +262,34 @@
       else if (/_booth$|_screen$|_scr[LR]$|_tiles$|ws_back|tl_board|pt_back/.test(B.id)) { const p = ctr(B); add(p, 130, .2, B.id === 'ws_back' ? '#ff4fd8' : B.id === 'pt_back' ? '#9a4aff' : '#3b8aff'); add([p[0], B.yb - 30, p[2]], 110, .14, ACC[B.zone] || '#ff4fd8'); }
       else if (B.id === 'ws_pad') add(ctr(B), 120, .24, '#ff6ae0');                                             // пад капсули — рожеве світло на стіну й підлогу
     });
-    (Ls.hang || []).forEach(h => { if (h.kind !== 'vine') add([h.x, (h.from != null ? h.from : 56) + h.len + 8, h.z], 70, .3, h.kind === 'red' ? '#ff4a3a' : '#ffb24a'); });
     if (Ls.hub) add([Ls.hub.x, (Ls.hub.y0 + Ls.hub.y1) / 2, Ls.hub.z - 10], 170, .26, '#3b8aff');
     add([side === 'left' ? 430 : 1118, 120, 180], 210, .16, '#9a4aff');                                       // вікно: фіолетове світло міста
     return out;
   }
 
-  // ---------- БІЛЯ СТІНИ: колони, антресоль, полиці з вазонами, підвіси ----------
+  // ---------- БІЛЯ СТІНИ: колони, полиці (предмети шару 'up') ----------
   function* backLayerG(Ls, side, zclip) {
     const UP = (Ls.items || []).filter(B => B.layer === 'up'), byId = {}; UP.forEach(B => byId[B.id] = B);
     const es = [...UP.map(ext), ...(Ls.cols || []).map(ext)];
-    if (Ls.mezz) Ls.mezz.edge.forEach(p => { const a = X.proj([p[0], Ls.mezz.yt - 30, p[1]]), b = X.proj([p[0], Ls.mezz.yb + 4, p[1]]); es.push([a[0] - 30, a[1] - 40, a[0] + 30, b[1] + 40]); });
-    (Ls.hang || []).forEach(h => { const y0 = h.from != null ? h.from : (Ls.mezz ? Ls.mezz.yb : 56), a = X.proj([h.x, y0, h.z]), b = X.proj([h.x, y0 + h.len + 30, h.z]); es.push([a[0] - 20, a[1], a[0] + 20, b[1]]); });
-    const DEC = decorOf(Ls, side); DEC.forEach(d => es.push(d.ext));
     if (!es.length) return null;                                                       // біля стіни нічого немає (чиста основа) — шару немає
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + 60)], L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_ZONE), reg = Reg();
-    DEC.forEach(d => d.draw(L, reg, byId));
     (Ls.cols || []).forEach(B => drawItem(L, Object.assign({}, B, { zone: side === 'left' ? 'ai' : 'tools' }), reg, side, byId));
-    if (Ls.mezz) mezz(L, Ls, reg);
     UP.forEach(B => drawItem(L, B, reg, side, byId));
-    (Ls.hang || []).forEach(h => hang(L, Ls, h, reg));
     yield .1;
     yield* sub(runG(L), .1, .6);
     yield* sub(X.outlineG(L, a => (reg.get(a) || {}).out, 2), .6, .8);
     yield* sub(X.reflectG(L, a => reg.get(a) && reg.get(a).sup, { a: .5, h: 60, streak: 1 }), .8, 1);
     return { L, reg };
   }
-  // ---------- ОЗДОБИ СТІНИ (лише в 3D, пласкі — на самій стіні): гірлянда, постери в рамках ----------
-  /** Точка стіни за відстанню s від відкосу (уздовж дуги) і нормаль у кімнату; inset — на скільки від стіни. */
-  function wallAt(Ls, s0, inset = 0) {
-    const W = catmull(Ls.wall, 4); let acc = 0;
-    for (let k = 0; k + 1 < W.length; k++) {
-      const p = W[k], q = W[k + 1], len = Math.hypot(q[0] - p[0], q[1] - p[1]);
-      if (s0 <= acc + len || k + 2 === W.length) { const u = Math.max(0, Math.min(1, (s0 - acc) / (len || 1))), x = p[0] + (q[0] - p[0]) * u, z = p[1] + (q[1] - p[1]) * u;
-        let n = [-(q[1] - p[1]) / len, (q[0] - p[0]) / len]; if (n[0] * (774 - x) + n[1] * (60 - z) < 0) n = [-n[0], -n[1]]; return { x: x + n[0] * inset, z: z + n[1] * inset, n }; }
-      acc += len;
-    }
-  }
-  /** Оздоби крила (пласкі, на самій стіні). Чиста основа (29.10) — жодних; приклади, як було до неї:
-   *    { k: 'garland', s0: 8, s1: 452, top: 9, sag: 16, n: 40 }        — гірлянда вздовж стіни (s — відстань від відкосу уздовж дуги)
-   *    { k: 'poster', s: 36, w: 44, y0: -22, y1: 50, p: 'poster_nexora' } — постер у рамці (малюнок — NX.arc.paint[p], arc_paint.js) */
-  const DECOR = { left: [], right: [] };
-  function decorOf(Ls, side) {
-    return (DECOR[side] || []).map(d => {
-      if (d.k === 'poster') {
-        const w = wallAt(Ls, d.s, 1.2), a = Math.atan2(-w.n[0], -w.n[1]) * 180 / Math.PI, B = { id: d.p, x: w.x, z: w.z, turn: a, w: d.w, dep: 1.2, yt: d.y0, yb: d.y1, st: 'shelf', layer: 'up' };
-        return { ext: ext(B), draw: (L, reg, byId) => drawItem(L, B, reg, side, byId) };
-      }
-      // top — гірлянда йде під верхнім краєм видимої стіни (ближче до глядача стіна видна нижче), провисає між гачками
-      const pts = []; for (let k = 0; k <= d.n; k++) { const u = k / d.n, w = wallAt(Ls, d.s0 + (d.s1 - d.s0) * u, 3), kk = s(w.z), sg = (u * 8) % 1;
-        const y = d.top != null ? 220 + (d.top - 220) / kk + 6 + d.sag * 4 * sg * (1 - sg) : d.y0 + d.sag * 4 * u * (1 - u); pts.push([w.x, y, w.z]); }
-      const e = pts.map(p => X.proj(p)), ex = [Math.min(...e.map(q => q[0])) - 4, Math.min(...e.map(q => q[1])) - 4, Math.max(...e.map(q => q[0])) + 4, Math.max(...e.map(q => q[1])) + 6];
-      const COLS = d.cool ? ['#3be8ff', '#9af6ff', '#ff4fd8'] : ['#ffd27a', '#ff9af0', '#ffb24a', '#9af6ff', '#ffe27a'];
-      return { ext: ex, draw: (L, reg) => {
-        const id = reg.add({ garland: 1, sup: { y: FL, on: 0 }, out: col('#1a0a14') });
-        for (let k = 0; k + 1 < pts.length; k++) X.tube(L, [pts[k][0], pts[k][1] - 1.4, pts[k][2]], [pts[k + 1][0], pts[k + 1][1] - 1.4, pts[k + 1][2]], .55, () => col('#1a1028'), { id, fid: id });
-        pts.forEach((p, k) => { const c0 = col(COLS[k % COLS.length]); X.disc(L, [p[0], p[1] + 1.2, p[2]], 2.1, (u, v) => { X.SH.fl |= X.F_EMIT; return (u - .4) ** 2 + (v - .38) ** 2 < .05 ? col('#ffffff') : c0; }, { id, fid: id }); });
-      } };
-    });
-  }
-  /** Антресоль: лицьова грань (сегменти дуги), спід до стіни, торець, поруччя з балясинами. */
-  function mezz(L, Ls, reg) {
-    const M = Ls.mezz, E = catmull(M.edge, 2), C2 = Ls.C, id = reg.add({ mezz: 1, sup: { y: FL, on: 0 }, out: A.C.out }), Rw = Ls.R;
-    const toWall = p => { const dx = p[0] - C2[0], dz = p[1] - C2[1], l = Math.hypot(dx, dz) || 1; return [C2[0] + dx / l * (Rw - 3), C2[1] + dz / l * (Rw - 3)]; };
-    let acc = 0;
-    for (let k = 0; k + 1 < E.length; k++) {
-      const [x0, z0] = E[k], [x1, z1] = E[k + 1], len = Math.hypot(x1 - x0, z1 - z0), dx = (x1 - x0) / len, dz = (z1 - z0) / len, a0 = acc;
-      let n = [-(z1 - z0), 0, (x1 - x0)]; if (n[0] * (C2[0] - x0) + n[2] * (C2[1] - z0) < 0) n = [-n[0], 0, -n[2]];
-      X.face(L, [[x0, M.yt, z0], [x1, M.yt, z1], [x1, M.yb, z1], [x0, M.yb, z0]], [x0, M.yt, z0], [dx, 0, dz], [0, 1, 0], (u, v, i, j) => {
-        const y = M.yt + v, sx = a0 + u, h = M.yb - M.yt;
-        if (v < 1.4) { X.SH.fl |= X.F_EMIT; return v < .7 ? A.NEON.pink[2] : A.NEON.pink[1]; }
-        if (v > h - 1.6) { X.SH.fl |= X.F_EMIT; const ph = ((sx * .07) % 1 + 1) % 1; return ph < .12 ? A.NEON.cyan[2] : A.NEON.cyan[1]; }
-        const pc = Math.floor(sx / 26), lx = sx - pc * 26;
-        if (lx < .8) return ramp(PL.STEEL, .1, i, j);
-        let q = .48 + hash(pc, 3) * .1 + (v < 3 ? .15 : 0) - (v > h - 4 ? .12 : 0);
-        if ((Math.abs(lx - 3) < .6 || Math.abs(lx - 23) < .6) && Math.abs(v - h / 2) < .6) q += .35;        // болти
-        if (lx > 8 && lx < 18 && v > h * .3 && v < h * .7 && ((v * 2 | 0) % 2 === 0)) q -= .2;               // ґратка
-        return ramp(PL.MET, q, i, j);
-      }, { id, fid: id, n });
-      // спід: від краю до стіни (видно знизу)
-      const w0 = toWall([x0, z0]), w1 = toWall([x1, z1]);
-      X.face(L, [[x0, M.yb, z0], [x1, M.yb, z1], [w1[0], M.yb, w1[1]], [w0[0], M.yb, w0[1]]], [x0, M.yb, z0], [dx, 0, dz], [w0[0] - x0, 0, w0[1] - z0], (u, v, i, j) => {
-        const sx = a0 + u, beam = ((sx % 34) + 34) % 34 < 3; let q = .22 + v * .12 + (beam ? .16 : 0);
-        return ramp(PL.STEEL, q, i, j);
-      }, { id, fid: id, n: [0, 1, 0] });
-      // поруччя: стійки й поручні
-      if (k % 3 === 0) X.tube(L, [x0, M.yt, z0], [x0, M.yt - 24, z0], 1.3, (u) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .6, 0, 0), { id, fid: id });
-      X.tube(L, [x0, M.yt - 24, z0], [x1, M.yt - 24, z1], 1.6, u => ramp(PL.CHROME, .35 + (1 - Math.abs(u - .35) * 2) * .62, 0, 0), { id, fid: id });
-      X.tube(L, [x0, M.yt - 12, z0], [x1, M.yt - 12, z1], .9, u => ramp(PL.CHROME, .2 + (1 - Math.abs(u - .4) * 2) * .5, 0, 0), { id, fid: id });
-      acc += len;
-    }
-    // торці (обидва краї плити — до стіни)
-    [E[0], E[E.length - 1]].forEach(e0 => { const w0 = toWall(e0);
-      X.face(L, [[e0[0], M.yt, e0[1]], [w0[0], M.yt, w0[1]], [w0[0], M.yb, w0[1]], [e0[0], M.yb, e0[1]]], [e0[0], M.yt, e0[1]], [w0[0] - e0[0], 0, w0[1] - e0[1]], [0, M.yb - M.yt, 0],
-        (u, v, i, j) => v < .06 ? (X.SH.fl |= X.F_EMIT, A.NEON.pink[1]) : ramp(PL.MET, .38 + (v < .2 ? .1 : 0), i, j), { id, fid: id }); });
-  }
-  /** Підвіси: ліана (з антресолі або від стелі) або лампа на шнурі. */
-  function hang(L, Ls, h, reg) {
-    const y0 = h.from != null ? h.from : (Ls.mezz ? Ls.mezz.yb : 56), y1 = y0 + h.len, id = reg.add({ hang: 1, sup: { y: FL, on: 0 }, out: col('#04140f') });
-    if (h.kind === 'vine') {
-      if (!NX.arc.plant) return;
-      const sp = NX.arc.plant({ id: 'hang_' + Math.round(h.x), x: h.x, z: h.z, hangs: 1, fw: 18, fh: h.len, plant: 1 });
-      X.sprite(L, sp.img, h.x, y0 - 1, h.z, 18, h.len, { id, fid: id, hang: true }); return;
-    }
-    X.tube(L, [h.x, y0, h.z], [h.x, y1, h.z], .7, () => col('#0a0612'), { id, fid: id });
-    const big = h.kind === 'gold' || h.kind === 'red', B = { id: 'lamp_' + Math.round(h.x), x: h.x, z: h.z - (big ? 7 : 4), turn: h.turn || 0, w: big ? 14 : 8, dep: big ? 14 : 8, yt: y1, yb: y1 + (big ? 22 : 12), st: 'lamp' };
-    const lid = reg.add({ lamp: 1, sup: { y: FL, on: 0 }, out: col('#3a0a06') }), SHP = NX.arc.shape || {}, f = h.kind === 'red' ? SHP.hangRed : h.kind === 'gold' ? SHP.hangGold : SHP.hangLamp;
-    if (f) f(makeG(L, B, lid, 'right'), B);
-  }
-
-  /** РОБОТ-МАНІПУЛЯТОР майстерні (розкладка: 4 точки — база на куполі, лікоть, зап'ястя, захват): товсті ланки-трубки зі
-   *  світлою серединою, суглоби-диски з блакитним обідком, захват з двома пальцями й помаранчевим вогником.
-   *  k — товщина під масштаб зони (розкладка: armk = масштаб зони / 1.2; більша майстерня — товща рука). */
-  function arm(L, pts, reg, k = 1) {
-    const id = reg.add({ arm: 1, sup: { y: FL, on: 0 }, out: A.C.out }), o = { id, fid: id }, W = [17 * k, 14 * k, 9.5 * k];
-    // ланка: фіолетова сталь з об'ємом — світла смуга зверху-ліворуч (стеля), темні краї; вузька неонова пунктирна смуга
-    // вздовж і сталеві хомути на кінцях (як на картинці)
-    const link = flip => (u0, v, i, j) => { const u = flip ? 1 - u0 : u0;                                     // u 0 — верхній край ланки
-      if (v < .05 || v > .95) return ramp(PL.CHROME, .2 + (1 - Math.abs(u - .36) * 1.8) * .55, i, j);
-      if (u < .07 || u > .93) return ramp(PL.MET, .1, i, j);
-      if (Math.abs(u - .62) < .05 && ((v * 11) % 1) < .55) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[1]; }
-      return ramp(PL.MET, .3 + (1 - Math.abs(u - .3) * 1.9) * .6 + (Math.abs(u - .24) < .05 ? .16 : 0), i, j); };
-    const upSide = (a, b) => { const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], p = X.cross([b[0] - a[0], b[1] - a[1], b[2] - a[2]], [X.VX - m[0], X.VY - m[1], X.EZ - m[2]]); return p[1] > 0; };   // X.tube: u 0 — бік +p
-    for (let n = 0; n + 1 < pts.length; n++) cmd(L, [pts[n], pts[n + 1]], () => X.tube(L, pts[n], pts[n + 1], W[n] || 4 * k, link(upSide(pts[n], pts[n + 1])), o));
-    // суглоби: сталевий диск з блакитним обідком і темною віссю (як на картинці — «око» в суглобі)
-    pts.forEach((p, n) => { const r = (n === 0 ? 11 : n === pts.length - 1 ? 5.5 : 10.5) * k;
-      cmd(L, [[p[0], p[1], p[2] - 1]], () => X.disc(L, [p[0], p[1], p[2] - 1], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; if (d > .78) { X.SH.fl |= X.F_EMIT; return A.NEON.cyan[d > .9 ? 1 : 2]; }
-        if (n && n < pts.length - 1 && d < .26) return d < .14 ? (X.SH.fl |= X.F_EMIT, A.NEON.cyan[2]) : ramp(PL.DARK, .3, i, j); return ramp(PL.STEEL, .7 - d * .5 + (u < .4 && v < .4 ? .2 : 0), i, j); }, o)); });
-    // захват: два пальці й помаранчевий вогник між ними
-    const e = pts[pts.length - 1], b = pts[pts.length - 2], dx = e[0] - b[0], dy = e[1] - b[1], l = Math.hypot(dx, dy) || 1, nx = dx / l, ny = dy / l;
-    [-1, 1].forEach(sg => { const a = [e[0] + nx * 3 * k - ny * sg * 3.4 * k, e[1] + ny * 3 * k + nx * sg * 3.4 * k, e[2] - 1.5], c2 = [a[0] + nx * 8 * k, a[1] + ny * 8 * k, a[2]]; cmd(L, [a, c2], () => X.tube(L, a, c2, 2.2 * k, (u, v, i, j) => ramp(PL.CHROME, .3 + (1 - Math.abs(u - .4) * 2) * .5, i, j), o)); });
-    const tip = [e[0] + nx * 6 * k, e[1] + ny * 6 * k, e[2] - 2]; cmd(L, [tip], () => X.disc(L, tip, 2 * k, () => { X.SH.fl |= X.F_EMIT; return A.NEON.orange[2]; }, o));
-  }
-
   // ---------- ЗОНИ ----------
   function* zoneLayerG(items, side, zclip, Ls, zn) {
     const byId = {}; items.forEach(B => byId[B.id] = B);
-    const es = items.map(ext); if (Ls && Ls.arm && Ls.armZone === zn) { const pad = 12 * (Ls.armk || 1); Ls.arm.forEach(p => { const q = X.proj(p); es.push([q[0] - pad, q[1] - pad, q[0] + pad, q[1] + pad]); }); }
+    const es = items.map(ext);
     const b0 = union(es, zclip), bb = [b0[0], b0[1], b0[2], Math.min(zclip[3], b0[3] + (b0[3] - b0[1]) * .75)];   // знизу — місце для віддзеркалення в підлозі
     const L = X.Layer(bb[0], bb[1], bb[2], bb[3], R_HERO[zn] || R_ZONE), reg = Reg();
     // спершу основи (те, на чому стоять), потім речі — глибина однаково правильна, а глянцю потрібен номер опори
     const order = items.slice().sort((a, b) => (a.on ? 1 : 0) - (b.on ? 1 : 0));
     for (let k = 0; k < order.length; k++) { drawItem(L, order[k], reg, side, byId); yield .12 * (k + 1) / order.length; }   // предмет за предметом (текстури лиць)
-    if (Ls && Ls.arm && Ls.armZone === zn) arm(L, Ls.arm, reg, Ls.armk || 1);                              // маніпулятор майстерні — у z-буфері зони
     yield* sub(runG(L), .12, .55);
     yield* sub(X.outlineG(L, a => (reg.get(a) || {}).out, 2), .55, .75);
     yield* sub(X.reflectG(L, a => { const r = reg.get(a); return r && r.sup && r.sup.on ? r.sup : null; }, { a: .5, h: 14 }), .75, .85);   // глянець стільниць

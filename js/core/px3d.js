@@ -1,7 +1,7 @@
 /* ============================================================================
  * core/px3d.js — ПІКСЕЛЬНЕ 3D (NX.px3d): справжні об'єми в перспективі кімнати
  * ----------------------------------------------------------------------------
- * Маленький програмний 3D-рушій для крил «по дузі» (гілка rw-arc). Малює ПРЯМО В ПІКСЕЛІ растра
+ * Маленький програмний 3D-рушій для крил «по дузі» і крісел. Малює ПРЯМО В ПІКСЕЛІ растра
  * (без розмиття), з z-буфером — тож хто кого закриває, рахується для кожного пікселя, а не порядком малювання.
  * Перспектива — та сама, що в кімнаті (core/persp.js): точка сходу VP (774, 220), D 520, око (774, 220, −520);
  * світ: x — вправо, y — вниз (підлога 372), z — углиб (0 — площина картинки).
@@ -12,8 +12,6 @@
  *                             — плоский многокутник світу; u, v — уздовж осей A, B від точки O (0..1 на всю грань);
  *                               shade(u, v, i, j, t) -> упакований колір (0 — дірка); o: {id, fid, n — зовнішня нормаль
  *                               (невидимі грані відкидаються), fl — прапорці, bias}
- *   sprite(L, img, x, y, z, w, h, o)
- *                             — плаский спрайт (рослина), що стоїть у точці світу (x, y — низ по центру, z) лицем до глядача
  *   tube(L, a, b, w, shade) / disc(L, c, r, shade) — трубка (ланка, кабель, поручень) і диск (лампочка, суглоб) лицем до ока
  *   outline(L, out, w)        — темний контур по силуету кожного предмета (де сусід — порожньо або інший предмет позаду)
  *   reflect(L, sup, o)        — ВІДДЗЕРКАЛЕННЯ в глянці (o.streak — вертикальні смуги мокрого глянцю): кожен піксель предмета «відбивається» в площині, на якій він
@@ -21,7 +19,7 @@
  *                               одного проходу сцени: точка (x, y, z) -> (x, 2·yп − y, z) на тому ж стовпчику екрана
  *   outlineG / reflectG       — те саме генераторами (пауза кожні 16 рядків, yield — частка 0..1): збірка при завантаженні
  *                               дрібними шматками, щоб вітальна заставка не «замерзала» (js/main.js); drain(g) — прогнати до кінця
- *   canvas(L) / mask(L, fid)  — готове полотно растра / маска видимих пікселів грані (живі екрани)
+ *   canvas(L)                 — готове полотно растра
  *   col(hex) / rgb(r,g,b,a) / mixc(a, b, k) / dim(c, k) — упаковані кольори (ABGR, як у ImageData)
  *   ramp(pal, q, i, j)        — тон палітри за освітленістю q 0..1 + 8-bit дизеринг Байєра (палітра — упаковані кольори)
  * Швидкість: на піксель — одне ділення (u, v і глибина лінійні вздовж рядка), грані без кольору не пишуть глибину.
@@ -99,26 +97,6 @@ NX.px3d = (() => {
     return drawn;
   }
 
-  /** Плаский спрайт (рослина, ліана): img = {d: Uint32Array, w, h} у пікселях, світові розміри w × h,
-   *  (x, y, z) — низ по центру (або верх для hang). Глибина стала (площина паралельна екрану) + o.bias. */
-  function sprite(L, img, x, y, z, w, h, o = {}) {
-    const k = D / (D + z), t = (D + z) / D - (o.bias || 0), X = VX + (x - VX) * k, Yb = VY + (y - VY) * k, sw = w * k, sh = h * k;
-    const Xa = X - sw / 2, Ya = o.hang ? Yb : Yb - sh, R = L.R, W = L.W, H = L.H;
-    const i0 = Math.max(0, Math.floor((Xa - L.x0) * R)), i1 = Math.min(W, Math.ceil((Xa + sw - L.x0) * R));
-    const j0 = Math.max(0, Math.floor((Ya - L.y0) * R)), j1 = Math.min(H, Math.ceil((Ya + sh - L.y0) * R));
-    const id = o.id || 0, fid = o.fid || 0, fl = o.fl || 0, sd = img.d, iw = img.w, ih = img.h, C = L.c, DEP = L.dep, ID = L.id, FID = L.fid, FL = L.fl, tint = o.tint;
-    let drawn = 0;
-    for (let j = j0; j < j1; j++) {
-      const v = ((L.y0 + (j + .5) / R) - Ya) / sh; if (v < 0 || v >= 1) continue; const sy = (v * ih) | 0, row = j * W;
-      for (let i = i0; i < i1; i++) {
-        const u = ((L.x0 + (i + .5) / R) - Xa) / sw; if (u < 0 || u >= 1) continue;
-        const px = sd[sy * iw + ((u * iw) | 0)]; if ((px >>> 24) < 128) continue;
-        const kk = row + i; if (t >= DEP[kk]) continue;
-        C[kk] = tint ? tint(px, u, v, i, j) : (px | 0xff000000) >>> 0; DEP[kk] = t; ID[kk] = id; FID[kk] = fid; FL[kk] = fl; drawn++;
-      }
-    }
-    return drawn;
-  }
   /** Трубка (ланка маніпулятора, кабель, прут поручня) від a до b, товщина w: стрічка, повернута до ока;
    *  shade(u, v, i, j, t): u — поперек (0..1, середина — 0.5 — найсвітліша), v — уздовж. */
   function tube(L, a, b, w, shade, o = {}) {
@@ -133,9 +111,6 @@ NX.px3d = (() => {
     const q = [[c[0] - r, c[1] - r, c[2]], [c[0] + r, c[1] - r, c[2]], [c[0] + r, c[1] + r, c[2]], [c[0] - r, c[1] + r, c[2]]];
     return face(L, q, q[0], [2 * r, 0, 0], [0, 2 * r, 0], (u, v, i, j, t) => ((u - .5) ** 2 + (v - .5) ** 2 > .25 ? 0 : shade(u, v, i, j, t)), Object.assign({}, o, { n: [0, 0, -1] }));
   }
-  /** Полотно -> {d, w, h} для sprite(). */
-  function imgData(cv) { const x = cv.getContext('2d', { willReadFrequently: true }), im = x.getImageData(0, 0, cv.width, cv.height); return { d: new Uint32Array(im.data.buffer), w: cv.width, h: cv.height }; }
-
   /** Генератор до кінця одним шматком (синхронно) -> його результат. Важкі проходи растра — генератори (*G): збірка
    *  при завантаженні (вітальна заставка, js/main.js) іде дрібними шматками з паузами для браузера; синхронні версії —
    *  ті самі генератори, прогнані до кінця. Генератор віддає (yield) частку виконаної роботи 0..1. */
@@ -195,17 +170,6 @@ NX.px3d = (() => {
     const cv = document.createElement('canvas'); cv.width = L.W; cv.height = L.H;
     cv.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(L.c.buffer.slice(0)), L.W, L.H), 0, 0); return cv;
   }
-  /** Маска видимих пікселів грані fid (для живих екранів) у межах растра: {cv, x, y, w, h} у одиницях кімнати або null. */
-  function mask(L, fids) {
-    const set = new Set(Array.isArray(fids) ? fids : [fids]); let i0 = 1e9, i1 = -1, j0 = 1e9, j1 = -1;
-    for (let j = 0; j < L.H; j++) for (let i = 0; i < L.W; i++) if (set.has(L.fid[j * L.W + i])) { if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; }
-    if (i1 < 0) return null;
-    const w = i1 - i0 + 1, h = j1 - j0 + 1, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-    const x = cv.getContext('2d'), im = x.createImageData(w, h), d = new Uint32Array(im.data.buffer);
-    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (set.has(L.fid[(j + j0) * L.W + i + i0])) d[j * w + i] = 0xffffffff;
-    x.putImageData(im, 0, 0);
-    return { cv, x: L.x0 + i0 / L.R, y: L.y0 + j0 / L.R, w: w / L.R, h: h / L.R };
-  }
-  return { VX, VY, D, EZ, rgb, col, pal, mixc, dim, add, ramp, lum, R_, G_, B_, A_, sub, dot, cross, newell, proj, Layer, face, sprite, tube, disc, imgData, outline, reflect, canvas, mask, SH,
+  return { VX, VY, D, EZ, rgb, col, pal, mixc, dim, add, ramp, lum, R_, G_, B_, A_, sub, dot, cross, newell, proj, Layer, face, tube, disc, outline, reflect, canvas, SH,
     outlineG, reflectG, drain, F_EMIT, F_FLOOR, F_GLOSS, F_NOOUT, F_REFL };
 })();
