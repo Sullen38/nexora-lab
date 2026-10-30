@@ -1,76 +1,23 @@
 /* ============================================================================
- * objects/arc_live.js — ЖИВЕ НА КРИЛАХ «ПО ДУЗІ»: екрани, сканер, вихор (оживає, коли в розкладці є предмет з таким id)
+ * objects/arc_live.js — ЖИВІ ГРАНІ КРИЛ «ПО ДУЗІ» (рушій; що саме живе — у файлах зон)
  * ----------------------------------------------------------------------------
- * Нерухоме обох крил — одне полотно (objects/arc_scene.js). Поверх нього тут малюється те, що рухається:
- * вміст екранів (графіки, журнали, карта з пінгами, мозок із нейронами), вихор порталу. Живе майстерні й маркетингу —
- * у їхніх файлах (objects/ws_paint.js, mk_paint.js).
+ * Нерухоме обох крил — одне полотно (objects/arc_scene.js). Поверх нього тут кладеться те, що рухається на гранях
+ * предметів; вміст визначають файли зон (objects/ws_paint.js, mk_paint.js, an_paint.js, tl_paint.js) — оживає, щойно в
+ * розкладці є предмет з таким id.
  *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
  *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
  *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage; екрани поза
- *     видимою смугою (телефон бачить ~третину кімнати) не оновлюються й не кладуться
+ *     видимою смугою (телефон бачить ~п'яту частину кімнати) не оновлюються й не кладуться
+ *   NX.arc.glint(period, off) — відблиск, що пробігає по вивісці (LIVE для *_sign)
  * Як вміст лягає в 3D: пласке полотно грані -> чотирикутник грані на екрані стовпчиками (NX.furn.warp, бо боки грані
- * вертикальні) -> МАСКА видимих пікселів цієї грані з z-буфера (те, що попереду — рослина, крісло, — лишається попереду).
- * Усе — функції часу; тексти — NX.t; журнали — кольорові рядки-мітки (на дрібному екрані літер однаково не видно).
+ * вертикальні) -> МАСКА видимих пікселів цієї грані з z-буфера (те, що попереду, лишається попереду).
+ * Живі екрани зон 28.10 (AI-центр, хаб, термінал, вихор порталу) — в історії git (коміт a431f03).
  * ========================================================================== */
 NX.arc = NX.arc || {};
 (() => {
-  const K = NX.kit, F = NX.furn, X = NX.px3d, hash = NX.art.hash, T = NX.arc.pt, LIVE = NX.arc.LIVE = {};
-  const { glass, bars, lineChart, donut, icon } = T, Fd = T.F, Rr = T.R;
+  const F = NX.furn, X = NX.px3d, LIVE = NX.arc.LIVE = {};
   const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-  const PANEL = { r: 1, a: '#123a9a', b: '#0c2a7a', c: '#081e5e', lw: .5 };
-
-  /** Журнал подій «рядками»: кольорова мітка рівня (OK / AI / NET / WARN / ERR) і сіра лінія-повідомлення; новий рядок
-   *  в'їжджає знизу раз на ~0.8 с, курсор блимає (на дрібному екрані літери однаково не прочитати — як і на картинці). */
-  const LVC = ['#3bff8a', '#3be8ff', '#9a8cff', '#ffe27a', '#ff6ec8'];
-  function logLines(c, x, y, w, h, t, seed = 0) {
-    const lh = Math.max(2, h / 6), p = t * 1.25 + seed * 3.1, n0 = Math.floor(p), f = p - n0, slide = (1 - Math.min(1, f * 5)) * lh;
-    c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
-    for (let r = 0; r < 8; r++) { const id = n0 - r, yy = y + h - lh * (r + 1) + slide + lh * .3; if (yy < y - lh) break; const lv = Math.floor(hash(id, 3 + seed) * 5), ll = .3 + .55 * hash(id, 9 + seed);
-      c.fillStyle = LVC[lv]; c.fillRect(x + 1, yy, lh * 1.3, lh * .45); c.fillStyle = r === 0 ? 'rgba(232,253,255,.9)' : 'rgba(159,200,240,.7)'; c.fillRect(x + 2 + lh * 1.6, yy, (w - lh * 2.2) * ll, lh * .45);
-      if (r === 0 && Math.sin(t * 8) > 0) { c.fillStyle = '#3be8ff'; c.fillRect(x + 2.6 + lh * 1.6 + (w - lh * 2.2) * ll, yy - lh * .1, lh * .4, lh * .6); } }
-    c.fillStyle = 'rgba(59,232,255,.12)'; c.fillRect(x, y + h - lh + slide, w, lh); c.restore();
-  }
-  // ---------- AI-центр ----------
-  LIVE.ai_screen = { every: 3, draw(c, fw, fh, t, B) {
-    const [gx, gy, gw, gh] = Rr(Fd(B, 0), fw, fh) || [fw * .05, fh * .03, fw * .9, fh * .94], top = gy + gh * .2, colW = gw * .24;
-    glass(c, gx + 4, top + 5.4, colW - 2, gh * .3 - 7.6, PANEL); bars(c, gx + 5, top + 6, colW - 4, gh * .3 - 9, 7, 1 + t * .35);          // графік ліворуч
-    glass(c, gx + 4, top + gh * .33 + 5.4, colW - 2, gh * .3 - 7.6, PANEL); lineChart(c, gx + 5, top + gh * .33 + 6, colW - 4, gh * .3 - 9, 2 + t * .6);
-    const bx = gx + colW + 6, bw = gw - colW * 2 + 2, cx = bx + bw / 2, cy = top + gh * .3, r = Math.min(bw * .36, gh * .24);
-    c.save(); c.globalCompositeOperation = 'lighter';                                                                                   // нейрони спалахують по черзі
-    for (let k = 0; k < 18; k++) { const ph = (t * .9 + hash(k, 7) * 9) % 1, a = hash(k, 3) * 6.28, d = .15 + hash(k, 5) * .7, x = cx + Math.cos(a) * r * d, y = cy - r * .1 + Math.sin(a) * r * .7 * d;
-      if (ph < .35) { const q = 1 - ph / .35, s2 = 1.2 + q * 1.4; c.fillStyle = `rgba(${k % 4 ? '170,245,255' : '255,150,240'},${q})`; c.fillRect(x - s2 / 2, y - s2 / 2, s2, s2); } }
-    const pr = (t * .45) % 1; c.strokeStyle = `rgba(120,230,255,${(1 - pr) * .5})`; c.lineWidth = .8; c.beginPath(); c.ellipse(cx, cy - r * .1, r * (1 + pr * .5), r * .8 * (1 + pr * .5), 0, 0, 7); c.stroke();
-    c.restore();
-    const ey = gy + gh - gh * .1, ew = gw - 8; glass(c, gx + 3, ey - 1, gw - 6, gh * .085, { r: .8, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .4 });   // еквалайзер
-    for (let i = 0; i < 40; i++) { const v = .18 + .82 * Math.abs(Math.sin(i * .7 + t * 3.1) * Math.cos(i * .23 - t * 1.7)); c.fillStyle = i % 5 ? '#3be8ff' : '#ff7af0'; c.fillRect(gx + 4 + i * ew / 40, ey + gh * .07 * (1 - v), ew / 40 * .6, gh * .07 * v); }
-  } };
-  LIVE.ai_mon = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .1, fh * .27, fw * .8, fh * .53, PANEL); bars(c, fw * .12, fh * .3, fw * .42, fh * .46, 6, 3 + t * .4); lineChart(c, fw * .58, fh * .3, fw * .3, fh * .46, 4 + t * .7, '#7af4ff', 'rgba(90,220,255,.15)'); } };
-  LIVE.ai_top1 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .1, fh * .36, fw * .8, fh * .48, PANEL); bars(c, fw * .12, fh * .38, fw * .76, fh * .42, 8, 5 + t * .5); } };
-  LIVE.ai_top2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .34, fw * .84, fh * .52, PANEL); logLines(c, fw * .1, fh * .36, fw * .8, fh * .48, t, 2); } };
-  LIVE.ai_laptop = { every: 4, draw(c, fw, fh, t) { const n = Math.floor(t * 2) % 6; glass(c, fw * .1, fh * .1, fw * .8, fh * .8, { r: 1, a: '#1a5ad0', b: '#123a9a', c: '#0c2a7a' }); for (let k = 0; k < 5; k++) { const w = k < n ? fw * (.66 - (k % 3) * .14) : k === n ? fw * (.66 - (k % 3) * .14) * ((t * 2) % 1) : 0; c.fillStyle = k === 2 ? '#ff9af0' : 'rgba(200,240,255,.75)'; c.fillRect(fw * .16, fh * (.22 + k * .13), w, 1.1); } } };
-  LIVE.sh_scr2 = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .08, fh * .14, fw * .84, fh * .72, PANEL); K.scrMap(c, fw * .1, fh * .18, fw * .8, fh * .64, t); } };
-  // ---------- маркетинг (монітори попередньої спроби, --preset v1); аналітика й інструменти — objects/an_paint.js, tl_paint.js ----------
-  LIVE.mk_scr = { every: 4, draw(c, fw, fh, t) { glass(c, fw * .12, fh * .14, fw * .76, fh * .7, PANEL); const o = (t * .5) % 1;
-    for (let k = 0; k < 4; k++) { const y = fh * (.2 + (k - o) * .2); if (y < fh * .14 || y > fh * .76) continue; c.fillStyle = ['#ff7ad0', '#ffd27a', '#7af4ff', '#9a8cff'][k]; c.fillRect(fw * .16, y, fh * .12, fh * .12); c.fillStyle = 'rgba(200,240,255,.75)'; c.fillRect(fw * .16 + fh * .18, y + fh * .03, fw * .4, .9); } } };
-  LIVE.mk_scr2 = LIVE.mk_scr;
-  // ---------- праве крило ----------
-  LIVE.hub = { every: 3, draw(c, fw, fh, t) { glass(c, fw * .085, fh * .27, fw * .62, fh * .385, PANEL); K.scrMap(c, fw * .09, fh * .28, fw * .6, fh * .36, t, { hot: ['kyiv', 'warsaw', 'amsterdam'] });
-    glass(c, fw * .065, fh * .775, fw * .87, fh * .15, { r: .6, a: '#0f2f8e', b: '#0c2a7a', c: '#0a2266', lw: .01 }); lineChart(c, fw * .07, fh * .78, fw * .86, fh * .14, 6 + t * .8, '#ff4fd8', 'rgba(255,80,220,.15)');
-    c.fillStyle = Math.sin(t * 3) > 0 ? '#3bff8a' : '#1f6a45'; c.fillRect(fw * .08, fh * .72, 2, 2); } };
-  LIVE.ws_term = { every: 4, draw(c, fw, fh, t) { const y = fh * .42, h = fh * .24; glass(c, fw * .14, y, fw * .72, h, { r: 1 }); logLines(c, fw * .16, y + h * .08, fw * .68, h * .84, t, 5); } };
-  LIVE.pt_back = { every: 2, draw(c, fw, fh, t, B) {
-    const d = (B.deco || [])[0], [x0, y0, w, h] = d ? Rr(d.f, fw, fh) : [0, 0, fw, fh], x1 = x0 + w, y1 = y0 + h, sp = (d ? d.spring : .3) * fh, cx = (x0 + x1) / 2, rx = w / 2;
-    const arch = () => { c.beginPath(); c.moveTo(x0 + 1.4, y1); c.lineTo(x0 + 1.4, sp); c.ellipse(cx, sp, rx - 1.4, sp - y0 - 1.4, 0, Math.PI, 0); c.lineTo(x1 - 1.4, y1); c.closePath(); };
-    c.save(); arch(); c.clip();
-    const vx = d && d.vortex ? x0 + d.vortex[0] * w : cx, vy = d && d.vortex ? y0 + d.vortex[1] * h : y0 + h * .6, R0 = w * .55, pulse = .9 + .1 * Math.sin(t * 2.2);
-    const g = c.createRadialGradient(vx, vy, 0, vx, vy, R0 * pulse); g.addColorStop(0, '#f4ecff'); g.addColorStop(.12, '#b49af8'); g.addColorStop(.35, '#6a3ad8'); g.addColorStop(.7, '#2a1890'); g.addColorStop(1, '#12063a'); c.fillStyle = g; c.fillRect(x0, y0, w, h);
-    for (let arm = 0; arm < 4; arm++) { c.strokeStyle = arm % 2 ? 'rgba(255,120,240,.8)' : 'rgba(120,230,255,.8)'; c.lineWidth = 1.3; c.beginPath();
-      for (let s = 0; s <= 60; s++) { const q = s / 60, a = arm * Math.PI / 2 + q * 5.2 - t * 1.1, r = R0 * (.08 + q * .85); const x = vx + Math.cos(a) * r, y = vy + Math.sin(a) * r * .9; s ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); }
-    for (let k = 0; k < 70; k++) { const ph = (t * (.15 + hash(k, 4) * .2) + hash(k, 1)) % 1, a = hash(k, 2) * 6.28 - t * (.6 + hash(k, 3)), r = R0 * (.95 - ph * .85); c.fillStyle = k % 3 ? `rgba(232,216,255,${1 - ph * .6})` : `rgba(122,244,255,${1 - ph * .6})`; c.fillRect(vx + Math.cos(a) * r, vy + Math.sin(a) * r * .9, .9, .9); }
-    c.restore();
-  } };
-
   /** Відблиск, що раз на period с пробігає по грані навскіс (вивіски зон); off — зсув, щоб вивіски блищали не разом. */
   NX.arc.glint = (period, off = 0) => ({ every: 2, draw(c, fw, fh, t) {
     const k = ((t + off) % period) / 1.1; if (k >= 1) return false; const x = -fh * 1.2 + k * (fw + fh * 2.4), g = c.createLinearGradient(x - fh * .7, 0, x + fh * .7, 0);
