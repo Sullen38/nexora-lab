@@ -7,7 +7,7 @@ tools/build.py — ЗБІРКА В ОДИН ФАЙЛ
 додали чи прибрали <script src="js/..."> — число оновиться саме.
 Запуск:  python3 tools/build.py
 """
-import re, base64, pathlib, json
+import re, base64, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / 'index.html').read_text(encoding='utf-8')
 
@@ -25,11 +25,10 @@ html = re.sub(r'<link rel="stylesheet" href="css/hud.css"[^>]*>', lambda m: '<st
 # картинка кімнати вбудована (NX_ROOM_SRC) — заставці не треба вантажити її окремо
 html = html.replace('data-room="assets/room.webp"', 'data-room=""')
 img = base64.b64encode((root / 'assets/room.webp').read_bytes()).decode()
-assets = {f.name: 'data:image/png;base64,' + base64.b64encode(f.read_bytes()).decode() for f in sorted((root / 'assets').glob('*.png'))}
 def inline(m):
     src = m.group(1)
     return '<script>\n/* ---- ' + src + ' ---- */\n' + (root / src).read_text(encoding='utf-8') + '\n</script>'
-html = html.replace('<script src="js/core/namespace.js"></script>', '<script>window.NX_ROOM_SRC="data:image/webp;base64,' + img + '";window.NX_ASSETS=' + json.dumps(assets) + ';</script>\n<script src="js/core/namespace.js"></script>')
+html = html.replace('<script src="js/core/namespace.js"></script>', '<script>window.NX_ROOM_SRC="data:image/webp;base64,' + img + '";</script>\n<script src="js/core/namespace.js"></script>')
 html = re.sub(r'<script src="(js/[^"]+)"></script>', inline, html)
 (root / 'dist').mkdir(exist_ok=True)
 (root / 'dist/nexora-lab.html').write_text(html, encoding='utf-8')

@@ -1,6 +1,6 @@
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
-  ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', lang: 'Taal', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
+  ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', skins: 'SKINS', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. TIK OP NEXI — SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', save: 'OPSLAAN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
   splash: {   // WELKOMSTSCHERM (js/ui/splash.js): laadfasen, zinnetjes van Nexi, bouwstappen
     aria: 'Nexi’s lab wordt geladen', retry: 'Pagina vernieuwen', ok: 'OK',
     st: { js: 'SCRIPTS', img: 'KAMERBEELD', city: 'STAD', wings: '3D-VLEUGELS', ready: 'KLAAR' },
@@ -21,19 +21,12 @@ NX.i18n.add('nl', {
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', today: 'VANDAAG', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
+    analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
       days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'], forecast: 'PROGNOSE', ready: 'RAPPORT KLAAR' },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
-    wallChat: ['AI', 'CHAT'], core: 'KERN', scan: 'SCAN', coffee: { brew: 'ZETTEN', done: 'KLAAR' },
-    log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'LET OP', ERR: 'FOUT' },
-      msg: { reply: 'chat-antwoord', intent: 'intentie: prijs', sync: 'synchronisatie', mail: 'mail verzonden', summary: 'samenvatting klaar', lead: 'CRM: nieuwe lead', api: 'API 200', cpu: 'processor', langUk: 'taal: uk', post: 'post in wachtrij',
-        mood: 'sentiment +', cache: 'cache', invoice: 'factuur.pdf', tokens: 'tokens', backup: 'back-up', ping: 'ping', draft: 'concept-antwoord', retry: 'opnieuw 1/3', report: 'rapport.xlsx', langPl: 'taal: pl' } },
-    seen: { face: 'GEZICHT', user: 'PERSOON', bot: 'BOT', cat: 'KAT', fox: 'VOS', dog: 'HOND', logo: 'LOGO', icon: 'ICOON', text: 'TEKST', doc: 'DOC', form: 'FORMULIER', photo: 'FOTO', match: 'GEVONDEN', scan: 'SCAN' },
-    hub: { online: 'ONLINE', tasks: 'TAKEN' },
     ws: { skins: 'SKINS', acc: 'ACCESSOIRES' },
     tools: { mail: 'MAIL', cal: 'AGENDA', crm: 'CRM', auto: 'AUTO', leads: 'AANVRAGEN' },
-    poster: { meow: 'MIAUW', tag: '8-BIT AI' },
-    unit: { ms: 'ms', k: 'k', K: 'K' }, dec: ',',
+    unit: { k: 'k' }, dec: ',',
   },
   portal: { choose: 'WAARHEEN?', dest: { projects: 'Projecten', team: 'Team', clients: 'Klanten' },
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },

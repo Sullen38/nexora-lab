@@ -1,6 +1,6 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', lang: 'Language', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', skins: 'SKINS', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
     aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK',
     st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },
@@ -21,19 +21,12 @@ NX.i18n.add('en', {
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', today: 'TODAY', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
+    analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
       days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'], forecast: 'FORECAST', ready: 'REPORT READY' },
     marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
-    wallChat: ['AI', 'CHAT'], core: 'CORE', scan: 'SCAN', coffee: { brew: 'BREW', done: 'DONE' },
-    log: { tags: { OK: 'OK', AI: 'AI', NET: 'NET', WARN: 'WARN', ERR: 'ERR' },
-      msg: { reply: 'chat.reply', intent: 'intent: price', sync: 'sync', mail: 'mail.sent', summary: 'summary.ready', lead: 'crm.lead', api: 'api 200', cpu: 'cpu', langUk: 'lang: uk', post: 'post.queued',
-        mood: 'sentiment +', cache: 'cache.hit', invoice: 'invoice.pdf', tokens: 'tokens', backup: 'backup', ping: 'ws.ping', draft: 'reply.draft', retry: 'retry 1/3', report: 'report.xlsx', langPl: 'lang: pl' } },
-    seen: { face: 'FACE', user: 'USER', bot: 'BOT', cat: 'CAT', fox: 'FOX', dog: 'DOG', logo: 'LOGO', icon: 'ICON', text: 'TEXT', doc: 'DOC', form: 'FORM', photo: 'PHOTO', match: 'MATCH', scan: 'SCAN' },
-    hub: { online: 'ONLINE', tasks: 'TASKS' },
     ws: { skins: 'SKINS', acc: 'ACCESSORIES' },
     tools: { mail: 'MAIL', cal: 'CALENDAR', crm: 'CRM', auto: 'AUTO', leads: 'LEADS' },
-    poster: { meow: 'MEOW', tag: '8-BIT AI' },
-    unit: { ms: 'ms', k: 'k', K: 'K' }, dec: '.',
+    unit: { k: 'k' }, dec: '.',
   },
   portal: { choose: 'WHERE TO?', dest: { projects: 'Projects', team: 'Team', clients: 'Clients' },
     go: { projects: 'Off to the projects! I will check the deadlines.', team: "I'll drop by the team and see who's doing what.", clients: 'Flying to the clients to collect new messages.' },

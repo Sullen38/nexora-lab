@@ -20,7 +20,6 @@ nav::-webkit-scrollbar{display:none}
 nav button{flex:none;background:var(--glass);color:var(--text);border:2px solid #1b2a66;padding:8px 12px;font:600 11px var(--f-b);letter-spacing:.8px;cursor:pointer;backdrop-filter:blur(6px)}
 nav button:hover{border-color:var(--cyan)}
 nav button.on{border-color:var(--pink);color:#fff;box-shadow:0 0 14px #d94bff66 inset}
-.langbtn{flex:none;background:var(--glass);color:var(--gold);border:2px solid var(--gold);padding:7px 9px;font:400 8px var(--f-d);cursor:pointer}
 .skinbtn{flex:none;background:var(--pink);color:#fff;border:0;padding:9px 12px;font:400 8px var(--f-d);cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .task{left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom,0px));display:none;align-items:center;gap:12px;background:var(--glass);border:2px solid var(--cyan);padding:10px 16px;box-shadow:0 0 22px #3be8ff55;max-width:92vw}

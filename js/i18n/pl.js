@@ -1,6 +1,6 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', lang: 'Język', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
+  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
     aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK',
     st: { js: 'SKRYPTY', img: 'OBRAZ POKOJU', city: 'MIASTO', wings: 'SKRZYDŁA 3D', ready: 'GOTOWE' },
@@ -21,19 +21,12 @@ NX.i18n.add('pl', {
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
     ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
-    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', today: 'DZIŚ', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
+    analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
       days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'], forecast: 'PROGNOZA', ready: 'RAPORT GOTOWY' },
     marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
-    wallChat: ['CZAT', 'AI'], core: 'RDZEŃ', scan: 'SKAN', coffee: { brew: 'PARZĘ', done: 'GOTOWE' },
-    log: { tags: { OK: 'OK', AI: 'AI', NET: 'SIEĆ', WARN: 'UWAGA', ERR: 'BŁĄD' },
-      msg: { reply: 'odpowiedź w czacie', intent: 'intencja: cena', sync: 'synchronizacja', mail: 'mail wysłany', summary: 'podsumowanie gotowe', lead: 'CRM: nowy lead', api: 'API 200', cpu: 'procesor', langUk: 'język: uk', post: 'post w kolejce',
-        mood: 'nastrój +', cache: 'cache', invoice: 'faktura.pdf', tokens: 'tokeny', backup: 'kopia zapasowa', ping: 'ping', draft: 'szkic odpowiedzi', retry: 'ponowienie 1/3', report: 'raport.xlsx', langPl: 'język: pl' } },
-    seen: { face: 'TWARZ', user: 'OSOBA', bot: 'BOT', cat: 'KOT', fox: 'LIS', dog: 'PIES', logo: 'LOGO', icon: 'IKONA', text: 'TEKST', doc: 'DOK', form: 'FORMULARZ', photo: 'ZDJĘCIE', match: 'WYKRYTO', scan: 'SKAN' },
-    hub: { online: 'ONLINE', tasks: 'ZADAŃ' },
     ws: { skins: 'SKÓRKI', acc: 'AKCESORIA' },
     tools: { mail: 'POCZTA', cal: 'KALENDARZ', crm: 'CRM', auto: 'AUTO', leads: 'ZGŁOSZENIA' },
-    poster: { meow: 'MIAU', tag: '8-BIT AI' },
-    unit: { ms: 'ms', k: 'tys', K: 'TYS' }, dec: ',',
+    unit: { k: 'tys' }, dec: ',',
   },
   portal: { choose: 'DOKĄD LECIMY?', dest: { projects: 'Projekty', team: 'Zespół', clients: 'Klienci' },
     go: { projects: 'Lecę do projektów! Sprawdzę terminy.', team: 'Zajrzę do zespołu — kto co robi.', clients: 'Lecę do klientów po nowe wiadomości.' },
