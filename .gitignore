@@ -2,3 +2,6 @@ node_modules/
 .DS_Store
 shot.png
 __pycache__/
+# згенероване локально (не комітимо: велике й конфліктує між паралельними чатами)
+dist/
+tools/wingbox/layout.json
