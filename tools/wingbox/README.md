@@ -74,8 +74,6 @@ node tools/wingbox/shot.js /tmp/p desk --hash lang-pl           # те саме 
 node tools/wingbox/shot.js /tmp/x roomc --layout my.json         # спробувати іншу розкладку без --write і без збірки
 node tools/wingbox/shot.js /tmp/c desk ph --clean 1             # без бабла Nexi (PHX='[["ph1",385],["ph2",900]]' — телефон на зонах)
 python3 tools/wingbox/gen_room.py /tmp/a3.json --preset all3    # нинішні параметри з усіма трьома зонами: чи вмістяться наступні
-python3 tools/wingbox/gen_room.py /tmp/v1.json --preset v1 --plan /tmp/v1.png   # спроба 28.10 (6 однакових зон)
-python3 tools/wingbox/gen_room.py /tmp/b.json --preset arc --plan /tmp/b.png    # відхилені варіанти середніх зон: arc, front, turn6
 ```
 
 Генератор друкує для кожного крила масштаби, висоти зон на екрані, проміжок кожної зони до стіни (`wall gap`), проміжки між
@@ -109,8 +107,8 @@ python3 tools/wingbox/gen_room.py /tmp/b.json --preset arc --plan /tmp/b.png    
     зовнішній — видно ЗОВНІШНІЙ бік; `gs` — свій проміжок на екрані до дальньої (< 0 — трішки заходить на неї). Без `fv` — у
     перспективі кімнати (`arc_items`, видно внутрішній бік); `{"fv": 1}` без `turn` — просто фронтально.
   - `gz` / `gs` — проміжок до попередньої зони (у плані, од. світу / на екрані, px), `gw` — до стіни.
-  - за потреби: `cols` — колони між зонами (лише якщо влазять). Антресоль `mz`, підвіси `hang`, полиці з вазонами `shelves` і
-    екран на стіні `hub` (спроба 28.10, `--preset v1`) рушій більше не малює — їхній JS в історії git (коміт a431f03).
-- Зони: `workshop()`, `marketing()`, `analytics()`, `tools()`; заготовки 28.10 для наступних — `aicenter()`, `portal()`
-  (і старі `workshop_v1()`, `tools_v1()`, `marketing_v1()`, `analytics_v1()`). `Z.arm` / `Z.armv` — маніпулятор майстерні
+  - за потреби: `cols` — колони між зонами (лише якщо влазять). Антресоль, підвіси, полиці з вазонами й екран на стіні спроби
+    28.10 (і відхилені пресети середніх зон arc / front / turn6) — в історії git (коміт a431f03).
+- Зони: `workshop()`, `marketing()`, `analytics()`, `tools()`; заготовки 28.10 для наступних — `aicenter()`, `portal()`.
+  `Z.arm` / `Z.armv` — маніпулятор майстерні
   (точки в px картинки, глибина) → розкладка `armRig` (малює й рухає його 2D-ланками `js/objects/workshop.js`).
