@@ -63,13 +63,12 @@ NX.loop = {
     c.setTransform(k, 0, 0, k, -NX.cam.x * k, NX.cam.top * k);
     c.imageSmoothingEnabled = false;
     NX.room.draw(c, t);
-    if (this.frames < 90 || (NX.cam.x < NX.cfg.WIN.R && NX.cam.x + NX.cam.viewW > NX.cfg.WIN.L)) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
+    if (NX.cam.x < NX.cfg.WIN.R && NX.cam.x + NX.cam.viewW > NX.cfg.WIN.L) NX.city.draw(c, t, dt);   // місто — лише коли вікно видно
     const objs = Object.values(NX.objects);
     // ПОЗА ЕКРАНОМ НЕ МАЛЮЄМО: об'єкт зі span [x0, x1] (одиниці кімнати) пропускається, якщо він увесь за межами видимої
-    // смуги (телефон бачить ~третину кімнати). Перші 90 кадрів — малюється все: будуються растри (обидва крила в 3D —
-    // по шару за кадр) і копія для передньої підлоги-дзеркала.
-    const vx0 = NX.cam.x - 24, vx1 = NX.cam.x + NX.cam.viewW + 24, all = ++this.frames < 90;
-    objs.forEach(o => { if (!o.drawBack) return; if (!all && o.span && (o.span[1] < vx0 || o.span[0] > vx1)) return; o.drawBack(c, t); });
+    // смуги (телефон бачить ~третину кімнати). Растри й кеші вже готові з-під заставки (warmG і збірка крил) — з першого кадру.
+    const vx0 = NX.cam.x - 24, vx1 = NX.cam.x + NX.cam.viewW + 24; this.frames++;
+    objs.forEach(o => { if (!o.drawBack) return; if (o.span && (o.span[1] < vx0 || o.span[0] > vx1)) return; o.drawBack(c, t); });
     const list = [NX.nexi.layer(), NX.cat.layer()];
     objs.forEach(o => o.layers && list.push(...o.layers(t)));
     // ВІДДЗЕРКАЛЕННЯ в глянцевій підлозі: усе, що стоїть на передній підлозі (refl:true), малюється ще раз догори дриґом
