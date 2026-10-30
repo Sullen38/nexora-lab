@@ -7,7 +7,7 @@
  * годинник сторінки підмінений (Playwright clock: Date, performance.now, setTimeout, requestAnimationFrame) і йде кроками
  * по 16 мс, Math.random — з фіксованим зерном, шрифти Google вимкнено (обидві версії — запасний шрифт).
  * Кадри (canvas #world): комп'ютер 1600×900 — на 160-му кадрі циклу (заставка вже зникла) і через 60 / 240 / 600 кадрів
- * (--at; кожен кадр — рівно 1/60 с, зерно випадковості — заново на старті циклу); телефон 390×844 —
+ * (--at; кожен кадр — рівно 1/60 с від однієї точки, зерно випадковості — заново на старті циклу); телефон 390×844 —
  * ті самі моменти + камера на доку й на кожній зоні. Ще порівнюється текст інтерфейсу (HTML поверх canvas).
  * «До» знімається двічі: кадр, що різниться вже між двома однаковими прогонами (рідко: життя кімнати розійшлось на кадр),
  * не порівнюється («нестабільний»); кілька пікселів на 1/255 — шум рендеру. Друкує, де є різниця: скільки пікселів і
@@ -49,7 +49,10 @@ async function shoot(browser, url, mode) {
     // у мить старту головного циклу — те саме зерно ще раз, а кожен кадр — рівно 1/60 с: скільки разів заставка встигла кинути
     // кубик і на якій частці кадру стартував цикл (залежить від того, як швидко прийшли файли), на кадри кімнати не впливає
     const st = await p.evaluate(() => { if (window.NX && NX.loop && NX.loop.start && !NX.loop.__seeded) { const f = NX.loop.start, fr = NX.loop.frame;
-      NX.loop.start = function () { __seed(0x2545f491); return f.apply(this, arguments); }; NX.loop.frame = function () { this.last = performance.now() / 1000 - 1 / 60; return fr.apply(this, arguments); }; NX.loop.__seeded = 1; }
+      // годинник кадру — від однієї точки (1000 с) і рівно +1/60 с за кадр: dt однаковий до біта в кожному прогоні (інакше похибка
+      // округлення залежала б від того, коли стартував цикл, і поріг на кшталт «lookT < 0» спрацьовував би то на кадр раніше, то пізніше)
+      NX.loop.start = function () { __seed(0x2545f491); const r = f.apply(this, arguments); this.last = 1000; return r; };
+      NX.loop.frame = function () { const T = (this.last + 1 / 60) * 1000, pn = performance.now; performance.now = () => T; try { return fr.apply(this, arguments); } finally { performance.now = pn; } }; NX.loop.__seeded = 1; }
       return !!(window.NX && NX.boot && NX.boot.done); });
     if (st) break; await p.clock.runFor(16); if (i === 19999) throw new Error('заставка не завершилась: ' + url);
   }
@@ -96,7 +99,10 @@ async function shoot(browser, url, mode) {
       const a = ra.shots[i], a2 = ra2.shots.find(s => s.key === a.key), b = rb.shots.find(s => s.key === a.key);
       if (!b) { console.log(`  ${a.key.padEnd(16)} немає в «після»`); diffs++; continue; }
       const st = a2 && await diff(a.png, a2.png);
-      if (!a2 || (st.n && !noise(st)) || a.text !== a2.text) { console.log(`  ${a.key.padEnd(16)} нестабільний (два прогони «до» різняться) — пропущено`); unstable++; continue; }
+      if (!a2 || (st.n && !noise(st)) || a.text !== a2.text) {
+        const f = path.join(OUT, a.key.replace(/[^\w@-]/g, '_') + '_unstable');   // що саме розійшлось між двома прогонами «до»
+        if (st && st.img) { fs.writeFileSync(f + '_diff.png', Buffer.from(st.img.split(',')[1], 'base64')); fs.writeFileSync(f + '_a.png', Buffer.from(a.png.split(',')[1], 'base64')); fs.writeFileSync(f + '_a2.png', Buffer.from(a2.png.split(',')[1], 'base64')); }
+        console.log(`  ${a.key.padEnd(16)} нестабільний (два прогони «до» різняться${st && st.n ? `: ${st.n} px -> ${f}_diff.png` : ''}) — пропущено`); unstable++; continue; }
       const r = await diff(a.png, b.png), txt = a.text === b.text ? '' : '  · ТЕКСТ ІНТЕРФЕЙСУ ІНШИЙ';
       if (r.size) { console.log(`  ${a.key.padEnd(16)} РОЗМІР ІНШИЙ ${r.size}`); diffs++; continue; }
       if ((!r.n || noise(r)) && !txt) { console.log(`  ${a.key.padEnd(16)} однаково${r.n ? ` (шум рендеру: ${r.n} px на 1/255)` : ''}`); continue; }
