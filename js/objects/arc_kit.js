@@ -186,14 +186,6 @@ NX.arc.kit = (() => {
     [[lw * 2.2, hx(n[0]), .5], [lw, hx(n[1]), 1], [lw * .38, hx(n[2]), 1]].forEach(([w2, s, a]) => { c.globalAlpha = a; c.strokeStyle = s; c.lineWidth = w2; c.beginPath(); r && c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); c.stroke(); });
     c.globalAlpha = 1;
   }
-  /** Голо-екран: темне синє скло з переливом, скан-лініями, світлою рамкою (вміст — окремо). */
-  function holo(c, x, y, w, h, o = {}) {
-    const g = c.createLinearGradient(x, y, x, y + h); g.addColorStop(0, o.top || '#1d58c8'); g.addColorStop(.55, o.mid || '#0f3496'); g.addColorStop(1, o.bot || '#0a2470');
-    c.fillStyle = '#050a26'; c.fillRect(x - .6, y - .6, w + 1.2, h + 1.2); c.fillStyle = g; c.fillRect(x, y, w, h);
-    c.fillStyle = 'rgba(150,220,255,.10)'; for (let yy = y + 1; yy < y + h; yy += 1.5) c.fillRect(x, yy, w, .5);
-    c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(x, y, w, Math.max(.8, h * .07));
-    c.strokeStyle = o.line || '#7af4ff'; c.lineWidth = o.lw || .7; c.strokeRect(x + .35, y + .35, w - .7, h - .7);
-  }
   /** Іконка 7×7 зі слів «X.» (як у вивісках кімнати). */
   function icon7(c, rows, cx, cy, s, colr) { const p = s / 7; c.fillStyle = colr; rows.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') c.fillRect(cx - s / 2 + i * p, cy - s / 2 + j * p, p + .03, p + .03); })); }
   /** Текст піксельним шрифтом, вміщений у ширину maxW (по центру cx, cy). */
@@ -203,7 +195,7 @@ NX.arc.kit = (() => {
     if (o.glow) { c.globalAlpha = .35; c.fillStyle = o.glow; for (const [dx, dy] of [[-.35, 0], [.35, 0], [0, -.35], [0, .35]]) c.fillText(s, cx + dx, cy + dy); c.globalAlpha = 1; }
     c.fillStyle = colr; c.fillText(s, cx, cy + sz * .06); c.textAlign = 'left'; return sz;
   }
-  /** Вивіска зони (як NX.kit.sign: темна пластина, неоновий кант кольору зони, кругла іконка, напис NX.t по центру, вогник). */
+  /** Вивіска зони (темна пластина, неоновий кант кольору зони, кругла іконка, напис NX.t по центру, вогник). */
   function signPlate(c, x, y, w, h, o) {
     const acc = o.acc || '#3be8ff', r = h * .22;
     c.fillStyle = '#0a0620'; c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); c.fill();
@@ -278,5 +270,5 @@ NX.arc.kit = (() => {
     if (paint) paint(c, fw, fh, B, F); else decos(c, B.deco, fw, fh);
     const im = c.getImageData(0, 0, cv.width, cv.height); return { d: new Uint32Array(im.data.buffer), w: cv.width, h: cv.height, cv };
   }
-  return { PAL, C, NEON, neonOf, basis, faces, visible, centre, lit, STY, shader, texture, decos, neon, neonRect, holo, icon7, txt, signPlate, cvs, isScreen };
+  return { PAL, C, NEON, neonOf, basis, faces, visible, centre, lit, STY, shader, texture, decos, neon, neonRect, icon7, txt, signPlate, cvs, isScreen };
 })();

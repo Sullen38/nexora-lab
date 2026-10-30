@@ -9,14 +9,11 @@
  *     .rect(ax, ay, bx, by, fn)        fn(u, v, i, j, X, Y) -> колір | null
  *     .rr(ax, ay, bx, by, rad, fn)     заокруглений прямокутник: fn(d, u, v, i, j) — d: глибина від краю (од.)
  *     .poly(pts, fn)                   опуклий/неопуклий многокутник: fn(u, v, i, j, X, Y)
- *     .quad(q, fn)                     чотирикутник у перспективі: fn(u, v, ...) — u, v уздовж граней
- *     .line(ax, ay, bx, by, col, w)    лінія товщиною w од.
  *     .canvas()                        готове полотно (з темним контуром навколо)
  *   ramp(pal, q, i, j, grain)  — тон палітри за освітленістю q 0..1 + дизеринг Байєра
  *   PAL                         — палітри кімнати (темно-синій, рожевий неон, блакитний, голо-синій...)
  *   fit(cv, w, h, R)            — растр, один раз зменшений під роздільність екрана
- *   side(c, pts, col)           — бічна грань (видима товща меблів) — чотирикутник
- * Перспектива бічних граней: вони "тікають" до вікна (NX.persp.desk.VP).
+ *   warp(c, src, q, step)       — пласке полотно -> чотирикутник у перспективі стовпчиками (голо-панелі, живі грані)
  * ========================================================================== */
 NX.furn = (() => {
   const P = NX.px, { Raster, outline, hash, BAYER } = NX.art;
@@ -73,21 +70,6 @@ NX.furn = (() => {
           }
         }
       },
-      line(ax, ay, bx, by, col, w = U) {
-        const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / U * 1.5));
-        for (let k = 0; k <= n; k++) { const X = ax + (bx - ax) * k / n, Y = ay + (by - ay) * k / n; S.rect(X - w / 2, Y - w / 2, X + w / 2 + U * .01, Y + w / 2 + U * .01, col); }
-      },
-      /** Чотирикутник у перспективі: q = [лв, пв, пн, лн] (кути в одиницях кімнати); fn(u, v, i, j, X, Y),
-       *  u — уздовж верхнього краю (0..1), v — згори вниз (0..1), перспективно правильно (гомографія). */
-      quad(q, fn) {
-        const Hm = homo(q), xs = q.map(p => p[0]), ys = q.map(p => p[1]);
-        const i0 = Math.max(0, Math.floor(px(Math.min(...xs)))), i1 = Math.min(W, Math.ceil(px(Math.max(...xs)))), j0 = Math.max(0, Math.floor(py(Math.min(...ys)))), j1 = Math.min(H, Math.ceil(py(Math.max(...ys))));
-        for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) {
-          const X = x0 + (i + .5) * U, Y = y0 + (j + .5) * U, [u, v] = Hm.inv(X, Y);
-          if (u < 0 || u >= 1 || v < 0 || v >= 1) continue;
-          const col = typeof fn === 'string' ? fn : fn(u, v, i, j, X, Y); if (col) r.set(i, j, col);
-        }
-      },
       set(X, Y, col) { r.set(Math.floor(px(X)), Math.floor(py(Y)), col); },
       canvas(out = PAL.OUT) { if (out) outline(r, out); return r.canvas(); },
     };
@@ -127,11 +109,5 @@ NX.furn = (() => {
   }
   /** Роздільність кешів: пікселі екрана на одиницю кімнати (кратна 0.5, не більше 4). */
   const res = () => Math.min(4, Math.ceil(NX.cam.k * (NX.loop.dpr || 1) * 2) / 2);
-  /** Бічна грань-чотирикутник: точки в одиницях кімнати. */
-  function side(c, pts, col) { c.fillStyle = col; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fill(); }
-  /** Точка, зсунута до точки сходу меблів на частку f (товща меблів, що "тікає" до вікна). */
-  const toVP = (x, y, f) => { const VP = (NX.persp.desk || NX.persp).VP; return [x + (VP[0] - x) * f, y + (VP[1] - y) * f]; };
-  /** Полотно для живого екрана. */
-  const canvas = (w, h) => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'); x.imageSmoothingEnabled = false; return [cv, x]; };
-  return { Sheet, ramp, PAL, fit, res, side, toVP, canvas, homo, warp };
+  return { Sheet, ramp, PAL, fit, res, homo, warp };
 })();
