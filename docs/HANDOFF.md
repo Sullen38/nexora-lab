@@ -69,8 +69,8 @@
 | Вікно з містом, рами | `js/world/cityscape.js` (+ `city_kit`, `city_sky`, `city_build`, `city_mega`); `js/objects/window_frame.js` (межі вікна `NX.cfg.WIN` 508..1040) |
 | Диван, док, кіт | `js/objects/sofa.js`, `rug_dock.js`, `cat_corner.js`, `ball.js`; `js/actors/cat/*` |
 | МАЙСТЕРНЯ | розкладка `gen_room.py: workshop()`; грані й вміст голо-панелей — `ws_paint.js`; живе й Nexi — `workshop.js`; скіни й реліквії — `js/actors/nexi/skins.js`, лабораторія — `js/ui/skinlab.js` |
-| МАРКЕТИНГ | `marketing()`; `mk_paint.js`; `marketing.js` (голо-монітори, клавіатура, пости); крісло — `mk_chair.js` |
-| АНАЛІТИКА | `analytics()`; `an_paint.js` (вміст екрана `NX.arc.anScreen`); `analytics.js`; крісло — `an_chair.js` (фабрика `NX.arc.raceChair`); екран — `holo_panes.js` |
+| МАРКЕТИНГ | `marketing()`; `mk_paint.js`; `marketing.js` (голо-монітори, клавіатура, пости); крісло — `mk_chair.js` (там і модель — фабрика `NX.arc.raceChair`) |
+| АНАЛІТИКА | `analytics()`; `an_paint.js` (вміст екрана `NX.arc.anScreen`); `analytics.js`; крісло — `an_chair.js` (виклик фабрики: K, кольори, місце); екран — `holo_panes.js` |
 | ІНСТРУМЕНТИ | `tools()`; `tl_paint.js` (картки `NX.arc.tlPane`, синхронізація `NX.arc.tlSync`); `tools.js`; картки — `holo_panes.js` |
 | Nexi | `js/actors/nexi/nexi.js` (мозок, хода, вільний час, емоції), `activities.js` (сценарії), `sprite.js`, `poses.js`, `physics.js` |
 | Обхід меблів | `js/world/room.js` (`foot` об'єктів → `route()`: граф видимості, Дейкстра; `freeAt`) |
