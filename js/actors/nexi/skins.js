@@ -18,7 +18,10 @@ const SW=48,SH=56,FOOT=52,OUT='#0a0f2e';   // розмір спрайта; FOOT 
 const SPRITE_K=0.75;                        // HD-піксель = 0.75 старого: розмір бота в кімнаті не змінився
 const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const toHex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
-const shade=(h,k)=>{const c=hx(h);return toHex(k>=0?c.map(v=>v+(255-v)*k):c.map(v=>v*(1+k)))};
+// shade — щокадру сотні разів (renderBot: кожен об'ємний блок — 4 відтінки), тож відтінок рахується раз і береться з кешу
+// (веселкова тема дає нові кольори щокадру — кеш чиститься, коли росте понад 4000)
+const SHADES=new Map();
+const shade=(h,k)=>{const key=h+'|'+k;let v=SHADES.get(key);if(v===undefined){const c=hx(h);v=toHex(k>=0?c.map(v=>v+(255-v)*k):c.map(v=>v*(1+k)));if(SHADES.size>4000)SHADES.clear();SHADES.set(key,v);}return v};
 // themes (Ноги / Теми): shell, accent, joint, eye
 const THEMES={
 standard:{n:'Стандарт',shell:'#e9eefc',acc:'#3b8cff',jnt:'#46508a',eye:'#3be8ff'},
