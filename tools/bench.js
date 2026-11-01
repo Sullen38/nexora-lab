@@ -49,7 +49,7 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
           s = 0x2545f491;
           const vw = NX.cam.viewW, max = Math.max(0, NX.cfg.ROOM_W - vw), at = cx => Math.max(0, Math.min(max, cx - vw / 2)), zb = {};
           for (const w of Object.values(NX.arcLayout || {})) if (w && w.zoneBox) Object.assign(zb, w.zoneBox);
-          const PL = (dev === 'desk' ? [['кімната', null]] : [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools'].filter(k => zb[k]).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]))).filter(([n]) => !ONLY || ONLY.includes(n) || (n === 'док' && ONLY.includes('dock')));
+          const PL = (dev === 'desk' ? [['кімната', null]] : [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools', ...Object.keys(zb).sort()].filter((k, i, a) => zb[k] && a.indexOf(k) === i).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]))).filter(([n]) => !ONLY || ONLY.includes(n) || (n === 'док' && ONLY.includes('dock')));
           const D = window.__det = { places: PL.map(([name]) => ({ name, acc: {}, ts: [] })), end: B + PL.length * (W + FR) }, idle = {};
           const now = RN, cur = () => { const f = NX.loop.frames - B, i = Math.floor(f / (W + FR)); return f >= 0 && i < PL.length && f % (W + FR) >= W ? D.places[i] : null; };
           const add = (k, d) => { const P = cur(); if (P) P.acc[k] = (P.acc[k] || 0) + d; };
@@ -102,7 +102,7 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
       const vw = NX.cam.viewW, max = Math.max(0, NX.cfg.ROOM_W - vw), at = cx => Math.max(0, Math.min(max, cx - vw / 2)), zb = {};
       if (dev === 'desk') return [['кімната', null]];
       for (const w of Object.values(NX.arcLayout || {})) if (w && w.zoneBox) Object.assign(zb, w.zoneBox);
-      return [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools'].filter(k => zb[k]).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]));
+      return [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools', ...Object.keys(zb).sort()].filter((k, i, a) => zb[k] && a.indexOf(k) === i).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]));
     }, DEV);
     await p.evaluate(() => {   // інструменти виміру: час кожного update / drawBack / шару
       const A = window.__acc = {}, now = () => performance.now(), add = (k, d) => { A[k] = (A[k] || 0) + d; };
