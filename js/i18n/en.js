@@ -82,8 +82,10 @@ NX.i18n.add('en', {
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
   own: {
-    preset: 'Ready skin “{name}” — free', avail: 'Unique! Nobody has this Nexi yet', taken: '{name} already owns this Nexi ({no}) — change at least one thing',
-    mine: 'Your personal Nexi {no} · NFT 1/1', buy: 'BUY · {price}', busy: 'TAKEN', takenToast: 'CHANGE AT LEAST ONE THING', tryoff: 'TRY-ON REMOVED — BUY THIS NEXI TO KEEP IT',
+    std: 'Standard Nexi — free for everyone', preset: 'Ready skin “{name}” — free until someone buys it', buyNo: 'BUY {no} · {price}',
+    presetBuy: 'Ready skin “{name}”: buy it first and it’s yours alone', perkNo: 'Number {no} — next in line (locked in at payment)',
+    lost: 'Someone bought my “{name}” skin — it’s Nexi {no} now. Pick me a new look in the Skins zone!', avail: 'Unique! Nobody has this Nexi yet', taken: '{name} already owns this Nexi ({no}) — change at least one thing',
+    mine: 'Your personal Nexi {no} · NFT 1/1', buy: 'BUY · {price}', busy: 'TAKEN', takenToast: 'CHANGE AT LEAST ONE THING', tryoff: 'TRY-ON REMOVED — BUY THIS NEXI TO KEEP IT', tryoffTaken: 'TRY-ON REMOVED — THIS NEXI ALREADY HAS AN OWNER',
     price: '€{v}', title: 'PERSONAL NEXI', yours: 'YOUR',
     perks: ['Only yours: nobody else can wear this Nexi', 'NFT 1/1 on Base — in your wallet (created from your email)', 'Resellable; one Nexi per person'],
     soon: 'SALE OPENS SOON', soonNote: 'Card payments come in the next step — then this Nexi becomes your NFT 1/1.', haveOne: 'YOU ALREADY OWN NEXI {no}', wear: 'WEAR',

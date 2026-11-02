@@ -5,7 +5,9 @@
  * ноги, АКСЕСУАРИ (спина, голова) і РЕЛІКВІЇ (предмети в руці) — окремо (власник, 29.10); ВЛАСНИКИ — персональні Nexi
  * (02.11). Обличчя тут немає: вирази Nexi обирає сам (емоції — nexi.js moodLife). Зміни одразу видно на Nexi в кімнаті.
  * ПЕРСОНАЛЬНІ NEXI (власник, 02.11: «повторювати скіни не можна; кожен — 99,99 € і NFT»; правила — actors/nexi/owners.js):
- *   приміряти можна будь-що, а ЗАЛИШИТИ (зберегти) — лише стандартний Nexi, 17 готових скінів або свій куплений. Рядок під
+ *   приміряти можна будь-що, а ЗАЛИШИТИ (зберегти) — лише стандартний Nexi, готовий скін (поки його не купили) або свій
+ *   куплений. Готовий скін теж можна купити як є (власник, 02.11: «будь-який Nexi — 99,99 €, свій номер від #1») — у рядку
+ *   стану тоді золота кнопка «КУПИТИ #002 · 99,99 €» (номер — наступний за чергою); куплений — у плитці «ЗАЙНЯТО #003». Рядок під
  *   прев'ю каже, що це за образ: готовий скін (безкоштовно) · унікальний (можна купити, ціна) · такий уже має власник (зміни
  *   хоча б одну річ) · твій Nexi; кнопка внизу — «ЗБЕРЕЖЕНО» / «КУПИТИ · 99,99 €» (аркуш з карткою NFT — ui/shop.js) /
  *   «ЗАЙНЯТО». Закрив лабораторію з образом, який не можна залишити, — примірку знято (повертається збережений).
@@ -24,7 +26,7 @@ NX.ui.skinlab = {
     this.CATS.forEach(c => { const b = document.createElement('button'); b.onclick = () => { this.cat = c; this.grid(); }; c.btn = b; $('cats').appendChild(b); });
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (NX.ui.shop.open) NX.ui.shop.hide(); else this.hide(); });
     $('pl').onclick = () => this.cycle(-1); $('pr').onclick = () => this.cycle(1);
-    $('save').onclick = () => this.keep();
+    $('save').onclick = () => this.keep(); $('ownbuy').onclick = () => NX.ui.shop.show('buy');   // готовий скін: носити — безкоштовно, купити — рядок стану
     $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.persist(); this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
       const backs = WEAR_ACCS.filter(k => ACCS[k].slot === 'back'), heads = WEAR_ACCS.filter(k => ACCS[k].slot === 'head');
@@ -46,7 +48,8 @@ NX.ui.skinlab = {
   /** Закрити: якщо на Nexi примірка, яку не можна залишити (персональний образ без покупки), — повернути збережений. */
   hide() {
     if (!this.open) return; this.open = false; NX.ui.shop.hide(); document.getElementById('lab').classList.remove('open');
-    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = { ...this.kept }; NX.ui.hud.toast(NX.t('own.tryoff')); } else this.persist();
+    const st = NX.owners.status(NX.nexi.look);
+    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = { ...this.kept }; NX.ui.hud.toast(NX.t(st.kind === 'taken' ? 'own.tryoffTaken' : 'own.tryoff')); } else this.persist();
   },
   /** Кнопка внизу: «ЗБЕРЕЖЕНО» (стандарт / готовий скін / свій — уже збережено, тап — підтвердження) · купити (вільний
    *  персональний — аркуш NFT) · зайнято (чужий). */
@@ -63,13 +66,14 @@ NX.ui.skinlab = {
   },
   /** Рядок під прев'ю (що це за образ) і напис на кнопці збереження / купівлі. */
   state() {
-    const O = NX.owners, L = NX.nexi.look, st = O.status(L), $ = id => document.getElementById(id), sv = $('save');
+    const O = NX.owners, L = NX.nexi.look, st = O.status(L), $ = id => document.getElementById(id), sv = $('save'), ob = $('ownbuy');
     $('own').className = 'own ' + st.kind;
-    $('ownst').textContent = st.kind === 'preset' ? NX.t('own.preset', { name: NX.t('skin.skin.' + st.preset) })
+    $('ownst').textContent = st.kind === 'std' ? NX.t('own.std') : st.kind === 'preset' ? NX.t('own.preset', { name: NX.t('skin.skin.' + st.preset) })
       : st.kind === 'avail' ? NX.t('own.avail') + ' · ' + O.priceText()
       : st.kind === 'taken' ? NX.t('own.taken', { name: O.nameOf(st.owner), no: O.noText(st.owner) })
       : NX.t('own.mine', { no: O.noText(st.owner) });
-    $('owncode').textContent = st.kind === 'preset' ? '' : O.code(L);
+    $('owncode').textContent = st.kind === 'std' || st.kind === 'preset' ? '' : O.code(L);
+    ob.hidden = st.kind !== 'preset'; ob.textContent = NX.t('own.buyNo', { no: O.noText({ no: O.nextNo() }), price: O.priceText() });
     sv.className = 'save' + (st.kind === 'avail' ? ' buy' : st.kind === 'taken' ? ' busy' : '');
     sv.textContent = st.kind === 'avail' ? NX.t('own.buy', { price: O.priceText() }) : st.kind === 'taken' ? NX.t('own.busy') : NX.t('ui.kept');
   },
@@ -95,9 +99,11 @@ NX.ui.skinlab = {
     this.state();
     if (c.k === 'owners') return this.owners(g);
     Object.keys(c.items).forEach(id => {
-      const b = document.createElement('button'), rar = c.k === 'skin' ? SKINS[id].rar : null; b.className = 'tile' + (this.isOn(c, id) ? ' on' : '') + (rar ? ' rar rar-' + rar : '');
+      const b = document.createElement('button'), rar = c.k === 'skin' ? SKINS[id].rar : null, ow = rar && id !== 'classic' && NX.owners.ownerOf(id);   // готовий скін уже купили
+      b.className = 'tile' + (this.isOn(c, id) ? ' on' : '') + (rar ? ' rar rar-' + rar : '') + (ow ? (ow.mine ? ' mine' : ' sold') : '');
       const cn = document.createElement('canvas'); cn.width = SW; cn.height = SH; b.append(cn, this.name(c, id));
-      if (rar) { const sm = document.createElement('small'); sm.textContent = NX.t('skin.rar.' + rar); b.append(sm); }   // рідкість готового скіна
+      if (rar) { const sm = document.createElement('small'), O = NX.owners;                   // рідкість готового скіна; куплений — «ЗАЙНЯТО #003» / «#001 · ТИ»
+        sm.textContent = ow ? (ow.mine ? O.noText(ow) + ' · ' + NX.t('own.you') : NX.t('own.busy') + ' ' + O.noText(ow)) : NX.t('skin.rar.' + rar); b.append(sm); }
       let l = { ...NX.nexi.look }, po = poseFor('stand', .5, false);                                   // t .5 — очі відкриті (у t 0 — кліп)
       if (c.k === 'skin') l = Object.assign(skinLook(id, l), { hand: null }); else if (c.k === 'acc' || c.k === 'relic') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = NX.nexi.faceOf(id); else l[c.k] = id;
       renderBot(l, po, .5, this.tcr); cn.getContext('2d').drawImage(this.tcr, 0, 0); b.onclick = () => this.apply(c, id); g.appendChild(b);

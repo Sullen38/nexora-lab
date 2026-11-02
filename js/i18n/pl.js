@@ -82,8 +82,10 @@ NX.i18n.add('pl', {
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
   own: {
-    preset: 'Gotowa skórka „{name}” — za darmo', avail: 'Unikalny! Nikt jeszcze nie ma takiego Nexi', taken: 'Takiego Nexi ma już {name} ({no}) — zmień choć jedną rzecz',
-    mine: 'Twój osobisty Nexi {no} · NFT 1/1', buy: 'KUP · {price}', busy: 'ZAJĘTY', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ', tryoff: 'PRZYMIARKA ZDJĘTA — KUP TEGO NEXI, BY GO ZATRZYMAĆ',
+    std: 'Standardowy Nexi — za darmo dla wszystkich', preset: 'Gotowa skórka „{name}” — za darmo, dopóki ktoś jej nie kupi', buyNo: 'KUP {no} · {price}',
+    presetBuy: 'Gotowa skórka „{name}”: kup pierwszy — i będzie tylko twoja', perkNo: 'Numer {no} — następny w kolejce (rezerwowany przy płatności)',
+    lost: 'Ktoś kupił moją skórkę „{name}” — to teraz Nexi {no}. Wybierz mi nowy wygląd w strefie „Skórki”!', avail: 'Unikalny! Nikt jeszcze nie ma takiego Nexi', taken: 'Takiego Nexi ma już {name} ({no}) — zmień choć jedną rzecz',
+    mine: 'Twój osobisty Nexi {no} · NFT 1/1', buy: 'KUP · {price}', busy: 'ZAJĘTY', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ', tryoff: 'PRZYMIARKA ZDJĘTA — KUP TEGO NEXI, BY GO ZATRZYMAĆ', tryoffTaken: 'PRZYMIARKA ZDJĘTA — TEN NEXI MA JUŻ WŁAŚCICIELA',
     price: '{v}\u00a0€', title: 'OSOBISTY NEXI', yours: 'TWÓJ',
     perks: ['Tylko twój: nikt inny nie założy takiego Nexi', 'NFT 1/1 w sieci Base — w twoim portfelu (tworzonym na e-mail)', 'Można odsprzedać; jeden Nexi na osobę'],
     soon: 'SPRZEDAŻ WKRÓTCE', soonNote: 'Płatności kartą podłączymy w następnym kroku — wtedy ten Nexi stanie się twoim NFT 1/1.', haveOne: 'MASZ JUŻ SWOJEGO NEXI {no}', wear: 'ZAŁÓŻ',

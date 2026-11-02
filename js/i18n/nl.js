@@ -82,8 +82,10 @@ NX.i18n.add('nl', {
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },
   own: {
-    preset: 'Kant-en-klare skin "{name}" — gratis', avail: 'Uniek! Niemand heeft deze Nexi nog', taken: '{name} heeft deze Nexi al ({no}) — verander minstens één ding',
-    mine: 'Jouw persoonlijke Nexi {no} · NFT 1/1', buy: 'KOPEN · {price}', busy: 'BEZET', takenToast: 'VERANDER MINSTENS ÉÉN DING', tryoff: 'PASSEN GESTOPT — KOOP DEZE NEXI OM HEM TE HOUDEN',
+    std: 'Standaard-Nexi — gratis voor iedereen', preset: 'Kant-en-klare skin "{name}" — gratis tot iemand hem koopt', buyNo: 'KOOP {no} · {price}',
+    presetBuy: 'Kant-en-klare skin "{name}": koop hem als eerste en hij is alleen van jou', perkNo: 'Nummer {no} — de volgende op rij (vastgelegd bij betaling)',
+    lost: 'Iemand kocht mijn skin "{name}" — het is nu Nexi {no}. Kies een nieuwe look voor me in de Skins-zone!', avail: 'Uniek! Niemand heeft deze Nexi nog', taken: '{name} heeft deze Nexi al ({no}) — verander minstens één ding',
+    mine: 'Jouw persoonlijke Nexi {no} · NFT 1/1', buy: 'KOPEN · {price}', busy: 'BEZET', takenToast: 'VERANDER MINSTENS ÉÉN DING', tryoff: 'PASSEN GESTOPT — KOOP DEZE NEXI OM HEM TE HOUDEN', tryoffTaken: 'PASSEN GESTOPT — DEZE NEXI HEEFT AL EEN EIGENAAR',
     price: '€\u00a0{v}', title: 'PERSOONLIJKE NEXI', yours: 'JOUW',
     perks: ['Alleen van jou: niemand anders kan deze Nexi dragen', 'NFT 1/1 op Base — in je wallet (aangemaakt met je e-mail)', 'Doorverkoopbaar; één Nexi per persoon'],
     soon: 'VERKOOP BINNENKORT', soonNote: 'Betalen met kaart komt in de volgende stap — dan wordt deze Nexi jouw NFT 1/1.', haveOne: 'JE HEBT AL NEXI {no}', wear: 'DRAGEN',

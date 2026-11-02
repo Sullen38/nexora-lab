@@ -2,7 +2,9 @@
  * ui/shop.js — ПЕРСОНАЛЬНИЙ NEXI: КАРТКА NFT, ЩО ДАЄ ПОКУПКА, ЦІНА (аркуш поверх лабораторії скінів)
  * ----------------------------------------------------------------------------
  * Відкривається з лабораторії (ui/skinlab.js):
- *   show('buy')         — образ вільний: картка NFT (#--- — ще не куплено), 8 частин-атрибутів, що дає покупка, ціна, кнопка;
+ *   show('buy')         — образ вільний (своє поєднання або готовий скін, ще не куплений): картка NFT зі скіном і НОМЕРОМ, який
+ *                         отримає покупець (наступний за чергою: #001 — засновник, далі #002…; власник, 02.11), 8 частин-атрибутів,
+ *                         що дає покупка, ціна, кнопка;
  *   show('view', owner) — Nexi власника з вкладки «Власники»: картка з номером, власник і з якого часу; свого — «Вдягнути».
  * Правила й список власників — actors/nexi/owners.js, картка — actors/nexi/nft_card.js, план NFT — docs/NFT.md.
  * КРОК 1 (02.11): справжньої оплати немає — кнопка «ПРОДАЖ СКОРО» неактивна, нічого не списується й не резервується.
@@ -27,16 +29,16 @@ NX.ui.shop = {
   },
   hide() { if (!this.open) return; this.open = false; this.$('sheet').classList.remove('open'); },
   render() {
-    const O = NX.owners, L = this.look, o = this.owner, $ = this.$, buy = this.mode === 'buy';
-    $('shtitle').textContent = o ? (o.mine ? NX.t('own.yours') + ' ' : '') + 'NEXI ' + O.noText(o) : NX.t('own.title');
-    NX.nftCard(L, { no: o ? o.no : null }, $('nftcv'));
+    const O = NX.owners, L = this.look, o = this.owner, $ = this.$, buy = this.mode === 'buy', st = O.status(L), next = { no: O.nextNo() };
+    $('shtitle').textContent = o ? (o.mine ? NX.t('own.yours') + ' ' : '') + 'NEXI ' + O.noText(o) : NX.t('own.title') + ' ' + O.noText(next);
+    NX.nftCard(L, { no: o ? o.no : next.no }, $('nftcv'));                                // картка: скін + номер (покупка — наступний за чергою)
     $('shstat').textContent = o ? [NX.t('own.owner', { name: O.nameOf(o) + (o.founder ? ' · ' + NX.t('own.founder') : '') }), o.since ? NX.t('own.since', { date: O.dateText(o) }) : '', 'NFT 1/1 · Base'].filter(Boolean).join(' · ')
-      : NX.t('own.avail');
+      : st.preset ? NX.t('own.presetBuy', { name: NX.t('skin.skin.' + st.preset) }) : NX.t('own.avail');
     const dl = $('shattr'); dl.innerHTML = '';                                          // атрибути — 8 частин образу (вони ж атрибути NFT)
     O.PARTS.forEach(k => { const dt = document.createElement('dt'), dd = document.createElement('dd'), v = L[k];
       dt.textContent = NX.t('own.attr.' + k); dd.textContent = v == null ? NX.t('own.nothing') : NX.t('skin.' + this.CAT[k] + '.' + v); dl.append(dt, dd); });
     const ul = $('shperks'); ul.innerHTML = ''; ul.hidden = !buy;
-    if (buy) [].concat(NX.t('own.perks')).forEach(p => { const li = document.createElement('li'); li.textContent = p; ul.appendChild(li); });
+    if (buy) [].concat(NX.t('own.perks'), NX.t('own.perkNo', { no: O.noText(next) })).forEach(p => { const li = document.createElement('li'); li.textContent = p; ul.appendChild(li); });
     // ціна й кнопка: купівля — поки «продаж скоро» (неактивна); «один Nexi на людину» — якщо свій уже є; свій — «вдягнути»
     const b = $('shbuy'), pr = $('shprice'), note = $('shnote'), mine = o && o.mine;
     pr.textContent = buy ? O.priceText() : ''; pr.hidden = !buy;

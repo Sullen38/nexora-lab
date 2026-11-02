@@ -86,6 +86,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .own.avail b{color:#ffe6a0}
 .own.taken{--c:#ff5a7a}.own.taken b{color:#ffb0c0}
 .own.mine{--c:var(--gold)}.own.mine b{color:var(--gold)}
+.own .ownbuy{flex:none;border:0;background:var(--gold);color:#201400;font:400 8px/1.35 var(--f-d);padding:8px 9px;cursor:pointer;white-space:nowrap}
+.own .ownbuy[hidden]{display:none}
+.tile.rar.sold{--r:#ff5a7a;opacity:.82}.tile.rar.mine{--r:var(--gold)}   /* готовий скін уже купили / твій */
 .acts .save.buy{background:var(--gold);color:#201400}
 .acts .save.busy{background:#3a1430;color:#ff9ab0}
 .tile.own1{border-color:#6a5410;background:linear-gradient(180deg,#2a2208,#080d2a 70%);text-transform:none}

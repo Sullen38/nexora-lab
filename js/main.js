@@ -27,7 +27,11 @@
     NX.city.markPatched();                                                           // передня підлога-дзеркало вже зібрана
     // 4) ГОТОВО: скін, інтерфейс, Nexi на доку, камера на ньому, перший кадр по шматках
     try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
-    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = NX.owners.sanitize(NX.nexi.look); try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} }   // персональний образ без покупки не зберігається (actors/nexi/owners.js)
+    if (!NX.owners.keepable(NX.nexi.look)) {                                         // персональний образ без покупки не зберігається (actors/nexi/owners.js)
+      const st = NX.owners.status(NX.nexi.look);                                     // збережений готовий скін (чи свій) тим часом купив інший — Nexi скаже після привітання
+      if (st.kind === 'taken') NX.owners.lost = { name: st.preset ? NX.t('skin.skin.' + st.preset) : NX.owners.code(NX.nexi.look), no: NX.owners.noText(st.owner) };
+      NX.nexi.look = NX.owners.sanitize(NX.nexi.look); try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {}
+    }
     NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init(); ui = true;
     [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; placed = true;
     NX.cam.x = NX.px.clamp(NX.nexi.x - NX.cam.viewW / 2, NX.cfg.ROOM_X0, Math.max(NX.cfg.ROOM_X0, NX.cfg.ROOM_X1 - NX.cam.viewW));   // телефон: одразу на Nexi
@@ -42,4 +46,5 @@
   NX.ui.chat.add('b', NX.t('chat.greet'));
   await B.reveal();                                                                  // плавний перехід заставки в кімнату
   setTimeout(() => { if (!NX.nexi.lastCmd) NX.nexi.do('home', false); }, 300);         // привітання на доку — якщо людина ще нічого не наказала (тап під час переходу не губиться)
+  const lost = NX.owners.lost; if (lost) setTimeout(() => { NX.nexi.emote('surprise', 2.5); NX.nexi.say(NX.t('own.lost', lost)); }, 5200);   // «мій «Неон» хтось купив — обери новий»
 })();
