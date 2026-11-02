@@ -212,6 +212,17 @@ NX.arc = NX.arc || {};
     S.poly([[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]], col);
   }
 
+  // ---------- допоміжне для рослин · 3 ----------
+  const OUTL = S => NX.art.outline(S.r, OUT);                                         // контур навколо всього спрайта (дрібне листя)
+  const rot = (x, y, cx, cy, a) => { const c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return [cx + dx * c - dy * s, cy + dx * s + dy * c]; };
+  /** Листок-еліпс під кутом a (0 — угору) з тоном q: заливка рамп-палітрою (світліше вгорі листка). */
+  const eLeaf = (S, x, y, rx, ry, a, P, q, n = 9) => S.poly(ell(x, y, rx, ry, n).map(([px, py]) => rot(px, py, x, y, a)), (u, v, i, j) => ramp(P, q + (1 - v) * .28 + (hash(i, j) - .5) * .08, i, j, .08));
+  /** Пасмо, що звисає з (x0, y0): точки з вигином (sway — розмах, ph — фаза). */
+  const hangPts = (x0, y0, len, sway, ph, n = 16) => Array.from({ length: n + 1 }, (_, k) => { const t = k / n; return [x0 + Math.sin(t * 4.2 + ph) * sway * t, y0 + t * len]; });
+  /** Стебло, що в'ється вгору від низу (виткі рослини на стіні). */
+  const climbPts = (W, H, ph, amp, freq, n) => Array.from({ length: n + 1 }, (_, k) => { const t = k / n; return [W * (.5 + amp * Math.sin(t * freq + ph)), H - .3 - t * (H - .8)]; });
+  const polyline = (S, pts, col, w) => { for (let k = 1; k < pts.length; k++) line(S, pts[k - 1], pts[k], col, w); };
+
   // ---------- нові рослини (02.11) ----------
   const OWN = {
     /** Кактус-колона з двома «руками» (цереус), ребра, колючки, рожева квітка на маківці. */
@@ -317,6 +328,257 @@ NX.arc = NX.arc || {};
       };
       [[.5, 1.25], [.62, 1.2], [.73, 1.12], [.83, 1.02], [.92, .9]].forEach(([t, r], k) => { const p = pts[Math.round(t * 20)]; fl(p[0] + (k % 2 ? .5 : -.4), p[1] + 1.4, Math.min(r * W * .21, 3), k); });
       [.98, 1].forEach((t, k) => { const p = pts[Math.round(t * 20)]; S.poly(ell(p[0] + .3, p[1] + .7, .55 - k * .15, .75 - k * .15, 8), (u, v, i, j) => ramp(['#4a6a2a', '#a0c070', '#f0c8e8'], .4 + v * .5, i, j)); });
+    },
+    // ===== Декор стін · 3: ВИСЯЧА Й ВИТКА ЗЕЛЕНЬ (кожен вид — один раз) =====
+    /** Нефролепіс (бостонська папороть) у висячому кошику: вайї віялом з крони — короткі вгору, довгі дугою вниз каскадом;
+     *  кожна вая вміщується в спрайт (довжина підганяється). */
+    bostonfern(S, W, H, seed) {
+      const cx = W / 2, cy = H * .17, FP = ['#06200f', '#0b3418', '#124a22', '#1a642e', '#247e3a', '#33984a', '#4cb45e', '#76d27c'];
+      // КАСКАД: кожна вая — дуга Безьє від крони вгору-назовні, далі вниз до свого кінця; кінці розкладені по всій ширині
+      // й висоті (довгі — по краях і всередині, короткі — вгору), листочки — однакової ширини (вая читається), тонші до кінців
+      const F = [], N = 26;
+      for (let q = 0; q < N; q++) { const u = (q + .5) / N, side = u < .5 ? -1 : 1, e = Math.abs(u - .5) * 2, up = q % 5 === 2;
+        const ex = cx + side * (W / 2 - 2.2) * Math.min(1, .25 + e * .9) * (.85 + .15 * hash(seed, q)), ey = up ? cy - H * (.08 + .06 * hash(q, seed)) : cy + (H - cy - 1.4) * (.35 + .65 * (.4 + .6 * hash(seed, q + 9)) * (1 - Math.abs(e - .6) * .5));
+        const mid = e < .22 && !up, p1 = mid ? [cx + side * 3.5, cy + H * .08] : [cx + side * (W / 2 - 2) * (.5 + e * .5) * (up ? .4 : 1.05), cy - H * (up ? .14 : .06 + .05 * (1 - e))];   // середні — звисають просто вниз
+        F.push({ q, side, ex: Math.max(1.6, Math.min(W - 1.6, ex)), ey, p1, z: up ? 2 : hash(q, seed + 3) });
+      }
+      F.sort((a, b) => a.z - b.z);
+      for (const f of F) {
+        const p0 = [cx + f.side * .6, cy], n = 26, pts = [];
+        for (let k = 0; k <= n; k++) { const t = k / n, a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t; pts.push([a * p0[0] + b * f.p1[0] + c * f.ex, a * p0[1] + b * f.p1[1] + c * f.ey]); }
+        const Lm = 2.1 + .5 * hash(f.q, 5), q0 = .3 + f.z * .12;
+        for (let m = 1; m < n; m++) { const t = m / n, [px, py] = pts[m], dx = pts[m + 1][0] - pts[m - 1][0], dy = pts[m + 1][1] - pts[m - 1][1], aa = Math.atan2(dx, -dy), ll = Lm * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.05 + .04)), .6) + .3;
+          for (const sd of [-1, 1]) { const la = aa + sd * .95, ex = px + Math.sin(la) * ll, ey = py - Math.cos(la) * ll, nx = Math.cos(la) * .3, ny = Math.sin(la) * .3;
+            S.poly([[px - nx, py - ny], [ex, ey], [px + nx, py + ny]], (u, v, i, j) => ramp(FP, q0 + t * .22 + (sd < 0 ? .1 : -.05) + (hash(i, j) - .5) * .06, i, j, .06)); } }
+        polyline(S, pts, '#2c6a2a', .3);
+      }
+      OUTL(S);
+    },
+    /** Діхондра «срібний водоспад»: з корита — густа завіса пасом з круглими сріблясто-зеленими листочками. */
+    dichondra(S, W, H, seed) {
+      const DP = ['#24322f', '#3e5651', '#5e7d77', '#84a59d', '#aecac2', '#d8eee6'], n = Math.max(6, Math.round(W / 1.3));
+      for (let st = 0; st < n; st++) { const x0 = W * (.03 + .94 * (st + hash(seed, st) * .7) / n), len = H * (.42 + .56 * hash(seed, st + 30)), pts = hangPts(x0, .3, len, .6 + hash(seed, st + 60) * .9, st, 22);
+        polyline(S, pts, '#56706a', .16);
+        pts.forEach(([x, y], k) => { if (k && hash(st * 31 + k, seed) > .48) { const r = .36 + .18 * hash(st, k); S.poly(ell(x + (hash(k, st) - .5) * 1.1, y, r, r * .88, 8), (u, v, i, j) => ramp(DP, .42 + (1 - v) * .42 - Math.hypot(u - .4, v - .4) * .25, i, j, .08)); } }); }
+      for (let k = 0; k < W * .9; k++) S.poly(ell(hash(k, seed + 5) * W, .4 + hash(k, seed + 9) * 1.3, .5, .45, 8), (u, v, i, j) => ramp(DP, .62 - v * .3, i, j, .08));
+      OUTL(S);
+    },
+    /** Мюленбекія (дротяна ліана): сплутані темні дротики й дрібнесенькі круглі яскраво-зелені листочки. */
+    muehlenbeckia(S, W, H, seed) {
+      const MP = ['#0e3a14', '#18561e', '#26762a', '#3a9a38', '#5cbe4e', '#8ade70'], n = Math.max(5, Math.round(W / 1.8));
+      for (let st = 0; st < n; st++) { const x0 = W * (st + .5) / n, len = H * (.38 + .6 * hash(seed, st + 3)); let px = x0, py = .3;
+        for (let k = 1; k <= 44; k++) { const t = k / 44, y = .3 + t * len, x = Math.max(.4, Math.min(W - .4, x0 + Math.sin(t * 9 + st * 2) * (1 + t * 1.5) + Math.sin(t * 23 + st) * .35));
+          line(S, [px, py], [x, y], '#3a1a2a', .15); px = x; py = y;
+          if (k % 2) S.poly(ell(x + (hash(k, st) - .5) * 1.1, y + (hash(st, k) - .5) * .5, .4, .36, 7), (u, v, i, j) => ramp(MP, .32 + (1 - v) * .45 + hash(i, j) * .1, i, j, .08)); } }
+      for (let k = 0; k < W * 1.3; k++) S.poly(ell(hash(k, seed + 2) * W, .3 + hash(k, seed + 4) * 1.5, .46, .42, 7), (u, v, i, j) => ramp(MP, .55 - v * .3, i, j, .08));
+      OUTL(S);
+    },
+    /** Дикий виноград (виткий, на цеглі): стебла в'ються вгору, трилопатеві листки — знизу зелені, вгорі червоніють. */
+    bivy(S, W, H, seed) {
+      const GP = ['#0a2a14', '#124020', '#1c5a2c', '#2a763a', '#3c944a', '#58b45c'], RP = ['#3a0a10', '#6a1418', '#9a2420', '#c8402a', '#e8703a', '#ffa050'];
+      for (let st = 0; st < 2; st++) polyline(S, climbPts(W, H, hash(seed, st) * 6 + st * 2.4, .3, H / 9, Math.round(H)), '#4a2a1a', .26);
+      for (let k = 0; k < H / 1.15; k++) {
+        const y = H - 1 - k * 1.15 + (hash(k, seed) - .5) * .6, t = 1 - y / H, st = k % 2, x = W * (.5 + .3 * Math.sin(t * H / 9 + hash(seed, st) * 6 + st * 2.4)) + (k % 3 - 1) * .7;
+        const r = Math.min(W * .24, 1.45 + hash(k, seed + 1) * .5), a = (k % 2 ? .45 : -.45) + (hash(seed, k + 9) - .5) * .6, P = hash(k, seed + 3) < t * .8 ? RP : GP;
+        for (const [da, dr] of [[-.95, .78], [.95, .78], [0, 1]]) { const aa = a + da, lx = x + Math.sin(aa) * r * .5 * dr, ly = y - Math.cos(aa) * r * .5 * dr; eLeaf(S, lx, ly, r * .4, r * .58 * dr, aa, P, .34); }
+        line(S, [x, y], [x + Math.sin(a) * r * .55, y - Math.cos(a) * r * .55], P === RP ? '#ffc890' : '#a8e8a0', .12);
+      }
+      OUTL(S);
+    },
+    /** Пасифлора (виткá, на цеглі): стебла з вусиками-спіральками, лопатеві листки й три «годинникові» квітки: білі
+     *  пелюстки, корона з фіолетово-білих ниточок, зелена серединка з тичинками. */
+    passiflora(S, W, H, seed) {
+      const LP = ['#0a2a14', '#14401e', '#1e5a2a', '#2c7638', '#409448', '#5cb05c'];
+      for (let st = 0; st < 2; st++) polyline(S, climbPts(W, H, hash(seed, st) * 6 + st * 3, .32, H / 11, Math.round(H)), '#3a6a2a', .25);
+      for (let k = 0; k < H / 2.1; k++) {
+        const y = H - 1.2 - k * 2.1, t = 1 - y / H, st = k % 2, x = W * (.5 + .32 * Math.sin(t * H / 11 + hash(seed, st) * 6 + st * 3)), r = Math.min(W * .2, 2.1 + hash(k, seed) * .5), a = (k % 2 ? .6 : -.6);
+        for (const da of [-.75, 0, .75]) { const aa = a + da; eLeaf(S, x + Math.sin(aa) * r * .55, y - Math.cos(aa) * r * .55, r * .28, r * .62, aa, LP, .36); }
+        if (k % 3 === 1) { const tx = x - Math.sin(a) * 1.4, ty = y - .8; let px = tx, py = ty; for (let q = 1; q < 14; q++) { const an = q * .7, rr = 1 - q / 16, nx = tx + Math.cos(an) * rr, ny = ty + Math.sin(an) * rr * .8 - q * .05; line(S, [px, py], [nx, ny], '#7ac860', .1); px = nx; py = ny; } }
+      }
+      [[.2, .3], [.52, .7], [.82, .38]].forEach(([t, u], f) => { const R = Math.min(W * .21, 2.8), x = W * (.2 + .6 * u), y = H * (1 - t);
+        for (let q = 0; q < 10; q++) { const a = q / 10 * Math.PI * 2; S.poly(ell(x + Math.cos(a) * R * .55, y + Math.sin(a) * R * .55, R * .48, R * .2, 8).map(([px, py]) => rot(px, py, x + Math.cos(a) * R * .55, y + Math.sin(a) * R * .55, a)), q % 2 ? '#f4eeff' : '#e2d6ff'); }
+        for (let q = 0; q < 40; q++) { const a = q / 40 * Math.PI * 2; for (const [r0, r1, cc] of [[.3, .5, '#5a127a'], [.5, .68, '#ffffff'], [.68, .98, '#7a5aff']]) line(S, [x + Math.cos(a) * R * r0, y + Math.sin(a) * R * r0], [x + Math.cos(a) * R * r1, y + Math.sin(a) * R * r1], cc, .09); }
+        S.poly(ell(x, y, R * .26, R * .26, 10), '#8ac850'); for (let q = 0; q < 5; q++) { const a = q / 5 * 6.283; S.set(x + Math.cos(a) * R * .2, y + Math.sin(a) * R * .2, '#d8b040'); }
+        S.set(x, y, '#5a2a1a'); });
+      OUTL(S);
+    },
+    /** Плющ (звисає з краю антресолі): темно-зелені лопатеві листки зі світлими жилками на пасмах. */
+    ivy(S, W, H, seed) {
+      const IP = ['#061a10', '#0a2a18', '#103c22', '#185030', '#22663c', '#2e7e4a', '#48a060'], n = Math.max(4, Math.round(W / 2.4));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.08 + .84 * (st + .5) / n), .3, H * (.45 + .53 * hash(seed, st)), .9 + hash(seed, st + 9), st * 1.7, 18); polyline(S, pts, '#3a2a1a', .2);
+        pts.forEach(([x, y], k) => { if (k < 1 || k % 2) return; const sd = (k / 2 + st) % 2 ? 1 : -1, r = 1.15 + .45 * hash(st, k), lx = x + sd * r * .7, a = sd * .4;
+          for (const [da, dr] of [[-1.1, .6], [1.1, .6], [-.5, .8], [.5, .8], [0, 1]]) { const aa = a + da; eLeaf(S, lx + Math.sin(aa) * r * .45 * dr, y + .4 - Math.cos(aa) * r * .45 * dr, r * .32, r * .5 * dr, aa, IP, .3); }
+          line(S, [lx, y + .4], [lx + Math.sin(a) * r * .6, y + .4 - Math.cos(a) * r * .6], '#b8e0b0', .1); }); }
+      for (let k = 0; k < W / 1.6; k++) { const x = W * (k + .5) / (W / 1.6); eLeaf(S, x, 1, 1, .8, (hash(k, seed) - .5) * 1.5, IP, .42); }
+      OUTL(S);
+    },
+    /** Церопегія «ланцюжок сердець»: тоненькі бузкові нитки, парні листочки-серця з срібним мармуром, рожеві ліхтарики квіток. */
+    ceropegia(S, W, H, seed) {
+      const n = Math.max(5, Math.round(W / 1.5));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.06 + .88 * (st + hash(seed, st) * .5) / n), .2, H * (.5 + .48 * hash(seed, st + 3)), .5 + hash(seed, st + 6) * .7, st * 2.3, 26); polyline(S, pts, '#8a5a8a', .1);
+        pts.forEach(([x, y], k) => { if (k < 2 || k % 3) return; for (const sd of [-1, 1]) { const cx = x + sd * .55, cy = y; S.poly([[cx, cy + .55], [cx - .55, cy - .1], [cx - .3, cy - .45], [cx, cy - .2], [cx + .3, cy - .45], [cx + .55, cy - .1]], (u, v, i, j) => v > .75 ? '#7a3a6a' : Math.abs(u - .5) < .16 && v > .2 ? '#a8c0b0' : '#2a5a3a'); }
+          if (hash(st, k) > .9) { S.poly(ell(x + .2, y + 1.1, .25, .6, 8), '#ff9ad8'); S.set(x + .2, y + 1.6, '#5a1a4a'); } }); }
+      OUTL(S);
+    },
+    /** Рипсаліс («кактус-омела»): пучки тонких зелених «олівців», що галузяться віялом і звисають, білі ягідки. */
+    rhipsalis(S, W, H, seed) {
+      const RP = ['#1a4a1a', '#256a24', '#348a30', '#4aa840', '#70c85a'];
+      const br = (x, y, a, l, d, k) => { const e = [x + Math.sin(a) * l, y + Math.cos(a) * l]; line(S, [x, y], e, RP[1], .42); line(S, [x - .1, y], [e[0] - .1, e[1]], RP[3], .14);
+        if (hash(k, seed) > .78) S.poly(ell(e[0], e[1], .3, .3, 6), '#f4f4ec');
+        if (d < 4) { br(e[0], e[1], a - .32 - hash(k, d) * .2, l * .8, d + 1, k * 2 + 1); br(e[0], e[1], a + .3 + hash(d, k) * .2, l * .82, d + 1, k * 2 + 2); } };
+      const n = Math.max(3, Math.round(W / 3.2)); for (let st = 0; st < n; st++) br(W * (.15 + .7 * (st + .5) / n), .3, (hash(seed, st) - .5) * .5, H * (.16 + .06 * hash(st, seed)), 0, st * 17 + 3);
+      OUTL(S);
+    },
+    /** Есхінантус («помада»): пасма з глянцевими парними листками й червоними трубчастими квітками з бордових «тюбиків». */
+    aeschynanthus(S, W, H, seed) {
+      const AP = ['#061a0e', '#0c2c16', '#14421e', '#1e5a28', '#2a7434', '#3c8e42'], n = Math.max(4, Math.round(W / 2.6));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.1 + .8 * (st + .5) / n), .3, H * (.45 + .5 * hash(seed, st)), .8 + hash(seed, st + 4) * .6, st * 1.3, 16); polyline(S, pts, '#4a3a1a', .22);
+        pts.forEach(([x, y], k) => { if (k < 1 || k % 2) return; for (const sd of [-1, 1]) eLeaf(S, x + sd * .95, y, .5, 1.05, sd * 1.25, AP, .34); });
+        const [ex, ey] = pts[pts.length - 1]; for (let q = 0; q < 4; q++) { const a = -.6 + q * .4, bx = ex + Math.sin(a) * .5, by = ey;
+          S.poly([[bx - .35, by], [bx + .35, by], [bx + .25, by + .9], [bx - .25, by + .9]], '#4a0a1a');
+          S.poly([[bx - .3, by + .9], [bx + .3, by + .9], [bx + Math.sin(a) * 1.6 + .25, by + 2.6], [bx + Math.sin(a) * 1.6 - .25, by + 2.6]], (u, v, i, j) => ramp(['#8a0a1a', '#d01a2a', '#ff3a3a', '#ff8a6a'], .4 + v * .5, i, j, .05)); } }
+      OUTL(S);
+    },
+    /** Іспанський мох (тіландсія уснеоїдна): сріблясті кучеряві «бороди» з тонких хвилястих ниток. */
+    tillandsia(S, W, H, seed) {
+      const n = Math.max(10, Math.round(W * 2.2));
+      for (let st = 0; st < n; st++) { const x0 = W * (.08 + .84 * hash(seed, st)), len = H * (.3 + .68 * hash(st, seed + 7)) * (1 - Math.abs(x0 / W - .5) * .7); let px = x0, py = .2;
+        for (let k = 1; k <= 30; k++) { const t = k / 30, y = .2 + t * len, x = x0 + Math.sin(t * 17 + st) * .55 + Math.sin(t * 5 + st * .7) * .8; line(S, [px, py], [x, y], ['#8a9a90', '#a8b8ac', '#c4d0c4', '#6a7a70'][st % 4], .14); px = x; py = y; } }
+      for (let k = 0; k < W * 3; k++) S.set(hash(k, seed) * W, hash(seed, k) * 1.6 + .2, '#b8c4b8');
+      OUTL(S);
+    },
+    /** Тіландсії «іоната» кулькою: розетки колючих сріблясто-зелених листків з рожевими кінчиками, фіолетові трубочки квіток. */
+    airplant(S, W, H, seed) {
+      const AP = ['#4a5a50', '#6a7e70', '#8aa08e', '#acc2ae', '#cce0cc'];
+      [[.32, .4, .9], [.68, .38, .85], [.5, .68, 1]].forEach(([u, v, k0], r) => { const cx = W * u, cy = H * v, R = Math.min(W, H) * .3 * k0;
+        for (let q = 0; q < 14; q++) { const a = q / 14 * Math.PI * 2 + r, l = R * (.7 + .3 * hash(q, r + seed)), ex = cx + Math.cos(a) * l, ey = cy + Math.sin(a) * l, nx = -Math.sin(a) * .35, ny = Math.cos(a) * .35;
+          S.poly([[cx + nx, cy + ny], [ex, ey], [cx - nx, cy - ny]], (uu, vv, i, j) => Math.hypot(i * .25 - ex, j * .25 - ey) < l * .32 ? '#ff6a8a' : ramp(AP, .5 + (hash(i, j) - .5) * .2, i, j, .08)); }
+        if (r === 2) for (let q = 0; q < 3; q++) { const a = -1.9 + q * .4; line(S, [cx, cy], [cx + Math.cos(a) * R * 1.1, cy + Math.sin(a) * R * 1.1], '#8a3ad8', .32); S.set(cx + Math.cos(a) * R * 1.25, cy + Math.sin(a) * R * 1.25, '#ffe24a'); } });
+      OUTL(S);
+    },
+    /** Спатифілум («жіноче щастя») на кришці рифу: глянцеві темні листки на довгих черешках і білі покривала з кремовим качаном. */
+    spathiphyllum(S, W, H, seed) {
+      const cx = W / 2, by = H - .3, SP = ['#04140c', '#082414', '#0e3820', '#164e2c', '#1f663a', '#2c8048', '#44a05e'];
+      for (let q = 0; q < 7; q++) { const u = q / 6, a = (u - .5) * 1.7 + (hash(seed, q) - .5) * .2, st = H * (.2 + .25 * hash(seed, q + 4)), b = [cx + Math.sin(a) * st, by - Math.cos(a) * st];
+        line(S, [cx, by], b, '#2a5a2a', .4); const len = Math.min(H * .42, W * .5); fillLeaf(S, leaf(b, a * 1.15, len, len * .38, a > 0 ? .15 : -.15, 'broad', seed + q), SP, { q0: .34 + .12 * hash(seed, q), hi: a < 0, vein: 1, rim: 1 }); }
+      for (let q = 0; q < 3; q++) { const a = (q - 1) * .35, l = H * (.62 + .1 * q % 2), tip = [cx + Math.sin(a) * l * .8, by - l];
+        line(S, [cx, by], [tip[0], tip[1] + H * .14], '#3a7a3a', .3);
+        S.poly(ell(tip[0], tip[1] + H * .07, W * .085, H * .095, 12), (u, v, i, j) => ramp(['#c8d8d0', '#e8f0ea', '#ffffff'], .9 - Math.abs(u - .4), i, j, .05));
+        S.poly(ell(tip[0] + .2, tip[1] + H * .09, .3, H * .04, 8), '#f0e0a0'); }
+    },
+    /** Сингоніум («стрілолист»): листки-стріли — рожева середина, зелені краї. */
+    syngonium(S, W, H, seed) {
+      const cx = W / 2, by = H - .3;
+      for (let q = 0; q < 6; q++) { const a = (q / 5 - .5) * 1.8, st = H * (.28 + .3 * hash(seed, q)), b = [cx + Math.sin(a) * st * .8, by - Math.cos(a) * st]; line(S, [cx, by], b, '#7a4a5a', .32);
+        const L = Math.min(H * .36, W * .34), aa = a * 1.2, tip = [b[0] + Math.sin(aa) * L, b[1] - Math.cos(aa) * L], nx = Math.cos(aa), ny = Math.sin(aa);
+        S.poly([[b[0] - nx * L * .55 - Math.sin(aa) * L * .25, b[1] - ny * L * .55 + Math.cos(aa) * L * .25], [b[0], b[1] - Math.cos(aa) * L * .15], [b[0] + nx * L * .55 - Math.sin(aa) * L * .25, b[1] + ny * L * .55 + Math.cos(aa) * L * .25], [tip[0] + nx * L * .32, tip[1] + ny * L * .32 + L * .2], tip, [tip[0] - nx * L * .32, tip[1] - ny * L * .32 + L * .2]],
+          (u, v, i, j, X, Y) => { const d = Math.abs((X - b[0]) * nx + (Y - b[1]) * ny); return d < L * .12 ? '#ffb0c8' : d < L * .22 ? '#e88aa8' : ramp(['#1a5a2a', '#2a7a3a', '#4a9a4a', '#7ab86a'], .5 + (hash(i, j) - .5) * .2, i, j, .05); });
+        line(S, b, tip, '#ffd0e0', .12); }
+      OUTL(S);
+    },
+    /** Аспленіум («пташине гніздо») у кокедамі: розетка хвилястих яскраво-зелених стрічок з темною жилкою, буре «гніздо». */
+    asplenium(S, W, H, seed) {
+      const cx = W / 2, by = H - .4, AP = ['#123a14', '#1c5a1e', '#2a7a28', '#3c9a34', '#58ba48', '#84d86a'];
+      for (let q = 0; q < 9; q++) { const a = (q / 8 - .5) * 2.3 + (hash(seed, q) - .5) * .2, len = Math.min(H * (.7 + .25 * hash(q, seed)), (W / 2 - .6) / Math.max(.3, Math.abs(Math.sin(a)) + .15));
+        fillLeaf(S, leaf([cx, by], a, len, len * .28, a * .25, 'blade', seed + q), AP, { q0: .45 + .1 * hash(seed, q + 3), hi: a < 0, vein: 1, bands: 1, thin: 1 }); }
+      S.poly(ell(cx, by - .2, W * .14, .7, 10), '#5a3a1a');
+    },
+    /** Пеперомія «кавунова»: круглі м'ясисті листки зі срібними смугами на червоних черешках. */
+    peperomia(S, W, H, seed) {
+      const cx = W / 2, by = H - .4;
+      for (let q = 0; q < 7; q++) { const a = (q / 6 - .5) * 2, st = H * (.25 + .35 * hash(seed, q)), b = [cx + Math.sin(a) * st * .9, by - Math.cos(a) * st]; line(S, [cx, by], b, '#a02a3a', .28);
+        const r = Math.min(W * .2, H * .2), c = [b[0] + Math.sin(a) * r * .7, b[1] - Math.cos(a) * r * .7];
+        S.poly(ell(c[0], c[1], r * .8, r, 14).map(([px, py]) => rot(px, py, c[0], c[1], a)), (u, v, i, j, X, Y) => { const ang = Math.atan2(Y - c[1], X - c[0]) - a; return Math.abs(Math.sin(ang * 4)) < .32 ? '#c8d8c0' : ramp(['#0e2a14', '#1a4420', '#2a6030', '#3a7a3e'], .55 + (1 - v) * .3, i, j, .05); }); }
+      OUTL(S);
+    },
+    /** Фітонія («нервова рослина»): низька подушка овальних листків з яскраво-рожевою сіткою жилок. */
+    fittonia(S, W, H, seed) {
+      const cx = W / 2, by = H - .4;
+      for (let q = 0; q < 11; q++) { const a = (q / 10 - .5) * 2.6 + (hash(seed, q) - .5) * .2, st = H * (.15 + .4 * hash(seed, q + 3)), c = [cx + Math.sin(a) * st * 1.1, by - Math.cos(a) * st - 1], r = Math.min(W * .17, 1.7);
+        S.poly(ell(c[0], c[1], r * .72, r, 12).map(([px, py]) => rot(px, py, c[0], c[1], a)), (u, v, i, j, X, Y) => { const lx = (X - c[0]) * Math.cos(a) + (Y - c[1]) * Math.sin(a), ly = -(X - c[0]) * Math.sin(a) + (Y - c[1]) * Math.cos(a);
+          return Math.abs(lx) < .12 || Math.abs((ly + Math.abs(lx) * .9) % .7) < .1 ? '#ff5aa8' : ramp(['#0a3a1a', '#145a28', '#227a36'], .5 + (hash(i, j) - .5) * .3, i, j, .05); }); }
+      OUTL(S);
+    },
+    /** Платицеріум («оленячий ріг») на дошці: кругла «щитова» вая знизу і сріблясто-зелені роги, що галузяться. */
+    staghorn(S, W, H, seed) {
+      const cx = W / 2, cy = H * .62, SP = ['#2a4a2a', '#3e6a3a', '#5a8a50', '#7aaa6a', '#a0c88c', '#c8e4b4'];
+      S.poly(ell(cx, cy, W * .24, H * .2, 18), (u, v, i, j) => ramp(['#4a3a1a', '#6a5a2a', '#8a7a3a', '#a89a5a'], .5 - Math.hypot(u - .5, v - .5) + (hash(i >> 1, j >> 1) - .5) * .25, i, j, .05));
+      const horn = (x, y, a, l, w, d, k) => { const e = [x + Math.sin(a) * l, y - Math.cos(a) * l], nx = Math.cos(a) * w, ny = Math.sin(a) * w;
+        S.poly([[x - nx, y - ny], [x + nx, y + ny], [e[0] + nx * .7, e[1] + ny * .7], [e[0] - nx * .7, e[1] - ny * .7]], (u, v, i, j) => ramp(SP, .45 + (1 - v) * .3 + (hash(i, j) > .85 ? .25 : 0), i, j, .06));
+        if (d < 2) { horn(e[0], e[1], a - .45, l * .62, w * .72, d + 1, k * 2); horn(e[0], e[1], a + .4, l * .58, w * .7, d + 1, k * 2 + 1); } };
+      [[-1.25, .8], [-.55, 1], [.15, .9], [.85, 1], [1.4, .8]].forEach(([a, k], q) => horn(cx + Math.sin(a) * W * .12, cy - H * .05, a, Math.min(H * .32 * k, W * .22), .9, 0, q));
+      OUTL(S);
+    },
+    // ===== · 3: ЛІАНИ З ТРУБ (кожна — свого виду) =====
+    /** Сенеціо «нитка бананів»: тонкі пасма з сизими листочками-півмісяцями. */
+    bananas(S, W, H, seed) {
+      const n = Math.max(3, Math.round(W / 2.2));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.15 + .7 * (st + .5) / n), .3, H * (.45 + .53 * hash(seed, st)), .7 + hash(seed, st + 4) * .6, st * 1.9, 30); polyline(S, pts, '#4a6a4a', .15);
+        pts.forEach(([x, y], k) => { if (k < 1) return; const sd = (k + st) % 2 ? 1 : -1, a = sd * (1.05 + .35 * hash(k, st)), cx = x + Math.sin(a) * .8, cy = y - Math.cos(a) * .8;
+          const B2 = []; for (let q = 0; q <= 8; q++) { const t = q / 8, bx = (t - .5) * 1.7, by = -.35 * Math.sin(Math.PI * t); B2.push([bx, by - .24 * Math.sin(Math.PI * t)]); } for (let q = 8; q >= 0; q--) { const t = q / 8; B2.push([(t - .5) * 1.7, -.35 * Math.sin(Math.PI * t) + .2 * Math.sin(Math.PI * t)]); }
+          S.poly(B2.map(([bx, by]) => rot(cx + bx, cy + by, cx, cy, a - sd * 1.57)), (u, v, i, j) => ramp(['#2a5a52', '#3a7a6a', '#5a9a84', '#8ac0a8'], .5 + (1 - v) * .35, i, j, .05)); }); }
+      OUTL(S);
+    },
+    /** Монстера Адансона: пасма з овальними світло-зеленими листками з «дірками». */
+    adansonii(S, W, H, seed) {
+      const AP = ['#0c3a18', '#145424', '#1e7030', '#2c8c3c', '#40a84c', '#62c464'], n = Math.max(3, Math.round(W / 3));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.15 + .7 * (st + .5) / n), .3, H * (.5 + .48 * hash(seed, st)), 1 + hash(seed, st + 5) * .8, st * 2.2, 18); polyline(S, pts, '#2a5a2a', .22);
+        pts.forEach(([x, y], k) => { if (k < 1 || k % 2) return; const sd = (k / 2 + st) % 2 ? 1 : -1, a = sd * (1.1 + .3 * hash(st, k)), L = 1.9 + .5 * hash(k, st), cx = x + Math.sin(a) * L * .55, cy = y - Math.cos(a) * L * .55 + .4;
+          S.poly(ell(cx, cy, L * .42, L * .62, 12).map(([px, py]) => rot(px, py, cx, cy, a)), (u, v, i, j, X, Y) => { const lx = (X - cx) * Math.cos(a) + (Y - cy) * Math.sin(a), ly = -(X - cx) * Math.sin(a) + (Y - cy) * Math.cos(a);
+            for (let h = -1; h <= 1; h++) for (const s2 of [-1, 1]) if (((lx - s2 * L * .19) / (L * .09)) ** 2 + ((ly - h * L * .2) / (L * .12)) ** 2 < 1) return null;   // «дірки»
+            return Math.abs(lx) < .1 ? '#8ad890' : ramp(AP, .45 + (1 - v) * .3 + (hash(i, j) - .5) * .08, i, j, .05); }); }); }
+      OUTL(S);
+    },
+    /** Сенеціо «зграйка дельфінів»: пасма з листочками-дельфінчиками (вигнуте тільце й два плавці). */
+    dolphins(S, W, H, seed) {
+      const n = Math.max(4, Math.round(W / 2));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.1 + .8 * (st + .5) / n), .3, H * (.5 + .48 * hash(seed, st)), .5 + hash(seed, st + 2) * .5, st * 1.4, 14); polyline(S, pts, '#5a7a5a', .14);
+        pts.forEach(([x, y], k) => { if (k < 1 || k % 2) return; const sd = (k / 2 + st) % 2 ? 1 : -1, cx = x + sd * .6, cy = y;
+          S.poly([[cx - sd * .1, cy + .35], [cx + sd * .5, cy - .25], [cx + sd * 1.05, cy - .1], [cx + sd * 1.25, cy - .45], [cx + sd * 1.1, cy + .2], [cx + sd * .4, cy + .45]], '#7aaa8a');
+          S.set(cx + sd * .55, cy - .45, '#5a8a6a'); S.set(cx + sd * 1.05, cy - .1, '#3a5a4a'); }); }
+      OUTL(S);
+    },
+    /** Колумнея («золота рибка»): пасма з дрібними глянцевими листками й помаранчевими квітками-рибками з жовтим «ротиком». */
+    columnea(S, W, H, seed) {
+      const CP = ['#061a0e', '#0e2e18', '#164624', '#205e30'], n = Math.max(3, Math.round(W / 2.4));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.14 + .72 * (st + .5) / n), .3, H * (.5 + .48 * hash(seed, st)), .8 + hash(seed, st + 3) * .6, st * 2.6, 16); polyline(S, pts, '#3a2a1a', .18);
+        pts.forEach(([x, y], k) => { if (k < 1) return; if (k % 2) { for (const sd of [-1, 1]) eLeaf(S, x + sd * .65, y, .32, .7, sd * 1.2, CP, .35); }
+          else if (hash(k, st + seed) > .45) { const sd = (k + st) % 4 < 2 ? 1 : -1, fx = x + sd * 1.1, fy = y + .2; S.poly(ell(fx, fy, .85, .5, 10), (u, v, i, j) => ramp(['#a02a0a', '#e85a12', '#ff8a2a', '#ffc070'], .8 - v * .5, i, j, .05)); S.set(fx + sd * .8, fy, '#ffe24a'); } }); }
+      OUTL(S);
+    },
+    /** Дисхідія («нитка монет»): пасма з круглими сріблясто-зеленими листочками-монетками. */
+    dischidia(S, W, H, seed) {
+      const n = Math.max(4, Math.round(W / 1.7));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.1 + .8 * (st + .5) / n), .3, H * (.55 + .43 * hash(seed, st)), .6 + hash(seed, st + 1) * .6, st * 1.1, 20); polyline(S, pts, '#5a6a50', .12);
+        pts.forEach(([x, y], k) => { if (k < 1) return; const sd = k % 2 ? 1 : -1, cx = x + sd * .45; S.poly(ell(cx, y, .5, .5, 9), (u, v, i, j) => u < .38 && v < .38 ? '#e0f0d8' : ramp(['#4a6a48', '#6a8a64', '#8aaa80', '#b0caa4'], .7 - Math.hypot(u - .5, v - .5), i, j, .05)); }); }
+      OUTL(S);
+    },
+    /** Епіфілюм «риб'ячий скелет»: пласкі зелені стебла з глибокими зубцями-«ребрами», що звисають дугою. */
+    epiphyllum(S, W, H, seed) {
+      for (let st = 0; st < 4; st++) { const pts = hangPts(W * (.2 + .2 * st), .3, H * (.55 + .43 * hash(seed, st)), 1.2 + hash(seed, st + 7), st * 1.6, 22);
+        for (let k = 1; k < pts.length; k++) { const [x0, y0] = pts[k - 1], [x1, y1] = pts[k], a = Math.atan2(x1 - x0, -(y1 - y0)), wv = .9 * Math.sin(Math.PI * k / pts.length) + .35, tooth = k % 2 ? 1 : -1, nx = Math.cos(a), ny = Math.sin(a);
+          S.poly([[x0 - nx * wv * .3, y0 - ny * wv * .3], [x0 + tooth * nx * wv, y0 + tooth * ny * wv], [x1 + nx * wv * .3, y1 + ny * wv * .3], [x1 - nx * wv * .3, y1 - ny * wv * .3]], (u, v, i, j) => ramp(['#1a5a1a', '#2a7a26', '#3c9a34', '#5ab84a', '#86d468'], .45 + (hash(i, j) - .5) * .1 + (1 - v) * .2, i, j, .05)); }
+        polyline(S, pts, '#1a4a14', .14); }
+      OUTL(S);
+    },
+    /** Лізимахія «монетна» (повзуча): золотисто-салатові круглі листочки густими пасмами з корита. */
+    lysimachia(S, W, H, seed) {
+      const LP = ['#2a4a0a', '#3e6214', '#567e1e', '#74a02a', '#98c03a', '#c4e05a'], n = Math.max(6, Math.round(W / 2.6));
+      for (let st = 0; st < n; st++) { const pts = hangPts(W * (.04 + .92 * (st + hash(seed, st) * .6) / n), .3, H * (.4 + .58 * hash(seed, st + 9)), .6 + hash(seed, st + 3) * .7, st * 2.1, 18); polyline(S, pts, '#5a6a1a', .14);
+        pts.forEach(([x, y], k) => { if (k < 1 || k % 2) return; for (const sd of [-1, 1]) S.poly(ell(x + sd * .5, y, .45, .4, 8), (u, v, i, j) => ramp(LP, .45 + (1 - v) * .4 + (hash(i, j) - .5) * .1, i, j, .05)); }); }
+      for (let k = 0; k < W * .8; k++) S.poly(ell(hash(k, seed + 3) * W, .3 + hash(k, seed + 6) * 1.3, .5, .45, 8), (u, v, i, j) => ramp(LP, .6 - v * .3, i, j, .05));
+      OUTL(S);
+    },
+    /** Мох і дрібна зелень на трубі під стелею (одна «гірлянда» вздовж усієї труби): подушки моху згори, короткі пасма з
+     *  листочками звисають, де-не-де — довше пасмо й крихітні квіточки. */
+    pipemoss(S, W, H, seed) {
+      const MP = ['#0a2a10', '#123e18', '#1c5622', '#28702e', '#38903c', '#52ac4e', '#7cc86a'];
+      for (let k = 0; k < W * 1.6; k++) { const x = hash(k, seed) * W, y = .3 + hash(seed, k) * H * .18, r = .45 + .4 * hash(k, seed + 2); S.poly(ell(x, y, r * 1.2, r, 8), (u, v, i, j) => ramp(MP, .35 + (1 - v) * .45 + (hash(i >> 1, j) - .5) * .2, i, j, .06)); }
+      const n = Math.max(3, Math.round(W / 1.6));
+      for (let st = 0; st < n; st++) { if (hash(st, seed + 5) < .3) continue; const len = H * (.3 + .7 * Math.pow(hash(seed, st + 11), 1.6)), pts = hangPts(W * (st + .5) / n, H * .1, len * .9, .4 + hash(st, seed) * .6, st + seed, 10);
+        polyline(S, pts, '#2a5a2a', .12); pts.forEach(([x, y], k) => { if (k && k % 2 === 0) for (const sd of [-1, 1]) S.poly(ell(x + sd * .35, y, .3, .24, 6), MP[3 + ((k + st) % 3)]); });
+        if (hash(st, seed + 9) > .8) { const [fx, fy] = pts[pts.length - 1]; S.poly(ell(fx, fy + .3, .35, .35, 6), ['#ff9ad8', '#ffe27a', '#c8a0ff'][(st + seed) % 3]); } }
+      OUTL(S);
     },
     /** М'ята: кущик дрібних зубчастих листочків, соковита світла зелень (аквапоніка). */
     mint(S, W, H, seed) {

@@ -37,6 +37,13 @@ NX.arc = NX.arc || {};
   const Ywz = (y, z) => PZ.VP[1] + (y - PZ.VP[1]) * (PZ.D + z) / PZ.D;                 // висота світу, що на екрані в рядку y (глибина z)
   /** Грань-чотирикутник p0..p3 (паралелограм): параметризація від p0; n — зовнішня нормаль. */
   const quad = (G, p, sh, n) => G.face(p, p[0], sub(p[1], p[0]), sub(p[3], p[0]), sh, n);
+  const BAY = NX.art.BAYER, SHADOW = col('#030109');
+  /** ТІНЬ дизерингом (у стилі кімнати): грань p0-p1 / p0-p3 (паралелограм), dens(u, v) 0..1 — густота; піксель тіні темний і
+   *  без контуру (F_NOOUT), між ними — дірки (видно стіну). Лягає на стіну (за речами). */
+  const ditherFace = (G, p0, p1, p3, n, dens) => G.face([p0, p1, add3(p1, sub(p3, p0)), p3], p0, sub(p1, p0), sub(p3, p0), (u, v, i, j) => {
+    const a = dens(u, v); if (a <= BAY[(j & 3) * 4 + (i & 3)] + .5) return 0; X.SH.fl |= X.F_NOOUT; return SHADOW; }, n);
+  /** Ширина «лицем до глядача» (рослина-спрайт), що на екрані дорівнює ширині предмета B на глибині v (коси стіни — вужча). */
+  const bbW = (G, B, v) => { const y = (B.yt + B.yb) / 2, a = X.proj(G.P(-B.w / 2, v, y)), b = X.proj(G.P(B.w / 2, v, y)), z = G.P(0, v, y)[2]; return Math.abs(b[0] - a[0]) * (PZ.D + z) / PZ.D; };
   /** Неон довільного кольору -> [ореол, колір, серцевина]. */
   const NXC = {};
   const neonX = h => NXC[h] || (NXC[h] = (() => { const n = parseInt(h.slice(1, 7), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
@@ -49,7 +56,11 @@ NX.arc = NX.arc || {};
     copper: pal(['#2a1006', '#48200c', '#6c3414', '#924a1e', '#b8642a', '#d8843e', '#f0a862', '#ffd09a']),
     concrete: pal(['#16161e', '#20202c', '#2c2c3a', '#3a3a4a', '#4a4a5c', '#5e5e72', '#76768a', '#9494a8']),
     enamel: pal(['#040c30', '#08164e', '#0e226e', '#16328e', '#2046ae', '#2e5ecc', '#4a80e6', '#86b0fa']),
+    wicker: pal(['#2a1a0a', '#4a2e12', '#6a4420', '#8a5e2e', '#aa7a3e', '#c89852', '#e4b86e', '#f4d494']),
+    moss: pal(['#082008', '#0e3210', '#164a18', '#206222', '#2c7c2c', '#3c9636', '#56b048', '#7ccc62']),
+    steel: PL.MET,
   };
+  const STRING = { pink: col('#ff6ab8'), gold: col('#e8b040'), cyan: col('#40c8e8') };
   const PATINA = col('#3ac8a0');
   /** Поверхня матеріалу поверх матеріалу рушія: цятки каменю, патина міді, жилки нефриту, опалубка бетону, глянець емалі. */
   function surf(mat, sh, Fc) {
@@ -86,6 +97,21 @@ NX.arc = NX.arc || {};
       const y0 = yb - ph, k = [[.62, .97], [.97, 1], [1, .86], [.86, .45]];
       k.forEach(([kt, kb], n) => draw(cyl(pw, y0 + ph * n / 4, y0 + ph * (n + 1) / 4, { kt, kb, band: n === 1 ? bnd : 0 }), .58, { noTop: n > 0, noBot: n < 3 }));
     } else if (shp === 'net') { draw(cyl(pw, yb - ph + .5, yb, { kb: .8 }), .5, { net: 1 }); draw(cyl(pw * 1.14, yb - ph, yb - ph + .55), .6, { neonAll: 1 }); }
+    else if (shp === 'basket') {                                                        // ПЛЕТЕНИЙ КОШИК: лоза «через одну», товстий обідок, кокосова підкладка
+      const body = cyl(pw, yb - ph + .9, yb, { kb: .7 });
+      G.partF(body, Fc => { if (Fc.k === 'top') return null; const L = lit(Fc.n, A.centre(Fc)), cylK = Fc.k === 'side' ? .78 + .3 * Math.max(-.6, Math.cos(Fc.ang - Math.PI * 1.5 - .5)) : .7;
+        return (u, v, i, j) => { const x = (Fc.k === 'side' ? Fc.ui + u * Fc.un : u) * Math.PI * pw, y = v * Fc.fh, row = Math.floor(y / .8), over = ((Math.floor(x / 1.05) + row) & 1), gap = (y % .8) < .14;
+          return ramp(Pm, (gap ? .1 : over ? .62 : .4) * cylK * L + (over ? (1 - Math.abs(((x / 1.05) % 1) - .5) * 2) * .1 : 0), i, j); }; });
+      draw(cyl(pw * 1.1, yb - ph, yb - ph + 1.1), .48);
+      G.partF(cyl(pw * 1.02, yb - ph - .6, yb - ph + .1, { kt: .9 }), Fc => Fc.k === 'side' ? (u, v, i, j) => hash(i, j) > .45 ? ramp(pal(['#1a0e06', '#3a220e', '#5a3a1a']), .5 + hash(j, i) * .4, i, j) : 0 : null);   // кокосові волокна над обідком
+    } else if (shp === 'moss') {                                                        // КОКЕДАМА: мохова куля, обв'язана кольоровим шнуром
+      const y0 = yb - ph, k = [[.62, .97], [.97, 1], [1, .86], [.86, .45]], sc = STRING[band] || STRING.pink;
+      k.forEach(([kt, kb], n) => G.partF(cyl(pw, y0 + ph * n / 4, y0 + ph * (n + 1) / 4, { kt, kb }), Fc => {
+        if ((n > 0 && Fc.k === 'top') || (n < 3 && Fc.k === 'bottom')) return null; const L = lit(Fc.n, A.centre(Fc)), cylK = Fc.k === 'side' ? .78 + .3 * Math.max(-.6, Math.cos(Fc.ang - Math.PI * 1.5 - .5)) : .7;
+        return (u, v, i, j) => { const y = (n + v) / 4, x = Fc.k === 'side' ? Fc.ui + u * Fc.un : u;
+          if (Math.abs(y - .4) < .03 || Math.abs(y - .64) < .03 || (Math.abs(x - .5) < .018 && y > .3)) return sc;
+          return ramp(Pm, (.42 + (hash(i >> 1, j >> 1) - .5) * .4) * cylK * L + (1 - y) * .1, i, j); }; }));
+    }
   }
   /** Спрайт (рослина / статуетка) -> пласка грань лицем до глядача у прямокутнику світу (cx, cz, yt..yb, ширина w);
    *  getS — побудувати спрайт (лише коли грань малюється: збірка шматками під заставкою). Прозоре — дірка. */
@@ -158,6 +184,8 @@ NX.arc = NX.arc || {};
       let q = .24 + (1 - v) * .14 + ((((x * 1.6) | 0) + ((d * 1.6) | 0)) % 2) * .05; if (d > dep - 1.4) q -= .1;
       return ramp(PL.STEEL, q, i, j);
     }, [0, 1, 0]);
+    // ТІНЬ ПІД ПЛИТОЮ на стіні (дизеринг: густа під самою плитою, вниз розсіюється)
+    const shB = Math.min(bot + 17, M.shy || bot + 17); if (shB > bot) ditherFace(G, pt(M.sa, R - .35, bot - 1), pt(M.sb, R - .35, bot - 1), pt(M.sa, R - .35, shB), nIn(am), (u, v) => .44 * Math.pow(1 - v, 1.7));
     // мідна труба вздовж споду з підвісами
     const rp = rf + M.P * .38, copT = tubeT(MAT.copper, .2, .66);
     G.tube(pt(M.sa, rp, bot + 1.2), pt(M.sb, rp, bot + 1.2), 1.7, copT);
@@ -220,8 +248,78 @@ NX.arc = NX.arc || {};
       G.tube(G.P(0, v, potY - ph - .2), G.P(0, v, potY + 2.6), .5, cordT);                    // кисть знизу
       potDraw(G, B, v, Pd, potY);
       plantFace(G, { kind: d.kind, seed: d.seed, hang: 1, pal: d.pal || 'light' }, p[0], p[2] + pw * .3, potY - ph - 1.5, B.yb, B.w, false);
+    } else if (d.frm === 'chain') {                                                   // ВИСЯЧИЙ КОШИК: три ланцюжки зі стелі, кошик, папороть каскадом
+      const Pd = d.pot || { shape: 'basket', mat: 'wicker', pw: 9.5, ph: 6 }, pw = Pd.pw, ph = Pd.ph, T = B.yb - B.yt, yr = B.yt + T * .28, v = B.dep / 2, c = G.P(0, v, yr);
+      const top = [c[0], Ywz(-4, c[2]), c[2]], linkT = (u, vv, i, j) => ramp(PL.GOLD, ((vv * 60) | 0) % 2 ? .75 - Math.abs(u - .4) : .35, i, j);
+      for (let q = 0; q < 3; q++) { const a = q / 3 * Math.PI * 2 + .5; G.tube(top, [c[0] + Math.cos(a) * pw * .53, yr + .2, c[2] + Math.sin(a) * pw * .53], .45, linkT); }
+      G.disc([c[0], yr - T * .2, c[2] - .3], .7, (u, vv, i, j) => ramp(PL.GOLD, .8 - vv * .4, i, j));   // кільце, де ланцюжки сходяться
+      potDraw(G, B, v, Pd, yr + ph);
+      const Hs = (B.yb - yr) / .83; plantFace(G, { kind: d.kind, seed: d.seed }, c[0], c[2] + .5, yr - .17 * Hs, B.yb, B.w, false);
+    } else if (d.frm === 'string') {                                                  // КОКЕДАМА: шнур зі стелі, мохова куля, рослина над нею
+      const Pd = d.pot || { shape: 'moss', mat: 'moss', pw: 6, ph: 6 }, pw = Pd.pw, ph = Pd.ph, v = B.dep / 2, yb = B.yb, c = G.P(0, v, yb - ph);
+      G.tube([c[0], Ywz(-4, c[2]), c[2]], [c[0], yb - ph - 2, c[2]], .3, (u, vv, i, j) => ramp(pal(['#3a2a1a', '#7a5a3a', '#c8a070']), .7 - Math.abs(u - .4), i, j));
+      potDraw(G, B, v, Pd, yb);
+      plantFace(G, { kind: d.kind, seed: d.seed }, c[0], c[2] - .2, yb - ph - 10.5, yb - ph + 1.6, B.w, false);
+    } else if (d.frm === 'wire') {                                                    // ТІЛАНДСІЇ в дротяному кільці на дроті з кронштейна
+      const c = G.P(0, B.dep / 2, (B.yt + B.yb) / 2 + 1.5), R = Math.min(B.w, B.yb - B.yt) * .42, wT = (u, vv, i, j) => ramp(PL.CHROME, .75 - Math.abs(u - .4), i, j);
+      G.tube(G.P(0, B.dep / 2, B.yt), [c[0], c[1] - R, c[2]], .3, wT);
+      let p0 = null; for (let q = 0; q <= 18; q++) { const a = q / 18 * Math.PI * 2, p = [c[0] + Math.cos(a) * R, c[1] + Math.sin(a) * R, c[2]]; if (p0) G.tube(p0, p, .32, wT); p0 = p; }
+      plantFace(G, { kind: d.kind, seed: d.seed }, c[0], c[2] + .3, c[1] - R * .95, c[1] + R * .95, R * 1.9, false);
     } else { const c = G.P(0, B.dep / 2, B.yt); plantFace(G, { kind: d.kind, seed: d.seed, hang: 1, pal: d.pal || 'light' }, c[0], c[2], B.yt, B.yb, B.w, false); }
   };
+
+  // ================= ЗЕЛЕНЬ НА СТІНІ Й НА ФАСАДІ (Декор стін · 3) =================
+  /** Пласка рослина у площині предмета (виткá на цеглі, звиси з антресолі на фасаді): спрайт на передній грані, прозоре — дірка. */
+  SHP['st:dc_climb'] = SHP['st:dc_spill'] = (G, B) => {
+    const d = B.dc, hw = B.w / 2, nF = sub(G.P(0, 0, 0), G.P(0, 1, 0)); let S = null;
+    quad(G, [G.P(-hw, 0, B.yt), G.P(hw, 0, B.yt), G.P(hw, 0, B.yb), G.P(-hw, 0, B.yb)], (u, v) => {
+      if (!S) S = NX.arc.dcPlant({ kind: d.kind, seed: d.seed, w: Math.round(B.w * 2) / 2, h: Math.round((B.yb - B.yt) * 2) / 2 });
+      const c = S.d[Math.min(S.sh - 1, (v * S.sh) | 0) * S.sw + Math.min(S.sw - 1, (u * S.sw) | 0)]; return (c >>> 24) < 110 ? 0 : (c | 0xff000000) >>> 0;
+    }, nF);
+  };
+  /** КОРИТО на стіні: металевий ящик з неоновою смужкою на двох кронштейнах; з нього звисає рослина (спрайт лицем до глядача). */
+  SHP['st:dc_trough'] = (G, B) => {
+    const d = B.dc, th = d.th || 3.2, nb = N[(d.pot && d.pot.band) || 'lil'] || N.lil, box = G.sub(0, B.dep / 2, B.w, B.dep, B.yt, B.yt + th);
+    G.partF(box, Fc => { const L = lit(Fc.n, A.centre(Fc));
+      if (Fc.k === 'front') return (u, v, i, j) => { const y = v * th, x = u * Fc.fw; if (y < .45) return ramp(PL.CHROME, .8, i, j); if (Math.abs(y - th * .62) < .26) return E(Math.abs(y - th * .62) < .1 ? nb[2] : nb[1]);
+        if ((x < 1.2 || x > Fc.fw - 1.2) && Math.abs(y - th * .3) < .3) return ramp(PL.CHROME, .7, i, j); return ramp(PL.MET, .42 * L + (y > th - .5 ? -.1 : 0), i, j); };
+      if (Fc.k === 'bottom') return (u, v, i, j) => ramp(PL.STEEL, .22 + (1 - v) * .1, i, j);
+      return (u, v, i, j) => ramp(PL.MET, .36 * L, i, j); });
+    for (const s of [-1, 1]) { const u = s * (B.w / 2 - 3); G.tube(G.P(u, B.dep - .3, B.yt + th + 3.2), G.P(u, B.dep * .25, B.yt + th + .1), .8, steelT); G.tube(G.P(u, B.dep - .3, B.yt + th + .2), G.P(u, B.dep - .3, B.yt + th + 3.4), .9, steelT); }
+    const v = B.dep * .45, c = G.P(0, v, B.yt); plantFace(G, { kind: d.kind, seed: d.seed }, c[0], c[2], B.yt + .4, B.yb, bbW(G, B, v) * .97, false);
+  };
+  /** ТІНЬ окремої речі на стіні (decor.py: wshadow) — прямокутник з м'якими краями або овал (rnd). */
+  SHP['st:dc_shadow'] = (G, B) => {
+    const d = B.dc || {}, hw = B.w / 2, H = B.yb - B.yt, k = d.k || .5, soft = d.soft || 2.5, nF = sub(G.P(0, 0, 0), G.P(0, 1, 0));
+    ditherFace(G, G.P(-hw, 0, B.yt), G.P(hw, 0, B.yt), G.P(-hw, 0, B.yb), nF, (u, v) => {
+      if (d.rnd) { const r = Math.hypot((u - .5) * 2, (v - .5) * 2); return k * Math.max(0, Math.min(1, (1 - r) * Math.min(B.w, H) / (2 * soft))); }
+      return k * Math.min(1, Math.min(u * B.w, (1 - u) * B.w, v * H, (1 - v) * H) / soft) * (1 - v * .3);
+    });
+  };
+  /** ТРУБА / КАБЕЛЬ-КАНАЛ під стелею (decor.py: pipe; позаду речей). Мідь — хомути до цегли, вентиль з червоним маховиком,
+   *  манометр; сталь — блакитні вогні через шматок, трійник у стелю. */
+  SHP['st:dc_pipe'] = (G, B) => {
+    const d = B.dc, r = d.r, cu = d.style === 'copper', p0 = d.p0, p1 = d.p1, w0 = d.w0;
+    G.tube(p0, p1, r * 2, cu ? tubeT(MAT.copper, .18, .68) : tubeT(PL.STEEL, .22, .6));
+    const nW = sub(G.P(0, 0, 0), G.P(0, 1, 0)), wp = q => [q[0] + (w0[0] - p0[0]) * .92, q[1], q[2] + (w0[1] - p0[2]) * .92];   // тінь труби на стіні
+    ditherFace(G, wp([p0[0], p0[1] + r * .6, p0[2]]), wp([p1[0], p1[1] + r * .6, p1[2]]), wp([p0[0], p0[1] + r * .6 + 4.5, p0[2]]), nW, (u, v) => .36 * Math.pow(1 - v, 1.4));
+    if (d.moss) { const v = B.dep * .55, c = G.P(0, v, (p0[1] + p1[1]) / 2); plantFace(G, { kind: 'pipemoss', seed: d.k * 7 + (cu ? 3 : 5) }, c[0], c[2], c[1] - r * .6, c[1] + 6.5 + (d.k % 3) * 1.5, bbW(G, B, v) + 1, false); }   // мох і зелень на трубі
+    if (!cu && d.k % 2) G.tube([p0[0], p0[1] + r * .15, p0[2] - r * .9], [p1[0], p1[1] + r * .15, p1[2] - r * .9], .38, () => E(N.cyan[1]));   // вогні каналу
+    if (d.clip) { G.tube([p0[0], p0[1] - r * 1.3, p0[2] - .1], [p0[0], p0[1] + r * 1.3, p0[2] - .1], .75, cu ? brassT : chromeT); G.tube(p0, [w0[0], p0[1], w0[1]], .7, steelT); }
+    const m = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, (p0[2] + p1[2]) / 2 - .4];
+    if (d.mark === 'valve') {                                                         // вентиль: корпус і червоний маховик зі спицями
+      G.tube([m[0], m[1], m[2]], [m[0], m[1] - r * 2.4, m[2]], 1.1, brassT);
+      G.disc([m[0], m[1] - r * 2.7, m[2] - .2], 1.5, (u, v, i, j) => { const q = Math.hypot(u - .5, v - .5) * 2, a = Math.atan2(v - .5, u - .5); return q > .72 ? ramp(pal(['#4a0a0a', '#9a1a1a', '#e83a2a', '#ff8a6a']), .9 - v * .6, i, j) : (q < .2 || (Math.abs(Math.sin(a * 2)) < .22) ? ramp(PL.CHROME, .7, i, j) : 0); });
+    }
+    if (d.mark === 'gauge') {                                                         // манометр: біла шкала, червона стрілка
+      G.tube(m, [m[0], m[1] - r * 1.8, m[2]], .6, chromeT);
+      G.disc([m[0], m[1] - r * 3, m[2] - .3], 1.6, (u, v, i, j) => { const q = Math.hypot(u - .5, v - .5) * 2, a = Math.atan2(v - .5, u - .5);
+        if (q > .82) return ramp(PL.CHROME, .85 - v * .5, i, j); if (Math.abs(a + 2.2) < .12 && q < .7) return col('#e82a2a'); if (q > .6 && ((a * 2.5) % 1 + 1) % 1 < .2) return col('#2a2a3a'); return col('#f0eee0'); });
+    }
+    if (d.mark === 'tee') G.tube(m, [m[0], Ywz(-4, m[2]), m[2]], r * 1.7, cu ? tubeT(MAT.copper, .18, .68) : tubeT(PL.STEEL, .22, .6));   // трійник — у стелю
+  };
+  // невидимі джерела світла на стіну (decor.py: light) — рушій бере з них колір і силу (lightsOf), малювати нічого
+  SHP.dc_lt_reef = SHP.dc_lt_tube = SHP.dc_lt_jelly = SHP.dc_lt_hex = () => {};
 
   // ================= ЛІХТАР =================
   SHP['st:dc_lantern'] = (G, B) => {
@@ -315,6 +413,17 @@ NX.arc = NX.arc || {};
       spriteFace(G, goldBot, c[0], c[2] - .3, B.yb - pb - .5 - fh, B.yb - pb - .5, fw, false);
       return;
     }
+    if (k === 'staghorn') {                                                           // ПЛАТИЦЕРІУМ на дубовій дошці: фаска, волокна, латунні гвинти, моховий пад
+      const D = B.dep, pl = G.sub(0, D - .8, w, 1.3, B.yt, B.yb);
+      G.partF(pl, Fc => { const L = lit(Fc.n, A.centre(Fc)), WP = pal(['#1a0c06', '#2e180c', '#442612', '#5c361a', '#764824', '#905c30', '#aa723e']);
+        return (u, v, i, j) => { const x = u * Fc.fw, y = v * Fc.fh, e = Math.min(x, Fc.fw - x, y, Fc.fh - y); if (Fc.k === 'front' && e < .7) return ramp(WP, .75 * L - (e < .3 ? .2 : 0), i, j);
+          if (Fc.k === 'front' && (Math.abs(x - 1.4) < .35 || Math.abs(x - Fc.fw + 1.4) < .35) && (Math.abs(y - 1.4) < .35 || Math.abs(y - Fc.fh + 1.4) < .35)) return ramp(PL.GOLD, .8, i, j);
+          return ramp(WP, (.42 + Math.sin(y * 2.2 + Math.sin(x * .4) * 1.5) * .08) * L, i, j); }; });
+      const v = D - 2.4, cc = G.P(0, v, (B.yt + B.yb) / 2), bw = bbW(G, B, v);
+      G.disc([cc[0], cc[1] + H * .1, cc[2] + .2], Math.min(bw, H) * .2, (u, vv, i, j) => ramp(MAT.moss, .4 + (hash(i >> 1, j >> 1) - .5) * .4, i, j));
+      plantFace(G, { kind: d.plant || 'staghorn', seed: d.seed || 141 }, cc[0], cc[2], B.yt + .3, B.yb - .3, bw * .96, false);
+      return;
+    }
     if (k === 'greenhouse') {                                                         // МІНІ-ОРАНЖЕРЕЯ: цоколь, скло з рамами й конденсатом, двосхилий дах, орхідея, фітолампа
       const pl = 3.2, yP = B.yb - pl, eave = B.yt + H * .3, ridge = B.yt + .4, dd = B.dep, P = (u, v, y) => G.P(u, v, y), hw = w / 2;
       const rU = sub(G.P(1, 0, 0), G.P(0, 0, 0)), nF = sub(G.P(0, 0, 0), G.P(0, 1, 0)), neg = v => v.map(q => -q);
@@ -367,6 +476,7 @@ NX.arc = NX.arc || {};
       if (p === 2) return E(nc[(i + j) % 3 ? 1 : 2]); if (p === 1) return mixc(ramp(BASE, vg + .15, i, j), line, .7);
       return mixc(ramp(BASE, vg, i, j), tint, .3);
     }, nF);
+    const shH = Math.min(Yc + Ro * .866 + 6, d.shy || 1e9); if (shH > Yc + Ro * .7) ditherFace(G, G.P(-Ro * .75, dep + .4, Yc + Ro * .7), G.P(Ro * .75, dep + .4, Yc + Ro * .7), G.P(-Ro * .75, dep + .4, shH), nF, (u, v) => .4 * Math.pow(1 - v, 1.4) * Math.min(1, Math.min(u, 1 - u) * 5));   // тінь соти на стіні (не на зони)
     for (let k = 0; k < 6; k++) {
       const k1 = (k + 1) % 6, n = dirN(k), ni = n.map(q => -q), Lo = lit(n, V(Ro, k, 0)), Li = lit(ni, V(Ri, k, 0));
       const i0 = V(Ri, k, 0), i1 = V(Ri, k1, 0), i3 = V(Ri, k, dep - .3);                    // внутрішня стінка: тьмяна сталь, відсвіт неону біля краю, LED-смужка під «стелею»
@@ -409,6 +519,8 @@ NX.arc = NX.arc || {};
       if (Fc.k === 'bottom') return (u, v, i, j) => v < .14 ? E(N.cyan[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .22 + (1 - v) * .1, i, j);
       return (u, v, i, j) => ramp(PL.NAVY, .36 * L, i, j);
     });
+    const nW = sub(G.P(0, 0, 0), G.P(0, 1, 0));                                                // тінь під тумбою на стіні
+    const shR = Math.min(bot + base + 9, d.shy || bot + base + 9); if (shR > bot + base) ditherFace(G, G.P(-w / 2 - .1, dep + .15, bot + base - 1), G.P(w / 2 + .1, dep + .15, bot + base - 1), G.P(-w / 2 - .1, dep + .15, shR), nW, (u, v) => .4 * Math.pow(1 - v, 1.6));
     const endWall = u => G.partF(G.sub(u, dep / 2, 1.2, dep, top - lid, bot + base), Fc => { const L = lit(Fc.n, A.centre(Fc));   // торцева стінка: рама з неоном
       return (uu, v, i, j) => { const y = v * Fc.fh; return Fc.k !== 'top' && Fc.k !== 'bottom' && Math.abs(uu * Fc.fw - Fc.fw * .5) < .3 && y > lid && y < Fc.fh - base ? E(N.pink[1]) : ramp(PL.MET, .38 * L + .06, i, j); }; });
     if (d.i === 0) endWall(-sg * (w / 2 - .6)); if (d.i === d.n - 1) endWall(sg * (w / 2 - .6));
@@ -446,6 +558,7 @@ NX.arc = NX.arc || {};
     const nIn = a => [-sg * Math.sin(a * D2R), 0, -Math.cos(a * D2R)], tg = a => [sg * Math.cos(a * D2R), 0, -Math.sin(a * D2R)];
     const ring = (a, rad, w, sh) => { const c = ax(a), n = nIn(a); let p0 = null; for (let k = 0; k <= 18; k++) { const ph = k / 18 * Math.PI * 2, p = add3(add3(c, n, Math.cos(ph) * rad), [0, 1, 0], Math.sin(ph) * rad); if (p0) G.tube(p0, p, w, sh); p0 = p; } };
     ring(d.sa, r + .5, 1.4, chromeT); if (d.i === d.n - 1) ring(d.sb, r + .5, 1.4, chromeT);
+    const shT = Math.min(Yc + r + 9, d.shy || Yc + r + 9); if (shT > Yc + r * .2) ditherFace(G, ax(d.sa, wr - .05, Yc + r * .2), ax(d.sb, wr - .05, Yc + r * .2), ax(d.sa, wr - .05, shT), nIn((d.sa + d.sb) / 2), (u, v) => .38 * Math.pow(1 - v, 1.5) * Math.min(1, v * 6 + .2));   // тінь труби на стіні (не на зони)
     if (d.i % 2 === 0) {                                                                      // кронштейн зі стіни під трубу + сідло
       const am = (d.sa + d.sb) / 2; G.tube(ax(am, wr, Yc + r * .15), ax(am, ri, Yc + r + .7), 1.4, steelT);
       G.tube(ax(am - 1.2, ri, Yc + r + .7), ax(am + 1.2, ri, Yc + r + .7), 1.3, steelT); G.disc(ax(am, wr - .4, Yc + r * .15), .9, (u, v, i, j) => ramp(PL.CHROME, .75 - v * .4, i, j));

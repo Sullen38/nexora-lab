@@ -6,7 +6,9 @@
  *   • три акваріуми: РИФ над аналітикою (морські риби), МЕДУЗАРІЙ між аналітикою й маркетингом (медузи), АКВАТРУБА над
  *     інструментами (прісноводні) — КОЖНА ІСТОТА СВОГО ВИДУ, жодна не повторюється (власник: «щоб нічого не повторювалось»);
  *     бульбашки від розпилювачів;
- *   • тепле мерехтіння ліхтаря й світних грибів на антресолі.
+ *   • тепле мерехтіння ліхтаря й світних грибів на антресолі;
+ *   • (Декор стін · 3) ДРОН-ПОЛИВАЛЬНИК облітає рослини (аквапоніка, антресоль, макраме, кокедама), зависає й розпилює воду;
+ *     СВІТЛЯЧКИ біля висячої зелені лівого крила.
  * Як риби опиняються «за склом»: скло акваріумів — предмети-вікна dc_rfg* / dc_tbg* / dc_jellyg (лицьова грань — малюнок
  * води); рушій рахує для них маску видимих пікселів з z-буфера (NX.arc.LIVE[id] з draw -> false: самі вікна не
  * перемальовуються), а тут маски зливаються в одну на акваріум. Риба має точку в об'ємі акваріума (світ) -> екран
@@ -243,6 +245,50 @@
     const sh = at('dc_mzp1', .45); if (sh) GLOWS.push({ p: sh, s: glowSpr('#3be8ff', 8), a: t => .2 + .12 * (.5 + .5 * Math.sin(t * 1.3)) });
   })();
 
+  // ---------- ДРОН-ПОЛИВАЛЬНИК (Декор стін · 3): облітає рослини аквапоніки, антресолі й макраме, зависає й розпилює воду ----------
+  const DRONE = sprite(24, 14, S => {
+    S.ell(12, 7.5, 6.2, 3.4, (x, y, u, v) => v < -.2 ? '#f0f4ff' : v < .35 ? '#c8d0ec' : '#8a92b8');                   // корпус
+    for (let x = 12; x < 17; x++) S.set(x, 6, '#101830'); S.set(15, 6, '#3be8ff'); S.set(16, 6, '#9af6ff');           // візор з «оком»
+    S.line(6, 6, 2.5, 4, '#6a7298'); S.line(18, 6, 21.5, 4, '#6a7298');                                                // кронштейни гвинтів
+    S.ell(2.5, 3.6, 1.4, 1, '#3a4268'); S.ell(21.5, 3.6, 1.4, 1, '#3a4268');                                             // мотори
+    S.ell(12, 12, 3.4, 1.9, (x, y, u, v) => u < -.3 && v < 0 ? '#c8e8ff' : '#3a8aff'); S.set(12, 13, '#1a2040');       // бачок з водою, сопло
+  });
+  const ROUTE = ['dc_hangR', 'dc_tbp0', 'dc_tbp1', 'dc_tbp2', 'dc_tbp3', 'dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_mzp5', 'dc_kk1']
+    .map(id => byId[id]).filter(Boolean).map(B => { const { P } = NX.arc.kit.basis(B), y = B.st === 'dc_hang' ? B.yt + (B.yb - B.yt) * .32 : B.yt, q = X.proj(P(0, B.dep / 2, y)); return [q[0], Math.max(11, q[1] - 7)]; });
+  const LEGS = []; (() => { let tt = 0; for (let k = 0; k < ROUTE.length; k++) { const a = ROUTE[k], b = ROUTE[(k + 1) % ROUTE.length], d = Math.hypot(b[0] - a[0], b[1] - a[1]), fly = Math.max(1.2, d / 26);
+    LEGS.push({ a, b, t0: tt, hover: 2.4, fly }); tt += 2.4 + fly; } LEGS.T = tt; })();
+  /** Де дрон у час t: зависає над рослиною (spray), потім летить до наступної (плавно, дугою вгору). */
+  function droneAt(t) {
+    const tt = t % LEGS.T; let L = LEGS[LEGS.length - 1]; for (const g of LEGS) if (tt >= g.t0) L = g;
+    const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1 };
+    const u = (lt - L.hover) / L.fly, e = u * u * (3 - 2 * u); return { x: L.a[0] + (L.b[0] - L.a[0]) * e, y: L.a[1] + (L.b[1] - L.a[1]) * e - Math.sin(u * Math.PI) * Math.min(10, Math.abs(L.b[0] - L.a[0]) * .12), spray: false, dir: L.b[0] >= L.a[0] ? 1 : -1 };
+  }
+  const droneY = D => Math.max(10, D.y);
+  function drawDrone(c, t, vx0, vx1) {
+    if (!ROUTE.length) return; const D = droneAt(t); if (D.x < vx0 - 10 || D.x > vx1 + 10) return;
+    const w = 10, h = w * DRONE.h / DRONE.w, x = D.x, y = droneY(D);
+    c.save(); c.imageSmoothingEnabled = true;
+    if (D.spray) { c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const f = (t * 1.6 + k / 14) % 1, a = (hash(k, 3) - .5) * .9; c.globalAlpha = .75 * (1 - f); c.fillStyle = k % 3 ? '#9af6ff' : '#ffffff'; c.fillRect(x + Math.sin(a) * f * 6 - .3, y + h * .45 + f * 9, .6, .6); } c.globalCompositeOperation = 'source-over'; }
+    c.globalAlpha = 1; c.translate(x, y); if (D.dir < 0) c.scale(-1, 1); c.drawImage(DRONE.cv, -w / 2, -h / 2, w, h);
+    c.globalAlpha = .55; c.fillStyle = '#e8f0ff'; const r = (t * 40) % 2 < 1; for (const hx of [-w * .4, w * .4]) c.fillRect(hx - (r ? 2.2 : 1.6), -h * .38, r ? 4.4 : 3.2, .35);   // гвинти (миготять)
+    c.globalAlpha = 1; c.fillStyle = (t % 1) < .5 ? '#3bff8a' : '#14602e'; c.fillRect(-w * .2, -h * .05, .45, .45);   // вогник
+    c.restore();
+  }
+  // ---------- СВІТЛЯЧКИ біля зелені лівого крила ----------
+  const FLIES = []; (() => {
+    const near = (id, n, ky) => { const B = byId[id]; if (!B) return; const { P } = NX.arc.kit.basis(B), a = X.proj(P(-B.w / 2, B.dep / 2, B.yt)), b = X.proj(P(B.w / 2, B.dep / 2, B.yb));
+      for (let k = 0; k < n; k++) FLIES.push({ x: (a[0] + b[0]) / 2, y: a[1] + (b[1] - a[1]) * ky, ax: Math.abs(b[0] - a[0]) * .4, ay: Math.abs(b[1] - a[1]) * .3, sd: FLIES.length * 7 + 3 }); };
+    near('dc_basket', 4, .55); near('dc_tr0', 2, .45); near('dc_tr1', 2, .45); near('dc_cl1', 2, .5);
+  })();
+  const FLY = glowSpr('#d8ff6a', 2.4);
+  function drawFlies(c, t, vx0, vx1) {
+    c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
+    for (const f of FLIES) { const x = f.x + Math.sin(t * (.31 + hash(f.sd, 1) * .2) + f.sd) * f.ax, y = f.y + Math.sin(t * (.43 + hash(f.sd, 2) * .2) + f.sd * 2) * f.ay; if (x < vx0 || x > vx1) continue;
+      const b = Math.max(0, Math.sin(t * (1.1 + hash(f.sd, 3)) + f.sd)); if (b < .05) continue; c.globalAlpha = .85 * b; c.drawImage(FLY.cv, x - FLY.r, y - FLY.r, FLY.r * 2, FLY.r * 2);
+      c.globalAlpha = b; c.fillStyle = '#f8ffd0'; c.fillRect(x - .25, y - .25, .5, .5); }
+    c.restore();
+  }
+
   // ---------- кадр ----------
   function drawAq(c, aq, t, Rd, vx0, vx1) {
     const M = MK[aq], A = AQ[aq]; if (!M || !A) return;
@@ -273,12 +319,14 @@
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
     c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore();
   }
+  NX.decor = { droneAt, ROUTE };                                                     // для перевірок (tools)
   NX.addObject({
     id: 'decorLive',
     drawBack(c, t) {
       if (c.isRefl || !buildMasks()) return;
       const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
       for (const aq of ['reef', 'jelly', 'tube']) drawAq(c, aq, t, Rd, vx0, vx1);
+      drawDrone(c, t, vx0, vx1); drawFlies(c, t, vx0, vx1);
       if (!GLOWS.length) return;
       c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
       for (const g of GLOWS) { if (g.p[0] < vx0 || g.p[0] > vx1) continue; c.globalAlpha = Math.max(0, Math.min(1, g.a(t))); c.drawImage(g.s.cv, g.p[0] - g.s.r, g.p[1] - g.s.r, g.s.r * 2, g.s.r * 2); }
