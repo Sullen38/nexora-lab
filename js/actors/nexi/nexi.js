@@ -48,6 +48,25 @@ NX.nexi = {
     if (done && this.task && this.taskOpt && NX.ui.zones.has(this.task.id)) { NX.ui.zones.result(this.task.id, this.taskOpt, this.task.auto); this.taskOpt = null; } if (this.task && done) this.history.push({ title: this.task.title, color: this.task.color }); if (this.history.length > 8) this.history.shift(); if (done || !this.queue.length) this.task = null; NX.objects && Object.values(NX.objects).forEach(o => { if ('active' in o && !done) o.active = false; }); },
   say(text) { this.speak = { text, t: 0 }; NX.ui.hud.bubble(text); NX.ui.chat && NX.ui.chat.add('b', text); },
   emote(m, d = 2.5) { this.mood = m; this.moodT = NX.time + d; },
+  /** ТАП ПО NEXI (ui/input.js). Власник, 02.11: «коли нажимаєш на Nexi, не має відкриватися панель зі скінами — це лише в
+   *  майстерні» (зона тепер зветься СКІНИ). Тож Nexi обертається до тебе, махає, показує емоцію й каже коротку фразу (act.tap.*).
+   *  Задачу не перериває: під час неї теж махає (поверх пози — layer), але каже, що доробляє; у кріслі маркетингу чи аналітики
+   *  крісло на мить крутиться лицем до нас (mk_chair.js: peek). Кожне друге-третє привітання — підказка, що вигляд змінюють
+   *  у зоні СКІНИ; у самій зоні — питає, як тобі вигляд; три тапи поспіль — «лоскотно!».
+   *  Поки махає, нові тапи лише подовжують помах і підкидають його — без нових фраз (щоб не засипати чат). */
+  hiT: 0, hiN: 0,
+  hi() {
+    const t = NX.time, busy = !!(this.cur || this.queue.length), ws = this.loc === 'wsPad' || NX.ui.skinlab.open, waving = t < this.hiT;
+    this.lastCmd = t; this.taps = t - (this.tapT || -9) < 2.5 ? (this.taps || 0) + 1 : 1; this.tapT = t; this.hiT = t + 2.4;
+    NX.nexiPhys.kick(this.taps === 3 ? 2.6 : 1.4);
+    if (!busy) { this.back = false; this.temp = 'wave'; this.tempT = this.hiT; }              // вільний — повертається до нас насовсім
+    const ch = { mkChair: NX.objects.mkChair, anChair: NX.objects.anChair }[this.loc]; if (ch && ch.peek) ch.peek(2.2);
+    if (this.taps === 3) { this.emote('happy', 2.4); this.say(NX.pick('act.tap.tickle')); return; }
+    if (waving) return;
+    const k = ws ? 'ws' : busy ? 'busy' : ++this.hiN % 3 === 2 ? 'skins' : 'hi';
+    this.emote({ ws: 'love', busy: 'happy', skins: 'idea' }[k] || ['happy', 'love', 'cool', 'surprise'][Math.random() * 4 | 0], 2.4);
+    this.say(NX.pick('act.tap.' + k));
+  },
   /** Глибина для масштабу й порядку малювання: на дивані — dy (диван може стояти ближче до глядача, core/config.js SOFA),
    *  інакше — де стоїть. dy задають стрибки на диван ({hop, dy}); будь-яка хода чи зникнення його скидає. */
   dy: null,
@@ -166,7 +185,9 @@ NX.nexi = {
       let pname = this.pose || 'stand';
       if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
-      if (this.back) p.back = 1; if (this.talking && !p.back && !p.talk) p.talk = 1;
+      if (this.back) p.back = 1;
+      if (t < this.hiT && !this.rot) { if (p.back) { p.back = 0; p.la = { x: -3, y: p.sit ? 4 : 6 }; } p.ra = { x: 4, y: -4 + Math.round(Math.sin(t * 9.42478) * 2) }; }   // тап (hi): обличчям до нас і махає — поверх будь-якої пози
+      if (this.talking && !p.back && !p.talk) p.talk = 1;
       if (this.mood && t < this.moodT) p.face = this.faceOf(this.mood);
       const ph = NX.nexiPhys; p.antX = ph.ax; p.antY = ph.ay; p.vel = NX.px.clamp(ph.vx / NX.cfg.RUN_SPEED, -1, 1); p.thrust = Math.min(1, Math.abs(ph.vy) / 80);
       if (this._rt !== t) { this._rt = t; renderBot(this.look, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)

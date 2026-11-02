@@ -1,7 +1,8 @@
 /* ============================================================================
  * ui/input.js — ДОТИКИ ТА КЛІКИ ПО КІМНАТІ
  * ----------------------------------------------------------------------------
- * Пріоритет тапу: Nexi (відкрити скіни) -> кіт (погладити) -> гість з порталу (репліка; actors/guests/guests.js) -> об'єкт кімнати
+ * Пріоритет тапу: Nexi (помахає й щось скаже — nexi.hi; спить на дивані — прокинеться; скіни — лише в зоні СКІНИ, власник
+ * 02.11) -> кіт (погладити) -> гість з порталу (репліка; actors/guests/guests.js) -> об'єкт кімнати
  * (виконати його сценарій act) -> підлога (просто піти туди).
  * Наведення мишею підсвічує об'єкт і показує його назву.
  * ========================================================================== */
@@ -14,7 +15,7 @@ NX.input = {
   },
   onTap(x, y) {
     NX.ui.hud.firstTouch();
-    if (NX.nexi.hitTest(x, y)) { NX.nexi.lastCmd = NX.time; if (NX.nexi.loc === 'sofaLie') { NX.nexi.emote('surprise'); NX.nexi.do('home'); } else { NX.nexi.temp = 'wave'; NX.nexi.tempT = NX.time + 2; NX.ui.skinlab.show(); } return; }
+    if (NX.nexi.hitTest(x, y)) { if (NX.nexi.loc === 'sofaLie') { NX.nexi.lastCmd = NX.time; NX.nexi.emote('surprise'); NX.nexi.do('home'); } else NX.nexi.hi(); return; }
     if (NX.cat.hitTest(x, y)) { NX.fx.emit('note', NX.cat.x, NX.cat.y - 24); NX.nexi.do('petCat'); return; }
     const gst = NX.guests && NX.guests.hitTest(x, y); if (gst) { gst.tap(); return; }
     for (const ob of Object.values(NX.objects)) if (ob.tapFirst && ob.tapFirst(x, y)) return;   // об'єкт сам вирішує, що робити з тапом (напр. меню)

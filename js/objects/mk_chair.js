@@ -27,7 +27,9 @@
  *   спинки, hitW — півширина рамки наведення, colors }).
  * API (activities.js): ready(), floor(), depth() — глибина Nexi, side() — де стати біля крісла, seat() — куди сісти,
  *   turnTo(кут) — повернутись (0 — до глядача, 180 — від глядача, 270 — праворуч), REST — кут спокою, sitDown() /
- *   standUp(); foot — слід на підлозі (Nexi й кіт обходять крісло — world/room.js: route).
+ *   standUp(); foot — слід на підлозі (Nexi й кіт обходять крісло — world/room.js: route);
+ *   peek() — тап по Nexi, поки він тут працює (nexi.js: hi, 02.11): крісло на мить крутиться лицем до глядача (Nexi махає)
+ *   і назад до екрана; якщо сценарій за цей час сам повернув крісло (фінал — до глядача), назад не крутиться.
  * ========================================================================== */
 NX.arc.raceChair = cfg => {
   const X = NX.px3d, A = NX.arc.kit, PL = A.PAL, P = NX.px, FL = 372, R = 4, { ramp, col } = X;
@@ -241,14 +243,16 @@ NX.arc.raceChair = cfg => {
     /** Слід на підлозі (екран): коло хрестовини з коліщатками — Nexi й кіт обходять (world/room.js: route). */
     get foot() { if (!zone()) return null; if (!this._foot) { const Cc = centre(), pts = []; for (let q = 0; q < 16; q++) { const an = q / 16 * Math.PI * 2; pts.push(X.proj(shp([Cc[0] + Math.cos(an) * 17.5 * K, FL, Cc[2] + Math.sin(an) * 17.5 * K]))); }
       this._foot = [Math.min(...pts.map(p => p[0])), Math.max(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[1]))]; } return this._foot; },
-    turnTo(deg) { let d = deg; while (d - this.a > 180) d -= 360; while (d - this.a < -180) d += 360; this.tgt = d; },
+    turnTo(deg) { let d = deg; while (d - this.a > 180) d -= 360; while (d - this.a < -180) d += 360; this.tgt = d; if (this.pk) this.pk.ext = true; },   // ext — крісло повернув сценарій (peek не повертає назад)
+    peek(d = 2.2) { if (!this.seated) return; if (this.pk) { this.pk.t = d; return; } const a = this.tgt; this.turnTo(REST + 180); this.pk = { t: d, a }; },   // ще тап — довше
     spin(deg) { this.tgt = this.a + deg; },
-    sitDown() { this.seated = true; }, standUp() { this.seated = false; this.turnTo(REST); },
+    sitDown() { this.seated = true; }, standUp() { this.seated = false; this.pk = null; this.turnTo(REST); },
     get hit() { if (!zone()) return null; const f = this.floor(), Cc = centre(), top = X.proj(shp([Cc[0], FL - (hS(BH1) + 1) * K, Cc[2] + BV * K]))[1]; return { x: f[0] - HW, y: top, w: 2 * HW, h: f[1] + 2 - top }; },   // від підлоги до верху спинки
     update(dt, t) {
       if (!zone()) return;
       if (NX.loop.frames > WARM && !this.warm) { const k = PIN.find(q => !HI.has(q)); if (k === undefined) this.warm = true; else render(k, false); }   // кути спокою — заздалегідь, по одному за кадр
       const d = this.tgt - this.a, sp = (90 + Math.abs(d) * 5) * dt; this.a = Math.abs(d) <= sp ? this.tgt : this.a + Math.sign(d) * sp;
+      const pk = this.pk; if (pk && (pk.t -= dt) <= 0) { this.pk = null; if (this.seated && !pk.ext) this.turnTo(pk.a); }   // peek: назад до екрана
       if (!this.seated && Math.abs(d) < .5) { this.idleT -= dt; if (this.idleT < 0) { this.idleT = 6 + Math.random() * 6; this.turnTo(REST + (Math.random() < .5 ? 0 : (Math.random() - .5) * 10)); } }
       const n = NX.nexi;
       if (this.seated && n.loc === cfg.loc) {                                              // Nexi їде разом із кріслом: спиною / лицем / боком

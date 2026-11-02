@@ -1,14 +1,14 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
+  ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. NOWY WYGLĄD — W STREFIE SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
     aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK', kb: 'KB',
     st: { js: 'SKRYPTY', img: 'OBRAZ POKOJU', city: 'MIASTO', wings: 'SKRZYDŁA 3D', ready: 'GOTOWE' },
     say: { js: 'Ładuję swój kod...', img: 'Rozglądam się po pokoju...', city: 'Włączam miasto za oknem...', wings: 'Buduję skrzydła 3D...', ready: 'Gotowe! Wchodź!' },
     step: { sky: 'niebo i gwiazdy', planet: 'planeta', far: 'dalekie kwartały', towers: 'wieżowce', near: 'autostrada i kolejka', glow: 'neonowa poświata', wall: 'ściany i podłoga', back: 'przy ścianach', finish: 'szlifuję detale', compose: 'światło i blask', mirror: 'lustrzana podłoga', warm: 'pierwsza klatka' } },
-  nav: { ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
+  nav: { ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'SKÓRKI', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje', owners: 'Właściciele' },
-  obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
+  obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Skórki', tools: 'Narzędzia', portal: 'Portal', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · PRZYWITAJ SIĘ', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     start: 'Biorę się: {task}!',
     ai: { reply: { t: 'Odpowiedz klientowi', r: 'Odpowiedź do klienta wysłana w {n} s. Ton: przyjazny i jasny.' }, mail: { t: 'Napisz do partnera', r: 'Mail do partnera gotowy: {n} akapity, w wersjach roboczych.' }, summary: { t: 'Podsumowanie spotkania', r: 'Podsumowanie: {n} decyzje i zadania z terminami dla zespołu.' } },
@@ -46,17 +46,17 @@ NX.i18n.add('pl', {
     merlin: { n: 'Merlin', s: ['Abrakadabra!'] }, genie: { n: 'Dżin', s: ['Słucham i jestem posłuszny!', 'Życzenie spełnione!'] },
     tinMan: { n: 'Blaszany Drwal', s: ['Oliwy… proszę…', 'Dziękuję, przyjacielu!'] },
     silver: { n: 'Długi John Silver', s: ['Tu zakopano skarb!'], p: 'Piastry! Piastry!' }, gorynych: { n: 'Żmij Gorynycz', s: ['Apsik!'] } },
-  chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', skin: 'Skórka' },
-    fallback: 'Na razie umiem: pracować w marketingu i analityce przy swoich biurkach, podłączać usługi w narzędziach, zmieniać skórki w warsztacie, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
-    greet: 'Cześć! Jestem Nexi. Dotknij strefy, kanapy lub okna, a pójdę tam. Dotknij mnie, aby zmienić skórkę.' },
+  chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', skin: 'Skórki' },
+    fallback: 'Na razie umiem: pracować w marketingu i analityce przy swoich biurkach, podłączać usługi w narzędziach, zmieniać skórki w strefie „Skórki”, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
+    greet: 'Cześć! Jestem Nexi. Dotknij strefy, kanapy lub okna, a pójdę tam. Nowy wygląd — w strefie „Skórki”.' },
   act: {
     home: { title: 'Stacja dokująca', steps: ['Wracam do stacji', 'Ładuję się'], lines: ['Cześć! Jestem Nexi, Twój asystent AI dla biznesu. Dotknij strefy, kanapy lub okna, a pójdę tam.', 'Jestem w domu, ładuję się. Co robimy?'] },
     ai: { title: 'Centrum AI: odpowiedź klientowi', steps: ['Lecę na biurko', 'Czytam zapytanie', 'Piszę odpowiedź', 'Wysłane ✓'], lines: ['Centrum AI: odpowiadam klientom, piszę maile i podsumowania spotkań.', 'Czytam Twoje dokumenty i w sekundę znajduję to, czego trzeba.', 'Wymyślam pomysły na promocje i nazwy. Opisz zadanie, a się nim zajmę.'] },
     virus: { title: 'Wirus w centrum AI!', steps: ['Biegnę do centrum AI', 'Patrzę, jak Rudy poluje', 'Wirus zniszczony ✓'], lines: ['Ojej! Wirus w centrum AI!', 'Alarm! Coś wlazło do sieci neuronowej!', 'Rudy, wirus — bierz go!'], thanks: ['Rudy, jesteś najlepszym antywirusem!', 'Piu-piu! Czysto. Dzięki, Rudy!', 'Laserowe oczy — to jest supermoc!'], ai: ['Uff, AI samo go usunęło.'] },
     analytics: { title: 'Analityka: raport sprzedaży', steps: ['Siadam w fotelu', 'Zbieram dane', 'Rysuję wykres', 'Raport gotowy ✓'], lines: ['Analityka: zbieram sprzedaż, ruch i koszty w jeden raport.', 'Widzę, gdzie spada konwersja, i podpowiem, co poprawić.'] },
     marketing: { title: 'Marketing: kampania', steps: ['Siadam w fotelu', 'Piszę post', 'Uruchamiam reklamę', 'Zasięg rośnie ✓'], lines: ['Marketing: piszę posty, newslettery i reklamy w Twoim stylu.', 'Dobiorę odbiorców i zaplanuję kampanie na tydzień.'] },
-    wsLook: { lines: ['Co za hologram! Ta skórka mi pasuje.', 'Tyle skórek… Dotknij warsztatu, a przymierzę nową!'] },
-    workshop: { title: 'Warsztat: nowa skórka', steps: ['Wlatuję do kapsuły', 'Skanuję korpus', 'Wybierz skórkę ✓'], lines: ['Warsztat! Wybierz skórkę po prawej, a ramię ją zamontuje.', 'Skanuję korpus... Gotowy na nowy wygląd!'] },
+    wsLook: { lines: ['Co za hologram! Ta skórka mi pasuje.', 'Tyle skórek… Dotknij strefy „Skórki”, a przymierzę nową!'] },
+    workshop: { title: 'Skórki: nowy wygląd', steps: ['Wlatuję do kapsuły', 'Skanuję korpus', 'Wybierz skórkę ✓'], lines: ['Strefa skórek! Wybierz skórkę po prawej, a ramię ją zamontuje.', 'Skanuję korpus... Gotowy na nowy wygląd!'] },
     tools: { title: 'Narzędzia: integracje', steps: ['Lecę do stołu roboczego', 'Podłączam usługę', 'Synchronizuję dane', 'Działa ✓'], lines: ['Narzędzia: podłączam CRM, pocztę, komunikatory i kalendarz.', 'Automatyzuję rutynę: przypomnienia, faktury, zgłoszenia ze strony.'] },
     portal: { title: 'Portal: przestrzeń firmy', steps: ['Ustawiam konsolę', 'Ładuję portal', 'Podróż', 'Wróciłem ✓'] },
     sofa: { title: 'Odpoczynek na kanapie', steps: ['Siadam na kanapie', 'Czytam wiadomości'], lines: ['Odpocznę chwilę i poczytam wiadomości biznesowe.', 'Kanapa to najlepsze miejsce na nowe pomysły.'] },
@@ -73,6 +73,12 @@ NX.i18n.add('pl', {
     bounce: { title: 'Trampolina na kanapie', steps: ['Wskakuję', 'Boing!'], lines: ['Nikt nie patrzy? To trampolina!', 'Kanapa to najlepsza trampolina!'] },
     fluff: { title: 'Wytrzepać poduszki', steps: ['Biorę poduszki', 'Puf-puf!'], lines: ['Zrobię przytulnie — wytrzepię poduszki.', 'Poduszki muszą być puszyste!'] },
     skinLab: { lines: ['Zmieńmy mój wygląd! Wybierz skórki po prawej.'] },
+    tap: {   // dotknięcie Nexi (nexi.js: hi)
+      hi: ['Cześć! Jestem tu.', 'O, to ty! Co robimy?', 'Hej! Dotknij strefy, a wezmę się do pracy.', 'Do usług! Marketing, analityka, narzędzia — mów.', 'Cześć, cześć! Miłego dnia.', 'Jestem! Gotowy do pracy.'],
+      busy: ['Sekundkę — kończę i wracam!', 'Pracuję! Prawie gotowe.', 'Widzę cię! Zaraz skończę.'],
+      skins: ['Chcesz mi zmienić wygląd? Zajrzyj do strefy „Skórki”.', 'Mój styl zmienisz w strefie „Skórki”!', 'Psst… w strefie „Skórki” mogę przymierzyć wszystko!'],
+      ws: ['Jak ci się podoba mój wygląd?', 'Wybieraj — przymierzę!'],
+      tickle: ['Hi-hi, łaskocze!', 'Hej, jestem robotem, nie przyciskiem!', 'Ojej, łaskocze!'] },
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
   own: {

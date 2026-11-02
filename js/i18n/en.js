@@ -1,14 +1,14 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. TAP NEXI — SKINS. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. NEW LOOK — IN THE SKINS ZONE. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', save: 'SAVE', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
     aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK', kb: 'KB',
     st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },
     say: { js: 'Loading my code...', img: 'Looking around the room...', city: 'Switching on the city...', wings: 'Building the 3D wings...', ready: 'Ready! Come on in!' },
     step: { sky: 'sky & stars', planet: 'planet', far: 'far blocks', towers: 'skyscrapers', near: 'highway & monorail', glow: 'neon glow', wall: 'walls & floor', back: 'by the walls', finish: 'polishing details', compose: 'light & glow', mirror: 'mirror floor', warm: 'first frame' } },
-  nav: { ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
+  nav: { ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'SKINS', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions', owners: 'Owners' },
-  obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
+  obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Skins', tools: 'Tools', portal: 'Portal', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SAY HI', catTag: 'GINGER · PET' },
   zones: {
     start: 'On it: {task}!',
     ai: { reply: { t: 'Reply to a client', r: 'Client reply sent in {n} s. Tone: friendly and clear.' }, mail: { t: 'Write to a partner', r: 'Partner email ready: {n} paragraphs, saved in drafts.' }, summary: { t: 'Meeting summary', r: 'Meeting summary: {n} decisions and tasks with deadlines for the team.' } },
@@ -46,17 +46,17 @@ NX.i18n.add('en', {
     merlin: { n: 'Merlin', s: ['Abracadabra!'] }, genie: { n: 'Genie', s: ['Your wish is my command!', 'Wish granted!'] },
     tinMan: { n: 'Tin Woodman', s: ['Oil… please…', 'Thank you, friend!'] },
     silver: { n: 'Long John Silver', s: ['Treasure buried here!'], p: 'Pieces of eight!' }, gorynych: { n: 'Zmey Gorynych', s: ['Achoo!'] } },
-  chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', skin: 'Skin' },
-    fallback: 'Right now I can: work in marketing and analytics at my desks, connect services in tools, change skins in the workshop, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
-    greet: "Hi! I'm Nexi. Tap a zone, the sofa or the window and I'll go there. Tap me to change my skin." },
+  chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', skin: 'Skins' },
+    fallback: 'Right now I can: work in marketing and analytics at my desks, connect services in tools, change skins in the Skins zone, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
+    greet: "Hi! I'm Nexi. Tap a zone, the sofa or the window and I'll go there. New look? Visit the Skins zone." },
   act: {
     home: { title: 'Charging dock', steps: ['Heading to the dock', 'Charging'], lines: ["Hi! I'm Nexi, your AI business assistant. Tap a zone, the sofa or the window and I'll go there.", "I'm home, charging. What's next?"] },
     ai: { title: 'AI center: client reply', steps: ['Jetting onto the desk', 'Reading the request', 'Writing a reply', 'Sent ✓'], lines: ['AI center: I answer clients, write emails and meeting summaries.', 'I read your documents and find what you need in seconds.', 'I generate ideas for promos and names. Describe the task and I am on it.'] },
     virus: { title: 'Virus in the AI center!', steps: ['Running to the AI center', 'Watching Ginger hunt', 'Virus destroyed ✓'], lines: ['Whoa! A virus in the AI center!', 'Alert! Something crawled into the neural net!', 'Ginger, a virus — get it!'], thanks: ['Ginger, you are the best antivirus!', 'Pew-pew! All clean. Thanks, Ginger!', 'Laser eyes — what a superpower!'], ai: ['Phew, the AI deleted it by itself.'] },
     analytics: { title: 'Analytics: sales report', steps: ['Taking a seat', 'Collecting data', 'Building a chart', 'Report ready ✓'], lines: ['Analytics: I gather sales, traffic and costs into one report.', 'I can see where conversion drops and suggest a fix.'] },
     marketing: { title: 'Marketing: campaign', steps: ['Taking my chair', 'Writing a post', 'Launching ads', 'Reach is growing ✓'], lines: ['Marketing: I write posts, newsletters and ads in your style.', "I'll find the audience and plan the week's campaigns."] },
-    wsLook: { lines: ['What a hologram! That skin suits me.', 'So many skins… Tap the workshop and I will try a new one!'] },
-    workshop: { title: 'Workshop: new skin', steps: ['Flying into the capsule', 'Scanning body', 'Pick a skin ✓'], lines: ['Workshop! Pick a skin on the right and the arm will install it.', 'Scanning body... Ready for a new look!'] },
+    wsLook: { lines: ['What a hologram! That skin suits me.', 'So many skins… Tap the Skins zone and I will try a new one!'] },
+    workshop: { title: 'Skins: new look', steps: ['Flying into the capsule', 'Scanning body', 'Pick a skin ✓'], lines: ['Skins zone! Pick a skin on the right and the arm will install it.', 'Scanning body... Ready for a new look!'] },
     tools: { title: 'Tools: integrations', steps: ['Flying to the workbench', 'Connecting the service', 'Syncing data', 'It works ✓'], lines: ['Tools: I connect your CRM, email, messengers and calendar.', 'I automate routine: reminders, invoices, website leads.'] },
     portal: { title: 'Portal: business space', steps: ['Setting the console', 'Charging the portal', 'Travelling', 'Back ✓'] },
     sofa: { title: 'Rest on the sofa', steps: ['Sitting down', 'Reading the news'], lines: ["I'll rest a bit and read business news.", 'The sofa is the best place for new ideas.'] },
@@ -73,6 +73,12 @@ NX.i18n.add('en', {
     bounce: { title: 'Sofa trampoline', steps: ['Jumping on', 'Boing!'], lines: ["Nobody's watching? Trampoline time!", 'The sofa is the best trampoline!'] },
     fluff: { title: 'Fluff the pillows', steps: ['Grabbing pillows', 'Poof-poof!'], lines: ["Let's make it cozy — fluffing pillows.", 'Pillows must be fluffy!'] },
     skinLab: { lines: ["Let's change my look! Pick skins on the right."] },
+    tap: {   // tap on Nexi (nexi.js: hi)
+      hi: ["Hi! I'm here.", "Oh, it's you! What shall we do?", "Hey! Tap a zone and I'll get to work.", 'At your service! Marketing, analytics, tools — just say.', 'Hi there! Have a great day.', 'Here I am! Ready to work.'],
+      busy: ["One sec — finishing up, then I'm back!", 'Working on it! Almost done.', 'I see you! Nearly finished.'],
+      skins: ['Want a new look for me? Visit the Skins zone.', 'You can change my style in the Skins zone!', 'Psst… in the Skins zone I can try on anything!'],
+      ws: ['How do I look?', "Pick one — I'll try it on!"],
+      tickle: ['Hee-hee, that tickles!', "Hey, I'm a robot, not a button!", 'Stop, that tickles!'] },
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
   own: {

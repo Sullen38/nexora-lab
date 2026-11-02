@@ -16,8 +16,9 @@ NX.ui.chat = {
     this.relabel();
     $('ask').onsubmit = e => { e.preventDefault(); const v = $('q').value.trim(); if (!v) return; $('q').value = ''; this.add('u', v); this.reply(v); };
   },
-  /** Запустити сценарій: зона з задачами — з наступною задачею по черзі (ui/zones.js), скін — у майстерню (капсула + лабораторія). */
-  go(id) { if (!NX.acts[id]) return NX.ui.skinlab.show(); NX.ui.zones.has(id) ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); },
+  /** Запустити сценарій: зона з задачами — з наступною задачею по черзі (ui/zones.js), скін — у зону СКІНИ (капсула + лабораторія;
+   *  лабораторія скінів відкривається лише там — власник, 02.11). */
+  go(id) { if (!NX.acts[id]) return; NX.ui.zones.has(id) ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); },
   relabel() { document.querySelectorAll('#chips button').forEach(b => b.textContent = NX.t('chat.quick.' + b.dataset.k)); },
   reply(v) {
     const m = this.kw().find(k => (k[0] === 'skin' || NX.acts[k[0]]) && k[1].test(v)); if (m) return this.go(m[0] === 'skin' ? 'workshop' : m[0]);   // ключі зон, яких ще немає, — пропускаються
