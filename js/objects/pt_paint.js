@@ -117,7 +117,7 @@
       c.fillStyle = '#1a0a3e'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.lineTo(x2, y2); c.closePath(); c.fill(); A.neon(c, x1, y1, x2, y2, LI, .6); });
   };
   /** Тунель: кільце n з глибиною d (0 — край, 1 — серце): радіус і зсув центру (тунель трохи «дивиться» вгору-праворуч). */
-  function ringAt(fw, fh, d) { const R = fw * .58, r = R * Math.pow(1 - d, 1.7) + fw * .02, cx = fw / 2 + d * fw * .05, cy = fh * .52 - d * fh * .06; return [cx, cy, r, r * 1.3]; }
+  function ringAt(fw, fh, d) { const R = fw * .58, r = R * Math.pow(1 - d, 1.7) + fw * .02, cx = fw / 2 + d * fw * .05, cy = fh * .52 - d * fh * .06; return [cx, cy, r, r * Math.max(1.3, fh / fw * .8)]; }   // кільця — овали під висоту отвору (крок 13.2: брама висока)
   const BG = {};                                                                                        // тло вихору (перелив) — одне полотно під розмір, а не градієнт щоразу
   function bg(fw, fh, k) {
     const key = Math.round(fw * k) + 'x' + Math.round(fh * k); if (BG[key]) return BG[key];

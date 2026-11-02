@@ -41,7 +41,7 @@ NX.arc.holo = (() => {
   /** Точка на лиці предмета розкладки item зони (px картинки X, Y; dv — од. світу ближче до глядача) -> екран; null — ще немає. */
   function at(zone, item, Xc, dv = .3) {
     const Z = NX.arc.zone && NX.arc.zone(zone), B = Z && Z.item(item); if (!B) return null;
-    const m = Z.m, bp = A.basis(B).P; return (X, Y) => proj(bp((X - Xc) * m, -dv, FL - (Z.Yf - Y) * m));
+    const m = Z.m, mx = m * (Z.kx || 1), bp = A.basis(B).P; return (X, Y) => proj(bp((X - Xc) * mx, -dv, FL - (Z.Yf - Y) * m));   // mx — з розтягом зони по ширині (kx)
   }
 
   function pane(o) {
@@ -50,19 +50,19 @@ NX.arc.holo = (() => {
     function geom() {
       if (P.q) return P;
       const Z = NX.arc.zone && NX.arc.zone(o.zone), B = Z && Z.item(o.item); if (!B) return null;
-      const m = Z.m, bp = A.basis(B).P, y = Y => FL - (Z.Yf - Y) * m, v0 = o.v != null ? o.v * m : -(o.dv || 6), h = o.hinge, ha = h ? h.a * Math.PI / 180 : 0;   // o.v — углиб від лиця предмета (px картинки)
+      const m = Z.m, mx = m * (Z.kx || 1), bp = A.basis(B).P, y = Y => FL - (Z.Yf - Y) * m, v0 = o.v != null ? o.v * m : -(o.dv || 6), h = o.hinge, ha = h ? h.a * Math.PI / 180 : 0;   // o.v — углиб від лиця предмета (px картинки); mx — по ширині (з розтягом kx)
       // крило (o.hinge = {X, a}): панель повернута на a° навколо вертикалі X — дальній від петлі край ближче до глядача.
       // o.face — КОКПІТ ЛИЦЕМ ДО ГЛЯДАЧА, симетричний на екрані: вісь (Xc, v) лишається там, де її поставила розкладка (по центру
       // стола), а точки кладуться прямо на екран навколо неї — бічний зсув × масштаб перспективи своєї глибини (ближче —
       // більше); так «фронтальний» зсув зони (sh, fv 1.25) не перекошує крила, що виходять уперед
       const PZ = NX.persp, axis = o.face ? bp(0, v0, y(o.Y[0])) : null, ax = axis && proj(axis)[0];
-      const pt = (X, Y) => { let d = (X - o.Xc) * m, fw = 0; if (h) { const dh = (X - h.X) * m; d = (h.X - o.Xc) * m + dh * Math.cos(ha); fw = Math.abs(dh) * Math.sin(ha); }
+      const pt = (X, Y) => { let d = (X - o.Xc) * mx, fw = 0; if (h) { const dh = (X - h.X) * mx; d = (h.X - o.Xc) * mx + dh * Math.cos(ha); fw = Math.abs(dh) * Math.sin(ha); }
         if (axis) { const k = PZ.D / (PZ.D + axis[2] - fw); return [ax + d * k, PZ.VP[1] + (y(Y) - PZ.VP[1]) * k]; }
         return proj(bp(d, v0 - fw, y(Y))); };
       const tl = pt(o.X[0], o.Y[0]), tr = pt(o.X[1], o.Y[0]), br = pt(o.X[1], o.Y[1]), bl = pt(o.X[0], o.Y[1]);
       P.q = [[tl[0], tl[1]], [tr[0], tr[1]], [tr[0], br[1]], [tl[0], bl[1]]];                   // боки вертикальні: x — з верхніх кутів
       P.box = [tl[0], Math.min(tl[1], tr[1]), tr[0], Math.max(bl[1], br[1])];
-      P.fw = (o.X[1] - o.X[0]) * m; P.fh = (o.Y[1] - o.Y[0]) * m;
+      P.fw = (o.X[1] - o.X[0]) * mx; P.fh = (o.Y[1] - o.Y[0]) * m;
       return P;
     }
     /** Полотна вмісту під щільність hr (px на од. світу): перестворюються, лише коли змінився масштаб екрана. */
