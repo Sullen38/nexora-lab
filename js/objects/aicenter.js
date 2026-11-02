@@ -13,18 +13,20 @@
 (() => {
   const P = NX.px;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('ai'));
-  // голо-екран (px картинки зони): привид ai_scr — вісь (X 118), вирівняна по центру стола; екран — у склі рамки (рамка — X 26..210,
+  // голо-екран (px картинки зони): привид ai_scr — вісь (X 118), вирівняна по центру стола; екран — у склі рамки (рамка — X −13..249,
   // Y 50..284 у gen_room.py aicenter(); частки скла — ai_paint.js FR)
-  const SCR = { X: [34.8, 201.2], Y: [99, 232], Xc: 118 };
+  const SCR = { X: [-0.4, 236.4], Y: [99, 232], Xc: 118 };
   const S = { act: false, prog: 0 };                                                          // стан для вмісту екрана (ai_paint.js)
   let pane = null;
   const mk = () => pane || (pane = NX.arc.holo.pane({ zone: 'ai', item: 'ai_scr', Xc: SCR.Xc, X: SCR.X, Y: SCR.Y, v: 0, rgb: '150,240,255', seed: 5, lagMin: 0, crisp: true, shade: 1, every: 5,
     paint: (c, fw, fh, t) => NX.arc.aiScreen(c, fw, fh, t, S) }));
   const FX = { nextLag: 24 + Math.random() * 14 };
-  /** М'яке сяйво екрана на стіні довкола (під екраном): блакитне й трохи рожевого від рамки. */
+  /** М'яке сяйво екрана на стіні довкола (під екраном): блакитне й трохи рожевого від рамки. Овали під форму екрана (крок 13.3:
+   *  екран став широким — коло на всю його ширину заливало вдвічі більше пікселів, а видно сяйво лише довкола рамки). */
   function glow(c, q, t, act) {
-    const cx = (q[0][0] + q[1][0]) / 2, cy = (q[0][1] + q[3][1]) / 2, w = q[1][0] - q[0][0], a = .24 + .05 * Math.sin(t * 1.1) + (act ? .1 : 0);
-    c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, cx, cy, w * .72, 'rgba(70,170,255,.5)', a); P.glow(c, cx, q[0][1], w * .5, 'rgba(255,80,210,.4)', a * .5); c.restore();
+    const cx = (q[0][0] + q[1][0]) / 2, cy = (q[0][1] + q[3][1]) / 2, w = q[1][0] - q[0][0], h = q[3][1] - q[0][1], a = .24 + .05 * Math.sin(t * 1.1) + (act ? .1 : 0);
+    c.save(); c.translate(cx, cy); c.scale(1, Math.min(1, h / w * 1.2)); P.glow(c, 0, 0, w * .62, 'rgba(70,170,255,.5)', a); c.restore();
+    c.save(); c.translate(cx, q[0][1]); c.scale(1, .45); P.glow(c, 0, 0, w * .45, 'rgba(255,80,210,.4)', a * .5); c.restore();
   }
   NX.addObject({
     id: 'aicenter', active: false, prog: 0,

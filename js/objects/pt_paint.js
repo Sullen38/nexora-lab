@@ -6,11 +6,15 @@
  * Крок 13 (власник: «портал — висока арка з вихором на підвищенні зі сходинками, як на концепті; якість — як у сусідніх
  * зонах, але кожна своя, з характером»). Характер зони: таємнича sci-fi брама — глибокий фіолетовий метал, бузковий і
  * рожевий неон, руни-вогники; вихор — тунель кілець від рожево-фіолетового до блакитного з білим серцем.
- *   pt_st1 / pt_st2 — сходинки: рожевий / блакитний неон по кромці, шеврони «вгору» (біжать — живі), рифлення; на верхньому
- *                     майданчику під аркою — коло-емітер
+ *   pt_st1..3       — сходинки: рожевий / блакитний / бузковий неон по кромці, шеврони «вгору» (біжать — живі), рифлення; на
+ *                     верхньому майданчику під аркою (pt_st3) — коло-емітер
+ *   pt_baseL / R    — масивні цоколі колон: велика руна в рамці (дихає — жива), рифлення, заклепки
  *   pt_pillL / R    — колони: утоплений енергоканал зі склом (імпульси біжать угору — живі), руни-вогники, заклепки;
  *                     внутрішня грань лівої (її видно) — бузкові світлові панелі
+ *   pt_capL / R     — капітелі: кристал посередині, неонова губа знизу
  *   pt_beam         — балка: вивіска посередині (arc_paint.js), на кінцях — «вушка» з кристалами, неон знизу
+ *   pt_crest        — замковий камінь угорі: великий кристал-емблема в сяйві (живий)
+ *   (крок 13.3 — власник: «портал зроби більше і масивніше»: три сходинки, цоколі й капітелі, товща балка, замковий камінь)
  *   pt_back         — ВИХОР у глибині арки (восьмикутний отвір: зрізи вгорі — темний метал); живий
  * Написів, крім вивіски (nav.portal), немає.
  * ========================================================================== */
@@ -31,16 +35,19 @@
   }
   PAINT.pt_st1 = (c, fw, fh) => riser(c, fw, fh, PK);
   PAINT.pt_st2 = (c, fw, fh) => riser(c, fw, fh, CY);
+  PAINT.pt_st3 = (c, fw, fh) => riser(c, fw, fh, LI);
   /** Верх сходинки: рифлення (смуги вздовж кромки), світла смуга біля краю. */
   const tread = (c, fw, fh, col) => { c.fillStyle = 'rgba(6,2,20,.35)'; for (let y = fh * .12; y < fh; y += 2.2) c.fillRect(0, y, fw, .45); c.fillStyle = col; c.fillRect(0, 0, fw, .5); };
-  PAINT.pt_st1.sides = { top: (c, fw, fh) => tread(c, fw, fh, 'rgba(255,120,230,.5)'), right: (c, fw, fh) => { c.fillStyle = 'rgba(8,2,24,.4)'; c.fillRect(0, 0, fw, fh); A.neon(c, 0, fh * .14, fw, fh * .14, PK, .7); } };
-  PAINT.pt_st2.sides = {
+  const stepSide = col => (c, fw, fh) => { c.fillStyle = 'rgba(8,2,24,.4)'; c.fillRect(0, 0, fw, fh); A.neon(c, 0, fh * .14, fw, fh * .14, col, .7); };
+  PAINT.pt_st1.sides = { top: (c, fw, fh) => tread(c, fw, fh, 'rgba(255,120,230,.5)'), right: stepSide(PK) };
+  PAINT.pt_st2.sides = { top: (c, fw, fh) => tread(c, fw, fh, 'rgba(120,240,255,.5)'), right: stepSide(CY) };
+  PAINT.pt_st3.sides = {
     top: (c, fw, fh) => {                                                                                // майданчик під аркою: коло-емітер
       tread(c, fw, fh, 'rgba(120,240,255,.5)');
       const cx = fw / 2, cy = fh * .45; [[fw * .3, .55, CY], [fw * .22, .45, LI], [fw * .13, .4, '#ffffff']].forEach(([r, a, col]) => { c.globalAlpha = a; c.strokeStyle = col; c.lineWidth = .9; c.beginPath(); c.ellipse(cx, cy, r, r * .42, 0, 0, 7); c.stroke(); });
       c.globalAlpha = .28; const g = c.createRadialGradient(cx, cy, 0, cx, cy, fw * .3); g.addColorStop(0, '#c8a0ff'); g.addColorStop(1, 'rgba(120,60,255,0)'); c.fillStyle = g; c.beginPath(); c.ellipse(cx, cy, fw * .3, fw * .13, 0, 0, 7); c.fill(); c.globalAlpha = 1;
     },
-    right: (c, fw, fh) => { c.fillStyle = 'rgba(8,2,24,.4)'; c.fillRect(0, 0, fw, fh); A.neon(c, 0, fh * .14, fw, fh * .14, CY, .7); },
+    right: stepSide(LI),
   };
   /** Шеврони біжать до брами: від країв до середини, по черзі. */
   const chevLive = col => ({ every: 4, step: 6, draw(c, fw, fh, t) {
@@ -52,6 +59,7 @@
   } });
   LIVE.pt_st1 = chevLive('#ff9af0');
   LIVE.pt_st2 = chevLive('#9af6ff');
+  LIVE.pt_st3 = chevLive('#e2c4ff');
 
   // ---------- КОЛОНИ ----------
   const RUNE = [['X.X', '.X.', 'X.X'], ['XXX', 'X..', 'XXX'], ['.X.', 'XXX', '.X.'], ['XX.', '.XX', 'XX.'], ['X..', 'XXX', '..X'], ['XXX', '.X.', '.X.']];
@@ -92,6 +100,39 @@
   } });
   LIVE.pt_pillL = pillLive(0); LIVE.pt_pillR = pillLive(1);
 
+  // ---------- ЦОКОЛІ Й КАПІТЕЛІ (крок 13.3: масивніша брама) ----------
+  /** Цоколь: важкий блок — рифлення, рамка з великою руною посередині (тьмяна; жива — дихає), заклепки по кутах. */
+  const baseRune = (c, fw, fh, col, a, k = 3) => { c.globalAlpha = a; rune(c, k, fw / 2, fh * .5, Math.min(fw, fh) * .14, col); c.globalAlpha = 1; };
+  function base(c, fw, fh, k) {
+    c.fillStyle = 'rgba(255,220,255,.12)'; c.fillRect(0, 0, fw, .5);
+    for (let y = fh * .1; y < fh * .9; y += 1.6) { c.fillStyle = 'rgba(4,1,16,.35)'; c.fillRect(fw * .04, y, fw * .92, .35); }   // рифлення
+    inset(c, fw * .22, fh * .14, fw * .56, fh * .72, 'rgba(4,2,18,.92)', .8); A.neonRect(c, fw * .22, fh * .14, fw * .56, fh * .72, LI, .4, .8);
+    baseRune(c, fw, fh, 'rgba(160,110,240,.6)', 1, k);
+    [[.08, .12], [.92, .12], [.08, .88], [.92, .88]].forEach(([u, v]) => bolt(c, fw * u, fh * v, .6));
+    A.neon(c, fw * .02, fh * .97, fw * .98, fh * .97, PK, .55);
+  }
+  PAINT.pt_baseL = (c, fw, fh) => base(c, fw, fh, 3);
+  PAINT.pt_baseR = (c, fw, fh) => base(c, fw, fh, 4);
+  const blockSide = (c, fw, fh) => { c.fillStyle = 'rgba(8,2,24,.4)'; c.fillRect(0, 0, fw, fh); inset(c, fw * .1, fh * .16, fw * .8, fh * .68, 'rgba(10,4,32,.5)', .6); vent(c, fw * .2, fh * .32, fw * .6, fh * .36, 4); };
+  PAINT.pt_baseL.sides = { right: blockSide }; PAINT.pt_baseR.sides = { right: blockSide };
+  const baseLive = seed => ({ every: 4, draw(c, fw, fh, t) {
+    const a = .45 + .4 * Math.max(0, Math.sin(t * (PT().active ? 3 : 1.2) + seed * 2.1)); baseRune(c, fw, fh, seed ? '#ff9af0' : '#e2c4ff', a, 3 + seed);
+  } });
+  LIVE.pt_baseL = baseLive(0); LIVE.pt_baseR = baseLive(1);
+  /** Капітель: блок під балкою — кристал посередині, неонова губа знизу, світла смуга вгорі. */
+  function cap(c, fw, fh) {
+    c.fillStyle = 'rgba(255,220,255,.16)'; c.fillRect(0, 0, fw, .5);
+    A.neon(c, fw * .03, fh * .9, fw * .97, fh * .9, LI, .6);
+    const x = fw / 2, y = fh * .48, r = Math.min(fw * .18, fh * .34);
+    c.fillStyle = '#0a0424'; c.beginPath(); c.moveTo(x, y - r * 1.25); c.lineTo(x + r, y); c.lineTo(x, y + r * 1.25); c.lineTo(x - r, y); c.closePath(); c.fill();
+    c.fillStyle = '#c86aff'; c.beginPath(); c.moveTo(x, y - r * .9); c.lineTo(x + r * .68, y); c.lineTo(x, y + r * .9); c.lineTo(x - r * .68, y); c.closePath(); c.fill();
+    c.fillStyle = '#f0dcff'; c.beginPath(); c.moveTo(x, y - r * .7); c.lineTo(x + r * .3, y - r * .1); c.lineTo(x - r * .2, y); c.closePath(); c.fill();
+    [.12, .88].forEach(u => bolt(c, fw * u, fh * .45, .55));
+  }
+  PAINT.pt_capL = (c, fw, fh) => cap(c, fw, fh);
+  PAINT.pt_capR = (c, fw, fh) => cap(c, fw, fh);
+  PAINT.pt_capL.sides = { right: blockSide }; PAINT.pt_capR.sides = { right: blockSide };
+
   // ---------- БАЛКА ----------
   /** Балка: «вушка» на кінцях з кристалами, рожевий неон знизу, світла губа вгорі; посередині — вивіска (окремий предмет). */
   PAINT.pt_beam = (c, fw, fh) => {
@@ -104,6 +145,21 @@
   };
   PAINT.pt_beam.sides = { right: (c, fw, fh) => { c.fillStyle = 'rgba(8,2,24,.35)'; c.fillRect(0, 0, fw, fh); vent(c, fw * .2, fh * .3, fw * .6, fh * .36, 4); A.neon(c, 0, fh * .93, fw, fh * .93, PK, .6); } };
   LIVE.pt_sign = NX.arc.glint(9.1, 5.3);
+  /** Замковий камінь: великий кристал-емблема (ромб у ромбі) з неоновими «крилами» обабіч. */
+  const gem = (c, x, y, r, k) => { [['#0a0424', 1.25], ['#9a4aff', .95], ['#d98aff', .7], ['#f6e8ff', .32]].forEach(([col, q]) => { c.fillStyle = col; c.beginPath();
+    c.moveTo(x, y - r * q * k); c.lineTo(x + r * q, y); c.lineTo(x, y + r * q * k); c.lineTo(x - r * q, y); c.closePath(); c.fill(); }); };
+  PAINT.pt_crest = (c, fw, fh) => {
+    c.fillStyle = 'rgba(255,220,255,.16)'; c.fillRect(0, 0, fw, .5);
+    A.neon(c, fw * .06, fh * .55, fw * .36, fh * .55, PK, .55); A.neon(c, fw * .64, fh * .55, fw * .94, fh * .55, PK, .55);
+    gem(c, fw / 2, fh * .52, Math.min(fw * .12, fh * .36), 1.15);
+    [.1, .9].forEach(u => bolt(c, fw * u, fh * .5, .55));
+  };
+  PAINT.pt_crest.sides = { right: blockSide };
+  LIVE.pt_crest = { every: 4, draw(c, fw, fh, t) {                                                         // кристал світиться й переливається
+    const a = .35 + .35 * (.5 + .5 * Math.sin(t * (PT().active ? 4 : 1.6))), x = fw / 2, y = fh * .52, r = Math.min(fw * .12, fh * .36);
+    c.globalAlpha = a; const g = c.createRadialGradient(x, y, 0, x, y, r * 2.2); g.addColorStop(0, 'rgba(255,240,255,.9)'); g.addColorStop(.4, 'rgba(210,140,255,.45)'); g.addColorStop(1, 'rgba(160,80,255,0)');
+    c.fillStyle = g; c.fillRect(x - r * 2.2, y - r * 2.2, r * 4.4, r * 4.4); c.globalAlpha = 1;
+  } };
 
   // ---------- ВИХОР ----------
   // Отвір — восьмикутний: угорі зрізи (темний метал з бузковим кантом), знизу — майданчик. Нерухоме — темна безодня (видно,

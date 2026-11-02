@@ -12,7 +12,7 @@
   const P = NX.px, proj = NX.px3d.proj, hash = NX.art.hash;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('portal'));
   /** Отвір арки на екрані: середина, півширина й піввисота (з розкладки — px картинки зони, як у pt_back: gen_room.py portal()). */
-  const BACK = { X: [27, 149], Y: [100, 332], v: 30 };
+  const BACK = { X: [42, 158], Y: [100, 316], v: 57 };
   let HOLE = null;
   function hole() {
     if (HOLE) return HOLE; const z = zone(); if (!z) return null;
