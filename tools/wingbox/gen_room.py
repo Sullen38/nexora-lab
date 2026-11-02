@@ -29,6 +29,7 @@ import json, math, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, HERE)
 from plan import P3, faces, footprint, sep, catmull
+from decor import decor_side                                                         # ДЕКОР СТІН поза зонами (антресоль, полиці, рослини, плакати) — окремий будівник: decor.py
 FL = 372; D = 520; JZ = 185                                                        # підлога, відстань до екрана, глибина стіни з вікном
 def _win():
     m = re.search(r'WIN:\s*\{\s*L:\s*([\d.]+),\s*R:\s*([\d.]+)', open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read())
@@ -581,6 +582,7 @@ def build_side(p, sgn):
     L['zoneBox'] = {Z.name: [round(v, 1) for v in screen_ext(it)] for Z, it in zip(zs, zones)}   # межі зони на екрані (тап, span)
     if zs and zs[0].arm:                                                             # маніпулятор майстерні — ЖИВИЙ (objects/arc_holo.js): точки спокою + товщина
         L['armRig'] = dict(pts=zs[0].armw, k=round(zs[0].m / 1.2, 3), zone=zs[0].name)
+    up = decor_side(L, sgn, C, R) if p.get('decor', 1) else []                       # декор стін поза зонами — предмети шару 'up' (decor.py)
     for i, (a, c_) in cand.items():                                               # колона — лише якщо ні з чим не перетинається (зони, полички)
         bad = [it['id'] for it in items + up if hit(c_, it)]
         if bad: print(f'  col{i}: не влазить (кут {a:.1f}: {", ".join(bad[:4])}…) — без неї'); continue
