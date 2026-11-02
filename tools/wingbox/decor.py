@@ -1,6 +1,7 @@
-# tools/wingbox/decor.py — ДЕКОР СТІН ПОЗА ЗОНАМИ: антресоль («другий поверх») праворуч, полички з рослинами й артефактами,
-# гідропоніка під фітолампою, підвісні рослини, плакати й неонова вивіска (власник 02.11: «Nexi в нас ботанік — рослини цікаві
-# й різні»; зони не чіпаємо, декор не заходить на них ні на комп'ютері, ні на телефоні; перспектива — та сама, що в зон).
+# tools/wingbox/decor.py — ДЕКОР СТІН ПОЗА ЗОНАМИ: масивна антресоль («другий поверх») праворуч, соти-полиці з рослинами й
+# артефактами, ТРИ АКВАРІУМИ (риф, медузарій, акватруба з аквапонікою), підвісні рослини, плакат і неонова вивіска (власник
+# 02.11: «Nexi в нас ботанік — рослини цікаві й різні»; «щоб нічого не повторювалось — усе унікальне»; зони не чіпаємо, декор
+# не заходить на них ні на комп'ютері, ні на телефоні; перспектива — та сама, що в зон).
 # -------------------------------------------------------------------------------------------------------------------------
 # ОКРЕМИЙ БУДІВНИК: gen_room.py (build_side) кличе decor_side(L, sgn, C, R) після зон — повертає предмети шару 'up' (рушій
 # малює їх у шарі «біля стіни»: js/objects/arc_scene.js backLayerG -> форми й малюнки граней js/objects/dc_paint.js, рослини —
@@ -65,96 +66,202 @@ def chord(W, a0, a1, inset=0.):
     (p, _, _), (q, _, _) = W.at(a0, inset), W.at(a1, inset); return math.hypot(q[0] - p[0], q[1] - p[1])
 
 
+# ===================================== УНІКАЛЬНІСТЬ =====================================
+# Власник (02.11, «Декор стін · 2»): «головне — щоб нічого не повторювалось, усе має бути унікальне». Кожна рослина — свого
+# виду, кожен вазон — свого дизайну (форма × матеріал × неоновий обідок), кожна полиця-сота й кожна штучка — свої; ліани —
+# різних видів. Генератор перевіряє: UNIQUE — повтори (має бути none).
+POTS = {   # дизайни вазонів: форма (taper — звужений донизу, bowl — чаша, tall — високий, cube — куб, orb — куля), матеріал, неоновий обідок
+    'terra':    dict(shape='taper', mat='terra'),                     # класична теракота
+    'navyneon': dict(shape='taper', mat='navy', band='pink'),         # темно-синій з рожевим неоном
+    'ceram':    dict(shape='bowl', mat='ceram'),                      # біла кераміка, чаша
+    'darkcyan': dict(shape='bowl', mat='dark', band='cyan'),          # чорна чаша з блакитним неоном
+    'chrome':   dict(shape='tall', mat='chrome'),                     # хромований циліндр
+    'gold':     dict(shape='taper', mat='gold'),                      # золотий
+    'jade':     dict(shape='bowl', mat='jade', band='green'),         # нефрит
+    'copper':   dict(shape='tall', mat='copper'),                     # мідь з патиною
+    'concrete': dict(shape='cube', mat='concrete'),                   # бетонний куб
+    'pink':     dict(shape='taper', mat='pink', band='lil'),          # рожева смола з бузковим неоном
+    'black':    dict(shape='cube', mat='dark', band='orange'),        # чорний куб з помаранчевим неоном
+    'enamel':   dict(shape='tall', mat='enamel', band='gold'),        # синя емаль із золотою смугою
+    'stone':    dict(shape='bowl', mat='stone'),                      # сірий камінь
+    'macrame':  dict(shape='orb', mat='ceram', band='cyan'),          # біла куля в макраме
+}
+
+
 # ===================================== ДЕКОР КРИЛА =====================================
 def decor_side(L, sgn, C, R, verbose=True):
-    """sgn +1 — праве крило (панелі: технологічна оранжерея), -1 — ліве (цегла: затишний куточок ботаніка).
-    -> список предметів шару 'up'. Порядок усередині: опори (антресоль, полиці) раніше за те, що на них стоїть."""
+    """sgn +1 — праве крило (панелі: технологічна оранжерея), -1 — ліве (цегла: затишний куточок ботаніка й акваріуми).
+    -> список предметів шару 'up'. Порядок усередині: опори (антресоль, соти, труба) раніше за те, що на них стоїть."""
     W = Wall(sgn, C, R, L['wall'][0][0]); out = []
     add = out.append
-    def shelf(id, X0, X1, y, d=10, style='wood', **kw):
-        """полиця: дошка від X0 до X1 (екран), верх дошки — на рядку y екрана біля її переднього краю; кронштейни під нею"""
-        a0, a1 = W.a_of(X0), W.a_of(X1); am = (a0 + a1) / 2; w = chord(W, a0, a1) + .6
-        (x, z), _, _ = W.at(am, d); Y = Yw(y, z)
-        add(item(W, id, am, d, w, Y + 7, Y - .2, 'dc_shelf', dc=dict(style=style, th=2.2, brk=7, **kw))); return dict(a0=a0, a1=a1, d=d, Y=Y, id=id)
-    def on_shelf(sh, id, X, st, w, h, d=None, **kw):
-        """річ на полиці: X — середина на екрані (точка стіни на цьому X), стоїть на верху дошки"""
-        a = W.a_of(X, sh['d'] * .5); d = d or min(w, sh['d'] - 2.)
-        add(item(W, id, a, d, w, sh['Y'], sh['Y'] - h, st, inset=.4 + (sh['d'] - d) * .5, on=sh['id'], **kw))
-    def plant(sh, id, X, kind, w, h, pot='terra', pw=None, ph=None, seed=1, hl=0, **kw):
-        """вазон з рослиною на полиці / антресолі: w × h — уся рослина з вазоном (листя — спрайт над вазоном, dc_plants.js);
-        hl > 0 — рослина звисає з краю на hl од. світу нижче верху полиці (ліана, непентес): коробка — і вниз, до краю дошки"""
-        pw = pw or round(w * .5, 1); ph = ph or round(min(h * .34, 8.), 1); d = min(sh['d'] - 2., pw + 1.)
-        a = W.a_of(X, sh['d'] * .5); dc = dict(kind=kind, pot=pot, pw=pw, ph=ph, seed=seed, **kw)
-        if hl: dc['hl'] = hl; d = sh['d'] - .6                                     # звисає перед дошкою: коробка до її переднього краю
-        add(item(W, id, a, d, w, sh['Y'] + hl, sh['Y'] - h, 'dc_pot', inset=.4 + (sh['d'] - d) * .5, on=sh['id'], dc=dc))
-    def hang(id, X, y0, y1, kind='vine', w=12, inset=6, seed=1, frm='wall', **kw):
-        """підвісна рослина: від рядка y0 до y1 на екрані (кріплення вгорі: wall — кронштейн у стіні, edge — край антресолі)"""
+    zm, (MX0, MY0, MS) = zone_mask(L); zpx = zm.load(); ZW, ZH = zm.size
+    def free_y(X, margin=MARGIN):
+        """перший зайнятий зонами рядок екрана під стелею в стовпчику X (мінус поле)"""
+        i0 = int((X - MX0) * MS)
+        for j in range(int((0 - MY0) * MS), ZH):
+            if any(0 <= i < ZW and zpx[i, j] for i in (i0 - 2, i0, i0 + 2)): return MY0 + j / MS - margin
+        return 400.
+    def pot_of(name, pw, ph):
+        return dict(POTS[name], name=name, pw=pw, ph=ph)
+    def plant_on(sup, id, a, kind, w, h, pot, pw, ph, inset, seed=1, hl=0, **kw):
+        """рослина у вазоні на опорі sup (антресоль, сота): кут a, глибина від стіни inset (середина вазона), w × h — уся з вазоном"""
+        d = pw + 1.2; dc = dict(kind=kind, pot=pot_of(pot, pw, ph), seed=seed, **kw)
+        if hl: dc['hl'] = hl
+        add(item(W, id, a, d, w, sup['Y'] + hl, sup['Y'] - h, 'dc_pot', inset=inset - d / 2, on=sup['id'], dc=dc))
+    def art_on(sup, id, a, kind, w, h, d, inset, **kw):
+        add(item(W, id, a, d, w, sup['Y'], sup['Y'] - h, 'dc_art', inset=inset - d / 2, on=sup['id'], dc=dict(kind=kind, **kw)))
+    def hang(id, X, y0, y1, kind, w=12, inset=6, seed=1, frm='wall', **kw):
+        """підвісна рослина: від рядка y0 до y1 на екрані (кріплення вгорі: hook — кронштейн зі стіни, edge — край антресолі)"""
         a = W.a_of(X, inset); (x, z), _, _ = W.at(a, inset); Y0, Y1 = Yw(y0, z), Yw(y1, z)
         add(item(W, id, a, 3, w, Y1, Y0, 'dc_hang', inset=inset - 1.5, dc=dict(kind=kind, seed=seed, frm=frm, wb=round(inset - 1.5, 2), **kw)))
     def flat(id, X0, X1, y0, y1, st, d=1.4, **kw):
         """пласке на стіні (плакат, вивіска): прямокутник екрана X0..X1 × y0..y1 (за серединою)"""
         a0, a1 = W.a_of(X0), W.a_of(X1); am = (a0 + a1) / 2; w = chord(W, a0, a1)
         (x, z), _, _ = W.at(am, d); add(item(W, id, am, d, w, Yw(y1, z), Yw(y0, z), st, inset=1.6, **kw))   # 1.6 — запас: стіну рушій малює сплайном через вузли дуги
+    def arc_segments(prefix, a0, a1, step, P, yb, yt, st, inset=.3, extra=None):
+        """смуга вздовж дуги (антресоль, риф): сегменти по step° — у кожного коробка й свій шматок (s0 — довжина від початку)"""
+        n = max(1, int(round(abs(a1 - a0) / step))); da = (a1 - a0) / n; acc = 0.; segs = []
+        for i in range(n):
+            sa = a0 + i * da; sb = sa + da; am = (sa + sb) / 2; w = chord(W, sa, sb) + .2
+            seg = dict(extra or {}, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn)
+            it = item(W, f'{prefix}{i}', am, P, w, yb, yt, st, inset=inset, dc=seg); add(it); segs.append(it)
+            acc += chord(W, sa, sb, P)
+        return segs, acc
 
     if sgn > 0:
-        # ---------- П1. АНТРЕСОЛЬ над порталом (як на концепті праворуч угорі): плита з неоновим фасадом, поруччя, вазони,
-        # золотий ліхтар, ліани з краю. Рівна в світі: верх плити Y 64, фасад 7, виступ 28; дуга 76..104° (екран ~1382..1561).
-        MZ = dict(a0=76., a1=104., P=28., top=62., bot=71., rail=14., brk=8., step=2.)
-        n = int(round((MZ['a1'] - MZ['a0']) / MZ['step'])); acc = 0.
+        # ---------- П1. ДРУГИЙ ПОВЕРХ над порталом (власник: «більш масивний, більший і пропрацьований»): товста плита (22 од.)
+        # з багатошаровим фасадом — хромова кромка, рожевий неон, панелі з ґратками й заклепками, неонова емблема-листок,
+        # блакитна LED-смуга з вогниками; глибший виступ (34), скляне поруччя з хромованими стійками й неоновими ковпачками,
+        # ферми-консолі (лише там, де під плитою вільно), спід з балками, трубою й точковими світильниками. Рівна в світі,
+        # тому на дузі «підіймається» до глядача — над інструментами не влазить (Декор стін · 1).
+        MZ = dict(P=34., top=54., bot=76., rail=12., brk=12., a0=76., a1=104.)
+        segs, tot = arc_segments('dc_mz', MZ['a0'], MZ['a1'], 2., MZ['P'], MZ['bot'] + 1, MZ['top'] - MZ['rail'] - 1, 'dc_mz', extra=MZ)
+        for sg in segs:                                                               # ферми-консолі — лише там, де під плитою вільно (краї)
+            sg['dc']['tot'] = round(tot, 2)
+            if sg['dc']['i'] in (0, 2, 11, 13): sg['dc']['truss'] = 1; sg['yb'] = MZ['bot'] + MZ['brk']
+            if sg['dc']['i'] in (4, 9): sg['glow'] = 1; sg['gr'] = 34                      # теплі світильники в споді — світло на стіну під антресоллю
+        mz = lambda a: dict(Y=MZ['top'], id=f"dc_mz{min(13, max(0, int((a - MZ['a0']) / 2.)))}")
+        BACK, FRONT = 11.5, MZ['P'] - 10.                                               # глибина від стіни: високі — ближче до стіни, низькі — до поруччя
+        # ОДИН РЯД зліва направо, без накладань на екрані (власник: «щоб нічого нічому не заважало»): кожну річ ставимо одразу
+        # за попередньою (межі на екрані + 2 од.); висота — не вище стелі в цьому місці (на дузі праворуч місця вгорі менше)
+        ROW = [('strelitzia', 19, 46, 'navyneon', 10, 8, BACK, dict(seed=61)), ('shroom', 12, 13, 'darkcyan', 9, 4.5, FRONT, dict(seed=8, glow=1)),
+               ('palm', 19, 38, 'chrome', 8, 9, BACK, dict(seed=33)), ('lantern',), ('greenhouse',), ('flytrap', 13, 16, 'jade', 8, 4.5, FRONT, dict(seed=5)),
+               ('monstera', 17, 24, 'ceram', 9, 6, BACK, dict(seed=32)), ('fern', 13, 16, 'copper', 7, 5, BACK, dict(seed=34))]
+        prev = W.X(MZ['a0'] + .4, MZ['P']) + 1.; k = 0
+        for spec in ROW:
+            def make(a, h=None):
+                if spec[0] == 'lantern': return item(W, 'dc_lantern', a, 9., 9., MZ['top'], MZ['top'] - (h or 22), 'dc_lantern', inset=FRONT - 4.5, on=mz(a)['id'], glow=1, gr=34)
+                if spec[0] == 'greenhouse': return item(W, 'dc_green', a, 13., 13., MZ['top'], MZ['top'] - (h or 28), 'dc_art', inset=BACK - 6.5, on=mz(a)['id'], dc=dict(kind='greenhouse', plant='orchid', seed=27))
+                kind, w, hh, pot, pw, ph, ins, kw = spec; d = pw + 1.2
+                return item(W, f'dc_mzp{k}', a, d, w, MZ['top'], MZ['top'] - (h or hh), 'dc_pot', inset=ins - d / 2, on=mz(a)['id'], dc=dict(kind=kind, pot=pot_of(pot, pw, ph), **kw))
+            lo, hi = MZ['a0'] + .3, MZ['a1'] - .3
+            for _ in range(40):                                                         # найменший кут, за якого ліва межа — за попередньою
+                m = (lo + hi) / 2
+                if min(p[0] for p in screen_poly(make(m))) < prev + 2: lo = m
+                else: hi = m
+            it = make(hi); top = min(p[1] for p in screen_poly(it))
+            if top < 3:                                                                 # не вище стелі: нижча
+                H0 = it['yb'] - it['yt']; (x, z), _, _ = W.at(hi, MZ['P'] * .5)
+                it = make(hi, H0 - (3 - top) / s(z) - .5)
+            add(it); prev = max(p[0] for p in screen_poly(it)); k += spec[0] not in ('lantern', 'greenhouse')
+        # ліани з краю — кожна свого виду, лише там, де під плитою вільно (над лівою колоною брами й праворуч від замкового каменя)
+        for k, (a, kind, ln) in enumerate(((77.4, 'pearls', 16), (81.2, 'tradescantia', 20), (99.8, 'wisteria', 14), (103.4, 'hoya', 22))):
+            (x, z), _, _ = W.at(a, MZ['P'] - 1.); y0 = ys(MZ['bot'], z) - 2.
+            hang(f'dc_mzv{k}', W.X(a, MZ['P'] - 1.), y0, min(y0 + ln, free_y(W.X(a, MZ['P'] - 1.)) - 2), kind, w=11., inset=MZ['P'] - 1.5, seed=41 + k, frm='edge')
+            out[-1]['on'] = mz(a)['id']
+        # ---------- П2. АКВАТРУБА над інструментами (акваріум №3, прісноводний «кібер»): велика скляна труба (r 13) уздовж
+        # стіни — РІВНА В СВІТІ, як поручень і антресоль (на екрані «підіймається» до глядача); дальній кінець заходить у
+        # стіну коліном, ближній — кришка з неоновим кільцем і трубою подачі в стелю; хомути на стиках, кронштейни знизу.
+        # Усередині — акваскейп (мох, папороть, мариміо…), живі риби (objects/decor.js) — за СКЛОМ: вікна dc_tbg* (рушій дає
+        # маску видимих пікселів скла). Згори — аквапоніка: базилік, м'ята, салат, полуниця в сітчастих горщиках; над ними —
+        # фітолампа на тросах зі стелі (рожево-фіолетова).
+        TB = dict(r=13., gap=2.5, X0=1232., X1=1376., n=7)
+        ri = TB['r'] + TB['gap']; a0, a1 = W.a_of(TB['X0'], ri), W.a_of(TB['X1'], ri); n = TB['n']; da = (a1 - a0) / n
+        Yc = 1e9
+        for k in range(61):                                                             # низ труби — над зонами по всій довжині (і спереду, і біля стіни)
+            a = a0 + (a1 - a0) * k / 60
+            for dd in (-TB['r'], 0., TB['r']):
+                (x, z), _, _ = W.at(a, ri + dd); Yc = min(Yc, Yw(free_y(W.X(a, ri + dd)), z) - TB['r'])
+        Yc = round(Yc - 1.8, 2); TB['Yc'] = Yc; acc = 0.
         for i in range(n):
-            a0 = MZ['a0'] + i * MZ['step']; a1 = a0 + MZ['step']; am = (a0 + a1) / 2; w = chord(W, a0, a1) + .2
-            seg = dict(MZ, i=i, n=n, sa=a0, sb=a1, s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn)
-            add(item(W, f'dc_mz{i}', am, MZ['P'], w, MZ['bot'] + MZ['brk'], MZ['top'] - MZ['rail'] - 1.5, 'dc_mz', inset=.3, dc=seg))
-            acc += chord(W, a0, a1, MZ['P'])
-        mzs = lambda a: dict(a0=a - .5, a1=a + .5, d=MZ['P'] - 3, Y=MZ['top'], id=f"dc_mz{min(n - 1, max(0, int((a - MZ['a0']) / MZ['step'])))}")
-        def on_mz(id, a, kind, w, h, **kw):
-            sh = mzs(a); X = W.X(a, sh['d'] * .5); plant(sh, id, X, kind, w, h, **kw)
-        on_mz('dc_mzp0', 78.5, 'palm', 28, 44, pot='navy', pw=10, ph=7, seed=33)                    # висока пальма біля лівого краю (тут найбільше місця вгорі)
-        on_mz('dc_mzp1', 83.5, 'monstera', 24, 32, pot='ceram', pw=9, ph=6, seed=32)
-        sh = mzs(88.); add(item(W, 'dc_lantern', 88., 10., 10., MZ['top'], MZ['top'] - 22, 'dc_lantern', inset=MZ['P'] - 14, on=sh['id'], glow=1, gr=34))   # золотий ліхтар (світить на стіну)
-        on_mz('dc_mzp2', 92., 'flytrap', 16, 18, pot='terra', pw=8, ph=5.5, seed=5)                 # хижа: венерина мухоловка
-        on_mz('dc_mzp3', 95.5, 'shroom', 15, 15, pot='dark', pw=9, ph=5, seed=8, glow=1)          # світні гриби
-        on_mz('dc_mzp4', 99., 'cactus', 14, 22, pot='terra', pw=7, ph=5, seed=3)
-        on_mz('dc_mzp5', 102.3, 'fern', 18, 17, pot='navy', pw=8, ph=5, seed=34)
-        # ліани з краю антресолі — лише там, де під нею вільно (над лівою колоною брами й праворуч від замкового каменя)
-        for k, (a, ln) in enumerate(((77.5, 14), (81., 18), (100.5, 16), (103., 22))):
-            (x, z), _, _ = W.at(a, MZ['P'] - 1.); y0 = ys(MZ['bot'], z) - 1.5
-            hang(f'dc_mzv{k}', W.X(a, MZ['P'] - 1.), y0, y0 + ln, 'vine', w=10, inset=MZ['P'] - 1.5, seed=41 + k, frm='edge')
-        # ---------- П2. ГІДРОПОНІКА над інструментами: дві труби з рослинами в отворах, над кожною — фітолампа (фіолетова)
-        for k, (X0, X1, y) in enumerate(((1236., 1292., 33.), (1304., 1364., 34.))):
-            a0, a1 = W.a_of(X0), W.a_of(X1); am = (a0 + a1) / 2; w = chord(W, a0, a1); (x, z), _, _ = W.at(am, 5.); Y = Yw(y, z)
-            add(item(W, f'dc_hydro{k}', am, 6., w, Y + 4, Y - 17, 'dc_hydro', dc=dict(tube=[round(Y - 4, 2), round(Y + 4, 2)], n=4 + k, seed=11 + k, kinds=['basil', 'lettuce', 'straw', 'basil', 'lettuce'][k:])))   # коробка — разом з рослинами над трубою
-            add(item(W, f'dc_grow{k}', am, 7., w + 4, Y - 22, Y - 25, 'neon', glow=1, gr=26, dc=dict(seed=k)))   # стиль neon — рожево-фіолетове світло на стіну; форма — за id (dc_paint.js)
-        # ---------- П3. ПІДВІСНИЙ ВАЗОН між маніпулятором і інструментами (тут вільно нижче — до ~y 70)
-        hang('dc_hangR', 1207., 4., 66., 'pothos', w=20, inset=10, seed=7, frm='hook', pot='macrame')
+            sa, sb = a0 + i * da, a0 + (i + 1) * da; am = (sa + sb) / 2; wc = chord(W, sa, sb, ri)
+            seg = dict(TB, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn)
+            add(item(W, f'dc_tb{i}', am, 2 * TB['r'], chord(W, sa, sb) + .2, Yc + TB['r'] + .3, Yc - TB['r'] - .3, 'dc_tube', inset=TB['gap'], dc=seg))
+            add(item(W, f'dc_tbg{i}', am, .3, wc + .12, Yc + TB['r'] - .4, Yc - TB['r'] + .4, 'dc_win', inset=ri - .3, on=f'dc_tb{i}', dc=dict(aq='tube', i=i, n=n, s0=round(acc, 2), sa=round(sa, 4), sb=round(sb, 4), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, ins=ri, r=TB['r'], Yc=Yc)))
+            acc += wc
+        for sg in out:
+            if sg['id'].startswith(('dc_tb', 'dc_tbg')) and 'dc' in sg: sg['dc']['tot'] = round(acc, 2)
+        tb = lambda a: f'dc_tb{min(n - 1, max(0, int((a - a0) / da)))}'
+        # фітолампа над аквапонікою: планка на двох тросах зі стелі (рівна в світі; ближчий кінець — не вище рядка 4.5 екрана;
+        # стиль neon — рожеве світло на стіну)
+        la0, la1 = a0 + (a1 - a0) * .02, a0 + (a1 - a0) * .51; am = (la0 + la1) / 2
+        (x1_, z1_), _, _ = W.at(la1, ri - 2.5); yl = round(Yw(4.5, z1_), 2)
+        (x0_, z0_), _, _ = W.at(la0, ri); (xm_, zm_), _, _ = W.at(la1, ri)
+        add(item(W, 'dc_tblamp', am, 5., chord(W, la0, la1, ri), yl + 2.4, yl, 'neon', inset=ri - 2.5, glow=1, gr=30, dc=dict(c0=round(Yw(-3., z0_), 2), c1=round(Yw(-3., zm_), 2))))
+        # аквапоніка: на лівій половині (праворуч труба вже під стелею), під лампою — кожна своя
+        for k, (u, kind) in enumerate(((.07, 'basil'), (.2, 'mint'), (.33, 'lettuce'), (.46, 'straw'))):
+            a = a0 + (a1 - a0) * u; top = Yc - TB['r'] + 1.2; hh = min(13., top - (yl + 2.4 + 2.))
+            add(item(W, f'dc_tbp{k}', a, 6., 10., top, top - hh, 'dc_pot', inset=ri - 3, on=tb(a), dc=dict(kind=kind, pot=dict(shape='net', mat='dark', band=['pink', 'cyan', 'lil', 'green'][k], name='net-' + ['pink', 'cyan', 'lil', 'green'][k], pw=5, ph=2), seed=71 + k, net=1)))
+        # ---------- П3. ПІДВІСНИЙ ВАЗОН між маніпулятором і інструментами: біла куля в макраме, золотий потос
+        hang('dc_hangR', 1207., 4., 66., 'pothos', w=20, inset=10, seed=7, frm='hook', pot=pot_of('macrame', 7, 7))
     else:
-        # ---------- Л1. Над AI-центром: полиця (книжки, кришталева куля, бонсай; ліана звисає з краю) і неонова вивіска
-        sh = shelf('dc_shL1', -54., 58., 50., d=13)
-        plant(sh, 'dc_l1p0', -42., 'vine', 16, 9, pot='terra', pw=8, ph=5, seed=2, hl=24)   # потос звисає з краю
-        on_shelf(sh, 'dc_l1b', -20., 'dc_art', 15, 12, dc=dict(kind='books', seed=1))
-        on_shelf(sh, 'dc_l1o', 2., 'dc_art', 9, 11, dc=dict(kind='orb'))
-        plant(sh, 'dc_l1p1', 24., 'bonsai', 20, 20, pot='ceram', pw=9, ph=4.5, seed=4)
-        plant(sh, 'dc_l1p2', 47., 'succ', 11, 10, pot='terra', pw=7, ph=4, seed=9)
+        # ---------- Л1. Над AI-центром: СОТИ-ПОЛИЦІ (кіберпанк: шестикутні комірки з неоновим кантом, кожна свого кольору й
+        # візерунка дна) — у кожній своя річ; і неонова вивіска «Nexi з паростком» (без слів)
+        HX = dict(w=21., d=11., a0=88.6, cols=6)
+        h = HX['w'] * .866; step = math.degrees(.75 * HX['w'] / (R - HX['d']))
+        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8']   # 10 сот — 10 різних неонів
+        cells = []
+        for k in range(HX['cols'] + 2):
+            a = HX['a0'] + k * step
+            for row in (0, 1, 2):
+                (x, z), _, _ = W.at(a, HX['d']); X = W.X(a, HX['d'])
+                if X < -56: continue
+                Yc = Yw(14 + h * .55, z) + row * h + (h / 2 if k % 2 else 0)
+                yt, yb = ys(Yc - h / 2, z), ys(Yc + h / 2, z)
+                (xw, zw), _, _ = W.at(a, 0); ybw = ys(Yc + h / 2, zw)
+                if yt < 3 or max(yb, ybw) > free_y(X) - 2 or X > 86: continue
+                cells.append((k, row, a, Yc))
+        ITEMS = [('plant', 'bonsai', 'gold'), ('art', 'orb'), ('plant', 'succ', 'pink'), ('art', 'books'), ('plant', 'cactus2', 'stone'),
+                 ('art', 'terrarium'), ('plant', 'sansevieria', 'black'), ('art', 'flask'), ('art', 'scope'), ('art', 'figure')]
+        cells = sorted(cells, key=lambda c: (c[0], c[1]))[:len(ITEMS)]
+        for q, (k, row, a, Yc) in enumerate(cells):
+            cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['w'], Yc + h / 2, Yc - h / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['w'], h=round(h, 2))))
+            sup = dict(Y=Yc + h / 2 - 1.6, id=cid); kind = ITEMS[q]
+            if kind[0] == 'plant':
+                hh = h - 3.5; plant_on(sup, f'dc_hxp{q}', a, kind[1], HX['w'] * .5, hh, kind[2], 6., 4, HX['d'] - 3.8, seed=80 + q)   # ближче до краю соти: знизу видно
+            else: art_on(sup, f'dc_hxa{q}', a, kind[1], HX['w'] * .5, h - 4, 6., HX['d'] - 3.2, seed=q)
         flat('dc_neon', 94., 180., 14., 66., 'neon', d=1.6, glow=1, gr=40)          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
-        # ---------- Л2. Над аналітикою: довга полиця з рослинами й артефактами
-        sh = shelf('dc_shL2', 226., 366., 56., d=13)
-        plant(sh, 'dc_l2p0', 240., 'pitcher', 18, 10, pot='terra', pw=8, ph=5, seed=6, hl=22)    # хижа: непентес — глечики звисають з краю
-        on_shelf(sh, 'dc_l2g', 264., 'dc_art', 15, 15, dc=dict(kind='terrarium', seed=2))   # куля-тераріум зі світним мохом
-        plant(sh, 'dc_l2p1', 289., 'sansevieria', 13, 24, pot='navy', pw=8, ph=6, seed=12)
-        on_shelf(sh, 'dc_l2b', 312., 'dc_art', 16, 12, dc=dict(kind='books', seed=4))
-        on_shelf(sh, 'dc_l2m', 333., 'dc_art', 11, 15, dc=dict(kind='scope'))          # мікроскоп ботаніка
-        plant(sh, 'dc_l2p2', 353., 'cactus2', 13, 13, pot='terra', pw=9, ph=4.5, seed=13)
-        # ---------- Л3. Цегляна смуга між аналітикою й маркетингом: підвісний вазон угорі й три полички одна над одною
-        hang('dc_hangL', 405., 4., 62., 'vine', w=20, inset=10, seed=21, frm='hook', pot='macrame')
-        sh = shelf('dc_shL3a', 388., 424., 86., d=10)
-        plant(sh, 'dc_l3p0', 397., 'cactus', 11, 20, pot='terra', pw=6, ph=4.5, seed=31)
-        plant(sh, 'dc_l3p1', 414., 'succ', 12, 10, pot='ceram', pw=7, ph=4, seed=32)
-        sh = shelf('dc_shL3b', 388., 423., 144., d=9)
-        on_shelf(sh, 'dc_l3f', 398., 'dc_art', 11, 18, dc=dict(kind='flask', seed=3))   # колба з паростком у світній рідині
-        on_shelf(sh, 'dc_l3b', 415., 'dc_art', 11, 11, dc=dict(kind='books', seed=7))
-        sh = shelf('dc_shL3c', 388., 423., 204., d=9)
-        plant(sh, 'dc_l3p2', 398., 'flytrap', 14, 15, pot='terra', pw=7, ph=4.5, seed=33)
-        on_shelf(sh, 'dc_l3w', 415., 'dc_art', 12, 11, dc=dict(kind='can'))            # лійка
+        # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
+        # (живі: objects/decor.js); кришка зі світлом зверху, тумба з неоном і вогниками знизу — найбільший, що влазить
+        RF = dict(P=14., lid=5., base=7.)
+        a0, a1 = W.a_of(222.), W.a_of(362.)
+        Ytop = -999.
+        for k in range(41):                                                             # верх кришки — не вище рядка 5 по всій довжині
+            a = a0 + (a1 - a0) * k / 40; (x, z), _, _ = W.at(a, RF['P'] + .3); Ytop = max(Ytop, Yw(5., z) + RF['lid'])
+        Ybot = 999.
+        for k in range(41):                                                             # низ тумби — над зонами (біля стіни і спереду)
+            a = a0 + (a1 - a0) * k / 40
+            for ins in (0., RF['P'] + .3):
+                (x, z), _, _ = W.at(a, ins); Ybot = min(Ybot, Yw(free_y(W.X(a, ins)) - 1, z) - RF['base'])
+        RF.update(top=round(Ytop, 2), bot=round(Ybot, 2))
+        segs, tot = arc_segments('dc_rf', min(a0, a1), max(a0, a1), abs(a1 - a0) / 7, RF['P'], RF['bot'] + RF['base'], RF['top'] - RF['lid'], 'dc_reef', extra=RF)
+        acc = 0.
+        for sg in segs:                                                                 # скло кожної секції — вікно (рушій дає маску видимих пікселів: риби живуть за ним)
+            d = sg['dc']; d['tot'] = round(tot, 2); sa, sb = d['sa'], d['sb']; wc = chord(W, sa, sb, RF['P'] + .1)
+            add(item(W, sg['id'].replace('dc_rf', 'dc_rfg'), (sa + sb) / 2, .3, wc + .12, RF['bot'], RF['top'], 'dc_win', inset=RF['P'] + .1 - .3, on=sg['id'],
+                     dc=dict(aq='reef', i=d['i'], n=d['n'], s0=round(acc, 2), sa=sa, sb=sb, C=d['C'], R=R, sgn=sgn, ins=RF['P'] + .1, P=RF['P'], top=RF['top'], bot=RF['bot'], tot=round(tot, 2))))
+            acc += wc
+        # ---------- Л3. МЕДУЗАРІЙ між аналітикою й маркетингом (акваріум №2): висока скляна колона з медузами, хромові
+        # кришки з неоновими кільцями, труба подачі вгору (у стелю); кріплення до цегли
+        CL = dict(r=16.5, gap=3., X=407., ytop=6.)
+        a = W.a_of(CL['X'], CL['r'] + CL['gap']); (x, z), _, _ = W.at(a, CL['r'] + CL['gap'])
+        Yt = Yw(CL['ytop'], z - CL['r']); Yb = min(Yw(free_y(CL['X'] + dx) - 2, z - CL['r']) for dx in (-20, -10, 0, 10, 20))
+        add(item(W, 'dc_jelly', a, CL['r'] * 2, CL['r'] * 2, Yb, Yt, 'dc_column', inset=CL['gap'], dc=dict(r=CL['r'], cap=7., base=11.)))
+        # скло колони — вікно в площині осі, лицем до ока (рушій дає маску; медузи — objects/decor.js)
+        tx, tz = VX - x, -D - z; turn = math.degrees(math.atan2(-tx, -tz))
+        g0, g1 = Yt + 7. + .4, Yb - 11. - .4
+        add(dict(id='dc_jellyg', layer='up', x=round(x, 2), z=round(z, 2), turn=round(turn, 3), w=round(CL['r'] * 2 - .9, 2), dep=.3, yb=round(g1, 2), yt=round(g0, 2), st='dc_win', grp='dc', on='dc_jelly',
+                 dc=dict(aq='jelly', cx=round(x, 2), cz=round(z, 2), r=CL['r'], top=round(g0, 2), bot=round(g1, 2))))
         # ---------- Л4. Біля вікна над маркетингом: ботанічний плакат (напис — зі словників)
         flat('dc_poster0', 447., 501., 10., 88., 'dc_poster', d=1.2)
     if verbose: report(L, out, 'right' if sgn > 0 else 'left')
@@ -162,9 +269,14 @@ def decor_side(L, sgn, C, R, verbose=True):
 
 
 # ===================================== ПЕРЕВІРКА: НЕ ЗАХОДИТЬ НА ЗОНИ (екран) =====================================
+BILLBOARD = ('dc_pot', 'dc_hang', 'dc_art', 'dc_lantern')                              # рослини й штучки — спрайт / дрібні форми лицем до глядача
 def screen_poly(it):
-    """межі предмета на екрані: усі 8 кутів коробки (для рослин коробка = уся рослина з вазоном)"""
+    """межі предмета на екрані: рослини й штучки — прямокутник «лицем до глядача» (ширина w, як спрайт рушія), решта — усі 8
+    кутів коробки (на дузі біля 90° глибина коробки лягає на екрані вшир, а ширина — углиб: так точніше)"""
     f, r, P = frame(it); w = it['w'] / 2
+    if it['st'] in BILLBOARD:
+        c = P(0, it['dep'] / 2, 0); x0 = c[0] - w; x1 = c[0] + w; z = c[2]
+        return [P3(x, y, z) for x in (x0, x1) for y in (it['yb'], it['yt'])] + [P3(*P(u, v, it['yb'])) for u in (-w * .4, w * .4) for v in (0, it['dep'])]
     return [P3(*P(u, v, y)) for u in (-w, w) for v in (0, it['dep']) for y in (it['yb'], it['yt'])]
 def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500):
     """силуети зон на екрані (растр S px/од.): видимі грані предметів (і привидів — там живі екрани), живі частини"""
@@ -181,7 +293,7 @@ def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500):
         P = [P3(*p) for p in L['armRig']['pts']]; xs = [p[0] for p in P]; yy = [p[1] for p in P]
         d.rectangle([T((min(xs) - 14, min(yy) - 22)), T((max(xs) + 16, max(yy) + 14))], fill=255)
     if 'tlBeacon' in A:                                                             # маячок інструментів і його сяйво
-        x, y = P3(*A['tlBeacon']); d.ellipse([T((x - 16, y - 16)), T((x + 16, y + 16))], fill=255)
+        x, y = P3(*A["tlBeacon"]); d.ellipse([T((x - 19, y - 19)), T((x + 19, y + 19))], fill=255)   # з сяйвом (decor_check.js)
     for k in ('mkProjL', 'mkProjR'):                                                # голо-монітори маркетингу над проєкторами
         if k in A: x, y = P3(*A[k]); d.rectangle([T((x - 34, y - 64)), T((x + 34, y))], fill=255)
     return im, (X0, Y0, S)
@@ -210,16 +322,57 @@ def check_screen(L, items, margin=MARGIN):
         if hit: bad.append((it['id'], hit, [round(x0), round(x1), round(y0), round(y1)]))
         if y0 < 1: bad.append((it['id'], 'CEIL', round(y0, 1)))
     return bad
+SUPPORTS = ('dc_mz', 'dc_reef', 'dc_tube', 'dc_hex', 'dc_column')                                   # опори-смуги: сегменти / соти однієї групи
+def group_key(it, by):
+    """до якої групи належить річ: опора (антресоль, риф, труба, соти) разом з тим, що на ній стоїть чи з неї звисає"""
+    j = it
+    while j.get('on') and j['on'] in by: j = by[j['on']]
+    return re.sub(r'\d+$', '', j['id']) if j['st'] in SUPPORTS else j['id']
+def check_overlap(items, frac=.12):
+    """РЕЧІ ДЕКОРУ ОДНА НА ОДНІЙ (власник: «щоб нічого нічому не заважало, не перекривало»): межі на екрані (опуклі оболонки)
+    речей різних груп не перетинаються; на одній опорі сусіди не закривають одне одного більш ніж на frac меншого."""
+    import numpy as np
+    from PIL import Image, ImageDraw
+    by = {it['id']: it for it in items}; S = 2; P = {}
+    for it in items:
+        h = hull(screen_poly(it)); xs = [p[0] for p in h]; yy = [p[1] for p in h]; P[it['id']] = (h, min(xs), max(xs), min(yy), max(yy))
+    def mask(i, x0, y0, W, H):
+        m = Image.new('L', (W, H), 0); ImageDraw.Draw(m).polygon([((x - x0) * S, (y - y0) * S) for x, y in P[i][0]], fill=255); return np.asarray(m) > 0
+    bad = []; ids = list(P)
+    for a in range(len(ids)):
+        for b in range(a + 1, len(ids)):
+            A, B = by[ids[a]], by[ids[b]]; pa, pb = P[ids[a]], P[ids[b]]
+            if pa[2] < pb[1] or pb[2] < pa[1] or pa[4] < pb[3] or pb[4] < pa[3]: continue
+            if A.get('on') == B['id'] or B.get('on') == A['id']: continue                 # стоїть на ній / звисає з неї
+            ga, gb = group_key(A, by), group_key(B, by); same = ga == gb
+            if same and (A['st'] in SUPPORTS or B['st'] in SUPPORTS): continue            # опора й річ своєї групи, сусідні сегменти / соти
+            x0, y0 = min(pa[1], pb[1]), min(pa[3], pb[3]); W, H = int((max(pa[2], pb[2]) - x0) * S) + 2, int((max(pa[4], pb[4]) - y0) * S) + 2
+            ma, mb = mask(ids[a], x0, y0, W, H), mask(ids[b], x0, y0, W, H); inter = int((ma & mb).sum()); mn = max(1, min(int(ma.sum()), int(mb.sum())))
+            if (not same and inter > 0) or (same and inter / mn > frac): bad.append((ids[a], ids[b], round(inter / mn, 2)))
+    return bad
+def check_unique(items):
+    """УНІКАЛЬНІСТЬ: вид рослини, дизайн вазона, штучка, сота — кожне один раз"""
+    seen, dup = {}, []
+    for it in items:
+        d = it.get('dc') or {}; keys = []
+        if it['st'] in ('dc_pot', 'dc_hang'): keys.append('рослина:' + d.get('kind', '?'))
+        pot = d.get('pot')
+        if isinstance(pot, dict): keys.append('вазон:' + pot.get('name', '?'))
+        if it['st'] == 'dc_art': keys.append('штучка:' + d.get('kind', '?'))
+        if it['st'] == 'dc_hex': keys.append('сота:%s/%s' % (d.get('neon'), d.get('pat')))
+        for k in keys:
+            if k in seen: dup.append((k, seen[k], it['id']))
+            else: seen[k] = it['id']
+    return dup
 def report(L, items, name):
-    bad = check_screen(L, items)
-    print(f'  decor {name}: {len(items)} речей;', 'DECOR OVER ZONES:', bad if bad else 'none')
+    bad = check_screen(L, items); ov = check_overlap(items); du = check_unique(items)
+    print(f'  decor {name}: {len(items)} речей;', 'DECOR OVER ZONES:', bad if bad else 'none', '| DECOR OVERLAP:', ov if ov else 'none', '| UNIQUE:', 'повтори ' + str(du) if du else 'none')
     return bad
 
 
 # ===================================== ПЛАН ЗВЕРХУ (картинка для власника) =====================================
-GROUPS = [('dc_mz', 'П1 АНТРЕСОЛЬ (2-й поверх)'), ('dc_lantern', 'П1'), ('dc_hydro', 'П2 ГІДРОПОНІКА + ФІТОЛАМПИ'), ('dc_grow', 'П2'), ('dc_hangR', 'П3 ПІДВІСНИЙ ВАЗОН'),
-          ('dc_shL1', 'Л1 ПОЛИЦЯ'), ('dc_l1', 'Л1'), ('dc_neon', 'Л1 НЕОН'), ('dc_shL2', 'Л2 ПОЛИЦЯ'), ('dc_l2', 'Л2'), ('dc_hangL', 'Л3 ПІДВІСНИЙ ВАЗОН'),
-          ('dc_shL3', 'Л3 ТРИ ПОЛИЧКИ'), ('dc_l3', 'Л3'), ('dc_poster', 'Л4 ПЛАКАТ')]
+GROUPS = [('dc_mz', 'П1 АНТРЕСОЛЬ (2-й поверх)'), ('dc_lantern', 'П1'), ('dc_green', 'П1'), ('dc_tb', 'П2 АКВАТРУБА (акваріум №3)'), ('dc_hangR', 'П3 ПІДВІСНИЙ ВАЗОН'),
+          ('dc_hx', 'Л1 СОТИ-ПОЛИЦІ'), ('dc_neon', 'Л1 НЕОН'), ('dc_rf', 'Л2 РИФ (акваріум №1)'), ('dc_jelly', 'Л3 МЕДУЗАРІЙ (акваріум №2)'), ('dc_poster', 'Л4 ПЛАКАТ')]
 def group_of(id):
     for k, v in GROUPS:
         if id.startswith(k): return v
@@ -267,8 +420,8 @@ def plan_png(LAY, path, sofa=None):
             lx = 8 if sd == 'left' else W - tw - 10; ax = lx + tw + 6 if sd == 'left' else lx - 6
             col = (255, 140, 230) if g.startswith('П1') else (255, 230, 160)
             d.line([T(cx, cz), (ax, ty + 10)], fill=col + (200,), width=2); d.text((lx, ty), g, fill=col, font=FB)
-    d.text((10, H - 56), 'План зверху: x — праворуч, z — углиб (вікно вгорі), око глядача — під картинкою (774, −520). Рожеве — антресоль (виступ 28 од. від стіни,', fill=(150, 150, 190), font=F)
-    d.text((10, H - 34), 'на висоті над порталом), жовте — полиці, вазони, плакат і неон уздовж стін. Зони — кольорові сліди (як у gen_room.py --plan).', fill=(150, 150, 190), font=F)
+    d.text((10, H - 56), 'План зверху: x — праворуч, z — углиб (вікно вгорі), око глядача — під картинкою (774, −520). Рожеве — антресоль (виступ 34 од. від стіни,', fill=(150, 150, 190), font=F)
+    d.text((10, H - 34), 'плита 22 од. над порталом), жовте — соти-полиці, три акваріуми, вазони, плакат і неон уздовж стін. Зони — кольорові сліди (як у gen_room.py --plan).', fill=(150, 150, 190), font=F)
     im.save(path)
 
 

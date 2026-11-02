@@ -284,6 +284,88 @@ NX.arc = NX.arc || {};
           return dot ? '#eaffff' : ramp(['#0a5a70', '#118aa0', '#1ac0d0', '#3be8ff', '#9af6ff'], .9 - v * .6 - Math.abs(u - .4) * .5, i, j); });
       });
     },
+    /** Стреліція «райський птах»: листки-весла віялом на довгих черешках і дві квітки-«птахи» (дзьоб-човник, помаранчевий
+     *  гребінь, синій «язик») — найвища рослина антресолі. */
+    strelitzia(S, W, H, seed) {
+      const cx = W / 2, by = H - .3;
+      for (let q = 0; q < 6; q++) {
+        const u = q / 5, a = (u - .5) * 1.5 + (hash(seed, q) - .5) * .2, stem = H * (.36 + .22 * hash(seed, q + 3)), bx = cx + Math.sin(a) * stem, bb = by - Math.cos(a) * stem;
+        line(S, [cx, by], [bx, bb], OUT, 1.1); line(S, [cx, by], [bx, bb], '#3a6a3a', .55);
+        const len = Math.min(H * (.3 + .1 * hash(seed, q + 7)), W * .62), la = a * 1.2;
+        fillLeaf(S, leaf([bx, bb], la, len, len * .4, q % 2 ? .12 : -.12, 'broad', seed + q), GREEN, { q0: .36 + .14 * hash(seed, q), hi: la < 0, vein: 1, rim: 1 });
+      }
+      for (let q = 0; q < 2; q++) {
+        const d = q ? 1 : -1, fx = cx + d * W * .08, fy = H * (.2 + q * .12), bl = W * .3;
+        line(S, [cx, by], [fx, fy + 2], OUT, .95); line(S, [cx, by], [fx, fy + 2], '#4a7a3a', .5);
+        S.poly([[fx, fy + 1.3], [fx + d * bl, fy + .6], [fx + d * bl * 1.06, fy + 1.4], [fx, fy + 2.7]], (u, v, i, j) => ramp(['#2a1a4a', '#4a2a6a', '#3a6a3a', '#5a8a4a'], .25 + (d > 0 ? u : 1 - u) * .6, i, j));   // дзьоб
+        for (let k = 0; k < 3; k++) { const px = fx + d * bl * (.15 + k * .22); S.poly([[px, fy + 1.1], [px + d * .7, fy - H * .08 - k * .5], [px + d * 1.7, fy + .9]], (u, v, i, j) => ramp(['#b03a06', '#e8680a', '#ff9a1a', '#ffd060'], .95 - v * .65, i, j)); }   // гребінь
+        S.poly([[fx + d * bl * .25, fy + 1.3], [fx + d * bl * .8, fy + .2], [fx + d * bl * .62, fy + 1.5]], '#3a6aff');   // язик
+      }
+    },
+    /** Орхідея-фаленопсис (живе в міні-оранжереї антресолі): широкі глянцеві листки внизу, дугою — квітконос з квітками-
+     *  «метеликами» (білі пелюстки з рожевими жилками, малинова губа, жовта серединка), на кінці — бутони. */
+    orchid(S, W, H, seed) {
+      const cx = W / 2, by = H - .3, LP = ['#06180f', '#0a2a1a', '#123c26', '#1c5234', '#286a44', '#3a8656', '#5aa66e'];
+      for (let q = 0; q < 4; q++) { const sd = q % 2 ? 1 : -1, a = sd * (1.05 + .25 * q / 3) + (hash(seed, q) - .5) * .2, len = W * (.5 + .1 * hash(seed, q + 4));
+        fillLeaf(S, leaf([cx + sd * .3, by - .4 - q * .35], a, len, len * .46, sd * .5, 'broad', seed + q), LP, { q0: .4 + .1 * q / 3, hi: sd < 0, vein: 1, rim: 1 }); }
+      const pts = []; for (let k = 0; k <= 20; k++) { const t = k / 20; pts.push([cx - W * .06 + Math.sin(t * 1.9) * W * .32, by - 1 - Math.sin(t * 1.75) * H * .82]); }
+      for (let k = 1; k < pts.length; k++) { line(S, pts[k - 1], pts[k], OUT, .75); line(S, pts[k - 1], pts[k], '#4a6a2a', .4); }
+      const PET = ['#7a2a6a', '#c870b0', '#f0c8e8', '#fff4fc'], fl = (x, y, r, k) => {
+        for (const [a, rx, ry] of [[-1.57, .38, .55], [.6, .38, .55], [2.54, .38, .55]]) S.poly(ell(x + Math.cos(a) * r * .55, y + Math.sin(a) * r * .55, r * rx, r * ry, 10), (u, v, i, j) => ramp(PET, .9 - Math.hypot(u - .5, v - .5) * .6, i, j));   // чашолистки
+        for (const sd of [-1, 1]) S.poly(ell(x + sd * r * .55, y - r * .05, r * .52, r * .46, 12), (u, v, i, j) => (hash(i, j + k) > .82 ? '#e05aa8' : ramp(PET, .95 - Math.hypot(u - .5, v - .5) * .5, i, j)));   // пелюстки з жилками
+        S.poly(ell(x, y + r * .42, r * .3, r * .32, 10), (u, v, i, j) => ramp(['#5a0a3a', '#a01a62', '#e0308a', '#ff7ac0'], .85 - v * .5, i, j)); S.poly(ell(x, y + r * .08, r * .14, r * .14, 6), '#ffd84a');
+      };
+      [[.5, 1.25], [.62, 1.2], [.73, 1.12], [.83, 1.02], [.92, .9]].forEach(([t, r], k) => { const p = pts[Math.round(t * 20)]; fl(p[0] + (k % 2 ? .5 : -.4), p[1] + 1.4, Math.min(r * W * .21, 3), k); });
+      [.98, 1].forEach((t, k) => { const p = pts[Math.round(t * 20)]; S.poly(ell(p[0] + .3, p[1] + .7, .55 - k * .15, .75 - k * .15, 8), (u, v, i, j) => ramp(['#4a6a2a', '#a0c070', '#f0c8e8'], .4 + v * .5, i, j)); });
+    },
+    /** М'ята: кущик дрібних зубчастих листочків, соковита світла зелень (аквапоніка). */
+    mint(S, W, H, seed) {
+      const cx = W / 2, by = H - .2, MP = ['#0e3a1e', '#16542a', '#22703a', '#34904a', '#4cb060', '#7ad080', '#b0f0a0'];
+      for (let q = 0; q < 10; q++) { const u = q / 9, a = (u - .5) * 2.1, stem = H * (.2 + .55 * hash(seed, q)), e = [cx + Math.sin(a) * stem * .75, by - Math.cos(a) * stem];
+        line(S, [cx, by], e, '#2a6a3a', .35); fillLeaf(S, leaf(e, a + (q % 2 ? .7 : -.7), H * .24, H * .17, 0, 'broad', seed + q), MP, { q0: .5 + .1 * hash(q, seed), hi: a < 0, vein: 1, thin: 1 }); }
+    },
+    /** «Нитка перлів» (сенеціо): пасма з круглих зелених намистин з відблиском, «шапка» намистин угорі. Звисає. */
+    pearls(S, W, H, seed) {
+      const PP = ['#14401a', '#226024', '#348034', '#4ea046', '#78c068'];
+      for (let st = 0; st < 6; st++) {
+        const x0 = W * (.14 + .72 * st / 5), len = H * (.42 + .52 * hash(seed, st)); let px = x0, py = .9;
+        for (let k = 0; py < len - 1; k++) { const nx = x0 + Math.sin(k * .8 + st) * 1.1, ny = py + 1.2, r = .58 + .12 * hash(st, k);
+          line(S, [px, py], [nx, ny], '#2a4a20', .22); S.poly(ell(nx, ny, r, r, 9), (u, v, i, j) => u < .38 && v < .42 ? '#dcffd0' : ramp(PP, .85 - Math.hypot(u - .4, v - .4) * 1.2, i, j)); px = nx; py = ny; }
+      }
+      for (let k = 0; k < 16; k++) { const x = W * (.08 + .84 * hash(seed, k + 40)), y = .7 + 1.7 * hash(seed, k + 41); S.poly(ell(x, y, .62, .62, 9), (u, v) => u < .38 && v < .42 ? '#dcffd0' : '#4ea046'); }
+    },
+    /** Традесканція «зебрина»: пасма з загостреними листками — фіолетові зі срібною серединкою. Звисає. */
+    tradescantia(S, W, H, seed) {
+      const TP = ['#22082e', '#3e1450', '#5c2272', '#7c3a92', '#a06ab4', '#c8a0dc', '#eedcff'];
+      for (let st = 0; st < 5; st++) {
+        const x0 = W * (.18 + .64 * st / 4), len = H * (.38 + .58 * hash(seed, st)), pts = [];
+        for (let k = 0; k <= 12; k++) { const t = k / 12; pts.push([x0 + Math.sin(t * 4 + st) * 1.5 * t, .8 + t * (len - .8)]); }
+        for (let k = 1; k < pts.length; k++) line(S, pts[k - 1], pts[k], '#4a1a5a', .3);
+        for (let k = 1; k < pts.length; k += 2) { const side = (k + st) % 4 < 2 ? 1 : -1, sz = 2 + 1.3 * hash(seed, k + st);
+          fillLeaf(S, leaf(pts[k], side * 1.85, sz * 1.7, sz * .85, side * .25, 'blade', seed + k + st * 9), TP, { q0: .4, hi: side < 0, variegate: 1, thin: 1 }); }
+      }
+    },
+    /** Гліцинія: кілька листочків угорі й довгі грона дрібних бузкових квіточок (конусом донизу). Звисає. */
+    wisteria(S, W, H, seed) {
+      for (let q = 0; q < 6; q++) fillLeaf(S, leaf([W * (.12 + .76 * q / 5), 1.2], (q % 2 ? 1 : -1) * 1.65, 2.8, 1.1, 0, 'blade', seed + q), GREEN2, { q0: .5, thin: 1 });
+      const FL = ['#4a1e86', '#7448c0', '#9c78e4', '#c8aaff', '#ece0ff'];
+      for (let r = 0; r < 4; r++) { const x = W * (.18 + .64 * r / 3), len = H * (.48 + .46 * hash(seed, r)), top = 1.8;
+        line(S, [x, 1], [x, top + len * .9], '#3a5a2a', .25);
+        for (let k = 0; k < 46; k++) { const t = k / 46, y = top + t * len, wdt = (1 - t) * 1.7 + .35, px = x + (hash(seed, k + r * 50) - .5) * 2 * wdt;
+          S.poly(ell(px, y, .55, .45, 6), FL[Math.min(4, Math.floor(hash(k, r) * 3.2 + t * 1.6))]); } }
+    },
+    /** Хойя: пасма з товстими восковими листками (темні, з цятками) і парасольки рожевих квіток-зірочок. Звисає. */
+    hoya(S, W, H, seed) {
+      for (let st = 0; st < 4; st++) {
+        const x0 = W * (.2 + .6 * st / 3), len = H * (.42 + .52 * hash(seed, st)), pts = [];
+        for (let k = 0; k <= 10; k++) { const t = k / 10; pts.push([x0 + Math.sin(t * 3 + st * 2) * 1.3 * t, .8 + t * (len - .8)]); }
+        for (let k = 1; k < pts.length; k++) line(S, pts[k - 1], pts[k], '#3a5a2a', .32);
+        for (let k = 2; k < pts.length; k += 2) { const side = (k / 2 + st) % 2 ? 1 : -1;
+          fillLeaf(S, leaf(pts[k], side * 1.55, 3.1, 2.3, side * .1, 'round', seed + k + st * 7), ['#0a2a1a', '#123a24', '#1c5232', '#286a40', '#3a8450', '#5aa06a'], { q0: .44, hi: side < 0, cloud: 1, thin: 1 }); }
+        const [fx, fy] = pts[pts.length - 1];
+        for (let k = 0; k < 9; k++) { const a = k / 9 * 6.28, px = fx + Math.cos(a) * 1.3, py = fy + 1.4 + Math.sin(a) * 1; S.poly(ell(px, py, .62, .62, 6), k % 2 ? '#ffd0e8' : '#ff9ac8'); S.set(px, py, '#c02060'); }
+      }
+    },
     /** Зелень гідропоніки: базилік (овальні листки), салат (кучерява розетка), полуниця (листки й ягоди). */
     basil(S, W, H, seed) { const cx = W / 2, by = H - .2; for (let q = 0; q < 7; q++) { const a = (q / 6 - .5) * 2.4, len = H * (.45 + .4 * hash(seed, q)); fillLeaf(S, leaf([cx, by], a, len, len * .62, 0, 'broad', seed + q), GREEN2, { q0: .5 + .1 * hash(q, seed), hi: a < 0, vein: 1, thin: 1 }); } },
     lettuce(S, W, H, seed) { const cx = W / 2, by = H - .2; for (let q = 0; q < 9; q++) { const a = (q / 8 - .5) * 2.8, len = H * (.55 + .35 * hash(seed, q)); fillLeaf(S, leaf([cx, by], a, len, len * .8, (hash(q, 3) - .5) * .4, 'round', seed + q), ['#1a4a1a', '#2a6a22', '#3c8a2a', '#5aaa36', '#7cc84a', '#a8e070'], { q0: .45 + .2 * hash(seed, q + 3), hi: a < 0, cloud: 1, thin: 1 }); } },
