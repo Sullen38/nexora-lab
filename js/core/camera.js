@@ -10,6 +10,10 @@
  * iPhone / iPad: свайп від лівого чи правого краю екрана — жест браузера «назад» / «вперед»; хто гортав кімнату від краю,
  * випадав зі сторінки (власник, 02.11). Дотик біля краю канвас «забирає собі» (touchstart з preventDefault) — тоді Safari
  * (iOS 13.4+) цей жест не починає, а кімната гортається як звичайно (тапи й перетягування — pointer-події, їм це не заважає).
+ * Вбудовані браузери (Telegram, Instagram…) мають свій жест — його сайт не вимкне, але часто це «назад» в історії (а коли
+ * назад нікуди — закрити). Тому ЗАПАСНИЙ КРОК: після дотику до кімнати в історії стає ще один крок на цю саму сторінку —
+ * випадковий «назад» лишає в кімнаті (без перезавантаження), а крок ставиться знову при наступному дотику. Вийти —
+ * «назад» двічі поспіль.
  * ========================================================================== */
 NX.cam = {
   k: 1,          // скільки CSS-пікселів в 1 одиниці кімнати
@@ -55,6 +59,11 @@ NX.cam = {
     // дотик за EDGE px від лівого / правого краю — не жест «назад» / «вперед» браузера, а гортання кімнати (див. шапку)
     const EDGE = 28;
     canvas.addEventListener('touchstart', e => { for (const t of e.changedTouches) if (t.clientX < EDGE || t.clientX > innerWidth - EDGE) { e.preventDefault(); break; } }, { passive: false });
+    // запасний крок в історії (див. шапку): ставиться лише після дотику (браузери пропускають кроки, додані без дій людини)
+    let armed = !!(history.state && history.state.nx);
+    const arm = () => { if (armed || !history.pushState) return; armed = true; try { history.pushState({ nx: 1 }, ''); } catch (e) {} };
+    addEventListener('popstate', () => { armed = !!(history.state && history.state.nx); });
+    canvas.addEventListener('touchend', arm);
     canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, cx: this.x, moved: false }; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener('pointermove', e => {
       if (down) {
@@ -63,7 +72,7 @@ NX.cam = {
         if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(down.cx - dx / this.k, C.ROOM_X0, max); this.dragUntil = performance.now() + 4000; }
       } else NX.input && NX.input.onHover(...this.toRoom(e.clientX, e.clientY));
     });
-    canvas.addEventListener('pointerup', e => { if (down && !down.moved) NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; });
+    canvas.addEventListener('pointerup', e => { if (down && !down.moved) NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; arm(); });
     canvas.addEventListener('pointercancel', () => down = null);
   },
 };
