@@ -28,7 +28,6 @@ NX.nexi = {
     this.autoRun = !byUser;                                                           // сценарій знає, чи це вільний час (майстерня: без лабораторії скінів)
     this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
     this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
-    NX.ui.hud.setActive(A.nav || null);
   },
   /** Просто піти в точку підлоги (тап по підлозі). */
   walkTo(x, y) { this.lastCmd = NX.time; this.finishTask(false); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy] }, { loc: 'floor' }]; this.cur = null; },

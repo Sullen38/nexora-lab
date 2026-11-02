@@ -26,7 +26,7 @@
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
   NX.acts = {
-    home: { nav: 'home', route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
+    home: { route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
 
     sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
 
@@ -62,7 +62,7 @@
       { work: { pose: 'carry', dur: 1.4 } }, { do: () => { for (let i = 0; i < 10; i++) NX.fx.emit('spark', NX.nexi.x + (Math.random() - .5) * 34, NX.nexi.y - 30 - Math.random() * 30, { col: '#ffffff' }); NX.ui.hud.toast(NX.t('ui.photo')); NX.nexi.emote('love'); } }, { work: { pose: 'cheer', dur: 1.2 } }]; } },
 
     // ---------- МАРКЕТИНГ: крісло обертається, Nexi сідає й працює (objects/mk_chair.js, objects/marketing.js) ----------
-    marketing: { nav: 'marketing', color: '#d94bff', route() {
+    marketing: { color: '#d94bff', route() {
       const ch = NX.objects.mkChair, M = NX.objects.marketing; if (!ch || !ch.ready()) return [line('marketing')];
       const sd = ch.side();
       return [{ walk: sd }, { face: -1 }, { do: () => ch.turnTo(270) }, { work: { pose: 'look', dur: .6 } },                 // крісло повертається до Nexi
@@ -73,7 +73,7 @@
         { do: () => { NX.nexi.emote('happy', 2.2); M && M.card && M.card(NX.time); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
 
     // ---------- АНАЛІТИКА: крісло обертається, Nexi сідає, екран у куполі показує задачу (objects/an_chair.js, analytics.js) ----------
-    analytics: { nav: 'analytics', color: '#ffc94d', route() {
+    analytics: { color: '#ffc94d', route() {
       const ch = NX.objects.anChair, A = NX.objects.analytics, task = NX.nexi.taskOpt; if (!ch || !ch.ready() || !A) return [line('analytics')];
       return [{ walk: ch.side() }, { face: -1 }, { do: () => ch.turnTo(270) }, { work: { pose: 'look', dur: .6 } },              // крісло повертається до Nexi
         { hop: ch.seat(), dy: ch.depth() }, { do: () => ch.sitDown() }, { loc: 'anChair' },
@@ -84,7 +84,7 @@
         { do: () => { NX.nexi.emote('happy', 2.2); A.card(); } }, { work: { pose: 'sitCheer', dur: 1.8 } }]; } },
 
     // ---------- ІНСТРУМЕНТИ: на ранці біля верстака лагодить хаб, картка підключається (objects/tools.js) ----------
-    tools: { nav: 'tools', color: '#3bff8a', route() {
+    tools: { color: '#3bff8a', route() {
       const T = NX.objects.tools, task = NX.nexi.taskOpt; if (!T || !T.ready()) return [line('tools')];
       const st = T.stand(), hv = T.hover(), spark = () => { const n = NX.nexi; NX.fx.emit('spark', n.x + (Math.random() - .5) * 14, n.y - 46 - Math.random() * 10, { col: Math.random() < .5 ? '#ffd27a' : '#ffffff' }); };
       return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
@@ -94,7 +94,7 @@
         { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.4 } }]; } },
 
     // ---------- AI-ЦЕНТР: злітає на стіл, працює спиною до нас, екран показує задачу й «✓» (objects/aicenter.js) ----------
-    ai: { nav: 'ai', color: '#3be8ff', route() {
+    ai: { color: '#3be8ff', route() {
       const A = NX.objects.aicenter, task = NX.nexi.taskOpt; if (!A || !A.ready()) return [line('ai')];
       const st = A.front(), bits = () => { const n = NX.nexi; NX.fx.emit('bit', n.x + (Math.random() - .5) * 26, n.y - 40 - Math.random() * 14, { vy: -34 }); };
       return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
@@ -104,7 +104,7 @@
         { fly: st }, { loc: 'floor' }]; } },
 
     // ---------- МАЙСТЕРНЯ (СКІНИ): капсула, сканер, лабораторія скінів, маніпулятор (objects/workshop.js) ----------
-    workshop: { nav: 'workshop', color: '#ff7af0', route(n) {
+    workshop: { color: '#ff7af0', route(n) {
       const W = NX.objects.workshop; if (!W || !W.ready()) return [{ do: () => NX.ui.skinlab.show() }];
       if (n && n.autoRun) return [{ walk: W.front() }, { face: 1 }, line('wsLook'), { do: () => W.show() }, { work: { pose: 'look', dur: 3.6 } },   // вільний час: милується голограмою
         { do: () => NX.nexi.emote('love', 2) }, { work: { pose: 'cheer', dur: 1.2 } }];

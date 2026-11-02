@@ -1,7 +1,7 @@
 /* ============================================================================
  * css/hud.css — СТИЛІ ІНТЕРФЕЙСУ ПОВЕРХ КІМНАТИ
  * Кольори й шрифти задані змінними в :root — міняються в одному місці.
- * Блоки: .top (меню) · .task (чип задачі) · .hint · .bub (бабл Nexi)
+ * Блоки: .top (шапка — лише назва) · .task (чип задачі) · .hint · .bub (бабл Nexi)
  *        .chat (діалог) · .lab (лабораторія скінів) · .toast
  * ========================================================================== */
 :root{--bg:#050818;--glass:#070c2cd9;--line:#2a4ab8;--cyan:#3be8ff;--pink:#d94bff;--text:#dbe7ff;--mute:#8393cc;--gold:#ffc94d;
@@ -15,12 +15,6 @@ body{background:var(--bg);color:var(--text);font:500 14px/1.4 var(--f-b);overflo
 .top>*{pointer-events:auto}
 .logo{font:400 15px var(--f-d);color:var(--cyan);text-shadow:0 0 12px #2ad4ff;line-height:1;white-space:nowrap}
 .logo small{display:block;font:400 6px var(--f-d);color:var(--mute);margin-top:6px;letter-spacing:1px}
-nav{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;padding:2px}
-nav::-webkit-scrollbar{display:none}
-nav button{flex:none;background:var(--glass);color:var(--text);border:2px solid #1b2a66;padding:8px 12px;font:600 11px var(--f-b);letter-spacing:.8px;cursor:pointer;backdrop-filter:blur(6px)}
-nav button:hover{border-color:var(--cyan)}
-nav button.on{border-color:var(--pink);color:#fff;box-shadow:0 0 14px #d94bff66 inset}
-.skinbtn{flex:none;background:var(--pink);color:#fff;border:0;padding:9px 12px;font:400 8px var(--f-d);cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .task{left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom,0px));display:none;align-items:center;gap:12px;background:var(--glass);border:2px solid var(--cyan);padding:10px 16px;box-shadow:0 0 22px #3be8ff55;max-width:92vw}
 .task b{font:400 8px var(--f-d);color:var(--cyan);white-space:nowrap}

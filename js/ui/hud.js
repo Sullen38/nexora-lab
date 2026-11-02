@@ -1,23 +1,17 @@
 /* ============================================================================
- * ui/hud.js — МЕНЮ, ЧИП ЗАДАЧІ, БАБЛ NEXI, ПІДКАЗКА, ТОСТ
+ * ui/hud.js — ШАПКА, ЧИП ЗАДАЧІ, БАБЛ NEXI, ПІДКАЗКА, ТОСТ
  * ----------------------------------------------------------------------------
  * HTML-елементи поверх canvas (розмітка в index.html, стилі в css/hud.css).
- * Меню: кожна кнопка запускає сценарій з actors/nexi/activities.js.
+ * Шапка — лише назва NEXORA AI (власник, 02.11: кнопки зон і «СКІНИ» прибрано). Зони — тапом по кімнаті (ui/input.js),
+ * скіни — тапом по Nexi або в майстерні, повернення на док — тапом по килиму чи в діалозі з Nexi.
  * ========================================================================== */
 NX.ui.hud = {
-  NAV: ['home', 'ai', 'analytics', 'marketing', 'workshop', 'tools'],   // кнопки зон — разом із зонами, як у кімнаті зліва направо (крок 2: маркетинг, майстерня; крок 11: аналітика, інструменти; крок 14: AI-центр; далі portal)
   $: id => document.getElementById(id), typed: null,
-  init() {
-    const nav = this.$('nav');
-    this.NAV.forEach(id => { const b = document.createElement('button'); b.dataset.id = id; b.onclick = () => { this.firstTouch(); NX.ui.zones.has(id) && NX.acts[id] ? NX.nexi.do(id, true, { task: NX.ui.zones.pick(id) }) : NX.nexi.do(id); }; nav.appendChild(b); });
-    this.$('skinbtn').onclick = () => NX.ui.skinlab.show();
-    this.applyLang();
-  },
+  init() { this.applyLang(); },
   /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
   applyLang() {
     const $ = this.$, T = NX.t;
-    document.querySelectorAll('nav button').forEach(b => b.textContent = T('nav.' + b.dataset.id));
-    $('tagline').textContent = T('ui.tagline'); $('skinbtn').textContent = T('ui.skins');
+    $('tagline').textContent = T('ui.tagline');
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
     // підказки для екранних читачів і title — теж мовою сайту
@@ -26,7 +20,6 @@ NX.ui.hud = {
     NX.ui.skinlab.CATS && NX.ui.skinlab.relabel(); NX.ui.chat.relabel && NX.ui.chat.relabel();
     if (NX.nexi.task) { const id = NX.nexi.task.id; NX.nexi.task.title = T('act.' + id + '.title'); NX.nexi.task.steps = T('act.' + id + '.steps'); }
   },
-  setActive(id) { document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.id === id)); },
   firstTouch() { this.$('hint').style.display = 'none'; },
   toast(m) { const t = this.$('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 1800); },
   /** Показати/сховати бабл над Nexi (текст друкується по літері). */
