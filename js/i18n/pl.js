@@ -8,7 +8,7 @@ NX.i18n.add('pl', {
     step: { sky: 'niebo i gwiazdy', planet: 'planeta', far: 'dalekie kwartały', towers: 'wieżowce', near: 'autostrada i kolejka', glow: 'neonowa poświata', wall: 'ściany i podłoga', back: 'przy ścianach', finish: 'szlifuję detale', compose: 'światło i blask', mirror: 'lustrzana podłoga', warm: 'pierwsza klatka' } },
   nav: { home: 'START', ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
   cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
-  obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', catCorner: 'Kącik kota', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
+  obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     start: 'Biorę się: {task}!',
     ai: { reply: { t: 'Odpowiedz klientowi', r: 'Odpowiedź do klienta wysłana w {n} s. Ton: przyjazny i jasny.' }, mail: { t: 'Napisz do partnera', r: 'Mail do partnera gotowy: {n} akapity, w wersjach roboczych.' }, summary: { t: 'Podsumowanie spotkania', r: 'Podsumowanie: {n} decyzje i zadania z terminami dla zespołu.' } },
@@ -46,7 +46,7 @@ NX.i18n.add('pl', {
     sofa: { title: 'Odpoczynek na kanapie', steps: ['Siadam na kanapie', 'Czytam wiadomości'], lines: ['Odpocznę chwilę i poczytam wiadomości biznesowe.', 'Kanapa to najlepsze miejsce na nowe pomysły.'] },
     sleep: { title: 'Drzemka na kanapie', steps: ['Kładę się', 'Zzz...'], lines: ['Coś się zmęczyłem... Obudź mnie, gdy będę potrzebny.'] },
     petCat: { title: 'Pogłaskać kota', steps: ['Idę do Rudego', 'Głaszczę ♥'], lines: ['Rudy, chodź tu! Kto jest najlepszym kotem?', 'Kocia przerwa: pogłaszczę Rudego.'] },
-    feedCat: { title: 'Nakarmić kota', steps: ['Idę do misek', 'Nasypuję karmę ✓'], lines: ['Rudy jest głodny! Nasypię karmy.'] },
+    feedCat: { title: 'Nakarmić kota', steps: ['Idę do Rudego', 'Daję smakołyk ✓'], lines: ['Rudy jest głodny! Dam mu smakołyk.'] },
     dance: { title: 'Taniec na dywanie', steps: ['Muzyka!', 'Tańczę ♪'], lines: ['Chwila tańca dla humoru!'] },
     wander: { title: 'Spacer po pokoju', steps: ['Spaceruję'], lines: ['Przejdę się i pomyślę.'] },
     window: { title: 'Popatrzeć na miasto', steps: ['Idę do okna', 'Podziwiam miasto'], lines: ['Zobacz, jakie dziś miasto! Odpalę mały pokaz fajerwerków.', 'Kocham ten widok. Ile firm tam teraz pracuje...'] },

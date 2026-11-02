@@ -29,7 +29,7 @@
     try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
     NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init(); ui = true;
     [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; placed = true;
-    NX.cam.x = NX.px.clamp(NX.nexi.x - NX.cam.viewW / 2, 0, Math.max(0, NX.cfg.ROOM_W - NX.cam.viewW));   // телефон: одразу на Nexi
+    NX.cam.x = NX.px.clamp(NX.nexi.x - NX.cam.viewW / 2, NX.cfg.ROOM_X0, Math.max(NX.cfg.ROOM_X0, NX.cfg.ROOM_X1 - NX.cam.viewW));   // телефон: одразу на Nexi
     await B.run(NX.loop.warmG(), 'ready');
   } catch (e) {
     console.error('[boot]', e);                                                       // щось не так — кімната однаково запуститься,

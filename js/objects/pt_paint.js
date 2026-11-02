@@ -108,7 +108,7 @@
   // ---------- ВИХОР ----------
   // Отвір — восьмикутний: угорі зрізи (темний метал з бузковим кантом), знизу — майданчик. Нерухоме — темна безодня (видно,
   // поки живе ще не оновилось); живе — тунель кілець, що «пливуть» углиб, спіральні рукави, іскри, яскраве серце.
-  const CUT = .2;                                                                                       // зріз кутів (частка ширини)
+  const CUT = .13;                                                                                      // зріз кутів (частка ширини)
   const octo = (c, fw, fh) => { const k = fw * CUT; c.beginPath(); c.moveTo(0, fh); c.lineTo(0, k); c.lineTo(k, 0); c.lineTo(fw - k, 0); c.lineTo(fw, k); c.lineTo(fw, fh); c.closePath(); };
   PAINT.pt_back = (c, fw, fh) => {
     const g = c.createRadialGradient(fw / 2, fh * .52, 1, fw / 2, fh * .52, fh * .6); g.addColorStop(0, '#5a2ad0'); g.addColorStop(.5, '#220a66'); g.addColorStop(1, '#0a0424');
@@ -117,7 +117,7 @@
       c.fillStyle = '#1a0a3e'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.lineTo(x2, y2); c.closePath(); c.fill(); A.neon(c, x1, y1, x2, y2, LI, .6); });
   };
   /** Тунель: кільце n з глибиною d (0 — край, 1 — серце): радіус і зсув центру (тунель трохи «дивиться» вгору-праворуч). */
-  function ringAt(fw, fh, d) { const R = fw * .62, r = R * Math.pow(1 - d, 1.7) + fw * .02, cx = fw / 2 + d * fw * .05, cy = fh * .52 - d * fh * .06; return [cx, cy, r, r * 1.45]; }
+  function ringAt(fw, fh, d) { const R = fw * .58, r = R * Math.pow(1 - d, 1.7) + fw * .02, cx = fw / 2 + d * fw * .05, cy = fh * .52 - d * fh * .06; return [cx, cy, r, r * 1.3]; }
   const BG = {};                                                                                        // тло вихору (перелив) — одне полотно під розмір, а не градієнт щоразу
   function bg(fw, fh, k) {
     const key = Math.round(fw * k) + 'x' + Math.round(fh * k); if (BG[key]) return BG[key];

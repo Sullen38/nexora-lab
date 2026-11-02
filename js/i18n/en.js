@@ -8,7 +8,7 @@ NX.i18n.add('en', {
     step: { sky: 'sky & stars', planet: 'planet', far: 'far blocks', towers: 'skyscrapers', near: 'highway & monorail', glow: 'neon glow', wall: 'walls & floor', back: 'by the walls', finish: 'polishing details', compose: 'light & glow', mirror: 'mirror floor', warm: 'first frame' } },
   nav: { home: 'HOME', ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
   cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
-  obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', catCorner: 'Cat corner', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
+  obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
   zones: {
     start: 'On it: {task}!',
     ai: { reply: { t: 'Reply to a client', r: 'Client reply sent in {n} s. Tone: friendly and clear.' }, mail: { t: 'Write to a partner', r: 'Partner email ready: {n} paragraphs, saved in drafts.' }, summary: { t: 'Meeting summary', r: 'Meeting summary: {n} decisions and tasks with deadlines for the team.' } },
@@ -46,7 +46,7 @@ NX.i18n.add('en', {
     sofa: { title: 'Rest on the sofa', steps: ['Sitting down', 'Reading the news'], lines: ["I'll rest a bit and read business news.", 'The sofa is the best place for new ideas.'] },
     sleep: { title: 'Nap on the sofa', steps: ['Lying down', 'Zzz...'], lines: ["I'm a bit tired... Wake me up when you need me."] },
     petCat: { title: 'Pet the cat', steps: ['Going to Ginger', 'Petting ♥'], lines: ["Ginger, come here! Who's the best cat?", "Cat break: I'll pet Ginger."] },
-    feedCat: { title: 'Feed the cat', steps: ['Going to the bowls', 'Pouring food ✓'], lines: ["Ginger is hungry! I'll pour some food."] },
+    feedCat: { title: 'Feed the cat', steps: ['Going to Ginger', 'Giving a treat ✓'], lines: ["Ginger is hungry! I'll give him a treat."] },
     dance: { title: 'Dance on the rug', steps: ['Music!', 'Dancing ♪'], lines: ['A little dance for the mood!'] },
     wander: { title: 'Walk around', steps: ['Walking'], lines: ["I'll take a walk and think."] },
     window: { title: 'Look at the city', steps: ['Going to the window', 'Enjoying the view'], lines: ['Look at the city today! Let me set off some fireworks.', 'I love this view. So many businesses working out there...'] },

@@ -147,7 +147,7 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_SLEEP && this.loc !== 'sofaLie') { this.do('sleep', false); return; }
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
-      if (this.catHungry && NX.objects.catCorner.food < .2) { this.catHungry = false; this.do('feedCat', false); return; }
+      if (this.catHungry) { this.catHungry = false; this.do('feedCat', false); return; }                       // Рудик нявкає — смаколик
       const r = Math.random(), ok = (id, o) => NX.acts[id] && NX.objects[o] && NX.objects[o].ready();   // сам працює: маркетинг, аналітика, інструменти — на своїх місцях, AI-центр — з дивану
       if (r < .13 && ok('marketing', 'mkChair')) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
       if (r >= .13 && r < .25 && ok('analytics', 'anChair')) { this.do('analytics', false, { task: NX.ui.zones.pick('analytics') }); return; }

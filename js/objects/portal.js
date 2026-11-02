@@ -15,7 +15,7 @@
   let HOLE = null;
   function hole() {
     if (HOLE) return HOLE; const z = zone(); if (!z) return null;
-    const a = z.S(46, 124, 30), b = z.S(154, 332, 30); HOLE = { cx: (a[0] + b[0]) / 2, cy: a[1] + (b[1] - a[1]) * .52, rx: (b[0] - a[0]) / 2, ry: (b[1] - a[1]) / 2, k: (b[0] - a[0]) / 60 };
+    const a = z.S(6, 124, 30), b = z.S(194, 332, 30); HOLE = { cx: (a[0] + b[0]) / 2, cy: a[1] + (b[1] - a[1]) * .52, rx: (b[0] - a[0]) / 2, ry: (b[1] - a[1]) / 2, k: (b[0] - a[0]) / 110 };
     return HOLE;
   }
   NX.addObject({
@@ -25,8 +25,8 @@
     drawBack(c, t) {
       const H = hole(); if (!H) return; const act = !!this.active, br = .3 + .07 * Math.sin(t * 1.7) + (act ? .15 : 0);
       c.save(); c.globalCompositeOperation = 'lighter';
-      P.glow(c, H.cx, H.cy, H.rx * 2.6, 'rgba(150,80,255,.55)', br);                                          // сяйво на колонах і балці
-      P.glow(c, H.cx, H.cy + H.ry * .95, H.rx * 1.6, 'rgba(90,200,255,.45)', br * .7);                        // відсвіт на майданчику
+      P.glow(c, H.cx, H.cy, H.rx * 1.9, 'rgba(150,80,255,.55)', br);                                          // сяйво на колонах і балці
+      P.glow(c, H.cx, H.cy + H.ry * .95, H.rx * 1.2, 'rgba(90,200,255,.45)', br * .7);                        // відсвіт на майданчику
       for (let k = 0; k < 14; k++) {                                                                          // іскри кружляють і затягуються у вихор
         const ph = (t * (.12 + hash(k, 3) * .1) * (act ? 2.2 : 1) + hash(k, 5)) % 1, a = hash(k, 7) * 6.283 + t * (.5 + hash(k, 9) * .6) * (k % 2 ? 1 : -1);
         const r = 1.25 - ph * .95, x = H.cx + Math.cos(a) * H.rx * r, y = H.cy + Math.sin(a) * H.ry * r * .9, s = (1 - ph * .5) * Math.max(.8, H.k * .9);

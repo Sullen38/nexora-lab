@@ -5,14 +5,15 @@
  * текстури: рушій кладе їх у перспективу) і що на них живе (NX.arc.LIVE[id]); голо-екран — живий об'єкт objects/aicenter.js
  * (вміст — NX.arc.aiScreen нижче).
  * Крок 13 (власник: «AI-центр — великий голо-екран у неоновій рамці (мозок-нейромережа, графіки) над довгим столом з
- * моніторами; якість — як у сусідніх зонах, але кожна своя, з характером; куток кота прямо перед ним — не перекрити»).
+ * моніторами; якість — як у сусідніх зонах, але кожна своя, з характером»).
  * Характер зони: «мозок кімнати» — глибокий індиго, рожевий неон рамки й кромки (як на концепті), блакитні голограми; по
  * фасадах біжать «нейронні» доріжки з вузлами-синапсами.
  *   ai_top     — стільниця: глянцева кромка з рожевим неоном і «шиною синапсів» (імпульси — живі), посередині — значок «AI»;
  *                зверху — темне скло з ледь видимими доріжками й колом-майданчиком посередині (сюди Nexi злітатиме)
- *   ai_legL/R  — опори-«водоспади»: зовнішня — неоновий кант і ядра; внутрішня (її бік видно в ніші) — «колона ядер» у склі,
- *                від неї розходяться доріжки (ядра світяться хвилею — живі)
- *   ai_knee    — задня панель ніші, де живе куток кота: тепле рожеве світло, лоток з кабелем, неоновий слід лапки й сердечко
+ *   ai_pedL    — тумба-«ядро»: колона ядер у склі (ядра світяться хвилею — живі), від неї розходяться доріжки; бік — доріжки
+ *   ai_pedR    — тумба з трьома шухлядами (ручки — неонові риски), вогники стану
+ *   ai_knee    — задня панель простору для ніг: доріжки сходяться до «синапсу» з м'яким сяйвом, лоток з кабелем
+ *   (крок 13.1 — кімната ширша з боків, куточок кота прибрано: стіл на тумбах замість опор-«водоспадів» з нішею)
  *   ai_monL/R  — монітори по краях стола: чат з клієнтом / лист (нерухомі; передні — поверх голо-екрана)
  *   ai_screen  — велика рамка: шапка з вивіскою, утоплене скло під голо-екран, вогники; бік — ґратка
  * Написи — NX.t (4 мови): scene.ai.* (екран), nav.ai (вивіска — arc_paint.js).
@@ -67,54 +68,61 @@
     }
   } };
 
-  // ---------- ОПОРИ-«ВОДОСПАДИ» ----------
-  /** Зовнішня опора: темна панель, рожевий неон уздовж краю, стовпчик ядер-вогників. */
-  PAINT.ai_legL = (c, fw, fh) => {
-    inset(c, fw * .2, fh * .05, fw * .6, fh * .9, 'rgba(8,4,28,.55)', .5); A.neon(c, fw * .5, fh * .08, fw * .5, fh * .92, PK, .7);
-    for (let k = 0; k < 6; k++) led(c, fw * .5, fh * (.16 + k * .13), k % 3 === 1 ? CY : '#ff9af0', .32);
+  // ---------- ТУМБИ ----------
+  /** Ліва тумба — «ЯДРО»: скляна колона з ядрами (світяться хвилею — живі), від неї розходяться доріжки, ґратка внизу. */
+  const CORES = 8, coreY = (fh, k) => fh * (.12 + k * .095), TUBE = [.5, .3];                          // ядра: y; труба — середина й ширина (частки)
+  PAINT.ai_pedL = (c, fw, fh) => {
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 0, fw, fh * .03); inset(c, fw * .06, fh * .05, fw * .88, fh * .82, 'rgba(8,4,28,.5)', .8);
+    const tx = fw * TUBE[0], tw = fw * TUBE[1];
+    for (let k = 0; k < CORES; k++) { const y = coreY(fh, k); trace(c, tx - tw / 2, y, fw * .32, k * 5 + 2, 'rgba(59,232,255,.38)', .32, -1); trace(c, tx + tw / 2, y + fh * .04, fw * .32, k * 7 + 5, 'rgba(255,79,216,.32)', .32, 1); }
+    c.fillStyle = 'rgba(4,10,36,.94)'; rr(c, tx - tw / 2, fh * .06, tw, fh * .78, tw * .45); c.fill(); A.neonRect(c, tx - tw / 2, fh * .06, tw, fh * .78, CY, .35, tw * .45);
+    for (let k = 0; k < CORES; k++) { const y = coreY(fh, k); c.fillStyle = '#10204e'; rr(c, tx - tw * .32, y - fh * .028, tw * .64, fh * .056, .5); c.fill(); c.fillStyle = 'rgba(120,200,255,.35)'; c.fillRect(tx - tw * .28, y - fh * .026, tw * .56, .3); }
+    c.fillStyle = 'rgba(255,255,255,.14)'; c.fillRect(tx - tw * .3, fh * .08, .5, fh * .74);                // блік на склі
+    vent(c, fw * .14, fh * .89, fw * .72, fh * .07, 2); c.fillStyle = '#05030f'; c.fillRect(fw * .08, fh * .97, fw * .84, fh * .03);   // цоколь
   };
-  PAINT.ai_legL.sides = { left: (c, fw, fh) => {
+  /** Бік лівої тумби (зовнішній — його видно): доріжки й рожевий неон. */
+  PAINT.ai_pedL.sides = { left: (c, fw, fh) => {
     c.fillStyle = 'rgba(8,4,28,.35)'; c.fillRect(0, 0, fw, fh); inset(c, fw * .08, fh * .06, fw * .84, fh * .88, 'rgba(10,6,34,.5)', .8);
     for (let k = 0; k < 7; k++) trace(c, fw * .1, fh * (.12 + k * .12), fw * .55, k * 3 + 1, 'rgba(59,232,255,.42)', .35);
     A.neon(c, fw * .04, fh * .08, fw * .04, fh * .92, PK, .6);
   } };
-  /** Внутрішня опора: спереду — неоновий кант і вогники; її бік (видно в ніші) — «колона ядер» у склі, від неї — доріжки. */
-  const CORES = 8, coreY = (fh, k) => fh * (.13 + k * .095);
-  PAINT.ai_legR = (c, fw, fh) => {
-    inset(c, fw * .2, fh * .05, fw * .6, fh * .9, 'rgba(8,4,28,.55)', .5); A.neon(c, fw * .5, fh * .08, fw * .5, fh * .92, PK, .7);
-    for (let k = 0; k < 4; k++) led(c, fw * .5, fh * (.2 + k * .2), k % 2 ? CY : GR, .3);
-  };
-  PAINT.ai_legR.sides = { left: (c, fw, fh) => {
-    c.fillStyle = 'rgba(8,4,28,.4)'; c.fillRect(0, 0, fw, fh); inset(c, fw * .05, fh * .04, fw * .9, fh * .92, 'rgba(10,6,34,.45)', .8);
-    const tx = fw * .62, tw = fw * .2;                                                                      // скляна труба з ядрами (ближче до переду)
-    c.fillStyle = 'rgba(4,10,36,.92)'; rr(c, tx - tw / 2, fh * .07, tw, fh * .82, tw * .45); c.fill(); A.neonRect(c, tx - tw / 2, fh * .07, tw, fh * .82, CY, .35, tw * .45);
-    for (let k = 0; k < CORES; k++) { const y = coreY(fh, k); c.fillStyle = '#10204e'; rr(c, tx - tw * .32, y - fh * .03, tw * .64, fh * .06, .5); c.fill(); c.fillStyle = 'rgba(120,200,255,.35)'; c.fillRect(tx - tw * .28, y - fh * .028, tw * .56, .3);
-      trace(c, tx - tw / 2, y, fw * .5, k * 5 + 2, 'rgba(59,232,255,.38)', .32, -1); }
-    c.fillStyle = 'rgba(255,255,255,.14)'; c.fillRect(tx - tw * .3, fh * .09, .5, fh * .78);                // блік на склі
-    vent(c, fw * .12, fh * .9, fw * .76, fh * .06, 2);
-  } };
   /** Ядра світяться хвилею знизу вгору (швидше, коли Nexi працює). */
-  LIVE.ai_legR = { every: 4, draw(c, fw, fh, t) {
-    const tx = fw * .62, tw = fw * .2, sp = AI().active ? 2.2 : .8;
+  LIVE.ai_pedL = { every: 4, draw(c, fw, fh, t) {
+    const tx = fw * TUBE[0], tw = fw * TUBE[1], sp = AI().active ? 2.2 : .8;
     for (let k = 0; k < CORES; k++) { const ph = (t * sp - (CORES - 1 - k) * .14) % 1, a = Math.max(0, 1 - ph * 2.2), y = coreY(fh, k); if (a < .05) continue;
-      c.globalAlpha = a; c.fillStyle = k % 3 === 0 ? '#ff9af0' : '#9af6ff'; rr(c, tx - tw * .3, y - fh * .026, tw * .6, fh * .052, .5); c.fill();
-      c.fillStyle = '#ffffff'; c.fillRect(tx - tw * .18, y - fh * .012, tw * .36, fh * .024); c.globalAlpha = 1; }
+      c.globalAlpha = a; c.fillStyle = k % 3 === 0 ? '#ff9af0' : '#9af6ff'; rr(c, tx - tw * .3, y - fh * .024, tw * .6, fh * .048, .5); c.fill();
+      c.fillStyle = '#ffffff'; c.fillRect(tx - tw * .18, y - fh * .011, tw * .36, fh * .022); c.globalAlpha = 1; }
+  } };
+  /** Права тумба: три шухляди (світлі ручки-риски з рожевим і блакитним, мітки), на верхній — вогники стану. */
+  function drawer(c, x, y, w, h, tag) {
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#2a1e5e'); g.addColorStop(1, '#150e3a'); c.fillStyle = g; rr(c, x, y, w, h, .9); c.fill();
+    c.strokeStyle = 'rgba(170,150,255,.42)'; c.lineWidth = .4; rr(c, x + .3, y + .3, w - .6, h - .6, .8); c.stroke(); c.fillStyle = '#05030f'; c.fillRect(x + .4, y + h - .6, w - .8, .45);
+    const hw = w * .44; c.fillStyle = '#0a0624'; rr(c, x + w / 2 - hw / 2, y + h * .5, hw, h * .16, .6); c.fill(); A.neon(c, x + w / 2 - hw / 2 + .6, y + h * .58, x + w / 2 + hw / 2 - .6, y + h * .58, tag, .45);   // ручка-неон
+    c.fillStyle = 'rgba(230,240,255,.8)'; c.fillRect(x + w * .1, y + h * .18, w * .2, h * .2); c.fillStyle = tag; c.fillRect(x + w * .1, y + h * .18, w * .04, h * .2);   // мітка
+  }
+  PAINT.ai_pedR = (c, fw, fh) => {
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 0, fw, fh * .03);
+    [[.05, PK], [.355, CY], [.66, PK]].forEach(([y, tag]) => drawer(c, fw * .06, fh * y, fw * .88, fh * .28, tag));
+    [CY, GR, PK].forEach((col, k) => led(c, fw * (.72 + k * .07), fh * .1, col, .35));
+    c.fillStyle = '#05030f'; c.fillRect(fw * .08, fh * .965, fw * .84, fh * .035);                           // цоколь
+  };
+  /** Бік правої тумби (до простору для ніг — його видно): панель з доріжками. */
+  PAINT.ai_pedR.sides = { left: (c, fw, fh) => {
+    c.fillStyle = 'rgba(8,4,28,.4)'; c.fillRect(0, 0, fw, fh); inset(c, fw * .06, fh * .05, fw * .88, fh * .9, 'rgba(10,6,34,.45)', .8);
+    for (let k = 0; k < 6; k++) trace(c, fw * .9, fh * (.14 + k * .13), fw * .6, k * 4 + 9, 'rgba(59,232,255,.34)', .32, -1);
   } };
 
-  // ---------- НІША (куток кота) ----------
-  /** Задня панель ніші: тепле рожеве світло там, де лежанка кота, лоток з кабелем угорі, неоновий слід лапки й сердечко. */
+  // ---------- ПРОСТІР ДЛЯ НІГ ----------
+  /** Задня панель: доріжки сходяться до «синапсу» посередині (м'яке рожево-блакитне сяйво), лоток з кабелем угорі. */
   PAINT.ai_knee = (c, fw, fh) => {
-    c.fillStyle = 'rgba(14,6,30,.55)'; c.fillRect(0, 0, fw, fh);
-    const gx = fw * .36, gy = fh * .62, g = c.createRadialGradient(gx, gy, 1, gx, gy, fw * .34); g.addColorStop(0, 'rgba(255,110,200,.34)'); g.addColorStop(.5, 'rgba(160,50,170,.14)'); g.addColorStop(1, 'rgba(60,20,90,0)');
+    c.fillStyle = 'rgba(10,6,28,.6)'; c.fillRect(0, 0, fw, fh);
+    const gx = fw * .5, gy = fh * .55, g = c.createRadialGradient(gx, gy, 1, gx, gy, fw * .32); g.addColorStop(0, 'rgba(255,90,210,.22)'); g.addColorStop(.5, 'rgba(60,140,255,.1)'); g.addColorStop(1, 'rgba(40,20,90,0)');
     c.fillStyle = g; c.fillRect(0, 0, fw, fh);
-    c.strokeStyle = 'rgba(200,120,255,.08)'; c.lineWidth = .3;                                             // ледь видимі шестикутники
-    for (let j = 0; j < 7; j++) for (let i = 0; i < 26; i++) { const x = i * 5.2 + (j % 2) * 2.6, y = 3 + j * 4.6; c.beginPath(); for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + Math.PI / 6; c.lineTo(x + Math.cos(a) * 2.4, y + Math.sin(a) * 2.4); } c.closePath(); c.stroke(); }
+    for (let k = 0; k < 6; k++) { const y = fh * (.3 + k * .1); trace(c, fw * .04, y, fw * .38, k * 3 + 11, 'rgba(59,232,255,.3)', .3, 1); trace(c, fw * .96, y + fh * .03, fw * .38, k * 5 + 13, 'rgba(255,79,216,.26)', .3, -1); }
+    c.fillStyle = '#0a0624'; c.beginPath(); c.arc(gx, gy, 2.2, 0, 7); c.fill(); A.neonRect(c, gx - 2.2, gy - 2.2, 4.4, 4.4, PK, .4, 2.2); icon(c, 'ai', gx, gy, 2.6, '#bff8ff');
     inset(c, fw * .02, fh * .06, fw * .96, fh * .11, 'rgba(4,2,14,.85)', .4);                              // лоток з кабелем
     A.neon(c, fw * .03, fh * .115, fw * .97, fh * .115, CY, .45);
     for (let k = 0; k < 9; k++) { const x = fw * (.06 + k * .11); c.fillStyle = '#2a2050'; c.fillRect(x - .5, fh * .06, 1, fh * .11); }
-    const px = fw * .6, py = fh * .42, s = 1.25, pad = (x, y, r) => { c.beginPath(); c.ellipse(x, y, r, r * .85, 0, 0, 7); c.stroke(); };   // неоновий слід лапки
-    c.save(); c.strokeStyle = '#ff7ad8'; c.lineWidth = .45; c.globalAlpha = .9; pad(px, py + 2.2 * s, 2.1 * s); [[-2.4, -.6], [-.85, -2], [.85, -2], [2.4, -.6]].forEach(([dx, dy]) => pad(px + dx * s, py + dy * s, .75 * s)); c.restore();
-    c.fillStyle = '#ff6ac8'; const hx = fw * .7, hy = fh * .3; c.beginPath(); c.moveTo(hx, hy + 1.4); c.bezierCurveTo(hx - 2.2, hy - .2, hx - .9, hy - 1.8, hx, hy - .5); c.bezierCurveTo(hx + .9, hy - 1.8, hx + 2.2, hy - .2, hx, hy + 1.4); c.fill();
     c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(0, fh * .86, fw, fh * .14);                                  // тінь унизу
   };
 
@@ -143,9 +151,9 @@
 
   // ---------- ВЕЛИКА РАМКА ЕКРАНА ----------
   /** Рамка: шапка під вивіску, утоплене скло під голо-екран (сам екран — живий: objects/aicenter.js), вогники стану внизу,
-   *  рожеві «кутики» на зрізах. Частки — як у розкладці: шапка до .258, екран — u .05..95, v .258...968. */
+   *  рожеві «кутики» на зрізах. Частки — як у розкладці: шапка до .255, екран — u .048...952, v .255...963. */
   PAINT.ai_screen = (c, fw, fh) => {
-    const sx0 = fw * .05, sx1 = fw * .95, sy0 = fh * .258, sy1 = fh * .968;
+    const sx0 = fw * .048, sx1 = fw * .952, sy0 = fh * .255, sy1 = fh * .963;
     inset(c, fw * .045, fh * .04, fw * .91, fh * .2, 'rgba(6,3,22,.75)', 1.2);                              // шапка (за вивіскою)
     [.07, .93].forEach(u => { for (let k = 0; k < 3; k++) { c.fillStyle = 'rgba(255,120,230,.55)'; c.fillRect(fw * u - .4, fh * (.08 + k * .045), .8, fh * .025); } });
     c.fillStyle = '#03030f'; rr(c, sx0 - 1.2, sy0 - 1.2, sx1 - sx0 + 2.4, sy1 - sy0 + 2.4, 2.2); c.fill();   // утоплене скло

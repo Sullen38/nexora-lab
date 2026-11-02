@@ -8,7 +8,7 @@ NX.i18n.add('nl', {
     step: { sky: 'lucht en sterren', planet: 'planeet', far: 'verre wijken', towers: 'wolkenkrabbers', near: 'snelweg en monorail', glow: 'neongloed', wall: 'muren en vloer', back: 'langs de muren', finish: 'details poetsen', compose: 'licht en gloed', mirror: 'spiegelvloer', warm: 'eerste frame' } },
   nav: { home: 'HOME', ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
   cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
-  obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', catCorner: 'Kattenhoek', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
+  obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
   zones: {
     start: 'Ik pak het op: {task}!',
     ai: { reply: { t: 'Klant beantwoorden', r: 'Antwoord aan klant verstuurd in {n} s. Toon: vriendelijk en duidelijk.' }, mail: { t: 'Partner mailen', r: 'Mail aan partner klaar: {n} alinea’s, in concepten.' }, summary: { t: 'Samenvatting vergadering', r: 'Samenvatting: {n} besluiten en taken met deadlines voor het team.' } },
@@ -46,7 +46,7 @@ NX.i18n.add('nl', {
     sofa: { title: 'Rust op de bank', steps: ['Gaan zitten', 'Nieuws lezen'], lines: ['Even rusten en zakelijk nieuws lezen.', 'De bank is de beste plek voor nieuwe ideeën.'] },
     sleep: { title: 'Dutje op de bank', steps: ['Gaan liggen', 'Zzz...'], lines: ['Ik ben een beetje moe... Maak me wakker als je me nodig hebt.'] },
     petCat: { title: 'De kat aaien', steps: ['Naar Gember', 'Aaien ♥'], lines: ['Gember, kom hier! Wie is de beste kat?', 'Kattenpauze: ik aai Gember even.'] },
-    feedCat: { title: 'De kat voeren', steps: ['Naar de bakjes', 'Voer erin ✓'], lines: ['Gember heeft honger! Ik doe wat voer in het bakje.'] },
+    feedCat: { title: 'De kat voeren', steps: ['Naar Gember', 'Snoepje gegeven ✓'], lines: ['Gember heeft honger! Ik geef hem een snoepje.'] },
     dance: { title: 'Dansen op het kleed', steps: ['Muziek!', 'Dansen ♪'], lines: ['Even dansen voor de stemming!'] },
     wander: { title: 'Rondje door de kamer', steps: ['Wandelen'], lines: ['Even rondlopen en nadenken.'] },
     window: { title: 'Naar de stad kijken', steps: ['Naar het raam', 'Genieten van het uitzicht'], lines: ['Kijk eens naar de stad vandaag! Ik steek wat vuurwerk af.', 'Ik hou van dit uitzicht. Zoveel bedrijven aan het werk daar...'] },

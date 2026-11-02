@@ -61,7 +61,7 @@ async function shoot(browser, url, mode) {
   const BASE = 160, toFrame = async n => { for (let i = 0; i < 5000 && await p.evaluate(n => NX.loop.frames < n, n); i++) await p.clock.runFor(16); };
   for (const n of AT) { await toFrame(BASE + n); await grab(mode + '@' + n); }
   if (mode === 'ph') {
-    const pos = await p.evaluate(() => { const vw = NX.cam.viewW, max = Math.max(0, NX.cfg.ROOM_W - vw), at = cx => Math.max(0, Math.min(max, cx - vw / 2)), zb = {};
+    const pos = await p.evaluate(() => { const vw = NX.cam.viewW, X0 = NX.cfg.ROOM_X0 || 0, max = Math.max(X0, (NX.cfg.ROOM_X1 || NX.cfg.ROOM_W) - vw), at = cx => Math.max(X0, Math.min(max, cx - vw / 2)), zb = {};
       for (const w of Object.values(NX.arcLayout || {})) if (w && w.zoneBox) Object.assign(zb, w.zoneBox);
       return [['dock', at(NX.objects.rug.home[0])]].concat(Object.keys(zb).sort().map(k => [k, at((zb[k][0] + zb[k][1]) / 2)])); });
     for (const [k, x] of pos) { await p.evaluate(x => { NX.cam.dragUntil = Infinity; NX.cam.x = x; }, x); await toFrame(await p.evaluate(() => NX.loop.frames) + 3); await grab('ph:' + k); }

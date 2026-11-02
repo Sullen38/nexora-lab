@@ -18,60 +18,62 @@ NX.room = {
   get RS() { return (this.img.naturalWidth || NX.cfg.ROOM_W) / NX.cfg.ROOM_W; },
   load(src) { return new Promise(r => { this.img.onload = r; this.img.src = src; }); },
 
-  /** Перебудова добудованих шарів (на старті та при зміні розміру вікна). */
+  /** Перебудова добудованих шарів (на старті та при зміні розміру вікна). Стеля й передня підлога — на всю ширину кімнати
+   *  (NX.cfg.ROOM_X0..ROOM_X1: ширша за картинку — крайні зони); візерунок стелі прив'язаний до координат кімнати. */
   build() {
-    const { ROOM_W: W, ROOM_H: H } = NX.cfg, { top, front } = NX.cam, P = NX.px;
+    const { ROOM_X0: X0, ROOM_X1: X1, ROOM_W: W } = NX.cfg, { top, front } = NX.cam, P = NX.px, WW = X1 - X0;
     // ---------- стеля ----------
-    this.ceil = document.createElement('canvas'); this.ceil.width = W; this.ceil.height = top + 2;
-    let c = this.ceil.getContext('2d');
-    let g = c.createLinearGradient(0, 0, 0, top); g.addColorStop(0, '#02030c'); g.addColorStop(1, '#0c1236'); c.fillStyle = g; c.fillRect(0, 0, W, top + 2);
-    P.rect(c, 0, top - 12, W, 6, '#141c52'); P.rect(c, 0, top - 12, W, 1, '#2a3a8a');                 // балка
-    for (let x = 24; x < W; x += 128) {                                                               // неонові трубки
-      const col = (x / 128 | 0) % 2 ? '#d94bff' : '#3be8ff';
+    this.ceil = document.createElement('canvas'); this.ceil.width = WW; this.ceil.height = top + 2;
+    let c = this.ceil.getContext('2d'); c.translate(-X0, 0);
+    let g = c.createLinearGradient(0, 0, 0, top); g.addColorStop(0, '#02030c'); g.addColorStop(1, '#0c1236'); c.fillStyle = g; c.fillRect(X0, 0, WW, top + 2);
+    P.rect(c, X0, top - 12, WW, 6, '#141c52'); P.rect(c, X0, top - 12, WW, 1, '#2a3a8a');             // балка
+    for (let x = 24 - 128 * Math.ceil((24 - X0) / 128); x < X1; x += 128) {                           // неонові трубки (кожні 128 од. від x 24)
+      const col = Math.abs(Math.floor(x / 128)) % 2 ? '#d94bff' : '#3be8ff';
       P.rect(c, x + 30, 0, 1, top - 26, '#1a2260'); P.rect(c, x + 92, 0, 1, top - 26, '#1a2260');
       P.rect(c, x + 26, top - 27, 70, 3, col); P.glow(c, x + 61, top - 26, 40, col === '#3be8ff' ? 'rgba(59,232,255,.35)' : 'rgba(217,75,255,.35)');
     }
-    for (let x = 80; x < W; x += 260) {                                                               // кабелі, що провисають
+    for (let x = 80 - 260 * Math.ceil((80 - X0 + 130) / 260); x < X1; x += 260) {                     // кабелі, що провисають (кожні 260 од. від x 80)
       c.strokeStyle = '#0f1640'; c.lineWidth = 2; c.beginPath(); c.moveTo(x, top - 6); c.quadraticCurveTo(x + 65, top + 4, x + 130, top - 6); c.stroke();
     }
     // ---------- передня підлога: ПРОДОВЖЕННЯ тієї ж підлоги з картинки ----------
     // 1) останні рядки картинки розтягуємо вниз — кольори й відблиски тягнуться без шву
     // 2) віддзеркалення кімнати в глянці, 3) темніє з глибиною, 4) плитка зі швами — її запікає сюди world/floor_tiles.js
     //    через NX.room.frontFx (щокадру нічого не коштує). Полотно — FR px на одиницю (1).
-    this.front = document.createElement('canvas'); this.front.width = W * this.FR; this.front.height = (front + 2) * this.FR;
+    this.front = document.createElement('canvas'); this.front.width = WW * this.FR; this.front.height = (front + 2) * this.FR;
     this.frontFrom(this.img, 0, W);
-    this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1));                                    // перемальовані частини (крила в 3D, місто, рама — objects/arc_scene.js)
+    this.patches.forEach(p => this.frontFrom(p.src, p.x0, p.x1, p.sx0));                             // перемальовані частини (крила в 3D, місто, рама — objects/arc_scene.js)
   },
   patches: [], FR: 1, frontFx: null, pieces: null,                                    // pieces — які частини картинки ще малювати (вікно вже кодом: world/cityscape.js)
                                                                   // FR 2 px/од. подвоював час кадру (велике полотно щокадру) — лишаємо 1
-  /** Передня підлога для стовпчиків x0..x1 з джерела src (картинка кімнати або її перемальована копія того ж розміру). */
-  frontFrom(src, x0, x1) {
-    const { ROOM_W: W, ROOM_H: H } = NX.cfg, FR = this.FR, front = this.front.height / FR - 2, RS = this.RS, c = this.front.getContext('2d');
-    c.setTransform(FR, 0, 0, FR, 0, 0);
+  /** Передня підлога для стовпчиків x0..x1 з джерела src: картинка кімнати (x 0..ROOM_W) або перемальована копія кімнати,
+   *  що починається з x sx0 (крила ширші за картинку — objects/arc_scene.js patchFront), RS пікселів на одиницю. */
+  frontFrom(src, x0, x1, sx0 = 0) {
+    const { ROOM_H: H, ROOM_X0: X0 } = NX.cfg, FR = this.FR, front = this.front.height / FR - 2, RS = this.RS, c = this.front.getContext('2d'), sw = src.width / RS;
+    c.setTransform(FR, 0, 0, FR, -X0 * FR, 0);
     c.save(); c.beginPath(); c.rect(x0, 0, x1 - x0, front + 2); c.clip(); c.clearRect(x0, 0, x1 - x0, front + 2);
-    c.drawImage(src, 0, (H - 4) * RS, W * RS, 4 * RS, 0, 0, W, front + 2);
+    c.drawImage(src, 0, (H - 4) * RS, src.width, 4 * RS, sx0, 0, sw, front + 2);
     const ref = Math.min(front, 240);
-    c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(src, 0, (H - ref - 14) * RS, W * RS, ref * RS, 0, -ref, W, ref); c.restore();
+    c.save(); c.globalAlpha = .26; c.scale(1, -1); c.drawImage(src, 0, (H - ref - 14) * RS, src.width, ref * RS, sx0, -ref, sw, ref); c.restore();
     let g = c.createLinearGradient(0, 0, 0, front); g.addColorStop(0, 'rgba(10,6,34,0)'); g.addColorStop(.18, 'rgba(10,6,34,.35)'); g.addColorStop(.75, 'rgba(6,6,26,.9)'); g.addColorStop(1, 'rgba(4,5,20,1)');
-    c.fillStyle = g; c.fillRect(0, 0, W, front + 2);
+    c.fillStyle = g; c.fillRect(x0, 0, x1 - x0, front + 2);
     if (this.frontFx) { c.save(); c.translate(0, -H); this.frontFx(c, x0, x1, front); c.restore(); }   // плитка (у координатах кімнати)
     c.restore(); c.setTransform(1, 0, 0, 1, 0, 0);
   },
   /** Об'єкт, що перемалював частину кімнати, віддає її копію: передня підлога (продовження й глянцеве
    *  віддзеркалення) для стовпчиків x0..x1 будується вже з неї — без "привидів" старої картинки. */
-  patchFront(src, x0, x1) { this.patches = this.patches.filter(p => p.x0 !== x0); this.patches.push({ src, x0, x1 }); if (this.front) this.frontFrom(src, x0, x1); },
+  patchFront(src, x0, x1, sx0 = x0) { this.patches = this.patches.filter(p => p.x0 !== x0); this.patches.push({ src, x0, x1, sx0 }); if (this.front) this.frontFrom(src, x0, x1, sx0); },
 
   draw(c, t) {
-    const { ROOM_H: H } = NX.cfg, { top } = NX.cam;
-    c.drawImage(this.ceil, 0, -top);
+    const { ROOM_H: H, ROOM_X0: X0, ROOM_X1: X1 } = NX.cfg, { top } = NX.cam;
+    c.drawImage(this.ceil, X0, -top);
     if (this.pieces) { const RS = this.RS; this.pieces.forEach(([x0, y0, x1, y1]) => c.drawImage(this.img, x0 * RS, y0 * RS, (x1 - x0) * RS, (y1 - y0) * RS, x0, y0, x1 - x0, y1 - y0)); }
     else c.drawImage(this.img, 0, 0, NX.cfg.ROOM_W, NX.cfg.ROOM_H);
-    const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(0, 0, NX.cfg.ROOM_W, 22);
-    c.drawImage(this.front, 0, H, NX.cfg.ROOM_W, this.front.height / this.FR);
+    const g = c.createLinearGradient(0, 0, 0, 22); g.addColorStop(0, 'rgba(12,18,54,.9)'); g.addColorStop(1, 'rgba(12,18,54,0)'); c.fillStyle = g; c.fillRect(X0, 0, X1 - X0, 22);
+    c.drawImage(this.front, X0, H, X1 - X0, this.front.height / this.FR);
   },
 
   /** Де можна ходити (прямокутник підлоги). */
-  walkBounds() { return { minX: 26, maxX: NX.cfg.ROOM_W - 26, minY: NX.cfg.FLOOR_Y + 6, maxY: NX.cfg.ROOM_H + NX.cam.front - 24 }; },
+  walkBounds() { return { minX: NX.cfg.ROOM_X0 + 26, maxX: NX.cfg.ROOM_X1 - 26, minY: NX.cfg.FLOOR_Y + 6, maxY: NX.cfg.ROOM_H + NX.cam.front - 24 }; },
   /** Точка підлоги, куди можна стати: у межах підлоги й не всередині меблів (obstacles). */
   clampWalk(x, y, who) {
     const b = this.walkBounds(); x = NX.px.clamp(x, b.minX, b.maxX); y = NX.px.clamp(y, b.minY, b.maxY);
@@ -80,7 +82,7 @@ NX.room = {
 
   /* ---------------- ПЕРЕШКОДИ Й ОБХІД (власник, 29.10: «Nexi не має ходити по верху об'єктів») ----------------
    * Кожен об'єкт може сказати, де він стоїть на підлозі: foot — прямокутник [x0, x1, y0, y1] (або масив таких) у
-   * координатах кімнати, y — рівень ніг (більше — ближче до глядача). Диван, куточок кота, крісло маркетингу… Хода
+   * координатах кімнати, y — рівень ніг (більше — ближче до глядача). Диван, крісло маркетингу, зони… Хода
    * (nexi.js, cat.js) іде не навпростець, а route(): найкоротшим шляхом через кути розширених слідів (граф видимості).
    * Запас — на півширини персонажа, щоб не «влізти» в бік меблів. Задні кути зазвичай за межами підлоги (меблі
    * стоять від стіни), тож обхід — спереду, як ходять люди. */
@@ -89,7 +91,7 @@ NX.room = {
     if (C[key] && C[key].fr === fr && fr !== undefined) return C[key].list;                 // за кадр рахуємо раз (м'ячик питає щокадру)
     const px = cat ? 6 : 13, out = []; C[key] = { fr, list: out };
     for (const id in NX.objects) {
-      const o = NX.objects[id]; if (cat && o.catOk) continue;                          // свій куточок коту не заважає
+      const o = NX.objects[id]; if (cat && o.catOk) continue;                          // catOk — слід лише для Nexi (так був куточок кота, be2f780)
       const f = o.foot; if (!f) continue;
       (Array.isArray(f[0]) ? f : [f]).forEach(r => out.push([r[0] - px, r[1] + px, r[2] - 3, r[3] + (cat ? 3 : 4)]));
     }

@@ -15,13 +15,13 @@ NX.floorTiles = (() => {
   const seamX = (m, y) => TV.xv + m * TV.w0 * (y - TV.yv) / (TV.y0 - TV.yv), rowY = u => TV.yv + TV.A / u;
   /** lw — товщина шва (од.); fade — плитка проступає від y fade[0] до fade[1]. */
   function paint(c, y0, y1, lw, fade) {
-    const W = NX.cfg.ROOM_W, uTop = Math.ceil(TV.A / (y0 - TV.yv)) + 1, uBot = Math.max(2, Math.floor(TV.A / (y1 - TV.yv))), mMin = -40, mMax = 40;
+    const X0 = NX.cfg.ROOM_X0, X1 = NX.cfg.ROOM_X1, uTop = Math.ceil(TV.A / (y0 - TV.yv)) + 1, uBot = Math.max(2, Math.floor(TV.A / (y1 - TV.yv))), mMin = -40, mMax = 40;
     c.save();
     for (let u = uBot; u <= uTop; u++) {                                         // тони плит: кожна плита — свій відтінок (темніша / з лавандовим полиском)
       const ya = Math.max(y0, rowY(u + 1)), yb = Math.min(y1, rowY(u)); if (yb <= ya) continue;
       for (let m = mMin; m < mMax; m++) {
         const xa0 = seamX(m, ya), xa1 = seamX(m + 1, ya), xb0 = seamX(m, yb), xb1 = seamX(m + 1, yb);
-        if (Math.max(xa1, xb1) < 0 || Math.min(xa0, xb0) > W) continue;
+        if (Math.max(xa1, xb1) < X0 || Math.min(xa0, xb0) > X1) continue;
         const h = P.hash(m * 31 + u * 7); if (h >= .3 && h <= .62) continue;
         const a = h > .62 ? .03 + (h - .62) * .09 : .05 + (.3 - h) * .22, k = fade ? P.clamp(((ya + yb) / 2 - fade[0]) / (fade[1] - fade[0]), 0, 1) : 1;
         c.fillStyle = h > .62 ? `rgba(150,120,255,${a * k})` : `rgba(0,0,14,${a * k})`;
@@ -29,14 +29,14 @@ NX.floorTiles = (() => {
       }
     }
     const seams = new Path2D(), hi = new Path2D();                               // шви: вглиб і поперечні; світла кромка — трохи нижче поперечного шва
-    for (let m = mMin; m <= mMax; m++) { const a = seamX(m, y0), b = seamX(m, y1); if (Math.max(a, b) < -50 || Math.min(a, b) > W + 50) continue; seams.moveTo(a, y0); seams.lineTo(b, y1); }
-    for (let u = uBot; u <= uTop; u++) { const y = rowY(u), d = lw * .5 + .35 + (y - 336) * .004; if (y < y0 || y > y1) continue; seams.moveTo(-10, y); seams.lineTo(W + 10, y); hi.moveTo(-10, y + d); hi.lineTo(W + 10, y + d); }
+    for (let m = mMin; m <= mMax; m++) { const a = seamX(m, y0), b = seamX(m, y1); if (Math.max(a, b) < X0 - 50 || Math.min(a, b) > X1 + 50) continue; seams.moveTo(a, y0); seams.lineTo(b, y1); }
+    for (let u = uBot; u <= uTop; u++) { const y = rowY(u), d = lw * .5 + .35 + (y - 336) * .004; if (y < y0 || y > y1) continue; seams.moveTo(X0 - 10, y); seams.lineTo(X1 + 10, y); hi.moveTo(X0 - 10, y + d); hi.lineTo(X1 + 10, y + d); }
     const grad = (rgb, a) => { if (!fade) return `rgba(${rgb},${a})`; const g = c.createLinearGradient(0, fade[0], 0, fade[1]); g.addColorStop(0, `rgba(${rgb},0)`); g.addColorStop(1, `rgba(${rgb},${a})`); return g; };
     c.lineWidth = lw; c.strokeStyle = grad('4,2,18', .52); c.stroke(seams);
     c.lineWidth = lw * .8; c.strokeStyle = grad('170,140,255', .14); c.stroke(hi);
     c.restore();
   }
-  // передня підлога кімнати: плитка на всю ширину (запікається в полотно підлоги)
+  // передня підлога кімнати: плитка на всю ширину кімнати (NX.cfg.ROOM_X0..ROOM_X1; запікається в полотно підлоги)
   NX.room.frontFx = (c, x0, x1, front) => {
     const H2 = NX.cfg.ROOM_H; c.save(); c.beginPath(); c.rect(x0, H2, x1 - x0, front + 2); c.clip(); paint(c, H2, H2 + front + 2, 1 / NX.room.FR); c.restore();
   };

@@ -47,7 +47,7 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
       const RN = performance.now.bind(performance), B = 200, W = 30, iv = setInterval(() => { if (!(window.NX && NX.loop && NX.loop.start && NX.objects)) return; clearInterval(iv); const S = NX.loop.start, F = NX.loop.frame;
         NX.loop.start = function () {
           s = 0x2545f491;
-          const vw = NX.cam.viewW, max = Math.max(0, NX.cfg.ROOM_W - vw), at = cx => Math.max(0, Math.min(max, cx - vw / 2)), zb = {};
+          const vw = NX.cam.viewW, X0 = NX.cfg.ROOM_X0 || 0, max = Math.max(X0, (NX.cfg.ROOM_X1 || NX.cfg.ROOM_W) - vw), at = cx => Math.max(X0, Math.min(max, cx - vw / 2)), zb = {};
           for (const w of Object.values(NX.arcLayout || {})) if (w && w.zoneBox) Object.assign(zb, w.zoneBox);
           const PL = (dev === 'desk' ? [['кімната', null]] : [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools', ...Object.keys(zb).sort()].filter((k, i, a) => zb[k] && a.indexOf(k) === i).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]))).filter(([n]) => !ONLY || ONLY.includes(n) || (n === 'док' && ONLY.includes('dock')));
           const D = window.__det = { places: PL.map(([name]) => ({ name, acc: {}, ts: [] })), end: B + PL.length * (W + FR) }, idle = {};
@@ -99,7 +99,7 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
     }
     await p.waitForFunction(() => NX.loop.frames >= 100, null, { timeout: 300000, polling: 200 });
     const places = await p.evaluate(dev => {
-      const vw = NX.cam.viewW, max = Math.max(0, NX.cfg.ROOM_W - vw), at = cx => Math.max(0, Math.min(max, cx - vw / 2)), zb = {};
+      const vw = NX.cam.viewW, X0 = NX.cfg.ROOM_X0 || 0, max = Math.max(X0, (NX.cfg.ROOM_X1 || NX.cfg.ROOM_W) - vw), at = cx => Math.max(X0, Math.min(max, cx - vw / 2)), zb = {};
       if (dev === 'desk') return [['кімната', null]];
       for (const w of Object.values(NX.arcLayout || {})) if (w && w.zoneBox) Object.assign(zb, w.zoneBox);
       return [['док', at(NX.objects.rug.home[0])]].concat(['analytics', 'marketing', 'workshop', 'tools', ...Object.keys(zb).sort()].filter((k, i, a) => zb[k] && a.indexOf(k) === i).map(k => [k, at((zb[k][0] + zb[k][1]) / 2)]));

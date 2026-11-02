@@ -1,33 +1,32 @@
 /* ============================================================================
  * actors/cat/cat.js — РУДИЙ КІТ: ВЛАСНЕ ЖИТТЯ (поведінка)
  * ----------------------------------------------------------------------------
- * Кіт живе сам: спить (лежанка / поличка / диван / килим), їсть і п'є з мисок,
- * вмивається, ганяє м'ячик, потягується, нявкає, приходить посидіти біля Nexi.
- * Голод росте з часом -> кіт іде до миски. Якщо миска порожня — нявкає,
- * і Nexi сам іде насипати корм (activities.js → feedCat).
+ * Кіт живе сам: спить (диван / бильце / біля доку), вмивається, ганяє м'ячик (objects/ball.js), потягується,
+ * нявкає, приходить посидіти біля Nexi. Голод росте з часом -> кіт нявкає, і Nexi сам приходить зі смаколиком
+ * (activities.js → feedCat). Куточок кота (лежанка, дряпка, миски) прибрано — власник, 02.11: «поки що місце для
+ * Рудика взагалі прибираємо» (узяти назад — коміт be2f780, objects/cat_corner.js).
  * Публічно: NX.cat.purr(сек) — коли Nexi гладить; NX.cat.hitTest(x,y); goTo / set — коли кличуть сценарії Nexi.
- * Ходить лише по підлозі (FLOOR); на лежанку, поличку, диван — стрибає.
+ * Ходить лише по підлозі (FLOOR); на диван — стрибає.
  * (Кіт на столі зони біля Nexi, фонтан, робопилосос — були до чистої основи 29.10; в історії git, коміт a941612.)
  * ========================================================================== */
 NX.cat = {
   FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
-  x: 60, y: 397, ground: 397, alt: 0, dir: -1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
+  x: 600, y: 440, ground: 440, alt: 0, dir: -1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
   /** Місце на дивані (задане для старого місця дивану — переноситься разом з ним, core/config.js sofaPt) і точка підлоги перед ним. */
   sofaSpot(k, x, y) { const [sx, sy] = NX.cfg.sofaPt(x, y), [, fy] = NX.cfg.sofaPt(x, 384); return { [k]: { x: sx, y: sy, from: [sx, fy] } }; },
   spots() { return {
-    bed: { x: 60, y: 397 }, platform: { x: 78, y: 368, from: [78, 400] }, ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301),
+    ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301),
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 } }; },
 
   /** Наступна справа: вибір за потребами та випадком. */
   decide() {
-    const cc = NX.objects.catCorner, r = Math.random();
-    if (this.hunger > .7) { if (cc.food > .05) return this.goTo(cc.bowl[0] - 16, cc.bowl[1] + 1, () => this.set('eat', 5, () => { cc.food = Math.max(0, cc.food - .35); this.hunger = 0; })); return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; }); }
-    if (r < .28) { const keys = ['bed', 'platform', 'sofa', 'sofaArm', 'rug', 'bed'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
+    const r = Math.random();
+    if (this.hunger > .7) return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; });   // голодний — кличе Nexi (смаколик)
+    if (r < .28) { const keys = ['sofa', 'sofaArm', 'rug', 'rug'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .44) return this.set('groom', 4 + Math.random() * 3);
-    if (r < .64) { const b = cc.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { cc.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
-    if (r < .72) return this.goTo(cc.water[0] - 14, cc.water[1] + 1, () => this.set('eat', 3));
-    if (r < .84) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
+    if (r < .64) { const b = NX.objects.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { b.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
+    if (r < .8) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
     const [wx, wy] = NX.room.clampWalk(60 + Math.random() * 1400, 362 + Math.random() * NX.cam.front * .7);
     return this.goTo(wx, wy, () => this.set('sit', 3));
   },

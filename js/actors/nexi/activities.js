@@ -50,8 +50,9 @@
     petCat: { color: '#ff7a2a', route() { const c = NX.cat, [cx, cg] = c.floorPos(), side = cx > 700 ? -1 : 1, gy = Math.max(cg, 362), [x, y] = NX.room.clampWalk(cx + side * 26, gy);
       return [{ walk: [x, y] }, { face: -side }, line('petCat'), { do: () => NX.cat.purr(4.5) }, { work: { pose: 'pet', dur: 4 } }, { do: () => NX.nexi.emote('love') }]; } },
 
-    // стає праворуч від мисок (не на них — world/room.js: foot)
-    feedCat: { color: '#ff7a2a', route() { const w = NX.objects.catCorner.water; return [{ walk: [w[0] + 26, w[1] + 3] }, { face: -1 }, line('feedCat'), { work: { pose: 'pour', dur: 3, end: () => { NX.objects.catCorner.food = 1; NX.cat.hunger = .75; } } }]; } },
+    // смаколик з руки (куточка з мисками поки немає — власник, 02.11): підходить до Рудика, той їсть, голод минає
+    feedCat: { color: '#ff7a2a', route() { const c = NX.cat, [cx, cg] = c.floorPos(), side = cx > 700 ? -1 : 1, gy = Math.max(cg, 362), [x, y] = NX.room.clampWalk(cx + side * 26, gy);
+      return [{ walk: [x, y] }, { face: -side }, line('feedCat'), { do: () => NX.cat.set('eat', 3.2) }, { work: { pose: 'pour', dur: 3, end: () => { NX.cat.hunger = 0; } } }, { do: () => NX.nexi.emote('love') }]; } },
 
     dance: { color: '#ff4fd8', route() { const h = NX.objects.rug.home; return [{ walk: [h[0] + 40, h[1]] }, line('dance'), { work: { pose: 'dance', dur: 6, tick: () => Math.random() < .05 && NX.fx.emit('note', NX.nexi.x, NX.nexi.y - 50) } }, { spin: .5 }]; } },
 
@@ -105,7 +106,7 @@
 
     window: { color: '#7a5cff', route() { return [{ walk: P().window }, { face: 1 }, line('window'), { do: () => NX.city.fireworks(7) }, { work: { pose: 'gaze', dur: 7, back: true } }, { do: () => NX.nexi.emote('happy') }]; } },
 
-    kickBall: { color: '#ff4fd8', route() { const b = NX.objects.catCorner.ball, side = b.x > 768 ? 1 : -1; return [{ walk: NX.room.clampWalk(b.x + side * 16, b.y) }, { face: -side }, line('kickBall'),
-      { work: { pose: 'jump', dur: .35 } }, { do: () => { NX.objects.catCorner.kick(-side * 220, (Math.random() - .5) * 80); NX.nexiPhys.land(2); NX.cat.goTo(b.x, b.y, () => NX.cat.set('pounce', .5, () => NX.objects.catCorner.kick((Math.random() - .5) * 160, (Math.random() - .5) * 60)), null, true); } }, { work: { pose: 'cheer', dur: 1.5 } }]; } },
+    kickBall: { color: '#ff4fd8', route() { const b = NX.objects.ball, side = b.x > 768 ? 1 : -1; return [{ walk: NX.room.clampWalk(b.x + side * 16, b.y) }, { face: -side }, line('kickBall'),
+      { work: { pose: 'jump', dur: .35 } }, { do: () => { b.kick(-side * 220, (Math.random() - .5) * 80); NX.nexiPhys.land(2); NX.cat.goTo(b.x, b.y, () => NX.cat.set('pounce', .5, () => b.kick((Math.random() - .5) * 160, (Math.random() - .5) * 60)), null, true); } }, { work: { pose: 'cheer', dur: 1.5 } }]; } },
   };
 })();

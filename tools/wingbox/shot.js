@@ -1,7 +1,7 @@
 // tools/wingbox/shot.js — знімки кімнати (стіни, підлога й зони «по дузі» у 3D) з dist/nexora-lab.html
 //   node tools/wingbox/shot.js <префікс> [режими...] [--layout розкладка.json] [--hash lang-en]
-// Режими: desk — увесь екран 1600×900; roomc — лише кімната (0..1536 × 0..368); zoomR — праве крило; zoomL — ліве;
-//         ph — телефон 390×844 (позиції камери: PHX='[["ph1",930],["ph2",1250]]', за замовчуванням ліве, центр, праве);
+// Режими: desk — увесь екран 1600×900; roomc — лише кімната (ROOM_X0..ROOM_X1 × 0..368); zoomR — праве крило; zoomL — ліве;
+//         ph — телефон 390×844 (позиції камери: PHX='[["ph1",930],["ph2",1250]]', за замовчуванням лівий край, центр, правий край);
 //         ids — список об'єктів кімнати (id, span, які шари малює).
 // --layout підставляє розкладку генератора (window.RWBOX) без перебудови сайту; без нього — та, що вшита в arc_layout.js.
 // --hash — додаток до адреси (мова: lang-en / lang-pl / lang-nl; за замовчуванням українська).
@@ -33,13 +33,14 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html');
   if (W.some(m => ['desk', 'roomc', 'zoomR', 'zoomL', 'ids'].includes(m))) {
     const p = await page(1600, 900, 2);
     if (W.includes('desk')) await p.screenshot({ path: pre + '_desk.png' });
-    if (W.includes('roomc')) await crop(p, 0, 0, 1536, 368, pre + '_roomc.png');
-    if (W.includes('zoomR')) await crop(p, 880, -10, 1536, 440, pre + '_zoomR.png');
-    if (W.includes('zoomL')) await crop(p, 0, -10, 700, 440, pre + '_zoomL.png');
+    const [X0, X1] = await p.evaluate(() => [NX.cfg.ROOM_X0, NX.cfg.ROOM_X1]);                     // кімната ширша за картинку (крайні зони)
+    if (W.includes('roomc')) await crop(p, X0, 0, X1, 368, pre + '_roomc.png');
+    if (W.includes('zoomR')) await crop(p, 880, -10, X1, 460, pre + '_zoomR.png');
+    if (W.includes('zoomL')) await crop(p, X0, -10, 700, 460, pre + '_zoomL.png');
     if (W.includes('ids')) console.log((await p.evaluate(() => Object.values(NX.objects).map(o => `${o.id}${o.span ? '[' + o.span.map(Math.round).join('..') + ']' : ''}${o.drawBack ? ' B' : ''}${o.layers ? ' L' : ''}${o.hit ? ' H' : ''}`))).join(' | '));
     await p.close();
   }
-  if (W.includes('ph')) for (const [k, x] of (process.env.PHX ? JSON.parse(process.env.PHX) : [['ph1', 120], ['ph2', 640], ['ph3', 1250]])) {
+  if (W.includes('ph')) for (const [k, x] of (process.env.PHX ? JSON.parse(process.env.PHX) : [['ph1', -64], ['ph2', 640], ['ph3', 1314]])) {
     const p = await page(390, 844, 3);
     await p.evaluate(x => { NX.cam.dragUntil = performance.now() + 1e9; NX.cam.x = x; }, x); await p.waitForTimeout(800);
     await p.screenshot({ path: pre + '_' + k + '.png' }); await p.close();
