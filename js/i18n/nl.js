@@ -20,7 +20,7 @@ NX.i18n.add('nl', {
   city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
-    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK' },
+    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NETWERK', map: 'KAART', log: 'LOGBOEK', vision: 'ZICHT', kpi: 'KPI', ok: 'OK', virus: 'VIRUS!', clean: 'DREIGING VERWIJDERD', guard: 'ANTIVIRUS: GEMBER', hi: 'HOI, NEXI!', cat: 'GEMBER' },
     analytics: { map: 'KAART', users: 'GEBRUIKERS', trend: 'TREND', visitors: 'BEZOEKERS', revenue: 'OMZET', conv: 'CONVERSIE', sales: 'VERKOOP',
       days: ['MA', 'DI', 'WO', 'DO', 'VR', 'ZA', 'ZO'], forecast: 'PROGNOSE', ready: 'RAPPORT KLAAR' },
     marketing: { tags: 'AI-TAGS', ads: 'RECLAME', live: 'LIVE', reach: 'BEREIK', likes: 'LIKES', clicks: 'KLIKS' },
@@ -51,6 +51,7 @@ NX.i18n.add('nl', {
   act: {
     home: { title: 'Laadstation', steps: ['Terug naar het station', 'Opladen'], lines: ['Hoi! Ik ben Nexi, je AI-assistent voor je bedrijf. Tik op een zone, de bank of het raam en ik ga erheen.', 'Ik ben thuis aan het opladen. Wat gaan we doen?'] },
     ai: { title: 'AI-centrum: antwoord aan klant', steps: ['Naar het bureau vliegen', 'Vraag lezen', 'Antwoord schrijven', 'Verzonden ✓'], lines: ['AI-centrum: ik beantwoord klanten en schrijf e-mails en verslagen.', 'Ik lees je documenten en vind binnen seconden wat je zoekt.', 'Ik bedenk ideeën voor acties en namen. Beschrijf de taak en ik ga aan de slag.'] },
+    virus: { title: 'Virus in het AI-centrum!', steps: ['Ik ren naar het AI-centrum', 'Ik kijk hoe Gember jaagt', 'Virus vernietigd ✓'], lines: ['Oei! Een virus in het AI-centrum!', 'Alarm! Er kroop iets in het neurale netwerk!', 'Gember, een virus — pak hem!'], thanks: ['Gember, jij bent de beste antivirus!', 'Pieuw-pieuw! Alles schoon. Dank je, Gember!', 'Laserogen — wat een superkracht!'], ai: ['Pfoe, de AI heeft hem zelf verwijderd.'] },
     analytics: { title: 'Analyse: verkooprapport', steps: ['Gaan zitten', 'Data verzamelen', 'Grafiek maken', 'Rapport klaar ✓'], lines: ['Analyse: ik bundel verkoop, verkeer en kosten in één rapport.', 'Ik zie waar de conversie daalt en zeg wat je kunt verbeteren.'] },
     marketing: { title: 'Marketing: campagne', steps: ['In mijn stoel', 'Post schrijven', 'Advertentie starten', 'Bereik groeit ✓'], lines: ['Marketing: ik schrijf posts, nieuwsbrieven en advertenties in jouw stijl.', 'Ik kies de doelgroep en plan de campagnes voor de week.'] },
     wsLook: { lines: ['Wat een hologram! Die skin staat me goed.', 'Zoveel skins… Tik op de werkplaats en ik pas een nieuwe!'] },

@@ -152,7 +152,7 @@ NX.nexi = {
       if (r < .13 && ok('marketing', 'mkChair')) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
       if (r >= .13 && r < .25 && ok('analytics', 'anChair')) { this.do('analytics', false, { task: NX.ui.zones.pick('analytics') }); return; }
       if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
-      if (r >= .36 && r < .47 && ok('ai', 'aicenter')) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }
+      if (r >= .36 && r < .47 && ok('ai', 'aicenter') && !(NX.virus && NX.virus.busy())) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }   // вірус на столі — не зараз (крок 15)
       if (r < .5) { this.do('sofaWork', false); return; }
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);

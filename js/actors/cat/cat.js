@@ -9,48 +9,139 @@
  * Публічно: NX.cat.purr(сек) — коли Nexi гладить; NX.cat.hitTest(x,y); goTo / set — коли кличуть сценарії Nexi.
  * Ходить лише по підлозі (FLOOR); на диван — стрибає.
  * (Кіт на столі зони біля Nexi, фонтан, робопилосос — були до чистої основи 29.10; в історії git, коміт a941612.)
+ * Крок 15 (власник: «щоб Рудик теж міг на стіл вилазити щось робити… вірус стрибнув на стіл AI, а Рудик його спопелив
+ *   поглядом, як Супермен, — червоним лазером з очей; очі іноді підсвічуються, коли він трохи злий… без перебору»):
+ *   СТІЛ AI-ЦЕНТРУ — два місця на стільниці (aiDeskL / aiDeskR, застрибує з підлоги перед столом): зрідка сам (дивиться на
+ *     екран — AI «бачить» його на радарі; грається з голо-рибкою, яку вмикає AI — б'є лапкою; вмивається; дрімає на теплому
+ *     столі) і часом складає компанію Nexi, коли той працює за столом (joinAI);
+ *   ЗЛИЙ — grr(сек): очі червоні й світяться (рідко: голодний і чекає, розбудили гості, Чеширський кіт, Змій Горинич, вірус
+ *     — і раз на 1.5–3 хв «просто так», буркотить на Nexi);
+ *   ЛАЗЕР З ОЧЕЙ — лише на вірус (actors/virus/virus.js → hunt): біжить, застрибує на стіл, пригинається (очі
+ *     розжарюються) — два промені з очей, вірус розлітається пікселями. Промені — окремий шар поверх усього (catFx).
+ *   На висоті (стіл, лежанка, диван) — без віддзеркалення в підлозі; зістрибує туди, звідки застрибнув.
  * ========================================================================== */
 NX.cat = {
   FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
   x: 600, y: 440, ground: 440, alt: 0, dir: -1, mode: 'act', pose: 'sleep', timer: 12, frame: 0, ft: 0,
   hunger: .2, target: null, then: null, jump: null, cv: document.createElement('canvas'), name: 'Рудик',
+  angT: 0, angS: 0, nextGrr: 70 + Math.random() * 60, wokeT: 0, laser: null, hunting: null, at: null, down: null, eyes: null, eyeW: null, sc: 1.4,   // крок 15
   /** Місце на дивані (задане для старого місця дивану — переноситься разом з ним, core/config.js sofaPt) і точка підлоги перед ним. */
   sofaSpot(k, x, y) { const [sx, sy] = NX.cfg.sofaPt(x, y), [, fy] = NX.cfg.sofaPt(x, 384); return { [k]: { x: sx, y: sy, from: [sx, fy] } }; },
   spots() { return {
-    ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301), ...this.bedSpot(),
+    ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301), ...this.bedSpot(), ...this.deskSpots(),
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 } }; },
   /** Лежанка під столом AI-центру (крок 14): точка на подушці (якір aiBed розкладки) і точка підлоги перед столом, звідки
    *  кіт застрибує під стіл (як на диван: під стіл Nexi й кіт пішки не ходять — слід стола). */
   bedSpot() { const z = NX.arc.zone && NX.arc.zone('ai'); if (!z) return {}; const [x, y] = z.S(108, 336, 20), [fx, fy] = NX.room.clampWalk(...z.S(108, 352, -16), 'cat');
     return { aiBed: { x, y, from: [fx, fy] } }; },
+  /** Стільниця AI-центру (крок 15): ліва й права частини (обабіч кола-майданчика Nexi, перед моніторами) і точки підлоги
+   *  перед столом, звідки застрибує. */
+  deskSpots() { const z = NX.arc.zone && NX.arc.zone('ai'); if (!z) return {}; const o = {};
+    for (const [k, X] of [['aiDeskL', 34], ['aiDeskR', 200]]) { const [x, y] = z.S(X, 284, 4), [fx, fy] = NX.room.clampWalk(...z.S(X, 352, -16), 'cat'); o[k] = { x, y, from: [fx, fy] }; }
+    return o; },
+  /** Піти на місце k зі spots() (застрибнути) і там — done; уже там — одразу done. */
+  toSpot(k, done, run) { const s = this.spots()[k]; if (!s) return done && done(); if (this.at === k && this.alt > 0) return done && done();
+    this.goTo(s.x, s.y, () => { this.at = k; done && done(); }, s.from, run); },
 
   /** Наступна справа: вибір за потребами та випадком. */
   decide() {
     const r = Math.random();
-    if (this.hunger > .7) return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; });   // голодний — кличе Nexi (смаколик)
+    if (this.hunger > .7) { if (this.hunger > .9 && NX.time > (this.hungryT || 0)) { this.hungryT = NX.time + 45; this.grr(2.6); }   // довго чекає — сердито «шипить» (не частіше, ніж раз на 45 с)
+      return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; }); }   // голодний — кличе Nexi (смаколик)
     if (r < .28) { const S = this.spots(), keys = ['aiBed', 'aiBed', 'aiBed', 'sofa', 'sofaArm', 'rug'].filter(k => S[k]), s = S[keys[Math.random() * keys.length | 0]];   // найчастіше — своя лежанка
       return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .44) return this.set('groom', 4 + Math.random() * 3);
     if (r < .64) { const b = NX.objects.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { b.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
     if (r < .8) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
+    if (r < .9 && this.spots().aiDeskL && !(NX.virus && NX.virus.busy())) { const k = Math.random() < .5 ? 'aiDeskL' : 'aiDeskR'; return this.toSpot(k, () => this.deskLife(k)); }   // на стіл AI-центру
     const [wx, wy] = NX.room.clampWalk(60 + Math.random() * 1400, 362 + Math.random() * NX.cam.front * .7);
     return this.goTo(wx, wy, () => this.set('sit', 3));
   },
   set(pose, dur, done) { this.mode = 'act'; this.pose = pose; this.timer = dur; this.then = done || null; },
   /** Іти до точки (якщо ціль на висоті — спершу до точки під нею, потім стрибок). */
   goTo(x, y, done, from, run) {
-    if (this.alt > 0) { const g = this.ground; this.alt = 0; return this.startJump(this.x + 8 * this.dir, g, () => this.goTo(x, y, done, from, run)); }   // спершу зістрибнути вниз
+    if (this.alt > 0) { const d = this.down || [this.x + 8 * this.dir, this.ground]; this.alt = 0; this.at = null; this.down = null;   // спершу зістрибнути вниз — туди, звідки застрибнув
+      return this.startJump(d[0], d[1], () => this.goTo(x, y, done, from, run)); }
     if (!from) y = Math.max(y, this.FLOOR);
-    this.mode = 'walk'; this.run = !!run; this.then = done;
-    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => this.startJump(x, y, done, true); }
+    this.mode = 'walk'; this.run = !!run; this.then = done; this.at = null;
+    if (from) { this.target = { x: from[0], y: from[1] }; this.afterWalk = () => { this.down = from; this.startJump(x, y, done, true); }; }
     else { [x, y] = NX.room.freeAt(x, y, 'cat'); this.target = { x, y }; this.afterWalk = null; }
     this.path = NX.room.route([this.x, this.y], [this.target.x, this.target.y], 'cat');                // в обхід дивану й крісла (world/room.js)
   },
   /** Стрибок у точку (висота дуги 26, тривалість .5 с). up — на меблі: там кіт «на висоті», навіть якщо точка на екрані
    *  нижче лінії підлоги (місце біля Nexi на дивані після того, як диван поставили ближче, — y 374 > FLOOR − 4; до 29.10
    *  кіт вважав його підлогою і йшов з дивану пішки крізь диван). */
-  startJump(x, y, done, up) { this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26, dur: .5, up: !!up }; this.then = done; },
-  purr(d) { this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },
+  startJump(x, y, done, up) { const dh = Math.max(0, Math.abs(this.y - y) - 50);                                       // високо (стіл AI-центру) — вища дуга й довше
+    this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26 + dh * .35, dur: .5 + dh / 380, up: !!up }; this.then = done; },
+  purr(d) { if (this.hunting) this.huntEnd(); this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },   // гладять — забуває про вірус (крок 15)
+
+  /* ---------------- КРОК 15: СТІЛ AI-ЦЕНТРУ, ХАРАКТЕР, ЛАЗЕР ---------------- */
+  /** На стільниці: дивиться на екран (AI бачить його на радарі), грається з голо-рибкою AI, вмивається, дрімає на теплому столі. */
+  deskLife(k) {
+    const A = NX.objects.aicenter, r = Math.random(); this.dir = k === 'aiDeskL' ? 1 : -1;                              // лицем до середини стола
+    if (r < .4 && A && A.fishGo && NX.nexi.loc !== 'aiDesk') return this.set('sit', 1.2 + Math.random(), () => { const F = A.fishGo(this); if (F) this.play(F); else this.set('sit', 3); });
+    if (r < .72) return this.set('sit', 5 + Math.random() * 4, () => this.set('groom', 3, () => this.set('sit', 2)));
+    return this.set('sit', 2, () => this.set('sleep', 10 + Math.random() * 10, () => this.set('stretch', 1.4)));
+  },
+  /** Гра з голо-рибкою (objects/aicenter.js): три удари лапкою — рибка відскакує, на третій — розсипається іскрами. */
+  play(F) { let n = 0; const hit = () => { if (!F.alive()) return this.set('sit', 2); this.dir = Math.sign(F.x - this.x) || this.dir;
+      this.set('paw', .75, () => { F.hit(); if (++n < 3) this.set('sit', .45 + Math.random() * .5, hit); else this.set('happy', 1.6, () => this.set('sit', 3)); }); };
+    hit(); },
+  /** Nexi працює за столом AI-центру (activities.js: ai) — Рудик часом застрибує поруч і дивиться, як той працює. */
+  joinAI() {
+    if (Math.random() > .45 || this.hunting || this.mode === 'jump' || this.hunger > .7 || !this.spots().aiDeskL) return;
+    const k = Math.random() < .5 ? 'aiDeskL' : 'aiDeskR';
+    this.toSpot(k, () => { this.dir = k === 'aiDeskL' ? 1 : -1; this.set('sit', 8 + Math.random() * 3, () => this.set('groom', 2.5, () => this.set('sit', 2))); });
+  },
+  /** Трохи злий: очі червоні й світяться d секунд. Спав / вмивався — сідає (прокинувся). */
+  grr(d = 1.5) { if (!this.angry()) this.angS = NX.time; this.angT = Math.max(this.angT, NX.time + d);
+    if (this.mode === 'act' && /sleep|groom|happy|stretch|eat/.test(this.pose)) this.pose = 'sit'; },
+  calm() { this.angT = 0; },
+  angry() { return NX.time < this.angT; },
+  /** Чи вільний для чужих сценок (гості): не полює на вірус. */
+  free() { return !this.hunting; },
+  /** Яскравість світіння очей 0..1: лазер — повна; приціл — пульсує; просто злий — м'яко, з мерехтінням. */
+  glowK() { const t = NX.time; if (this.laser) return 1; if (!this.angry()) return 0;
+    if (this.hunting && this.pose === 'crouch') return .7 + .3 * Math.sin(t * 34);
+    return Math.min(1, (t - this.angS) * 5, (this.angT - t) * 4) * (.55 + .2 * Math.sin(t * 7)) * (Math.random() < .05 ? .4 : 1); },
+  /** Вірус на столі AI-центру (actors/virus/virus.js): очі червоніють, біжить і застрибує на стіл з того боку, звідки
+   *  прийшов (вірус тікає на другий край), — приціл і лазер. Уже на столі — одразу цілиться. */
+  hunt(V) {
+    this.hunting = V; this.laser = null; this.waitN = 0; this.grr(40);
+    const k = this.at === 'aiDeskL' || this.at === 'aiDeskR' ? this.at : this.x > V.x() + 40 ? 'aiDeskR' : 'aiDeskL';
+    V.flee(k === 'aiDeskR' ? -1 : 1);
+    this.set('sit', this.at === k ? .3 : .55, () => this.toSpot(k, () => this.aim(V), true));
+  },
+  aim(V) {
+    if (this.hunting !== V || !V.alive()) return this.huntEnd();
+    if (!V.onDesk()) return this.set('crouch', .25, () => this.aim(V));                                               // ще в екрані — чекає, пригнувшись
+    this.dir = Math.sign(V.x() - this.x) || this.dir; V.fear();
+    const n = NX.nexi, coming = n.task && n.task.id === 'virus' && !(n.cur && n.cur.work && n.cur.work.pose === 'look');   // Nexi біжить подивитись — чекає його (≤ 6 с)
+    if (coming && (this.waitN = (this.waitN || 0) + 1) < 24) return this.set('crouch', .25, () => this.aim(V));
+    this.waitN = 0;
+    this.set('crouch', .8, () => {                                                                                    // приціл: очі розжарюються
+      if (this.hunting !== V || !V.alive()) return this.huntEnd();
+      this.laser = { t0: NX.time, dur: .9, V }; V.zap();
+      this.set('crouch', .9, () => { this.laser = null; V.kill(); this.hunting = null; this.angT = NX.time + .5;
+        this.set('happy', 1.7, () => this.set('groom', 2.6, () => this.set('sit', 2.5)));                              // гордо: «чистота»
+      });
+    });
+  },
+  /** Полювання перервалось (вірус утік / сценка Nexi забрала кота). */
+  huntEnd() { this.hunting = null; this.laser = null; this.calm(); if (this.mode === 'act' && this.pose === 'crouch') this.set('sit', 2); },
+  /** Промені з очей — шар поверх усього (core/loop.js сортує за y): три смуги (червоне сяйво, червоний, біле ядро), тремтять;
+   *  у точці влучання — спалах, іскри летять з update. */
+  fxLayer() {
+    const L = this.laser; if (!L || !this.eyeW) return null;
+    return { y: 999, draw: c => {
+      const E = this.eyeW, [tx, ty] = L.V.hit(), k = (NX.time - L.t0) / L.dur, s = this.sc, w = k < .1 ? Math.max(.15, k / .1) : k > .86 ? Math.max(0, (1 - k) / .14) : 1;
+      c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+      for (const [ex, ey] of E) { const jx = tx + (Math.random() - .5) * 1.6, jy = ty + (Math.random() - .5) * 1.6;
+        for (const [lw, col] of [[3.8, 'rgba(255,30,30,.26)'], [1.6, 'rgba(255,60,50,.85)'], [.6, 'rgba(255,245,235,.95)']]) { c.strokeStyle = col; c.lineWidth = lw * s * w; c.beginPath(); c.moveTo(ex, ey); c.lineTo(jx, jy); c.stroke(); }
+        NX.px.glow(c, ex, ey, 5 * s, 'rgba(255,70,50,.95)', .9); }
+      NX.px.glow(c, tx, ty, (8 + 3 * Math.sin(NX.time * 40)) * s, 'rgba(255,110,50,.95)', .95 * w);
+      c.restore(); } };
+  },
   hitTest(x, y) { const s = NX.room.scaleAt(Math.max(this.depthY(), 352)); return Math.abs(x - this.x) < 14 * s && y > this.y - 20 * s && y < this.y + 4; },
   /** Де кіт на підлозі (на висоті — точка, з якої стрибав). */
   floorPos() { return [this.x, this.ground]; },
@@ -59,6 +150,13 @@ NX.cat = {
 
   update(dt, t) {
     this.hunger = Math.min(1, this.hunger + dt / 120);
+    // крок 15: зрідка буркоче «просто так» (часом — на Nexi); гості розбудили — сердито сідає й засинає знову; лазер — іскри
+    if (t > this.nextGrr && this.mode === 'act' && (this.pose === 'sit' || this.pose === 'groom') && !this.angry() && !this.hunting) {
+      this.nextGrr = t + 100 + Math.random() * 90; if (Math.random() < .5) this.dir = NX.nexi.x > this.x ? 1 : -1; this.grr(1.2 + Math.random() * .6); }
+    if (this.pose === 'sleep' && this.mode === 'act' && t > this.wokeT && NX.guests && !this.hunting) {
+      const g = NX.guests.S.list.find(g => g.alpha > .8 && Math.abs(g.x - this.x) < 46 && Math.abs(g.y - this.ground) < 26);
+      if (g) { this.wokeT = t + 80; this.dir = Math.sign(g.x - this.x) || this.dir; this.grr(1.8); this.set('sit', 1.9, () => this.set('sleep', 8 + Math.random() * 8, () => this.set('stretch', 1.4))); } }
+    if (this.laser && Math.random() < .85) { const [tx, ty] = this.laser.V.hit(); NX.fx.emit('spark', tx + (Math.random() - .5) * 5, ty + (Math.random() - .5) * 4, { col: Math.random() < .55 ? '#ff5a3a' : '#ffd27a' }); }
     this.ft += dt; const sp = this.mode === 'walk' ? (this.run ? 80 : 34) : 0;
     if (this.ft > (this.run ? .08 : .14)) { this.ft = 0; this.frame++; }
     if (this.mode === 'walk') {
@@ -81,11 +179,15 @@ NX.cat = {
   layer() {
     const onSofa = NX.objects.sofa && NX.objects.sofa.holds(this.x, this.y, this.ground);   // на дивані — поверх нього (диван може стояти ближче до глядача)
     const bs = NX.room.scaleAt(this.depthY()) * .82, bw = CAT_W * bs / 2 + 3;                // межі малюнка — для віддзеркалення (core/loop.js)
-    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa, box: [this.x - bw, this.y - CAT_H * bs - 3, this.x + bw, this.y + 3], draw: c => {
+    return { y: onSofa ? NX.cfg.SOFA.y + 1 : this.y + (this.alt > 0 ? 6 : 0), refl: !onSofa && !(this.alt > 0), box: [this.x - bw, this.y - CAT_H * bs - 3, this.x + bw, this.y + 3], draw: c => {   // на висоті — без віддзеркалення
       const s = NX.room.scaleAt(this.depthY()) * .82, w = CAT_W * s, h = CAT_H * s;   // .82 — кіт у пропорції до Nexi
-      if (this._rt !== NX.time) { this._rt = NX.time; drawCat(this.pose, this.frame, NX.time, this.cv); }
+      if (this._rt !== NX.time) { this._rt = NX.time; const hot = !!this.laser || (!!this.hunting && this.pose === 'crouch');
+        drawCat(this.pose, this.frame, NX.time, this.cv, null, { angry: this.angry() || hot, hot }); this.eyes = drawCat.eyes; }   // злий — червоні очі (cat_sprite.js)
       c.save(); c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(this.x, this.y + 1, 9 * s, 2 * s, 0, 0, Math.PI * 2); c.fill();
       c.imageSmoothingEnabled = false; c.translate(this.x, 0); c.scale(this.dir, 1); c.drawImage(this.cv, -w / 2, this.y - h + s, w, h); c.restore();
+      this.sc = s; this.eyeW = this.eyes && this.eyes.map(([gx, gy]) => [this.x + this.dir * (gx - CAT_W / 2) * s, this.y - h + s + gy * s]);   // очі в кімнаті (світіння, лазер)
+      const gk = this.glowK(); if (gk > 0 && this.eyeW) this.eyeW.forEach(([ex, ey]) => NX.px.glow(c, ex, ey, (2 + 2.6 * gk) * s, 'rgba(255,45,35,.95)', .35 + .55 * gk));
     } };
   },
 };
+NX.addObject({ id: 'catFx', layers() { const l = NX.cat.fxLayer(); return l ? [l] : []; } });   // лазер з очей — поверх усього (крок 15)

@@ -21,7 +21,10 @@
  * Крок 14 (власник: «зроби взаємодію з Nexi»): AI-ЦЕНТР — Nexi підходить до стола, злітає на нього, стає спиною до нас і працює
  *   (на екрані — його задача: відповісти клієнту / лист партнеру / підсумок зустрічі; «✓»), спускається й радіє — картка
  *   результату (objects/aicenter.js). Робота з дивану (sofaWork) лишилась — просто з планшетом, без картки. Портал — гості з
- *   казок (actors/visitors.js). Старі сценарії зон — в історії git (коміт a941612), тексти act.<зона> — у словниках.
+ *   казок (actors/guests/). Старі сценарії зон — в історії git (коміт a941612), тексти act.<зона> — у словниках.
+ * Крок 15: за столом AI-центру Рудик часом складає Nexi компанію (cat.js: joinAI) — тоді Nexi на фініші радіє з любов'ю;
+ *   ВІРУС (actors/virus/virus.js) — Nexi біжить до AI-центру, дивиться, як Рудик спопеляє його лазером з очей, і дякує
+ *   (act.virus: lines — на початку, thanks — після лазера, ai — якщо вірус утік і AI видалив його сам).
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
@@ -98,10 +101,19 @@
       const A = NX.objects.aicenter, task = NX.nexi.taskOpt; if (!A || !A.ready()) return [line('ai')];
       const st = A.front(), bits = () => { const n = NX.nexi; NX.fx.emit('bit', n.x + (Math.random() - .5) * 26, n.y - 40 - Math.random() * 14, { vy: -34 }); };
       return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
-        { fly: A.top(), dy: A.depth() }, { loc: 'aiDesk' }, { do: () => A.begin(task) }, line('ai'),                       // на стіл, до екрана
+        { fly: A.top(), dy: A.depth() }, { loc: 'aiDesk' }, { do: () => { A.begin(task); NX.cat.joinAI(); } }, line('ai'),   // на стіл, до екрана (Рудик часом — теж)
         { work: { pose: 'type', dur: 10.5, obj: 'aicenter', back: true, tick: () => Math.random() < .12 && bits() } },
-        { do: () => { A.finish(); NX.nexi.back = false; } }, { face: 1 }, { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.3 } },   // «✓» — і вниз
+        { do: () => { A.finish(); NX.nexi.back = false; } }, { face: 1 }, { do: () => NX.nexi.emote(/aiDesk/.test(NX.cat.at || '') ? 'love' : 'happy', 2.2) }, { work: { pose: 'cheer', dur: 1.3 } },   // «✓» — і вниз
         { fly: st }, { loc: 'floor' }]; } },
+
+    // ---------- ВІРУС В AI-ЦЕНТРІ (крок 15): біжить подивитись, як Рудик спопеляє його лазером з очей, і дякує ----------
+    virus: { color: '#ff3b5c', route() {
+      const A = NX.objects.aicenter, V = NX.virus; if (!A || !A.ready() || !V) return [line('virus')];
+      const f = A.front(), [x, y] = NX.room.freeAt(...NX.room.clampWalk(f[0] + 34, f[1] + 4), 'nexi');                     // перед серединою стола (на телефоні камера — за Nexi: видно і вірус, і Рудика)
+      return [{ walk: [x, y] }, { face: -1 }, { do: () => NX.nexi.emote('surprise', 2.5) }, line('virus'),
+        { work: { pose: 'look', dur: 40, tick: () => { const c = NX.nexi.cur; if (c) c._t = V.busy() ? Math.min(Math.max(c._t, 13.6), 26) : Math.max(c._t, 39.6); } } },   // поки вірус на волі (крок «дивлюсь, як Рудик полює»)
+        { do: () => { const cat = V.S.by === 'cat'; NX.nexi.emote(cat ? 'love' : 'happy', 2.5); NX.nexi.say(NX.pick('act.virus.' + (cat ? 'thanks' : 'ai'))); } },
+        { work: { pose: 'cheer', dur: 1.4 } }]; } },
 
     // ---------- МАЙСТЕРНЯ (СКІНИ): капсула, сканер, лабораторія скінів, маніпулятор (objects/workshop.js) ----------
     workshop: { color: '#ff7af0', route(n) {

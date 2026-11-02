@@ -12,6 +12,7 @@
  *     guests.<id>.n / .s у словниках (4 мови).
  *   Рудик і Nexi беруть участь: Рудик ганяє Колобка й нападає на Чеширського кота, вітається з Котом у чоботях, тікає від
  *     Змія Горинича; Nexi отримує пиріжок, подарунок, чари Мерліна, змащує Залізного Дроворуба (якщо вільний).
+ *   Крок 15: на Чеширського кота й від Змія Рудик сердиться — очі червоні (NX.cat.grr); полює на вірус — гості його не кличуть.
  * Тап по гостю — він повторює репліку; наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
  * ========================================================================== */
 NX.guests = (() => {
@@ -40,15 +41,16 @@ NX.guests = (() => {
       return [{ go: anyPt() }, { act: 'search', dur: 1.6 }, { say: 0 }, { go: anyPt() }, { act: 'search', dur: 1.2 }, { go: free(hide[0] + 30, hide[1] + 6) }, { face: hide[0] },
         { do: () => { g.comp.hidden = false; g.comp.pose = 'cheer'; NX.fx.emit('heart', hide[0], hide[1] - 30); } }, { act: 'cheer', dur: 1.6 }, { say: 1 }, { do: () => { g.comp.follow = true; g.comp.pose = 'walk'; } }]; } },
     cheshire: { steps: g => [{ go: anyPt() }, { act: 'sit', dur: 2 }, { say: 0 }, { go: anyPt() }, { act: 'sit', dur: .6 },
-      { do: () => { const side = NX.cat.x < g.x ? -1 : 1; g.dir = side; NX.cat.goTo(g.x + side * 18, g.y, () => { g.caught = true; NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.6)); }, null, true); } },
+      { do: () => { if (!NX.cat.free()) return; const side = NX.cat.x < g.x ? -1 : 1; g.dir = side; NX.cat.grr(6);                         // суперник! очі червоні (крок 15)
+        NX.cat.goTo(g.x + side * 18, g.y, () => { g.caught = true; NX.cat.grr(2.2); NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.6)); }, null, true); } },   // «цап!» і шипить
       { until: () => g.caught, max: 10, pose: 'sit' }, { say: 1 }, { do: () => { g.fade = .45; } }] , speed: 1.4, runBack: true },
     redHood: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'give', dur: 2.2, start: () => { NX.nexi.emote('love', 2); NX.fx.emit('heart', g.x + g.dir * 16, g.y - 40); } }, { say: 0 }, { act: 'cheer', dur: 1 }] },
     whiteRabbit: { speed: 1.8, steps: g => [{ run: anyPt() }, { act: 'watch', dur: 1.6 }, { say: 0 }, { run: anyPt() }, { act: 'watch', dur: .8 }], runBack: true },
     kolobok: { speed: 1.4, steps: g => [{ go: anyPt(), pose: 'roll' }, { say: 0 }, { act: 'roll', dur: 1, tick: () => rnd() < .12 && NX.fx.emit('note', g.x, g.y - 22) }, { go: anyPt(), pose: 'roll' },
-      { do: () => NX.cat.goTo(g.x, g.y, () => NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.4)), null, true) }, { say: 1 }, { wait: .5 }], runBack: true, rollBack: true },
+      { do: () => NX.cat.free() && NX.cat.goTo(g.x, g.y, () => NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.4)), null, true) }, { say: 1 }, { wait: .5 }], runBack: true, rollBack: true },
     pinocchio: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { say: 0 }, { act: 'stand', dur: 2.6, start: () => NX.nexi.emote('surprise', 2.5), tick: dt => { g.nose = Math.min(9, (g.nose || 0) + dt * 4); } },
       { act: 'cheer', dur: 1, end: () => { g.nose = 0; } }] },
-    pussBoots: { steps: g => [{ go: nearCat() }, { face: () => NX.cat.x }, { act: 'bow', dur: 2.2, start: () => NX.cat.purr(3) }, { say: 0 }, { act: 'stand', dur: .6 }] },
+    pussBoots: { steps: g => [{ go: nearCat() }, { face: () => NX.cat.x }, { act: 'bow', dur: 2.2, start: () => NX.cat.free() && NX.cat.purr(3) }, { say: 0 }, { act: 'stand', dur: .6 }] },
     quixote: { steps: g => [{ go: anyPt() }, { face: 1000 }, { say: 0 }, { run: free(1000 + rnd() * 80, 372), pose: 'charge' }, { act: 'fall', dur: 1.8, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('spark', g.x + g.dir * 16, g.y - 30); } },
       { say: 1 }, { act: 'stand', dur: .6 }] },
     sherlock: { steps: g => [{ go: nearCat() }, { act: 'inspect', dur: 2.4, tick: dust(g) }, { say: 0 }, { go: anyPt() }, { act: 'inspect', dur: 1.6 }, { say: 1 }, { act: 'stand', dur: .6 }] },
@@ -75,7 +77,7 @@ NX.guests = (() => {
     silver: { steps: g => [{ go: anyPt() }, { act: 'dig', dur: 3, tick: dust(g) }, { do: () => { g.carry = { type: 'chest', x: g.x + g.dir * 18, y: g.y + 1, until: Infinity }; S.props.push(g.carry); } },
       { say: 0 }, { act: 'cheer', dur: 1.2 }, { say: 'p' }, { do: () => { if (g.carry) g.carry.follow = g; } }] },
     gorynych: { steps: g => [{ go: anyPt() }, { act: 'stand', dur: 1 }, { act: 'sneeze', dur: 1.3, start: () => { for (let i = 0; i < 10; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }, { say: 0 },
-      { do: () => { const c = NX.cat; if (Math.abs(c.x - g.x) < 260 && c.alt === 0) c.goTo(...free(c.x + (c.x > g.x ? 160 : -160), c.y + 20), () => c.set('sit', 2), null, true); } }, { act: 'stand', dur: .8 }] },
+      { do: () => { const c = NX.cat; if (Math.abs(c.x - g.x) < 260 && c.alt === 0 && c.free()) { c.grr(1.6); c.goTo(...free(c.x + (c.x > g.x ? 160 : -160), c.y + 20), () => c.set('sit', 2), null, true); } } }, { act: 'stand', dur: .8 }] },   // сердито тікає
   };
 
   // ============================ ГІСТЬ ============================

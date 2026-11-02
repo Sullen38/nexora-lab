@@ -5,13 +5,16 @@
  * Мила стилістика: велика кругла голова, великі темні очі з двома бліками,
  * рожеві щічки, ротик "ω", пухнастий смугастий хвіст, білі шкарпетки.
  * Пози: walk, run, sit, happy (коли гладять), groom, sleep, eat, stretch,
- *       pounce, meow. Темний контур додається автоматично.
+ *       pounce, meow; крок 15 — crouch (приціл: низько, голова вперед, хвіст смикається) і paw (сидить, б'є лапкою).
+ * md — настрій (крок 15): { angry } — злі очі (червоні, скошені повіки, брови «галочкою»; нявкання — шипіння з іклами),
+ *   { hot } — очі розпечені (лазер). drawCat.eyes — центри очей у сітці (для світіння й лазера, actors/cat/cat.js).
+ * Темний контур додається автоматично.
  * ========================================================================== */
 const CAT_W = 32, CAT_H = 24;
 const CATC = { O: '#f39a3c', L: '#ffc27a', D: '#d0702a', S: '#a84e14', W: '#fff6ea', N: '#ff8fb0', B: '#ff9fb5', E: '#2a140a', OUT: [52, 22, 8] };
-function drawCat(pose, fr, t, cv, pal) {                                            // pal — інші фарби (Чеширський кіт, actors/guests/guest_art.js)
+function drawCat(pose, fr, t, cv, pal, md) {                                        // pal — інші фарби (Чеширський кіт, actors/guests/guest_art.js); md — настрій
   cv.width = CAT_W; cv.height = CAT_H; const x = cv.getContext('2d', { willReadFrequently: true }); x.clearRect(0, 0, CAT_W, CAT_H);
-  const P = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); }, C = pal || CATC;
+  const P = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); }, C = pal || CATC, ang = !!(md && md.angry), hot = !!(md && md.hot); let EYES = null;
   /** Кругла "булочка": заливка з обрізаними кутами + світлий верх + темний низ. */
   const BUN = (a, b, w, h, c = C.O) => { P(a + 2, b, w - 4, h, c); P(a + 1, b + 1, w - 2, h - 2, c); P(a, b + 2, w, h - 4, c); P(a + 2, b, w - 4, 1, C.L); P(a + 1, b + 1, 2, 1, C.L); P(a + 2, b + h - 1, w - 4, 1, C.D); };
   /** Голова 13×11: вушка, мордочка, очі, щічки, носик, ротик ω. eyes: open | closed | happy | meow */
@@ -21,14 +24,21 @@ function drawCat(pose, fr, t, cv, pal) {                                        
     P(hx + 4, hy + 6, 5, 4, C.W); P(hx + 3, hy + 7, 7, 3, C.W);                                                                                          // мордочка
     if (eyes === 'open' || eyes === 'meow') { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 3, 3, 4, C.E); P(ex, hy + 3, 1, 1, '#ffffff'); P(ex + 2, hy + 5, 1, 1, '#ffffff'); } }
     else if (eyes === 'happy') { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 5, 1, 1, C.E); P(ex + 1, hy + 4, 1, 1, C.E); P(ex + 2, hy + 5, 1, 1, C.E); } }
+    else if (eyes === 'angry' || eyes === 'hiss') {                                                                   // злий: червоні очі, внутрішній кут повіки скошений, брови «галочкою»
+      for (const [ex, ix] of [[hx + 2, hx + 4], [hx + 8, hx + 8]]) { P(ex, hy + 4, 3, 3, hot ? '#ff3a26' : '#ff2438'); P(ex + 1, hy + 5, 1, 1, hot ? '#ffffff' : '#ffd890'); if (hot) P(ex + 1, hy + 4, 1, 1, '#ffd0b0'); P(ix, hy + 4, 1, 1, C.E); }
+      P(hx + 1, hy + 2, 2, 1, C.E); P(hx + 3, hy + 3, 2, 1, C.E); P(hx + 8, hy + 3, 2, 1, C.E); P(hx + 10, hy + 2, 2, 1, C.E);
+      EYES = [[hx + 3.5, hy + 5.5], [hx + 9.5, hy + 5.5]]; }
     else { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 5, 3, 1, C.E); P(ex, hy + 4, 1, 1, C.E); P(ex + 2, hy + 4, 1, 1, C.E); } }
     P(hx + 1, hy + 7, 2, 1, C.B); P(hx + 10, hy + 7, 2, 1, C.B);                                                                                         // щічки
     P(hx + 6, hy + 7, 1, 1, C.N);                                                                                                                        // носик
-    if (eyes === 'meow') { P(hx + 5, hy + 8, 3, 2, '#7a1a2a'); P(hx + 6, hy + 9, 1, 1, C.N); } else { P(hx + 5, hy + 8, 1, 1, C.S); P(hx + 6, hy + 9, 1, 1, C.S); P(hx + 7, hy + 8, 1, 1, C.S); }  // ротик ω
+    if (eyes === 'meow') { P(hx + 5, hy + 8, 3, 2, '#7a1a2a'); P(hx + 6, hy + 9, 1, 1, C.N); }
+    else if (eyes === 'hiss') { P(hx + 5, hy + 8, 3, 2, '#7a1a2a'); P(hx + 5, hy + 8, 1, 1, '#ffffff'); P(hx + 7, hy + 8, 1, 1, '#ffffff'); }           // шипить: ікла
+    else if (eyes === 'angry') { P(hx + 5, hy + 9, 1, 1, C.S); P(hx + 6, hy + 8, 1, 1, C.S); P(hx + 7, hy + 9, 1, 1, C.S); }                         // насуплений ротик
+    else { P(hx + 5, hy + 8, 1, 1, C.S); P(hx + 6, hy + 9, 1, 1, C.S); P(hx + 7, hy + 8, 1, 1, C.S); }  // ротик ω
   };
   const tail = (tx, ty, sw, up = 1) => { P(tx, ty, 3, 3, C.O); P(tx - 2, ty - 3 * up + sw, 3, 4, C.O); P(tx - 3, ty - 6 * up + sw * 2, 3, 4, C.O); P(tx - 3, ty - 6 * up + sw * 2, 3, 1, C.L); P(tx - 2, ty - 2 * up + sw, 3, 1, C.D); P(tx - 3, ty - 4 * up + sw * 2, 3, 1, C.D); };
   const paw = (px, py, h) => { P(px, py, 3, h, C.O); P(px, py + h - 1, 3, 1, C.W); P(px, py, 1, h - 1, C.L); };
-  const blink = (t % 4.5) < .15 ? 'closed' : 'open';
+  const blink = ang ? 'angry' : (t % 4.5) < .15 ? 'closed' : 'open';
   switch (pose) {
     case 'walk': case 'run': {
       const f = fr % 4, up = i => (f === 1 && (i === 0 || i === 3)) || (f === 3 && (i === 1 || i === 2)) ? 1 : 0, bb = f % 2;
@@ -37,12 +47,14 @@ function drawCat(pose, fr, t, cv, pal) {                                        
       BUN(8, 11 + bb, 15, 9); P(11, 18 + bb, 9, 1, C.W); [12, 15, 18].forEach(sx => P(sx, 11 + bb, 1, 3, C.D));
       head(18, 4 + bb, blink); break;
     }
-    case 'sit': case 'groom': case 'meow': case 'happy': {
+    case 'sit': case 'groom': case 'meow': case 'happy': case 'paw': {
       const sw = Math.round(Math.sin(t * 3)); P(5, 21, 9, 2, C.O); P(4 + sw, 19, 3, 3, C.O); P(4 + sw, 19, 3, 1, C.D);          // хвіст навколо лап
       BUN(9, 10, 12, 13); P(12, 13, 6, 9, C.W); [10, 11].forEach(sx => P(sx, 12, 1, 3, C.D));
-      paw(12, 19, 4); paw(16, 19, 4);
+      paw(12, 19, 4);
+      if (pose === 'paw') { const up = Math.floor(t * 5) % 2 * 2; P(18, 14 - up / 2, 4, 3, C.O); P(21, 12 - up, 3, 3, C.O); P(23, 9 - up, 3, 4, C.O); P(23, 9 - up, 3, 1, C.L); P(25, 10 - up, 1, 3, C.W); P(25, 11 - up, 1, 1, C.B); }   // лапка вгору-вперед, б'є
+      else paw(16, 19, 4);
       const g = pose === 'groom' && Math.floor(t * 3) % 2;
-      head(10, 1, pose === 'groom' || pose === 'happy' ? 'happy' : pose === 'meow' ? 'meow' : blink);
+      head(10, 1, pose === 'groom' || pose === 'happy' ? 'happy' : pose === 'meow' ? (ang ? 'hiss' : 'meow') : blink);
       if (g) { P(19, 7, 3, 4, C.W); P(19, 7, 3, 1, C.L); }
       break;
     }
@@ -65,7 +77,14 @@ function drawCat(pose, fr, t, cv, pal) {                                        
     }
     case 'pounce': {
       P(1, 7, 3, 3, C.O); P(3, 9, 4, 2, C.O); BUN(6, 7, 16, 8); [10, 13, 16].forEach(sx => P(sx, 7, 1, 3, C.D));
-      P(3, 13, 5, 3, C.O); P(21, 12, 6, 3, C.O); P(25, 12, 2, 3, C.W); head(18, 1, 'open'); break;
+      P(3, 13, 5, 3, C.O); P(21, 12, 6, 3, C.O); P(25, 12, 2, 3, C.W); head(18, 1, ang ? 'angry' : 'open'); break;
+    }
+    case 'crouch': {                                                                                                   // приціл (крок 15): низько, голова вперед, хвіст смикається
+      const tw = Math.floor(t * 9) % 2;
+      P(4, 14, 3, 3, C.O); P(2, 10 + tw, 3, 5, C.O); P(1, 7 + tw * 2, 3, 4, C.O); P(1, 7 + tw * 2, 3, 1, C.L); P(2, 12 + tw, 3, 1, C.D);
+      [8, 11, 18, 21].forEach(lx => paw(lx, 20, 3));
+      BUN(5, 13, 18, 8); P(9, 20, 11, 1, C.W); [9, 12, 15].forEach(sx => P(sx, 13, 1, 3, C.D));
+      head(17, 7, ang ? 'angry' : 'open'); break;
     }
   }
   // темний теплий контур
@@ -73,5 +92,5 @@ function drawCat(pose, fr, t, cv, pal) {                                        
   for (let i = 0; i < op.length; i++) op[i] = d[i * 4 + 3] > 40 ? 1 : 0;
   for (let yy = 0; yy < CAT_H; yy++) for (let xx = 0; xx < CAT_W; xx++) { const i = yy * CAT_W + xx; if (op[i]) continue;
     if ((xx > 0 && op[i - 1]) || (xx < CAT_W - 1 && op[i + 1]) || (yy > 0 && op[i - CAT_W]) || (yy < CAT_H - 1 && op[i + CAT_W])) { d[i * 4] = o[0]; d[i * 4 + 1] = o[1]; d[i * 4 + 2] = o[2]; d[i * 4 + 3] = 255; } }
-  x.putImageData(id, 0, 0); return cv;
+  x.putImageData(id, 0, 0); drawCat.eyes = EYES; return cv;
 }

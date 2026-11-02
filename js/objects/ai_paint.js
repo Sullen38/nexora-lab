@@ -18,6 +18,10 @@
  *   ai_monL/R  — монітори по краях стола: чат з клієнтом / лист (нерухомі; передні — поверх голо-екрана)
  *   ai_screen  — висока рамка на столі: шапка з вивіскою, утоплене скло під голо-екран, пульт за моніторами; бік — ґратка
  *   (крок 13.2 — на 15 % більша за аналітику, від неї до краю кімнати; 13.3 — ще ширша: рамка й стіл трохи заходять на бік аналітики)
+ * Крок 15: шапка екрана — тривога «ВІРУС!» (червона, з трикутником), «ЗАГРОЗУ ЗНИЩЕНО» (зелена), «ПРИВІТ, NEXI!»; червоний
+ *   відтінок і глітч-смуги під час тривоги, вірус повзе по мозку, «дірка», звідки він вистрибнув; зелена печатка з лапкою й
+ *   «АНТИВІРУС: РУДИК»; «еврика» на фініші задачі (кільця, нейрони спалахують); радар «ЗІР» бачить Рудика й вірус;
+ *   кромка стола й ядра тумби блимають червоним, поки вірус на волі (стан — objects/aicenter.js, actors/virus/virus.js).
  * Написи — NX.t (4 мови): scene.ai.* (екран), nav.ai (вивіска — arc_paint.js).
  * ========================================================================== */
 (() => {
@@ -25,6 +29,10 @@
   const { icon, rr, inset, bolt, led, vent } = T;
   const CY = '#3be8ff', PK = '#ff4fd8', GR = '#3bff8a', GO = '#ffd27a', VI = '#9a8cff';
   const AI = () => NX.objects.aicenter || {};
+  const ALERT = () => NX.virus && NX.virus.S.alert;                                                     // вірус на волі (крок 15)
+  const IC7 = { warn: ['...X...', '..XXX..', '..X.X..', '.XX.XX.', '.XXXXX.', 'XXX.XXX', 'XXXXXXX'], check: ['......X', '.....XX', '....XX.', 'X..XX..', 'XXXX...', '.XX....', '.......'],
+    paw: ['..X.X..', 'X.X.X.X', 'X.....X', '..XXX..', '.XXXXX.', '.XXXXX.', '..XXX..'], cat: ['X.....X', 'XX...XX', 'XXXXXXX', 'X.X.X.X', 'XXXXXXX', '.XXXXX.', '.......'] };
+  const ic7 = (c, k, cx, cy, s, col) => A.icon7(c, IC7[k], cx, cy, s, col);
 
   // ---------- «нейронні» доріжки: ламані з вузлами (спільне для граней) ----------
   /** Доріжка друкованої плати: від (x, y) кроками вправо / вгору / вниз під 45°, вузол-синапс на кінці. seed — свій візерунок. */
@@ -61,13 +69,14 @@
   };
   /** Шина синапсів оживає: імпульси біжать від середини до країв і назад, вузли спалахують, коли імпульс проходить. */
   LIVE.ai_top = { every: 4, step: 6, draw(c, fw, fh, t) {
-    const y = fh * .44, act = AI().active, sp = act ? .55 : .22, n = act ? 5 : 3;
+    const y = fh * .44, act = AI().active, al = ALERT(), sp = al ? .9 : act ? .55 : .22, n = al ? 6 : act ? 5 : 3;   // вірус на волі — шина тривожно червона
     for (let k = 0; k < n; k++) {
       const ph = (t * sp + k / n) % 1, side = k % 2 ? 1 : -1, x = fw / 2 + side * (fw * .06 + ph * fw * .4), tail = side * fw * .035;
-      const g = c.createLinearGradient(x - tail, 0, x, 0); g.addColorStop(0, 'rgba(59,232,255,0)'); g.addColorStop(1, 'rgba(180,250,255,.95)');
+      const g = c.createLinearGradient(x - tail, 0, x, 0); g.addColorStop(0, al ? 'rgba(255,40,60,0)' : 'rgba(59,232,255,0)'); g.addColorStop(1, al ? 'rgba(255,170,170,.95)' : 'rgba(180,250,255,.95)');
       c.fillStyle = g; c.fillRect(Math.min(x, x - tail), y - .3, Math.abs(tail), .6); c.fillStyle = '#ffffff'; c.fillRect(x - .45, y - .45, .9, .9);
-      for (let m = 0; m < 16; m++) { const nx = fw * BUS(m); if (Math.abs(nx - x) < fw * .018) { c.fillStyle = k % 2 ? '#ff9af0' : '#9af6ff'; c.fillRect(nx - .65, y - .65, 1.3, 1.3); } }
+      for (let m = 0; m < 16; m++) { const nx = fw * BUS(m); if (Math.abs(nx - x) < fw * .018) { c.fillStyle = al ? '#ff4a5a' : k % 2 ? '#ff9af0' : '#9af6ff'; c.fillRect(nx - .65, y - .65, 1.3, 1.3); } }
     }
+    if (al && Math.floor(t * 4) % 2) { c.fillStyle = 'rgba(255,40,60,.5)'; c.fillRect(0, fh * .8, fw, fh * .12); }
   } };
 
   // ---------- ТУМБИ ----------
@@ -90,9 +99,9 @@
   } };
   /** Ядра світяться хвилею знизу вгору (швидше, коли Nexi працює). */
   LIVE.ai_pedL = { every: 4, draw(c, fw, fh, t) {
-    const tx = fw * TUBE[0], tw = fw * TUBE[1], sp = AI().active ? 2.2 : .8;
+    const tx = fw * TUBE[0], tw = fw * TUBE[1], al = ALERT(), sp = al ? 3 : AI().active ? 2.2 : .8;
     for (let k = 0; k < CORES; k++) { const ph = (t * sp - (CORES - 1 - k) * .14) % 1, a = Math.max(0, 1 - ph * 2.2), y = coreY(fh, k); if (a < .05) continue;
-      c.globalAlpha = a; c.fillStyle = k % 3 === 0 ? '#ff9af0' : '#9af6ff'; rr(c, tx - tw * .3, y - fh * .024, tw * .6, fh * .048, .5); c.fill();
+      c.globalAlpha = a; c.fillStyle = al ? '#ff4a5a' : k % 3 === 0 ? '#ff9af0' : '#9af6ff'; rr(c, tx - tw * .3, y - fh * .024, tw * .6, fh * .048, .5); c.fill();
       c.fillStyle = '#ffffff'; c.fillRect(tx - tw * .18, y - fh * .011, tw * .36, fh * .022); c.globalAlpha = 1; }
   } };
   /** Права тумба: три шухляди (світлі ручки-риски з рожевим і блакитним, мітки), на верхній — вогники стану. */
@@ -214,7 +223,7 @@
   /** Гладка замкнена крива через точки (середини відрізків — кінці, точки — керуючі). */
   function smooth(c, pts) { const n = pts.length, mid = i => [(pts[i][0] + pts[(i + 1) % n][0]) / 2, (pts[i][1] + pts[(i + 1) % n][1]) / 2]; c.beginPath(); const m0 = mid(n - 1); c.moveTo(m0[0], m0[1]); for (let i = 0; i < n; i++) { const m = mid(i); c.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); } c.closePath(); }
   /** МОЗОК-НЕЙРОМЕРЕЖА: сяйво й кільця-сканер позаду, силует з борознами, мозочок і стовбур, зв'язки з сигналами, нейрони. */
-  function brain(c, x, y, w, h, t, act) {
+  function brain(c, x, y, w, h, t, act, fl = 0) {                                                       // fl — «еврика» (крок 15): нейрони спалахують
     const sp = act ? 1.6 : .7, P = p => [x + p.u * w, y + p.v * h], cx = x + w * .5, cy = y + h * .42;
     let g = c.createRadialGradient(cx, cy, 1, cx, cy, w * .62); g.addColorStop(0, `rgba(80,190,255,${act ? .34 : .24})`); g.addColorStop(1, 'rgba(40,80,200,0)'); c.fillStyle = g; c.fillRect(x - 6, y - 6, w + 12, h + 12);
     for (let k = 0; k < 3; k++) { const r = w * (.5 + k * .07), a0 = t * (k % 2 ? -.5 : .35) + k * 2; c.strokeStyle = `rgba(120,230,255,${.28 - k * .07})`; c.lineWidth = .35;   // кільця-сканер довкола
@@ -231,7 +240,8 @@
     E.forEach(([p, q, s]) => { const a = P(p), b = P(q); c.strokeStyle = 'rgba(122,244,255,.24)'; c.lineWidth = .3; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();   // зв'язки й сигнали
       const ph = (t * sp * (.6 + s * .7) + s * 7) % 1.6; if (ph < 1) { const px = a[0] + (b[0] - a[0]) * ph, py = a[1] + (b[1] - a[1]) * ph; c.fillStyle = s > .55 ? '#ffb4f0' : '#e8feff'; c.fillRect(px - .45, py - .45, .9, .9); } });
     c.restore();
-    N.forEach((p, i) => { const [px, py] = P(p), fl = Math.max(0, Math.sin(t * sp * 2.3 + i * 1.7)) ** 8, r = .65 + fl * .6;   // нейрони: спалахують по черзі
+    const E0 = fl;
+    N.forEach((p, i) => { const [px, py] = P(p), fl = Math.max(E0, Math.max(0, Math.sin(t * sp * 2.3 + i * 1.7)) ** 8), r = .65 + fl * .6 + E0 * .5;   // нейрони: спалахують по черзі (еврика — усі)
       c.fillStyle = fl > .3 ? (i % 4 === 0 ? '#ff9af0' : '#ffffff') : '#7af4ff'; c.beginPath(); c.arc(px, py, r, 0, 7); c.fill();
       if (fl > .3) { c.strokeStyle = `rgba(200,250,255,${fl * .6})`; c.lineWidth = .3; c.beginPath(); c.arc(px, py, r + 1.2, 0, 7); c.stroke(); } });
   }
@@ -268,8 +278,14 @@
     c.strokeStyle = '#3be8ff'; c.lineWidth = .35; rr(c, bz, bz, fw - 2 * bz, fh - 2 * bz, r); c.stroke(); c.fillStyle = 'rgba(210,245,255,.16)'; c.fillRect(r + 2, bz + .4, fw - 2 * r - 4, .3);
     // шапка: «НЕЙРО · МЕРЕЖА», ● НАЖИВО, сигнал; смужка поступу задачі
     const hh = 9.4;
-    const head = act && S.task ? NX.t(`zones.ai.${S.task}.t`).toUpperCase() : t_('scene.ai.neuro') + ' · ' + t_('scene.ai.net');   // Nexi працює — у шапці його задача (крок 14)
-    icon(c, 'ai', m + 2.4, bz + hh * .52, 3.4, '#ff9af0'); A.txt(c, head, m + 5.8, bz + hh * .52, fw * .58, 4, act ? '#ffe0f6' : '#e8feff', { align: 'left', glow: act ? PK : CY });
+    // шапка (крок 15): тривога «ВІРУС!» > «ЗАГРОЗУ ЗНИЩЕНО» > «ПРИВІТ, NEXI!» > задача Nexi (крок 14) > «НЕЙРО · МЕРЕЖА»
+    const al = S.alert, ck = t - (S.cleanT == null ? -99 : S.cleanT), clean = ck >= 0 && ck < 3.4, hi = act && t - (S.hiT == null ? -99 : S.hiT) < 1.8;
+    let head = act && S.task ? NX.t(`zones.ai.${S.task}.t`).toUpperCase() : t_('scene.ai.neuro') + ' · ' + t_('scene.ai.net'), hc = act ? '#ffe0f6' : '#e8feff', hg = act ? PK : CY;   // Nexi працює — у шапці його задача (крок 14)
+    if (al) { head = t_('scene.ai.virus'); hc = Math.floor(t * 4) % 2 ? '#ffe0e4' : '#ff7a8a'; hg = '#ff2a4a'; }
+    else if (clean) { head = t_('scene.ai.clean'); hc = '#e0ffec'; hg = GR; }
+    else if (hi) head = t_('scene.ai.hi');
+    if (al) ic7(c, 'warn', m + 2.4, bz + hh * .52, 4, Math.floor(t * 4) % 2 ? '#ffd23a' : '#ff4a5a'); else if (clean) ic7(c, 'check', m + 2.4, bz + hh * .52, 3.6, GR); else icon(c, 'ai', m + 2.4, bz + hh * .52, 3.4, '#ff9af0');
+    A.txt(c, head, m + 5.8, bz + hh * .52, fw * .58, 4, hc, { align: 'left', glow: hg });
     const on = Math.sin(t * 4) > -.4; c.fillStyle = on ? '#ff4f6a' : '#6a1a2a'; c.beginPath(); c.arc(fw * .7, bz + hh * .52, .95, 0, 7); c.fill();
     A.txt(c, t_('scene.ai.live'), fw * .715, bz + hh * .52, fw * .15, 2.8, 'rgba(255,205,215,.92)', { align: 'left' });
     for (let k = 0; k < 4; k++) { const hgt = 1.2 + k * .9, lit = (Math.floor(t * (act ? 6 : 2)) + k) % 5 !== 0; c.fillStyle = lit ? '#9af6ff' : 'rgba(120,200,255,.3)'; c.fillRect(fw - m - 7 + k * 1.6, bz + hh * .78 - hgt, 1, hgt); }
@@ -291,7 +307,11 @@
       A.txt(c, t_('scene.ai.ok'), m + cw - 4.4, y + .7, 6, 2.2, '#b8ffd2'); }
     c.restore();
     // МОЗОК
-    const bx0 = m + cw + gp, bww = rx - gp - bx0, bh = Math.min((yB - y1) * .86, bww * .82); brain(c, bx0 + bww * .06, y1 + (yB - y1 - bh) * .45, bww * .88, bh, t, act);
+    const dk = S.doneT != null ? t - S.doneT : 99;
+    const bx0 = m + cw + gp, bww = rx - gp - bx0, bh = Math.min((yB - y1) * .86, bww * .82); brain(c, bx0 + bww * .06, y1 + (yB - y1 - bh) * .45, bww * .88, bh, t, act, dk >= 0 && dk < .7 ? 1 - dk / .7 : 0);
+    if (dk >= 0 && dk < 1.6) { const ex = bx0 + bww * .5, ey = y1 + (yB - y1) * .42;                                // «еврика»: кільця розходяться від мозку
+      for (let i = 0; i < 3; i++) { const rk = dk * 1.2 - i * .22; if (rk <= 0 || rk >= 1) continue; const R = bww * (.18 + rk * .42);
+        c.strokeStyle = i % 2 ? `rgba(255,122,240,${(1 - rk) * .85})` : `rgba(170,250,255,${(1 - rk) * .85})`; c.lineWidth = .4 + (1 - rk) * 1.1; c.beginPath(); c.ellipse(ex, ey, R, R * .72, 0, 0, 7); c.stroke(); } }
     // ЗІР: сканер-радар з цілями
     th = widget(c, rx, y1, cw, h1, t_('scene.ai.vision'), 'target', PK);
     const rcx = rx + cw / 2, rcy = y1 + th + (h1 - th) / 2, rr2 = Math.min(cw * .38, (h1 - th) * .42), ang = t * (act ? 2.4 : 1.1);
@@ -302,6 +322,11 @@
     c.strokeStyle = '#9af6ff'; c.lineWidth = .45; c.beginPath(); c.moveTo(rcx, rcy); c.lineTo(rcx + Math.cos(ang) * rr2, rcy + Math.sin(ang) * rr2); c.stroke();
     for (let k = 0; k < 4; k++) { const a = hash(k, 31) * 6.28, d = rr2 * (.3 + .6 * hash(k, 37)), seen = ((ang - a) % 6.283 + 6.283) % 6.283, al = Math.max(.15, 1 - seen / 4);
       c.fillStyle = k === 0 ? `rgba(255,120,220,${al})` : `rgba(160,250,255,${al})`; c.fillRect(rcx + Math.cos(a) * d - .6, rcy + Math.sin(a) * d - .6, 1.2, 1.2); }
+    if (S.cat) { const px = rcx - rr2 * .42, py = rcy + rr2 * .36, pu = (t * 1.3) % 1;                               // Рудик поруч (на столі / в лежанці): котяча голова й підпис
+      c.strokeStyle = `rgba(255,150,235,${(1 - pu) * .8})`; c.lineWidth = .35; c.beginPath(); c.arc(px, py, 1.4 + pu * 3, 0, 7); c.stroke(); ic7(c, 'cat', px, py, 2.8, '#ffa8ee');
+      A.txt(c, t_('scene.ai.cat') + (S.cat === 'bed' ? ' z' : ''), rx + cw - 1.6, y1 + th * .55, cw * .52, 2.5, '#ffd0f4', { align: 'right' }); }
+    if (al && Math.floor(t * 5) % 2) { const px = rcx + rr2 * .45, py = rcy - rr2 * .2; c.fillStyle = '#ff3a4a'; c.fillRect(px - 1.1, py - 1.1, 2.2, 2.2);   // вірус — червона ціль
+      c.strokeStyle = 'rgba(255,80,90,.8)'; c.lineWidth = .35; c.strokeRect(px - 2.4, py - 2.4, 4.8, 4.8); }
     // КАРТА: каркасний глобус з пінгами (Київ, Варшава, Амстердам — рожеві)
     th = widget(c, rx, ly, cw, h2, t_('scene.ai.map'), 'target', CY);
     globe(c, rx + cw / 2, ly + th + (h2 - th) / 2, Math.min(cw * .36, (h2 - th) * .4), t, act);
@@ -317,8 +342,31 @@
     for (let k = 0; k * step < tw + step; k++) { const x = tx0 + k * step - sh, s = Math.floor(t * (act ? 9 : 4) / step) - k, wv = 1.2 + 1.6 * hash(s, 2);
       c.fillStyle = hash(s, 4) > .8 ? 'rgba(255,122,216,.85)' : 'rgba(122,244,255,.7)'; c.fillRect(x, wy + wh * .38, wv, wh * .24); }
     c.restore();
+    // ТРИВОГА (крок 15): червоний відтінок, глітч-смуги, червоний кант; вірус повзе по мозку (поки в екрані), далі — «дірка»
+    if (al) {
+      c.save(); rr(c, bz, bz, fw - 2 * bz, fh - 2 * bz, r); c.clip();
+      c.fillStyle = `rgba(255,20,50,${.1 + .07 * Math.sin(t * 10)})`; c.fillRect(0, 0, fw, fh);
+      for (let k = 0; k < 4; k++) { const yy = fh * hash(Math.floor(t * 8), k + 3), hg2 = .8 + 3 * hash(Math.floor(t * 8), k + 9); c.fillStyle = k % 2 ? 'rgba(255,60,120,.2)' : 'rgba(80,255,120,.12)'; c.fillRect(0, yy, fw, hg2); }
+      if (S.hole) { const hx = S.hole[0] * fw, hy = S.hole[1] * fh, R = fh * .055;                                  // «дірка» в екрані: рвані краї, що мерехтять, уламки-пікселі
+        const g2 = c.createRadialGradient(hx, hy, 0, hx, hy, R * 1.3); g2.addColorStop(0, 'rgba(2,0,10,.95)'); g2.addColorStop(.7, 'rgba(30,0,40,.85)'); g2.addColorStop(1, 'rgba(90,10,80,.5)'); c.fillStyle = g2; c.beginPath();
+        for (let k = 0; k < 12; k++) { const a = k / 12 * 6.283, q = R * (.6 + .6 * hash(k, 77 + (Math.floor(t * 5) % 3))); k ? c.lineTo(hx + Math.cos(a) * q * 1.3, hy + Math.sin(a) * q) : c.moveTo(hx + Math.cos(a) * q * 1.3, hy + Math.sin(a) * q); }
+        c.closePath(); c.fill(); c.strokeStyle = Math.floor(t * 6) % 2 ? '#5cff4a' : '#ff3ad8'; c.lineWidth = .4; c.stroke();
+        for (let k = 0; k < 8; k++) { const a = hash(Math.floor(t * 6), k) * 6.283, d = R * (1.3 + hash(k, Math.floor(t * 6)) * 1.1); c.fillStyle = k % 2 ? '#5cff4a' : '#ff3ad8'; c.fillRect(hx + Math.cos(a) * d * 1.3, hy + Math.sin(a) * d, .8, .8); } }
+      const V = S.vir; if (V && NX.virus) { const k = Math.min(1, V.t / 1.6), [u1, v1] = NX.virus.OUT_SCR, u = .28 + (u1 - .28) * k, v = .36 + (v1 - .36) * k + Math.sin(t * 14) * .008, sz = fh * .17;
+        const cv = NX.virus.sprite(Math.floor(t * 9), 'n'); c.imageSmoothingEnabled = false; c.drawImage(cv, u * fw - sz * .56, v * fh - sz * .5, sz * 1.125, sz); c.imageSmoothingEnabled = true; }
+      c.restore();
+      c.strokeStyle = `rgba(255,60,80,${.55 + .4 * Math.sin(t * 10)})`; c.lineWidth = 1; rr(c, bz + .6, bz + .6, fw - 2 * bz - 1.2, fh - 2 * bz - 1.2, r); c.stroke();
+    }
+    // ЗАГРОЗУ ЗНИЩЕНО (крок 15): зелена печатка — з лапкою й «АНТИВІРУС: РУДИК», якщо спопелив Рудик; «✓», якщо AI сам
+    if (clean) { const a = Math.min(1, ck * 4) * Math.min(1, (3.4 - ck) * 2), cx = fw / 2, cy = y1 + (yB - y1) * .42, R = Math.min(fw, fh) * .17 * (1 + .18 * Math.max(0, .3 - ck));
+      c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(6,30,24,.86)'; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill(); c.strokeStyle = GR; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
+      c.strokeStyle = 'rgba(59,255,138,.45)'; c.lineWidth = .4; c.beginPath(); c.arc(cx, cy, R * .86, 0, 7); c.stroke();
+      if (S.by === 'cat') { ic7(c, 'paw', cx, cy, R * 1.05, '#d8ffe8');
+        const tw = fw * .44, th2 = 6.4; c.fillStyle = 'rgba(6,30,24,.9)'; rr(c, cx - tw / 2, cy + R + 1.4, tw, th2, 1.2); c.fill(); c.strokeStyle = GR; c.lineWidth = .4; rr(c, cx - tw / 2, cy + R + 1.4, tw, th2, 1.2); c.stroke();
+        A.txt(c, t_('scene.ai.guard'), cx, cy + R + 1.4 + th2 / 2, tw - 3, 3.4, '#e0ffec', { glow: GR }); }
+      else ic7(c, 'check', cx, cy, R * 1.05, '#d8ffe8');
+      c.restore(); }
     // задачу виконано (крок 14): печатка «✓» над мозком ~2.6 с
-    const dk = S.doneT != null ? t - S.doneT : 99;
     if (dk >= 0 && dk < 2.6) { const a = Math.min(1, dk * 4) * Math.min(1, (2.6 - dk) * 2), cx = fw / 2, cy = y1 + (yB - y1) * .45, R = Math.min(fw, fh) * .16 * (1 + .15 * Math.max(0, .3 - dk));
       c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(6,30,40,.82)'; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill(); c.strokeStyle = GR; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
       c.strokeStyle = '#d8ffe8'; c.lineWidth = 1.8; c.lineCap = 'round'; c.beginPath(); c.moveTo(cx - R * .45, cy); c.lineTo(cx - R * .1, cy + R * .35); c.lineTo(cx + R * .5, cy - R * .35); c.stroke(); c.restore(); }

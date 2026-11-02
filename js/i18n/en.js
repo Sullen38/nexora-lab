@@ -20,7 +20,7 @@ NX.i18n.add('en', {
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
-    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK' },
+    ai: { live: 'LIVE', neuro: 'NEURO', net: 'NET', map: 'MAP', log: 'LOG', vision: 'VISION', kpi: 'KPI', ok: 'OK', virus: 'VIRUS!', clean: 'THREAT REMOVED', guard: 'ANTIVIRUS: GINGER', hi: 'HI, NEXI!', cat: 'GINGER' },
     analytics: { map: 'MAP', users: 'USERS', trend: 'TREND', visitors: 'VISITORS', revenue: 'REVENUE', conv: 'CONVERSION', sales: 'SALES',
       days: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'], forecast: 'FORECAST', ready: 'REPORT READY' },
     marketing: { tags: 'AI TAGS', ads: 'ADS', live: 'LIVE', reach: 'REACH', likes: 'LIKES', clicks: 'CLICKS' },
@@ -51,6 +51,7 @@ NX.i18n.add('en', {
   act: {
     home: { title: 'Charging dock', steps: ['Heading to the dock', 'Charging'], lines: ["Hi! I'm Nexi, your AI business assistant. Tap a zone, the sofa or the window and I'll go there.", "I'm home, charging. What's next?"] },
     ai: { title: 'AI center: client reply', steps: ['Jetting onto the desk', 'Reading the request', 'Writing a reply', 'Sent ✓'], lines: ['AI center: I answer clients, write emails and meeting summaries.', 'I read your documents and find what you need in seconds.', 'I generate ideas for promos and names. Describe the task and I am on it.'] },
+    virus: { title: 'Virus in the AI center!', steps: ['Running to the AI center', 'Watching Ginger hunt', 'Virus destroyed ✓'], lines: ['Whoa! A virus in the AI center!', 'Alert! Something crawled into the neural net!', 'Ginger, a virus — get it!'], thanks: ['Ginger, you are the best antivirus!', 'Pew-pew! All clean. Thanks, Ginger!', 'Laser eyes — what a superpower!'], ai: ['Phew, the AI deleted it by itself.'] },
     analytics: { title: 'Analytics: sales report', steps: ['Taking a seat', 'Collecting data', 'Building a chart', 'Report ready ✓'], lines: ['Analytics: I gather sales, traffic and costs into one report.', 'I can see where conversion drops and suggest a fix.'] },
     marketing: { title: 'Marketing: campaign', steps: ['Taking my chair', 'Writing a post', 'Launching ads', 'Reach is growing ✓'], lines: ['Marketing: I write posts, newsletters and ads in your style.', "I'll find the audience and plan the week's campaigns."] },
     wsLook: { lines: ['What a hologram! That skin suits me.', 'So many skins… Tap the workshop and I will try a new one!'] },

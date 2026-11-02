@@ -20,7 +20,7 @@ NX.i18n.add('pl', {
   city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
-    ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK' },
+    ai: { live: 'NA ŻYWO', neuro: 'NEURO', net: 'SIEĆ', map: 'MAPA', log: 'DZIENNIK', vision: 'WIZJA', kpi: 'KPI', ok: 'OK', virus: 'WIRUS!', clean: 'ZAGROŻENIE USUNIĘTE', guard: 'ANTYWIRUS: RUDY', hi: 'CZEŚĆ, NEXI!', cat: 'RUDY' },
     analytics: { map: 'MAPA', users: 'UŻYTKOWNICY', trend: 'TREND', visitors: 'ODWIEDZAJĄCY', revenue: 'PRZYCHÓD', conv: 'KONWERSJA', sales: 'SPRZEDAŻ',
       days: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SB', 'ND'], forecast: 'PROGNOZA', ready: 'RAPORT GOTOWY' },
     marketing: { tags: 'TAGI AI', ads: 'REKLAMY', live: 'NA ŻYWO', reach: 'ZASIĘG', likes: 'POLUBIENIA', clicks: 'KLIKNIĘCIA' },
@@ -51,6 +51,7 @@ NX.i18n.add('pl', {
   act: {
     home: { title: 'Stacja dokująca', steps: ['Wracam do stacji', 'Ładuję się'], lines: ['Cześć! Jestem Nexi, Twój asystent AI dla biznesu. Dotknij strefy, kanapy lub okna, a pójdę tam.', 'Jestem w domu, ładuję się. Co robimy?'] },
     ai: { title: 'Centrum AI: odpowiedź klientowi', steps: ['Lecę na biurko', 'Czytam zapytanie', 'Piszę odpowiedź', 'Wysłane ✓'], lines: ['Centrum AI: odpowiadam klientom, piszę maile i podsumowania spotkań.', 'Czytam Twoje dokumenty i w sekundę znajduję to, czego trzeba.', 'Wymyślam pomysły na promocje i nazwy. Opisz zadanie, a się nim zajmę.'] },
+    virus: { title: 'Wirus w centrum AI!', steps: ['Biegnę do centrum AI', 'Patrzę, jak Rudy poluje', 'Wirus zniszczony ✓'], lines: ['Ojej! Wirus w centrum AI!', 'Alarm! Coś wlazło do sieci neuronowej!', 'Rudy, wirus — bierz go!'], thanks: ['Rudy, jesteś najlepszym antywirusem!', 'Piu-piu! Czysto. Dzięki, Rudy!', 'Laserowe oczy — to jest supermoc!'], ai: ['Uff, AI samo go usunęło.'] },
     analytics: { title: 'Analityka: raport sprzedaży', steps: ['Siadam w fotelu', 'Zbieram dane', 'Rysuję wykres', 'Raport gotowy ✓'], lines: ['Analityka: zbieram sprzedaż, ruch i koszty w jeden raport.', 'Widzę, gdzie spada konwersja, i podpowiem, co poprawić.'] },
     marketing: { title: 'Marketing: kampania', steps: ['Siadam w fotelu', 'Piszę post', 'Uruchamiam reklamę', 'Zasięg rośnie ✓'], lines: ['Marketing: piszę posty, newslettery i reklamy w Twoim stylu.', 'Dobiorę odbiorców i zaplanuję kampanie na tydzień.'] },
     wsLook: { lines: ['Co za hologram! Ta skórka mi pasuje.', 'Tyle skórek… Dotknij warsztatu, a przymierzę nową!'] },
