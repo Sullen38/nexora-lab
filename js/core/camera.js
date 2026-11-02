@@ -7,6 +7,9 @@
  * Ширина кімнати — від NX.cfg.ROOM_X0 до ROOM_X1 (ширша за картинку: крайні зони, core/config.js).
  * Тап (дотик без перетягування) передається в NX.input.onTap(x,y) у
  * координатах кімнати.
+ * iPhone / iPad: свайп від лівого чи правого краю екрана — жест браузера «назад» / «вперед»; хто гортав кімнату від краю,
+ * випадав зі сторінки (власник, 02.11). Дотик біля краю канвас «забирає собі» (touchstart з preventDefault) — тоді Safari
+ * (iOS 13.4+) цей жест не починає, а кімната гортається як звичайно (тапи й перетягування — pointer-події, їм це не заважає).
  * ========================================================================== */
 NX.cam = {
   k: 1,          // скільки CSS-пікселів в 1 одиниці кімнати
@@ -49,6 +52,9 @@ NX.cam = {
   /** Підключення перетягування (миша/палець) і тапів до canvas. */
   bindInput(canvas) {
     let down = null;
+    // дотик за EDGE px від лівого / правого краю — не жест «назад» / «вперед» браузера, а гортання кімнати (див. шапку)
+    const EDGE = 28;
+    canvas.addEventListener('touchstart', e => { for (const t of e.changedTouches) if (t.clientX < EDGE || t.clientX > innerWidth - EDGE) { e.preventDefault(); break; } }, { passive: false });
     canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, cx: this.x, moved: false }; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener('pointermove', e => {
       if (down) {
