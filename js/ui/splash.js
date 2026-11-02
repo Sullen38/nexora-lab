@@ -7,7 +7,8 @@
  *   • ПІДПИСИ — лише зі словників (splash.* у js/i18n/*.js, 4 мови), а малюються ПІКСЕЛЬНИМ ШРИФТОМ кодом (5×7, великі
  *     літери: латиниця з польськими, кирилиця, цифри, знаки; дані — FONT нижче, генерує tools/splash/gen_splash.js) у
  *     полотна .sp-tx — у тому ж масштабі пікселя, що й увесь піксель-арт заставки, і без очікування шрифтів Google;
- *     слова Nexi (say), назви етапів (st), кроки (step; зони 3D-крил — їхні назви з nav.*), «ОК» у журналі;
+ *     слова Nexi (say), назви етапів (st), кроки (step; зони 3D-крил — їхні назви з nav.*), «ОК» у журналі. Відсотків етапу
+ *     в підписах немає: число відсотків на екрані ОДНЕ — загальне, те саме, що й заливка смуги (index.html, NX_SPLASH.p);
  *   • живого Nexi на заставці — той самий renderBot, що в кімнаті, з твоїм скіном (щойно завантажиться sprite.js);
  *   • NX.boot.run(gen, етап) — веде важку збірку (місто, 3D-крила, перший кадр) ДРІБНИМИ ШМАТКАМИ: генератор віддає
  *     частку 0..1, ми працюємо ~40 мс (на слабкому телефоні — довше) і віддаємо браузеру кадр — лоад-бар рухається, а не
@@ -52,7 +53,7 @@ NX.boot = (() => {
    *  3D-крила — стіни й підлога / назва зони (nav.*) / світло…, готово — перший кадр. */
   function stepText(k) {
     if (k === 'js') return S.nj ? S.nj + '/' + S.NJ : '';
-    if (k === 'img') return Math.min(100, Math.round((S.F.img || 0) / .9 * 100)) + '%';
+    if (k === 'img') return S.kb ? S.kb + (S.kbT ? '/' + S.kbT : '') + ' ' + T('splash.kb') : '';   // скільки КБ картинки вже прийшло
     if (k === 'city') return NX.city && NX.city.step ? T('splash.step.' + NX.city.step) : '';
     if (k === 'wings') { const st = NX.arc && NX.arc.step; return !st ? '' : st.k === 'zone' ? T('nav.' + st.x) : T('splash.step.' + st.k); }
     return T('splash.step.warm');
@@ -62,7 +63,7 @@ NX.boot = (() => {
   function textOf(cv) {
     const d = cv.dataset, k = S.stage || 'js';
     let s = d.raw != null ? d.raw : d.spT ? T(d.spT) : d.spSt ? T('splash.st.' + d.spSt) : d.sp ? (d.sp === 'step' ? stepText(k) : T('splash.' + (d.sp === 'stage' ? 'st' : d.sp) + '.' + k)) : '';
-    if (d.em) { const f = S.F[d.em] || 0; s = f >= 1 ? T('splash.ok') : d.em === k ? Math.floor(f * 100) + '%' : ''; }
+    if (d.em) s = (S.F[d.em] || 0) >= 1 ? T('splash.ok') : d.em === k ? '...' : '';   // журнал (C): готово — «ОК», іде — «...» (блимає)
     const own = d.spSt || d.em, col = d.cs && own ? STC[d.cs][stateOf(own)] : d.c || '#dbe7ff';
     return [s, col];
   }

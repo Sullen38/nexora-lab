@@ -2,7 +2,7 @@
 NX.i18n.add('pl', {
   ui: { result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', skins: 'SKÓRKI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. DOTKNIJ NEXI — SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', save: 'ZAPISZ', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
-    aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK',
+    aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK', kb: 'KB',
     st: { js: 'SKRYPTY', img: 'OBRAZ POKOJU', city: 'MIASTO', wings: 'SKRZYDŁA 3D', ready: 'GOTOWE' },
     say: { js: 'Ładuję swój kod...', img: 'Rozglądam się po pokoju...', city: 'Włączam miasto za oknem...', wings: 'Buduję skrzydła 3D...', ready: 'Gotowe! Wchodź!' },
     step: { sky: 'niebo i gwiazdy', planet: 'planeta', far: 'dalekie kwartały', towers: 'wieżowce', near: 'autostrada i kolejka', glow: 'neonowa poświata', wall: 'ściany i podłoga', back: 'przy ścianach', finish: 'szlifuję detale', compose: 'światło i blask', mirror: 'lustrzana podłoga', warm: 'pierwsza klatka' } },
