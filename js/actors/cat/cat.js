@@ -1,7 +1,8 @@
 /* ============================================================================
  * actors/cat/cat.js — РУДИЙ КІТ: ВЛАСНЕ ЖИТТЯ (поведінка)
  * ----------------------------------------------------------------------------
- * Кіт живе сам: спить (диван / бильце / біля доку), вмивається, ганяє м'ячик (objects/ball.js), потягується,
+ * Кіт живе сам: спить (своя лежанка під столом AI-центру — крок 14; диван / бильце / біля доку), вмивається, ганяє м'ячик
+ * (objects/ball.js), потягується,
  * нявкає, приходить посидіти біля Nexi. Голод росте з часом -> кіт нявкає, і Nexi сам приходить зі смаколиком
  * (activities.js → feedCat). Куточок кота (лежанка, дряпка, миски) прибрано — власник, 02.11: «поки що місце для
  * Рудика взагалі прибираємо» (узяти назад — коміт be2f780, objects/cat_corner.js).
@@ -16,14 +17,19 @@ NX.cat = {
   /** Місце на дивані (задане для старого місця дивану — переноситься разом з ним, core/config.js sofaPt) і точка підлоги перед ним. */
   sofaSpot(k, x, y) { const [sx, sy] = NX.cfg.sofaPt(x, y), [, fy] = NX.cfg.sofaPt(x, 384); return { [k]: { x: sx, y: sy, from: [sx, fy] } }; },
   spots() { return {
-    ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301),
+    ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301), ...this.bedSpot(),
     rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 } }; },
+  /** Лежанка під столом AI-центру (крок 14): точка на подушці (якір aiBed розкладки) і точка підлоги перед столом, звідки
+   *  кіт застрибує під стіл (як на диван: під стіл Nexi й кіт пішки не ходять — слід стола). */
+  bedSpot() { const z = NX.arc.zone && NX.arc.zone('ai'); if (!z) return {}; const [x, y] = z.S(108, 336, 20), [fx, fy] = NX.room.clampWalk(...z.S(108, 352, -16), 'cat');
+    return { aiBed: { x, y, from: [fx, fy] } }; },
 
   /** Наступна справа: вибір за потребами та випадком. */
   decide() {
     const r = Math.random();
     if (this.hunger > .7) return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; });   // голодний — кличе Nexi (смаколик)
-    if (r < .28) { const keys = ['sofa', 'sofaArm', 'rug', 'rug'], s = this.spots()[keys[Math.random() * keys.length | 0]]; return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
+    if (r < .28) { const S = this.spots(), keys = ['aiBed', 'aiBed', 'aiBed', 'sofa', 'sofaArm', 'rug'].filter(k => S[k]), s = S[keys[Math.random() * keys.length | 0]];   // найчастіше — своя лежанка
+      return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .44) return this.set('groom', 4 + Math.random() * 3);
     if (r < .64) { const b = NX.objects.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { b.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
     if (r < .8) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }

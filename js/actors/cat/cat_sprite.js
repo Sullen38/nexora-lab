@@ -1,7 +1,7 @@
 /* ============================================================================
  * actors/cat/cat_sprite.js — МИЛИЙ РУДИЙ КІТ РУДИК (HD-сітка 32×24)
  * ----------------------------------------------------------------------------
- * drawCat(pose, frame, t, canvas) — кіт дивиться вправо (вліво дзеркалимо).
+ * drawCat(pose, frame, t, canvas, pal) — кіт дивиться вправо (вліво дзеркалимо); pal — інші фарби (за замовчуванням Рудик).
  * Мила стилістика: велика кругла голова, великі темні очі з двома бліками,
  * рожеві щічки, ротик "ω", пухнастий смугастий хвіст, білі шкарпетки.
  * Пози: walk, run, sit, happy (коли гладять), groom, sleep, eat, stretch,
@@ -9,9 +9,9 @@
  * ========================================================================== */
 const CAT_W = 32, CAT_H = 24;
 const CATC = { O: '#f39a3c', L: '#ffc27a', D: '#d0702a', S: '#a84e14', W: '#fff6ea', N: '#ff8fb0', B: '#ff9fb5', E: '#2a140a', OUT: [52, 22, 8] };
-function drawCat(pose, fr, t, cv) {
+function drawCat(pose, fr, t, cv, pal) {                                            // pal — інші фарби (Чеширський кіт, actors/guests/guest_art.js)
   cv.width = CAT_W; cv.height = CAT_H; const x = cv.getContext('2d', { willReadFrequently: true }); x.clearRect(0, 0, CAT_W, CAT_H);
-  const P = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); }, C = CATC;
+  const P = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); }, C = pal || CATC;
   /** Кругла "булочка": заливка з обрізаними кутами + світлий верх + темний низ. */
   const BUN = (a, b, w, h, c = C.O) => { P(a + 2, b, w - 4, h, c); P(a + 1, b + 1, w - 2, h - 2, c); P(a, b + 2, w, h - 4, c); P(a + 2, b, w - 4, 1, C.L); P(a + 1, b + 1, 2, 1, C.L); P(a + 2, b + h - 1, w - 4, 1, C.D); };
   /** Голова 13×11: вушка, мордочка, очі, щічки, носик, ротик ω. eyes: open | closed | happy | meow */

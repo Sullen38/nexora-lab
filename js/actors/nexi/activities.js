@@ -18,8 +18,10 @@
  *   ІНСТРУМЕНТИ — Nexi підходить до верстака, злітає на ранці (спиною до нас) і лагодить хаб молотком — картка задачі (CRM /
  *     календар / автоматизація) підключається, пакети летять з хаба до неї; ✓, маячок спалахує; Nexi спускається й радіє
  *     (objects/tools.js).
- * Решта зон (AI-центр, портал) — далі; задачі AI-центру поки з дивану (sofaWork). Старі сценарії зон — в історії git (коміт
- * a941612), тексти act.<зона> — у словниках.
+ * Крок 14 (власник: «зроби взаємодію з Nexi»): AI-ЦЕНТР — Nexi підходить до стола, злітає на нього, стає спиною до нас і працює
+ *   (на екрані — його задача: відповісти клієнту / лист партнеру / підсумок зустрічі; «✓»), спускається й радіє — картка
+ *   результату (objects/aicenter.js). Робота з дивану (sofaWork) лишилась — просто з планшетом, без картки. Портал — гості з
+ *   казок (actors/visitors.js). Старі сценарії зон — в історії git (коміт a941612), тексти act.<зона> — у словниках.
  * ========================================================================== */
 (() => {
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
@@ -28,9 +30,9 @@
 
     sofa: { color: '#7a5cff', route() { const p = P().sofa; return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofa'), { work: { pose: 'sitRead', dur: 12 } }]; } },
 
-    sofaWork: { color: '#3be8ff', route() { const p = P().sofa, zs = ['ai'], z = zs[Math.random() * zs.length | 0], task = NX.ui.zones.pick(z);   // маркетинг, аналітика, інструменти — на своїх місцях
+    sofaWork: { color: '#3be8ff', route() { const p = P().sofa;   // задачі зон — на своїх місцях (AI-центр — з кроку 14), з дивану — просто планшет
       return [{ walk: p.floor }, { hop: p.sit, dy: p.dy }, { do: () => NX.objects.sofa.land(p.sit[0]) }, { loc: 'sofaSit' }, { face: 1 }, line('sofaWork'),
-        { work: { pose: 'sitTablet', dur: 9, tick: () => Math.random() < .06 && NX.fx.emit('bit', NX.nexi.x + 10, NX.nexi.y - 30, { vy: -30 }) } }, { do: () => { NX.ui.zones.result(z, task, !!(NX.nexi.task && NX.nexi.task.auto)); NX.nexi.emote('cool', 2); } }]; } },
+        { work: { pose: 'sitTablet', dur: 9, tick: () => Math.random() < .06 && NX.fx.emit('bit', NX.nexi.x + 10, NX.nexi.y - 30, { vy: -30 }) } }, { do: () => NX.nexi.emote('cool', 2) }]; } },
 
     bounce: { color: '#ff4fd8', route() { const p = P().sofa, [x, y] = p.stand, s = NX.objects.sofa, k = NX.cfg.SOFA.k, L = [{ walk: p.floor }, { hop: [x - 26 * k, y], dy: p.dy }, { loc: 'sofaStand' }, { do: () => s.land(x - 26 * k) }, line('bounce')];
       [8, 34, 4, -22, 10].forEach((dx, i) => L.push({ work: { pose: 'crouch', dur: .12 } }, { hop: [x + dx * k, y], hi: 26 * k, dy: p.dy }, { do: () => { s.land(x + dx * k, 1.2); NX.nexiPhys.land(3); if (i === 2) NX.nexi.emote('happy', 2); } }));
@@ -90,6 +92,16 @@
         { work: { pose: 'hoverFix', dur: 10, obj: 'tools', back: true, tick: () => Math.random() < .22 && spark() } },
         { do: () => { T.finish(); NX.nexi.back = false; } }, { fly: st }, { loc: 'floor' }, { face: 1 },                      // ✓ — і вниз
         { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.4 } }]; } },
+
+    // ---------- AI-ЦЕНТР: злітає на стіл, працює спиною до нас, екран показує задачу й «✓» (objects/aicenter.js) ----------
+    ai: { nav: 'ai', color: '#3be8ff', route() {
+      const A = NX.objects.aicenter, task = NX.nexi.taskOpt; if (!A || !A.ready()) return [line('ai')];
+      const st = A.front(), bits = () => { const n = NX.nexi; NX.fx.emit('bit', n.x + (Math.random() - .5) * 26, n.y - 40 - Math.random() * 14, { vy: -34 }); };
+      return [{ walk: st }, { face: 1 }, { work: { pose: 'crouch', dur: .25 } },
+        { fly: A.top(), dy: A.depth() }, { loc: 'aiDesk' }, { do: () => A.begin(task) }, line('ai'),                       // на стіл, до екрана
+        { work: { pose: 'type', dur: 10.5, obj: 'aicenter', back: true, tick: () => Math.random() < .12 && bits() } },
+        { do: () => { A.finish(); NX.nexi.back = false; } }, { face: 1 }, { do: () => NX.nexi.emote('happy', 2.2) }, { work: { pose: 'cheer', dur: 1.3 } },   // «✓» — і вниз
+        { fly: st }, { loc: 'floor' }]; } },
 
     // ---------- МАЙСТЕРНЯ (СКІНИ): капсула, сканер, лабораторія скінів, маніпулятор (objects/workshop.js) ----------
     workshop: { nav: 'workshop', color: '#ff7af0', route(n) {

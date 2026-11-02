@@ -13,6 +13,7 @@
  *   ai_pedL    — тумба-«ядро»: колона ядер у склі (ядра світяться хвилею — живі), від неї розходяться доріжки; бік — доріжки
  *   ai_pedR    — тумба з трьома шухлядами (ручки — неонові риски), вогники стану
  *   ai_knee    — задня панель простору для ніг: доріжки сходяться до «синапсу» з м'яким сяйвом, лоток з кабелем
+ *   ai_bed     — лежанка Рудика під столом (крок 14): бортик зі стьобкою й сердечком, подушка зі слідом лапки
  *   (крок 13.1 — кімната ширша з боків, куточок кота прибрано: стіл на тумбах замість опор-«водоспадів» з нішею)
  *   ai_monL/R  — монітори по краях стола: чат з клієнтом / лист (нерухомі; передні — поверх голо-екрана)
  *   ai_screen  — висока рамка на столі: шапка з вивіскою, утоплене скло під голо-екран, пульт за моніторами; бік — ґратка
@@ -125,6 +126,28 @@
     A.neon(c, fw * .03, fh * .115, fw * .97, fh * .115, CY, .45);
     for (let k = 0; k < 9; k++) { const x = fw * (.06 + k * .11); c.fillStyle = '#2a2050'; c.fillRect(x - .5, fh * .06, 1, fh * .11); }
     c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(0, fh * .86, fw, fh * .14);                                  // тінь унизу
+  };
+
+  // ---------- ЛЕЖАНКА РУДИКА (крок 14: «під столом зони AI — спальне місце для Рудика») ----------
+  // М'яка кругла лежанка з бортиком: тканина сливово-рожева (свій матеріал bed — заокруглена фаска), шов по бортику, на подушці —
+  // слід лапки й іменна табличка-сердечко; кіт застрибує в неї спати (actors/cat/cat.js — місце aiBed).
+  A.STY.bed = { pal: NX.px3d.pal(['#1a0820', '#2a0e34', '#3e1648', '#54205e', '#6c2a76', '#86368c', '#a046a0', '#ba5ab2', '#d274c4', '#e894d6', '#f8b8e8']), q: .5, bev: 2.4, ins: 0, round: 1 };
+  PAINT.ai_bed = (c, fw, fh) => {                                                                          // бортик спереду: стьобка, шов, сердечко
+    c.fillStyle = 'rgba(255,200,240,.18)'; c.fillRect(0, 0, fw, fh * .16);
+    for (let k = 1; k < 8; k++) { c.fillStyle = 'rgba(40,8,48,.32)'; c.fillRect(fw * k / 8 - .25, fh * .2, .5, fh * .62); }   // стьобка
+    c.strokeStyle = 'rgba(255,190,235,.55)'; c.lineWidth = .35; c.setLineDash([.9, .8]); c.beginPath(); c.moveTo(fw * .03, fh * .5); c.lineTo(fw * .97, fh * .5); c.stroke(); c.setLineDash([]);
+    const hx = fw / 2, hy = fh * .5, r = fh * .22; c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(hx - r * .5, hy - r * .2, r * .55, 0, 7); c.arc(hx + r * .5, hy - r * .2, r * .55, 0, 7); c.fill();
+    c.beginPath(); c.moveTo(hx - r, hy); c.lineTo(hx, hy + r * 1.05); c.lineTo(hx + r, hy); c.fill(); c.fillStyle = '#ffe0f4'; c.fillRect(hx - r * .5, hy - r * .4, r * .3, r * .25);
+  };
+  PAINT.ai_bed.sides = {
+    top: (c, fw, fh) => {                                                                                  // подушка всередині бортика, слід лапки
+      const g = c.createRadialGradient(fw / 2, fh * .55, 1, fw / 2, fh * .55, fw * .5); g.addColorStop(0, '#f2a8dc'); g.addColorStop(.7, '#c46ab4'); g.addColorStop(1, '#7a2c76');
+      c.fillStyle = g; c.beginPath(); c.ellipse(fw / 2, fh * .55, fw * .4, fh * .34, 0, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(60,10,60,.45)'; c.lineWidth = .4; c.beginPath(); c.ellipse(fw / 2, fh * .55, fw * .4, fh * .34, 0, 0, 7); c.stroke();
+      const px = fw * .66, py = fh * .5; c.fillStyle = 'rgba(120,30,110,.45)'; c.beginPath(); c.ellipse(px, py + fh * .06, fw * .03, fh * .07, 0, 0, 7); c.fill();   // слід лапки
+      [[-1, -1], [0, -1.35], [1, -1]].forEach(([dx, dy]) => { c.beginPath(); c.ellipse(px + dx * fw * .028, py + dy * fh * .07, fw * .013, fh * .035, 0, 0, 7); c.fill(); });
+    },
+    left: (c, fw, fh) => { c.fillStyle = 'rgba(255,200,240,.14)'; c.fillRect(0, 0, fw, fh * .16); for (let k = 1; k < 4; k++) { c.fillStyle = 'rgba(40,8,48,.3)'; c.fillRect(fw * k / 4 - .25, fh * .2, .5, fh * .6); } },
   };
 
   // ---------- МОНІТОРИ НА СТОЛІ ----------
@@ -245,7 +268,8 @@
     c.strokeStyle = '#3be8ff'; c.lineWidth = .35; rr(c, bz, bz, fw - 2 * bz, fh - 2 * bz, r); c.stroke(); c.fillStyle = 'rgba(210,245,255,.16)'; c.fillRect(r + 2, bz + .4, fw - 2 * r - 4, .3);
     // шапка: «НЕЙРО · МЕРЕЖА», ● НАЖИВО, сигнал; смужка поступу задачі
     const hh = 9.4;
-    icon(c, 'ai', m + 2.4, bz + hh * .52, 3.4, '#ff9af0'); A.txt(c, t_('scene.ai.neuro') + ' · ' + t_('scene.ai.net'), m + 5.8, bz + hh * .52, fw * .5, 4, '#e8feff', { align: 'left', glow: CY });
+    const head = act && S.task ? NX.t(`zones.ai.${S.task}.t`).toUpperCase() : t_('scene.ai.neuro') + ' · ' + t_('scene.ai.net');   // Nexi працює — у шапці його задача (крок 14)
+    icon(c, 'ai', m + 2.4, bz + hh * .52, 3.4, '#ff9af0'); A.txt(c, head, m + 5.8, bz + hh * .52, fw * .58, 4, act ? '#ffe0f6' : '#e8feff', { align: 'left', glow: act ? PK : CY });
     const on = Math.sin(t * 4) > -.4; c.fillStyle = on ? '#ff4f6a' : '#6a1a2a'; c.beginPath(); c.arc(fw * .7, bz + hh * .52, .95, 0, 7); c.fill();
     A.txt(c, t_('scene.ai.live'), fw * .715, bz + hh * .52, fw * .15, 2.8, 'rgba(255,205,215,.92)', { align: 'left' });
     for (let k = 0; k < 4; k++) { const hgt = 1.2 + k * .9, lit = (Math.floor(t * (act ? 6 : 2)) + k) % 5 !== 0; c.fillStyle = lit ? '#9af6ff' : 'rgba(120,200,255,.3)'; c.fillRect(fw - m - 7 + k * 1.6, bz + hh * .78 - hgt, 1, hgt); }
@@ -293,6 +317,11 @@
     for (let k = 0; k * step < tw + step; k++) { const x = tx0 + k * step - sh, s = Math.floor(t * (act ? 9 : 4) / step) - k, wv = 1.2 + 1.6 * hash(s, 2);
       c.fillStyle = hash(s, 4) > .8 ? 'rgba(255,122,216,.85)' : 'rgba(122,244,255,.7)'; c.fillRect(x, wy + wh * .38, wv, wh * .24); }
     c.restore();
+    // задачу виконано (крок 14): печатка «✓» над мозком ~2.6 с
+    const dk = S.doneT != null ? t - S.doneT : 99;
+    if (dk >= 0 && dk < 2.6) { const a = Math.min(1, dk * 4) * Math.min(1, (2.6 - dk) * 2), cx = fw / 2, cy = y1 + (yB - y1) * .45, R = Math.min(fw, fh) * .16 * (1 + .15 * Math.max(0, .3 - dk));
+      c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(6,30,40,.82)'; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill(); c.strokeStyle = GR; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.stroke();
+      c.strokeStyle = '#d8ffe8'; c.lineWidth = 1.8; c.lineCap = 'round'; c.beginPath(); c.moveTo(cx - R * .45, cy); c.lineTo(cx - R * .1, cy + R * .35); c.lineTo(cx + R * .5, cy - R * .35); c.stroke(); c.restore(); }
   }
   NX.arc.aiScreen = aiScreen;
 })();

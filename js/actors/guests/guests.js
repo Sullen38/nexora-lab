@@ -1,0 +1,195 @@
+/* ============================================================================
+ * actors/guests/guests.js — ГОСТІ З ПОРТАЛУ (крок 14)
+ * ----------------------------------------------------------------------------
+ * Власник: «з портала з'являються рандомні відомі персонажі — не більше трьох за раз, не повторюються (20 персонажів, потім
+ * по-новому в рандомному порядку) і щось роблять: Баба Яга підмітає, Білосніжка шукає гнома, на Чеширського кота нападає
+ * Рудик — той трохи погуляє, Рудик «цап!», і той утік у портал».
+ *   МІШОК: 20 героїв перемішані; беремо по черзі, поки не скінчаться, тоді — нове перемішування (перший з нового — не той,
+ *     що був останнім). Разом у кімнаті — щонайбільше MAX (3); новий гість — раз на 20–40 с, перший — за ~25 с після старту.
+ *   ГІСТЬ: з'являється на майданчику порталу (вихор крутиться швидше, руни довкола), зіскакує зі сходинок, грає свою сценку
+ *     (кроки: go / run — іти підлогою в обхід меблів, fly — летіти, hop — стрибок, act — поза на час, say — репліка, do — дія,
+ *     until — чекати), іде назад, заскакує в портал і тане. Сценки — SCENES нижче; малюнки — guest_art.js; тексти —
+ *     guests.<id>.n / .s у словниках (4 мови).
+ *   Рудик і Nexi беруть участь: Рудик ганяє Колобка й нападає на Чеширського кота, вітається з Котом у чоботях, тікає від
+ *     Змія Горинича; Nexi отримує пиріжок, подарунок, чари Мерліна, змащує Залізного Дроворуба (якщо вільний).
+ * Тап по гостю — він повторює репліку; наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
+ * ========================================================================== */
+NX.guests = (() => {
+  const IDS = ['babaYaga', 'snowWhite', 'cheshire', 'redHood', 'whiteRabbit', 'kolobok', 'pinocchio', 'pussBoots', 'quixote', 'sherlock',
+    'robinHood', 'munchausen', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'silver', 'gorynych'];
+  const MAX = 3, S = { list: [], bag: [], last: null, next: 25, props: [], fx: [], on: true };
+  const P = NX.px, A = NX.guestArt, t_ = (k, o) => NX.t(k, o), rnd = Math.random;
+  const zone = () => NX.arc && NX.arc.zone && NX.arc.zone('portal');
+  /** Точки порталу на екрані: майданчик під аркою (де з'являються) і підлога перед брамою. */
+  const pad = () => { const p = zone().S(100, 316, 30); return [p[0], p[1]]; };
+  const front = () => NX.room.clampWalk(...zone().S(100, 352, -30), 'nexi');
+  const free = (x, y) => NX.room.freeAt(...NX.room.clampWalk(x, y, 'nexi'), 'nexi');
+  /** Випадкова точка підлоги в середній смузі кімнати (не біля самих країв). */
+  const anyPt = () => { const B = NX.room.walkBounds(); return free(160 + rnd() * 1240, B.minY + 12 + rnd() * Math.min(110, B.maxY - B.minY - 20)); };
+  const nexiFree = () => { const n = NX.nexi; return !n.cur && !n.queue.length && (n.loc === 'floor' || n.loc === 'dock') && n.dy == null; };
+  const nearNexi = g => { const n = NX.nexi; return nexiFree() ? free(n.x + (n.x > g.x ? -34 : 34), n.y) : free(NX.objects.rug.home[0] + 60, NX.objects.rug.home[1]); };
+  const nearCat = () => { const [cx, cy] = NX.cat.floorPos(); return free(cx + (cx > 774 ? -30 : 30), Math.max(cy, 380)); };
+
+  // ============================ СЦЕНКИ ============================
+  // кожна — функція (g) -> кроки між «зіскочив з порталу» і «пішов назад» (flyer: true — прилітає й відлітає сам)
+  const dust = g => () => rnd() < .3 && NX.fx.emit('dust', g.x + g.dir * (14 + rnd() * 10), g.y - 2);
+  const SCENES = {
+    babaYaga: { flyer: true, steps: g => [{ hop: front() }, { go: anyPt() }, { act: 'sweep', dur: 3.2, tick: dust(g) }, { say: 0 }, { act: 'sweep', dur: 2.2, tick: dust(g) }, { say: 1 },
+      { fly: pad(), alt: 46, pose: 'ride', speed: 120 }] },
+    snowWhite: { steps: g => { const hide = free(...(rnd() < .5 ? [NX.cfg.SOFA.x + 150, NX.cfg.SOFA.y + 70] : [520, 400])); g.comp = { id: 'dwarf', x: hide[0], y: hide[1], dir: -1, pose: 'stand', hidden: true };
+      return [{ go: anyPt() }, { act: 'search', dur: 1.6 }, { say: 0 }, { go: anyPt() }, { act: 'search', dur: 1.2 }, { go: free(hide[0] + 30, hide[1] + 6) }, { face: hide[0] },
+        { do: () => { g.comp.hidden = false; g.comp.pose = 'cheer'; NX.fx.emit('heart', hide[0], hide[1] - 30); } }, { act: 'cheer', dur: 1.6 }, { say: 1 }, { do: () => { g.comp.follow = true; g.comp.pose = 'walk'; } }]; } },
+    cheshire: { steps: g => [{ go: anyPt() }, { act: 'sit', dur: 2 }, { say: 0 }, { go: anyPt() }, { act: 'sit', dur: .6 },
+      { do: () => { const side = NX.cat.x < g.x ? -1 : 1; g.dir = side; NX.cat.goTo(g.x + side * 18, g.y, () => { g.caught = true; NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.6)); }, null, true); } },
+      { until: () => g.caught, max: 10, pose: 'sit' }, { say: 1 }, { do: () => { g.fade = .45; } }] , speed: 1.4, runBack: true },
+    redHood: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'give', dur: 2.2, start: () => { NX.nexi.emote('love', 2); NX.fx.emit('heart', g.x + g.dir * 16, g.y - 40); } }, { say: 0 }, { act: 'cheer', dur: 1 }] },
+    whiteRabbit: { speed: 1.8, steps: g => [{ run: anyPt() }, { act: 'watch', dur: 1.6 }, { say: 0 }, { run: anyPt() }, { act: 'watch', dur: .8 }], runBack: true },
+    kolobok: { speed: 1.4, steps: g => [{ go: anyPt(), pose: 'roll' }, { say: 0 }, { act: 'roll', dur: 1, tick: () => rnd() < .12 && NX.fx.emit('note', g.x, g.y - 22) }, { go: anyPt(), pose: 'roll' },
+      { do: () => NX.cat.goTo(g.x, g.y, () => NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.4)), null, true) }, { say: 1 }, { wait: .5 }], runBack: true, rollBack: true },
+    pinocchio: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { say: 0 }, { act: 'stand', dur: 2.6, start: () => NX.nexi.emote('surprise', 2.5), tick: dt => { g.nose = Math.min(9, (g.nose || 0) + dt * 4); } },
+      { act: 'cheer', dur: 1, end: () => { g.nose = 0; } }] },
+    pussBoots: { steps: g => [{ go: nearCat() }, { face: () => NX.cat.x }, { act: 'bow', dur: 2.2, start: () => NX.cat.purr(3) }, { say: 0 }, { act: 'stand', dur: .6 }] },
+    quixote: { steps: g => [{ go: anyPt() }, { face: 1000 }, { say: 0 }, { run: free(1000 + rnd() * 80, 372), pose: 'charge' }, { act: 'fall', dur: 1.8, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('spark', g.x + g.dir * 16, g.y - 30); } },
+      { say: 1 }, { act: 'stand', dur: .6 }] },
+    sherlock: { steps: g => [{ go: nearCat() }, { act: 'inspect', dur: 2.4, tick: dust(g) }, { say: 0 }, { go: anyPt() }, { act: 'inspect', dur: 1.6 }, { say: 1 }, { act: 'stand', dur: .6 }] },
+    robinHood: { steps: g => { const b = NX.objects.ball; return [{ go: free(b.x + (b.x > 774 ? -110 : 110), b.y) }, { face: () => b.x }, { act: 'aim', dur: 1.4 },
+      { do: () => { S.fx.push({ type: 'arrow', x0: g.x + g.dir * 22, y0: g.y - 38, x1: b.x, y1: b.y - 6, t0: NX.time, dur: .35, then: () => { b.kick(g.dir * 260, (rnd() - .5) * 90); for (let i = 0; i < 6; i++) NX.fx.emit('spark', b.x, b.y - 6); } }); } },
+      { act: 'aim', dur: .6 }, { say: 0 }, { act: 'cheer', dur: 1 }]; } },
+    munchausen: { flyer: true, steps: g => { const B = NX.room.walkBounds(), far = free(250 + rnd() * 300, B.minY + 70); return [{ fly: far, alt: 70, pose: 'ride', speed: 170, smoke: 1 }, { say: 0 }, { act: 'ride', dur: 1.2, alt: 70 },
+      { fly: pad(), alt: 60, pose: 'ride', speed: 170, smoke: 1 }]; } },
+    firebird: { flyer: true, steps: g => { const pts = [anyPt(), anyPt(), anyPt()]; return [{ fly: pts[0], alt: 95, pose: 'fly', speed: 150, trail: 1 }, { fly: pts[1], alt: 70, pose: 'fly', speed: 150, trail: 1 },
+      { do: () => S.props.push({ type: 'feather', x: pts[1][0], y: pts[1][1], until: NX.time + 30 }) }, { say: 0 }, { fly: pts[2], alt: 110, pose: 'fly', speed: 150, trail: 1 }, { fly: pad(), alt: 60, pose: 'fly', speed: 150, trail: 1 }]; } },
+    stNicholas: { steps: g => { const h = NX.objects.rug.home, gp = free(h[0] - 70 + rnd() * 140, h[1] + 20); return [{ go: free(gp[0] + 26, gp[1]) }, { face: gp[0] },
+      { act: 'give', dur: 1.6, start: () => S.props.push({ type: 'gift', x: gp[0], y: gp[1], until: NX.time + 40 }) }, { say: 0 }, { act: 'cheer', dur: 1, start: () => NX.nexi.emote('love', 2) }]; } },
+    cinderella: { steps: g => [{ go: free(NX.objects.rug.home[0] + (rnd() - .5) * 200, NX.objects.rug.home[1] - 10) }, { act: 'twirl', dur: 3, tick: () => rnd() < .2 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#ffffff' }) },
+      { say: 0 }, { do: () => { g.g.lostShoe = true; S.props.push({ type: 'shoe', x: g.x + g.dir * 8, y: g.y + 2, until: NX.time + 35 }); } }], runBack: true },
+    merlin: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'cast', dur: 2.6, start: () => NX.nexi.emote('surprise', 2.5),
+      tick: () => { const n = NX.nexi; if (rnd() < .35) NX.fx.emit('spark', n.x + (rnd() - .5) * 50, n.y - 70 - rnd() * 30, { col: rnd() < .5 ? '#9af6ff' : '#e2c4ff', vy: 20 }); if (rnd() < .2) NX.fx.emit('snow', n.x + (rnd() - .5) * 60, n.y - 90); } }, { say: 0 }, { act: 'stand', dur: .8 }] },
+    genie: { flyer: true, steps: g => { const sp = anyPt(); return [{ fly: sp, alt: 8, pose: 'float', speed: 120 }, { do: () => { g.lamp = { type: 'lamp', x: sp[0] + 4, y: sp[1] + 1, until: Infinity }; S.props.push(g.lamp); } },
+      { say: 0 }, { act: 'cast', dur: 1.8, alt: 8, start: () => NX.city && NX.city.fireworks && NX.city.fireworks(9) }, { say: 1 }, { act: 'float', dur: 1.4, alt: 8 },
+      { do: () => { if (g.lamp) g.lamp.until = NX.time; } }, { fly: pad(), alt: 20, pose: 'float', speed: 120 }]; } },
+    tinMan: { steps: g => [{ go: nearNexi(g) }, { act: 'rust', dur: 1.2 }, { say: 0 }, { do: () => { if (nexiFree()) { const n = NX.nexi; NX.nexi.walkTo(g.x + (n.x > g.x ? 30 : -30), g.y); g.helped = true; } } },
+      { until: () => !g.helped || (!NX.nexi.cur && !NX.nexi.queue.length), max: 7, pose: 'rust' },
+      { act: 'rust', dur: 1.2, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('bubble', g.x - g.dir * 6, g.y - 34 + i * 3, { col: '#ffd27a' }); if (g.helped) NX.nexi.emote('happy', 2); } },
+      { act: 'cheer', dur: 1.6 }, { say: 1 }] },
+    silver: { steps: g => [{ go: anyPt() }, { act: 'dig', dur: 3, tick: dust(g) }, { do: () => { g.carry = { type: 'chest', x: g.x + g.dir * 18, y: g.y + 1, until: Infinity }; S.props.push(g.carry); } },
+      { say: 0 }, { act: 'cheer', dur: 1.2 }, { say: 'p' }, { do: () => { if (g.carry) g.carry.follow = g; } }] },
+    gorynych: { steps: g => [{ go: anyPt() }, { act: 'stand', dur: 1 }, { act: 'sneeze', dur: 1.3, start: () => { for (let i = 0; i < 10; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }, { say: 0 },
+      { do: () => { const c = NX.cat; if (Math.abs(c.x - g.x) < 260 && c.alt === 0) c.goTo(...free(c.x + (c.x > g.x ? 160 : -160), c.y + 20), () => c.set('sit', 2), null, true); } }, { act: 'stand', dur: .8 }] },
+  };
+
+  // ============================ ГІСТЬ ============================
+  function make(id) {
+    const sc = SCENES[id], p = pad(), g = { id, x: p[0], y: p[1], dir: -1, pose: 'stand', fr: 0, ft: 0, alt: 0, alpha: 0, zoom: .25, g: {}, cv: document.createElement('canvas'), q: [], cur: null, onPad: true, speed: sc.speed || 1 };
+    const back = sc.flyer ? [] : sc.rollBack ? [{ run: front(), pose: 'roll' }, { hop: p }] : [{ [sc.runBack ? 'run' : 'go']: front() }, { hop: p }];   // назад: до брами, на майданчик
+    g.q = [{ appear: .7 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, { vanish: .7 }];
+    S.portalT = NX.time + 2; if (nexiFree()) NX.nexi.emote(['surprise', 'happy', 'idea'][Math.random() * 3 | 0], 2);
+    NX.ui.hud.toast && NX.ui.hud.toast(t_('guests.arrive', { name: t_(`guests.${id}.n`) }));
+    return g;
+  }
+  /** Наступний гість із мішка (20 героїв без повторів; скінчились — нове перемішування). */
+  function pick() {
+    if (!S.bag.length) { S.bag = IDS.slice(); for (let i = S.bag.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [S.bag[i], S.bag[j]] = [S.bag[j], S.bag[i]]; }
+      if (S.bag[S.bag.length - 1] === S.last) S.bag.unshift(S.bag.pop()); }
+    let id = S.bag.pop(); if (S.list.some(g => g.id === id) && S.bag.length) { S.bag.unshift(id); id = S.bag.pop(); }
+    return S.last = id;
+  }
+  const say = (g, k) => { const L = k === 'p' ? t_(`guests.${g.id}.p`) : (NX.t(`guests.${g.id}.s`) || [])[k]; if (L) g.bub = { text: L, until: NX.time + 2.6, parrot: k === 'p' }; };
+  const atPad = g => { const p = pad(); return Math.hypot(g.x - p[0], g.y - p[1]) < 3; };
+  /** Крок черги: повертає true, коли зроблено. */
+  function step(g, a, dt) {
+    a._t = (a._t || 0) + dt;
+    if (a.appear || a.vanish) { const k = Math.min(1, a._t / (a.appear || a.vanish)), e = a.appear ? k : 1 - k; g.alpha = e; g.zoom = .25 + .75 * e; g.dir = Math.floor(a._t * (a.vanish ? 12 : 0)) % 2 ? 1 : g.dir;
+      if (Math.random() < .5) NX.fx.emit('portal', g.x + (Math.random() - .5) * 30, g.y - Math.random() * 50); return k >= 1; }
+    if (a.hop) { if (!a.from) a.from = [g.x, g.y]; const k = Math.min(1, a._t / .5); g.x = P.lerp(a.from[0], a.hop[0], k); g.y = P.lerp(a.from[1], a.hop[1], k); g.alt = Math.sin(k * Math.PI) * 12; g.pose = 'stand';
+      if (Math.abs(a.hop[0] - a.from[0]) > 2) g.dir = Math.sign(a.hop[0] - a.from[0]); if (k >= 1) { g.alt = 0; g.onPad = atPad(g); } return k >= 1; }
+    if (a.go || a.run) {
+      const to = a.go || a.run, sp = (a.run ? 76 : 44) * g.speed;
+      if (!a.path) { a.path = NX.room.route([g.x, g.y], to, 'nexi'); g.onPad = false; }
+      const w = a.path.length > 1 ? a.path[0] : to, dx = w[0] - g.x, dy = w[1] - g.y, d = Math.hypot(dx, dy);
+      g.pose = a.pose || (a.run ? 'run' : 'walk'); if (Math.abs(dx) > .5) g.dir = Math.sign(dx);
+      if (d < Math.max(2, sp * dt)) { g.x = w[0]; g.y = w[1]; if (a.path.length > 1) a.path.shift(); else return true; }
+      else { g.x += dx / d * sp * dt; g.y += dy / d * sp * dt; }
+      if (a._t > 25) return true; return false;
+    }
+    if (a.fly) {
+      if (!a.from) { a.from = [g.x, g.y, g.alt]; a.dur = Math.max(.6, Math.hypot(a.fly[0] - g.x, a.fly[1] - g.y) / (a.speed || 120)); g.onPad = false; }
+      const k = Math.min(1, a._t / a.dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      g.x = P.lerp(a.from[0], a.fly[0], e); g.y = P.lerp(a.from[1], a.fly[1], e); g.alt = P.lerp(a.from[2], a.alt || 0, e) + Math.sin(k * Math.PI) * (a.alt || 0) * .35; g.pose = a.pose || 'fly';
+      if (Math.abs(a.fly[0] - a.from[0]) > 2) g.dir = Math.sign(a.fly[0] - a.from[0]);
+      if (a.smoke && Math.random() < .5) NX.fx.emit('steam', g.x - g.dir * 14, g.y - g.alt - 8); if (a.trail && Math.random() < .8) NX.fx.emit('fire', g.x - g.dir * 16, g.y - g.alt - 22);
+      if (k >= 1) g.onPad = atPad(g); return k >= 1;
+    }
+    if (a.act) { if (!a.st) { a.st = 1; a.start && a.start(); } g.pose = a.act; if (a.alt != null) g.alt = a.alt; a.tick && a.tick(dt); if (a._t >= a.dur) { a.end && a.end(); return true; } return false; }
+    if (a.say != null) { say(g, a.say); return true; }
+    if (a.face != null) { const fx = typeof a.face === 'function' ? a.face() : a.face; if (Math.abs(fx - g.x) > 1) g.dir = Math.sign(fx - g.x); return true; }
+    if (a.do) { a.do(); return true; }
+    if (a.wait) { g.pose = 'stand'; return a._t >= a.wait; }
+    if (a.hold) return false;                                                                            // демо: стоїть у своїй позі
+    if (a.until) { g.pose = a.pose || 'stand'; return a.until() || a._t >= (a.max || 8); }
+    return true;
+  }
+  function spawn(id) { if (!zone()) return null; const g = make(id || pick()); S.list.push(g); return g; }
+  function update(dt, t) {
+    if (!zone() || !(NX.boot && NX.boot.done)) return;
+    if (S.on && t > S.next && S.list.length < MAX) { spawn(); S.next = t + 20 + Math.random() * 20; }
+    const po = NX.objects.portal; if (po) po.active = NX.time < (S.portalT || 0) || S.list.some(g => g.cur && (g.cur.appear || g.cur.vanish));
+    S.list.forEach(g => {
+      g.ft += dt; if (g.ft > (g.pose === 'run' ? .08 : .13)) { g.ft = 0; g.fr++; }
+      if (!g.cur) { g.cur = g.q.shift(); if (g.cur && (g.cur.appear || g.cur.vanish)) S.portalT = NX.time + 1.4; }
+      if (!g.cur) { g.dead = true; return; }
+      if (step(g, g.cur, dt)) g.cur = null;
+      const c = g.comp; if (c && c.follow) { const tx = g.x - g.dir * 20, ty = g.y + 3, dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy); if (d > 2) { c.x += dx / d * Math.min(d, 60 * dt); c.y += dy / d * Math.min(d, 60 * dt); c.pose = 'walk'; c.dir = Math.sign(dx) || c.dir; } else c.pose = 'stand'; c.fr = g.fr; }
+      if (g.bub && t > g.bub.until) g.bub = null;
+    });
+    S.list = S.list.filter(g => !g.dead);
+    S.props = S.props.filter(p => NX.time < p.until || p.follow);
+    S.props.forEach(p => { if (p.follow) { const g = p.follow; if (g.dead) { p.until = NX.time; p.follow = null; } else { p.x = g.x + g.dir * 14; p.y = g.y + 1; p.alt = 16; p.alpha = g.alpha; p.zoom = g.zoom; } } });
+    S.fx = S.fx.filter(f => { if (NX.time - f.t0 >= f.dur) { f.then && f.then(); return false; } return true; });
+  }
+  /** Шар гостя: тінь, спрайт (масштаб — як у Nexi за глибиною), репліка над головою. */
+  function layerOf(o, id, pose, fr, extra) {
+    const [W, H, K] = A.size(id), s = NX.room.scaleAt(o.y) * K * .98 * (o.zoom || 1), w = W * s, h = H * s, top = o.y - (o.alt || 0) - h;
+    return { y: o.y + (o.onPad ? -40 : 0), refl: !o.onPad && !(o.alt > 30), box: [o.x - w / 2 - 4, top - 30, o.x + w / 2 + 4, o.y + 4], draw: c => {
+      if (o._rt !== NX.time) { o._rt = NX.time; A.draw(id, pose, fr, NX.time, o.cv || (o.cv = document.createElement('canvas')), extra || o.g); }
+      c.save(); c.globalAlpha = (o.alpha != null ? o.alpha : 1) * (1 - (o.fade || 0));
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(o.x, o.y + 1, w * .26 * Math.max(.3, 1 - (o.alt || 0) / 120), 2.2 * s, 0, 0, 7); c.fill();
+      c.imageSmoothingEnabled = false; c.translate(o.x, 0); c.scale(o.dir || 1, 1); c.drawImage(o.cv, -w / 2, top, w, h); c.restore();
+    } };
+  }
+  /** Репліка: темна плашка з неоновим кантом над головою, текст — піксельним шрифтом (вміщується в будь-якій мові). */
+  function bubble(c, g, s, top) {
+    const b = g.bub; if (!b) return; let fs = 8; c.save(); c.font = `${fs}px "Press Start 2P", monospace`; let tw = c.measureText(b.text).width;
+    if (tw > 190) { fs = Math.max(5, fs * 190 / tw); c.font = `${fs}px "Press Start 2P", monospace`; tw = c.measureText(b.text).width; }
+    const pw = tw + 12, ph = fs + 10, bx = P.clamp(g.x - pw / 2 + (b.parrot ? g.dir * 10 : 0), NX.cam.x + 4, NX.cam.x + NX.cam.viewW - pw - 4), by = top - ph - 8;
+    c.globalAlpha = Math.min(1, (b.until - NX.time) * 3) * (g.alpha != null ? g.alpha : 1);
+    c.fillStyle = '#0a0626ee'; c.fillRect(bx, by, pw, ph); c.strokeStyle = b.parrot ? '#3bff8a' : '#ff7af0'; c.lineWidth = 1; c.strokeRect(bx + .5, by + .5, pw - 1, ph - 1);
+    c.fillStyle = '#0a0626ee'; c.beginPath(); c.moveTo(g.x - 4, by + ph); c.lineTo(g.x + 4, by + ph); c.lineTo(g.x, by + ph + 6); c.fill();
+    c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(b.text, bx + pw / 2, by + ph / 2 + .5); c.restore();
+  }
+  function layers() {
+    const out = [];
+    S.list.forEach(g => {
+      const L = layerOf(g, g.id, g.pose, g.fr), d0 = L.draw, [W, H, K] = A.size(g.id), s = NX.room.scaleAt(g.y) * K * .98 * g.zoom, top = g.y - g.alt - H * s;
+      L.draw = c => { d0(c); bubble(c, g, s, top); }; out.push(L);
+      const c = g.comp; if (c && !c.hidden) out.push(layerOf(Object.assign(c, { alpha: g.alpha, zoom: g.zoom }), c.id, c.pose, c.fr || 0, {}));
+    });
+    S.props.forEach(p => { const pr = p.cv || (p.cv = document.createElement('canvas')), s = NX.room.scaleAt(p.y) * 1.1 * (p.zoom || 1), w = 16 * s, h = 12 * s, al = Math.min(1, (p.until - NX.time) / 1.5);
+      out.push({ y: p.y, refl: true, box: [p.x - w / 2, p.y - h - (p.alt || 0), p.x + w / 2, p.y + 2], draw: c => { A.drawProp(p.type, NX.time, pr); c.save(); c.globalAlpha = Math.max(0, Math.min(p.alpha != null ? p.alpha : 1, p.follow ? 1 : al));
+        c.imageSmoothingEnabled = false; c.drawImage(pr, p.x - w / 2, p.y - h - (p.alt || 0), w, h); c.restore(); } }); });
+    S.fx.forEach(f => out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), xx = P.lerp(f.x0, f.x1, k), yy = P.lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 10, ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
+      c.save(); c.strokeStyle = '#e8d0a0'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xx - Math.cos(ang) * 12, yy - Math.sin(ang) * 12); c.lineTo(xx, yy); c.stroke(); c.fillStyle = '#d02a2a'; c.fillRect(xx - Math.cos(ang) * 12 - 1.5, yy - Math.sin(ang) * 12 - 1.5, 3, 3); c.restore(); } }));
+    return out;
+  }
+  /** Гість під точкою (тап, наведення): межі спрайта. */
+  function hitTest(x, y) {
+    for (const g of S.list) { const [W, H, K] = A.size(g.id), s = NX.room.scaleAt(g.y) * K * .98 * g.zoom, w = W * s * .6, h = H * s, top = g.y - g.alt - h;
+      if (g.alpha > .5 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 3) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => { say(g, 0); NX.fx.emit('heart', g.x, top); } }; }
+    return null;
+  }
+  NX.addObject({ id: 'guests', update, layers });
+  return { spawn, hitTest, IDS, S,
+    /** Для перевірки й знімків: усі 20 рядами перед брамою (поза stand), без сценок. */
+    demo(ids = IDS) { S.on = false; S.list = []; const B = NX.room.walkBounds(); ids.forEach((id, i) => { const g = { id, x: 140 + (i % 10) * 132, y: B.minY + 40 + Math.floor(i / 10) * 70, dir: 1, pose: i === 2 ? 'sit' : 'stand', fr: 0, ft: 0, alt: 0, alpha: 1, zoom: 1, g: {}, cv: null, q: [{ hold: 1 }], cur: null, speed: 1 }; S.list.push(g); }); },
+  };
+})();

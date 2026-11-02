@@ -35,13 +35,14 @@ NX.nexi = {
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };
-    const ch = NX.objects.mkChair, ws = NX.objects.workshop, ac = NX.objects.anChair, tl = NX.objects.tools;
+    const ch = NX.objects.mkChair, ws = NX.objects.workshop, ac = NX.objects.anChair, tl = NX.objects.tools, ai = NX.objects.aicenter;
     return ({                                                                         // місця зон: крісла маркетингу й аналітики, капсула майстерні, верстак інструментів
       sofaSit: [up, { hop: P.sofa.floor }], sofaStand: [{ hop: P.sofa.floor }], sofaLie: [up, { hop: P.sofa.floor }],
       mkChair: ch ? [{ do: () => ch.standUp() }, up, { hop: ch.side() }] : [],
       anChair: ac ? [{ do: () => ac.standUp() }, up, { hop: ac.side() }] : [],
       wsPad: ws ? [up, { do: () => ws.leave() }, { fly: ws.front() }] : [],
       tlHover: tl ? [up, { fly: tl.stand() }] : [],
+      aiDesk: ai ? [up, { do: () => ai.finish() }, { fly: ai.front() }] : [],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
@@ -148,11 +149,12 @@ NX.nexi = {
     if (idle > NX.cfg.IDLE_BEFORE_AUTOLIFE && t > (this.nextLife || 0) && this.loc !== 'sofaLie') {
       this.nextLife = t + 10 + Math.random() * 8;
       if (this.catHungry) { this.catHungry = false; this.do('feedCat', false); return; }                       // Рудик нявкає — смаколик
-      const r = Math.random(), ok = (id, o) => NX.acts[id] && NX.objects[o] && NX.objects[o].ready();   // сам працює: маркетинг, аналітика, інструменти — на своїх місцях, AI-центр — з дивану
+      const r = Math.random(), ok = (id, o) => NX.acts[id] && NX.objects[o] && NX.objects[o].ready();   // сам працює: маркетинг, аналітика, інструменти, AI-центр — на своїх місцях
       if (r < .13 && ok('marketing', 'mkChair')) { this.do('marketing', false, { task: NX.ui.zones.pick('marketing') }); return; }
       if (r >= .13 && r < .25 && ok('analytics', 'anChair')) { this.do('analytics', false, { task: NX.ui.zones.pick('analytics') }); return; }
       if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
-      if (r < .43) { this.do('sofaWork', false); return; }
+      if (r >= .36 && r < .47 && ok('ai', 'aicenter')) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }
+      if (r < .5) { this.do('sofaWork', false); return; }
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }
