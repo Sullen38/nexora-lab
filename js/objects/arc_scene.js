@@ -23,13 +23,13 @@
  * Перебудова — при зміні масштабу екрана (лише злиття) або мови (уся збірка; стара видна до готовності).
  * Живі частини зон (голограма й маніпулятор майстерні, голо-монітори й крісло маркетингу) — окремі об'єкти поверх цього
  * злиття: objects/workshop.js, marketing.js, mk_chair.js; координати зони для них — NX.arc.zone(ім'я) (нижче). Малюнки граней
- * і живі екрани зон — *_paint.js (майстерня ws_, маркетинг mk_, аналітика an_, інструменти tl_).
+ * і живі екрани зон — *_paint.js (майстерня ws_, маркетинг mk_, аналітика an_, інструменти tl_, AI-центр ai_, портал pt_).
  * ========================================================================== */
 (() => {
   const X = NX.px3d, A = NX.arc.kit, PZ = NX.persp, { col, pal, ramp, add, rgb } = X;
   const ALL = window.RWBOX || NX.arcLayout || {}, FL = 372, CEIL = -240, WIN = NX.cfg.WIN, PL = A.PAL;
   const R_ZONE = 3, R_WALL = 2, t0 = performance.now();   // зони 3 px/од. (на екрані — 1.2..2.7 px/од.: з запасом), стіни 2
-  const R_HERO = { workshop: 4, marketing: 4, analytics: 4, tools: 4 };   // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
+  const R_HERO = { workshop: 4, marketing: 4, analytics: 4, tools: 4, ai: 4, portal: 4 };   // власник (29.10): «більше графіки, більше пікселів» — головні зони 4 px/од.
   /** ЗОНА -> СВІТ (для живих частин зон: objects/workshop.js, marketing.js, mk_chair.js): px картинки зони (X, Y) і відступ
    *  углиб v -> точка світу — як у генераторі (place з поворотом turn + фронтальний зсув frontal). Повертає null, якщо зони
    *  ще немає. Поворот — у зони, що стоїть лицем до центру дуги (середні зони, варіант Б); фронтальні — turn 0. */
@@ -454,12 +454,21 @@
    *  аналітика й інструменти: їхній перед — на y ~374), каже, де вона стоїть, — прямокутник на екрані під її частинами на
    *  підлозі (власник, крок 3: «щоб не ходив по верху об'єктів»). Дальні зони (маркетинг, майстерня) стоять за межею
    *  підлоги — сліду не треба (до них Nexi підходить спереду: крісло, пад). */
+  // Крок 13: зона, у якої опори позначені fs (AI-центр — стіл на двох опорах, під ним куток кота), каже про КОЖНУ опору
+  // окремо — між ними (у ніші) коту й мискам вільно; а Nexi під стіл і за нього не заходить — для нього слід увесь стіл аж до
+  // стіни (окремий об'єкт з catOk: кіт його не бачить). fb — слід до самої задньої межі підлоги (портал: за сходинками до
+  // стіни — глухий закуток, туди не ходять). Решта зон — як були, одним прямокутником.
+  const bottomBox = list => { let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    list.forEach(B => A.faces(B).forEach(Fc => { if (Fc.k === 'bottom') Fc.poly.forEach(q => { const p = X.proj(q); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); }));
+    if (list.some(B => B.fb)) y0 = Math.min(y0, NX.cfg.FLOOR_Y + 6);
+    return [x0, x1, y0, y1]; };
   ['right', 'left'].forEach(sd => {
     const by = {}; ((ALL[sd] || {}).items || []).forEach(B => { if (B.zone && B.layer !== 'up' && !B.on && !B.ghost && B.yb >= FL - 1) (by[B.zone] || (by[B.zone] = [])).push(B); });
     Object.entries(by).forEach(([zn, list]) => {
-      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      list.forEach(B => A.faces(B).forEach(Fc => { if (Fc.k === 'bottom') Fc.poly.forEach(q => { const p = X.proj(q); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }); }));
-      if (y1 > NX.cfg.FLOOR_Y + 6) NX.addObject({ id: 'foot_' + zn, foot: [x0, x1, y0, y1] });
+      const fs = list.filter(B => B.fs), f = fs.length ? fs.map(B => bottomBox([B])).filter(r => r[3] > NX.cfg.FLOOR_Y + 6) : bottomBox(list);
+      if (fs.length ? f.length : f[3] > NX.cfg.FLOOR_Y + 6) NX.addObject({ id: 'foot_' + zn, foot: f });
+      if (fs.length > 1 && f.length > 1) NX.addObject({ id: 'foot_' + zn + '_nook', catOk: true,                    // увесь стіл до стіни — лише для Nexi
+        foot: [Math.min(...f.map(q => q[0])), Math.max(...f.map(q => q[1])), NX.cfg.FLOOR_Y + 6, Math.max(...f.map(q => q[3]))] });
     });
   });
   NX.arc.scene = { SIDES, compose, rebuild() { want = true; }, bootG };

@@ -4,8 +4,9 @@
  * Нерухоме обох крил — одне полотно (objects/arc_scene.js). Поверх нього тут кладеться те, що рухається на гранях
  * предметів; вміст визначають файли зон (objects/ws_paint.js, mk_paint.js, an_paint.js, tl_paint.js) — оживає, щойно в
  * розкладці є предмет з таким id.
- *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
- *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати;
+ *   NX.arc.LIVE[id] = { draw(c, fw, fh, t, B), every, step } — малює ЛИШЕ ділянки, що змінюються (решта прозора — під нею
+ *     нерухома грань), у координатах лицьової грані (як NX.arc.paint); every — раз на скільки кадрів оновлювати; step —
+ *     ширина стовпчика перспективи (од. кімнати; за замовчуванням 1.5 — для широких майже фронтальних граней беруть ширші);
  *     draw повертає false — зараз нічого (відблиск вивіски між проходами): грань не перемальовується й не кладеться
  *   NX.arc.live(c, side, S, t) — щокадру: оновлює по черзі (вразбіг) і кладе кожен екран одним drawImage; екрани поза
  *     видимою смугою (телефон бачить ~п'яту частину кімнати) не оновлюються й не кладуться
@@ -40,7 +41,7 @@ NX.arc = NX.arc || {};
     oc.setTransform(Rd, 0, 0, Rd, -m.x * Rd, -m.y * Rd); oc.imageSmoothingEnabled = true;
     const q = E.q;
     if (Math.abs(q[0][1] - q[1][1]) < .02 && Math.abs(q[3][1] - q[2][1]) < .02) oc.drawImage(E.src, q[0][0], q[0][1], q[1][0] - q[0][0], q[3][1] - q[0][1]);   // грань паралельна екрану
-    else F.warp(oc, E.src, q, 1.5);
+    else F.warp(oc, E.src, q, LIVE[E.id].step || 1.5);                             // step — ширина стовпчика (широка майже фронтальна грань — ширші: менше drawImage)
     oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalCompositeOperation = 'destination-in'; oc.imageSmoothingEnabled = true; oc.drawImage(m.cv, 0, 0, w, h); oc.globalCompositeOperation = 'source-over';
     E.Rd = Rd;
   }
