@@ -7,7 +7,7 @@ NX.i18n.add('en', {
     say: { js: 'Loading my code...', img: 'Looking around the room...', city: 'Switching on the city...', wings: 'Building the 3D wings...', ready: 'Ready! Come on in!' },
     step: { sky: 'sky & stars', planet: 'planet', far: 'far blocks', towers: 'skyscrapers', near: 'highway & monorail', glow: 'neon glow', wall: 'walls & floor', back: 'by the walls', finish: 'polishing details', compose: 'light & glow', mirror: 'mirror floor', warm: 'first frame' } },
   nav: { ai: 'AI CENTER', analytics: 'ANALYTICS', marketing: 'MARKETING', workshop: 'WORKSHOP', tools: 'TOOLS', portal: 'PORTAL' },
-  cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions' },
+  cats: { skin: 'Skins', relic: 'Relics', face: 'Face', ant: 'Antennas', body: 'Body', arms: 'Arms', legs: 'Legs', acc: 'Accessories', theme: 'Colors', fx: 'Effects', act: 'Actions', mood: 'Emotions', owners: 'Owners' },
   obj: { pillow: 'Pillow', aiPc: 'AI center · computer', analytics: 'Analytics', marketing: 'Marketing', sofa: 'Sofa', workshop: 'Workshop', tools: 'Tools', portal: 'Portal', rug: 'Charging dock', ball: 'Ball', window: 'City window', nexiTag: 'NEXI · SKINS', catTag: 'GINGER · PET' },
   zones: {
     start: 'On it: {task}!',
@@ -75,6 +75,14 @@ NX.i18n.add('en', {
     skinLab: { lines: ["Let's change my look! Pick skins on the right."] },
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
+  own: {
+    preset: 'Ready skin “{name}” — free', avail: 'Unique! Nobody has this Nexi yet', taken: '{name} already owns this Nexi ({no}) — change at least one thing',
+    mine: 'Your personal Nexi {no} · NFT 1/1', buy: 'BUY · {price}', busy: 'TAKEN', takenToast: 'CHANGE AT LEAST ONE THING', tryoff: 'TRY-ON REMOVED — BUY THIS NEXI TO KEEP IT',
+    price: '€{v}', title: 'PERSONAL NEXI', yours: 'YOUR',
+    perks: ['Only yours: nobody else can wear this Nexi', 'NFT 1/1 on Base — in your wallet (created from your email)', 'Resellable; one Nexi per person'],
+    soon: 'SALE OPENS SOON', soonNote: 'Card payments come in the next step — then this Nexi becomes your NFT 1/1.', haveOne: 'YOU ALREADY OWN NEXI {no}', wear: 'WEAR',
+    copy: 'COPY CODE', copied: 'CODE COPIED', owner: 'Owner: {name}', since: 'since {date}', founder: 'Founder', you: 'YOU', none: 'No owners yet — be the first!', demoName: 'Example {n}',
+    attr: { theme: 'Color', body: 'Body', arms: 'Arms', legs: 'Legs', ant: 'Antenna', head: 'Head', back: 'Back', hand: 'Relic' }, nothing: '—' },
   skin: {
     skin: { classic: 'Classic', neon: 'Neon', forest: 'Forester', winter: 'Winter', gamer: 'Gamer', techno: 'Techno', candy: 'Candy', astro: 'Astronaut', captain: 'Captain', samurai: 'Samurai', cyber: 'Cyber', pumpkin: 'Pumpkin', frost: 'Frost', royal: 'Royal', lava: 'Lava', cosmos: 'Cosmos', rainbow: 'Rainbow' },
     rar: { common: 'Common', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' },

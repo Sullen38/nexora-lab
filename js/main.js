@@ -27,6 +27,7 @@
     NX.city.markPatched();                                                           // передня підлога-дзеркало вже зібрана
     // 4) ГОТОВО: скін, інтерфейс, Nexi на доку, камера на ньому, перший кадр по шматках
     try { Object.assign(NX.nexi.look, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) {}   // вирази — емоції Nexi, не збережений вибір
+    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = NX.owners.sanitize(NX.nexi.look); try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} }   // персональний образ без покупки не зберігається (actors/nexi/owners.js)
     NX.ui.skinlab.init(); NX.ui.chat.init(); NX.ui.hud.init(); ui = true;
     [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; placed = true;
     NX.cam.x = NX.px.clamp(NX.nexi.x - NX.cam.viewW / 2, NX.cfg.ROOM_X0, Math.max(NX.cfg.ROOM_X0, NX.cfg.ROOM_X1 - NX.cam.viewW));   // телефон: одразу на Nexi

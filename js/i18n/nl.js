@@ -7,7 +7,7 @@ NX.i18n.add('nl', {
     say: { js: 'Mijn code laden...', img: 'Ik kijk rond in de kamer...', city: 'De stad gaat aan...', wings: '3D-vleugels bouwen...', ready: 'Klaar! Kom binnen!' },
     step: { sky: 'lucht en sterren', planet: 'planeet', far: 'verre wijken', towers: 'wolkenkrabbers', near: 'snelweg en monorail', glow: 'neongloed', wall: 'muren en vloer', back: 'langs de muren', finish: 'details poetsen', compose: 'licht en gloed', mirror: 'spiegelvloer', warm: 'eerste frame' } },
   nav: { ai: 'AI-CENTRUM', analytics: 'ANALYSE', marketing: 'MARKETING', workshop: 'WERKPLAATS', tools: 'TOOLS', portal: 'PORTAAL' },
-  cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties' },
+  cats: { skin: 'Skins', relic: 'Relieken', face: 'Gezicht', ant: 'Antennes', body: 'Romp', arms: 'Armen', legs: 'Benen', acc: 'Accessoires', theme: 'Kleuren', fx: 'Effecten', act: 'Acties', mood: 'Emoties', owners: 'Eigenaren' },
   obj: { pillow: 'Kussen', aiPc: 'AI-centrum · computer', analytics: 'Analyse', marketing: 'Marketing', sofa: 'Bank', workshop: 'Werkplaats', tools: 'Tools', portal: 'Portaal', rug: 'Laadstation', ball: 'Bal', window: 'Raam naar de stad', nexiTag: 'NEXI · SKINS', catTag: 'GEMBER · AAIEN' },
   zones: {
     start: 'Ik pak het op: {task}!',
@@ -75,6 +75,14 @@ NX.i18n.add('nl', {
     skinLab: { lines: ['Laten we mijn look veranderen! Kies rechts een skin.'] },
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },
+  own: {
+    preset: 'Kant-en-klare skin "{name}" — gratis', avail: 'Uniek! Niemand heeft deze Nexi nog', taken: '{name} heeft deze Nexi al ({no}) — verander minstens één ding',
+    mine: 'Jouw persoonlijke Nexi {no} · NFT 1/1', buy: 'KOPEN · {price}', busy: 'BEZET', takenToast: 'VERANDER MINSTENS ÉÉN DING', tryoff: 'PASSEN GESTOPT — KOOP DEZE NEXI OM HEM TE HOUDEN',
+    price: '€\u00a0{v}', title: 'PERSOONLIJKE NEXI', yours: 'JOUW',
+    perks: ['Alleen van jou: niemand anders kan deze Nexi dragen', 'NFT 1/1 op Base — in je wallet (aangemaakt met je e-mail)', 'Doorverkoopbaar; één Nexi per persoon'],
+    soon: 'VERKOOP BINNENKORT', soonNote: 'Betalen met kaart komt in de volgende stap — dan wordt deze Nexi jouw NFT 1/1.', haveOne: 'JE HEBT AL NEXI {no}', wear: 'DRAGEN',
+    copy: 'CODE KOPIËREN', copied: 'CODE GEKOPIEERD', owner: 'Eigenaar: {name}', since: 'sinds {date}', founder: 'Oprichter', you: 'JIJ', none: 'Nog geen eigenaren — wees de eerste!', demoName: 'Voorbeeld {n}',
+    attr: { theme: 'Kleur', body: 'Romp', arms: 'Armen', legs: 'Benen', ant: 'Antenne', head: 'Hoofd', back: 'Rug', hand: 'Reliek' }, nothing: '—' },
   skin: {
     skin: { classic: 'Klassiek', neon: 'Neon', forest: 'Boswachter', winter: 'Winter', gamer: 'Gamer', techno: 'Techno', candy: 'Snoepje', astro: 'Astronaut', captain: 'Kapitein', samurai: 'Samoerai', cyber: 'Cyber', pumpkin: 'Pompoen', frost: 'Vorst', royal: 'Koning', lava: 'Lava', cosmos: 'Kosmos', rainbow: 'Regenboog' },
     rar: { common: 'Gewoon', rare: 'Zeldzaam', epic: 'Episch', legendary: 'Legendarisch' },

@@ -172,7 +172,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / «...» (етап іде), data-raw — текст як є (NEXI);
   data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
   для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
-<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="68" data-room="assets/room.webp">
+<div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="71" data-room="assets/room.webp">
  <i class="sp-stars"></i>
  <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
  <!-- A · ДОК-СТАНЦІЯ -->
@@ -337,8 +337,22 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 <aside class="lab" id="lab" aria-label="Лабораторія скінів">
  <header><h2 id="labtitle"></h2><button class="x" id="lx" aria-label="Закрити">X</button></header>
  <div class="stage"><button class="ar l" id="pl" aria-label="Попередній">&lt;</button><canvas id="pv" width="48" height="56"></canvas><button class="ar r" id="pr" aria-label="Наступний">&gt;</button></div>
+ <div class="own" id="own"><b id="ownst"></b><small id="owncode"></small></div>   <!-- що це за образ: готовий / унікальний / зайнятий / твій (ui/skinlab.js) -->
  <div class="cats" id="cats"></div><div class="grid" id="grid"></div>
  <div class="acts"><button id="rnd"></button><button id="rst"></button><button class="save" id="save"></button></div>
+ <!-- Персональний Nexi: картка NFT, атрибути, що дає покупка, ціна (ui/shop.js; тексти — словники own.*) -->
+ <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shtitle">
+  <header><h3 id="shtitle"></h3><button class="x" id="shx">X</button></header>
+  <div class="shbody">
+   <canvas id="nftcv" width="384" height="512"></canvas>
+   <p class="shstat" id="shstat"></p>
+   <dl class="shattr" id="shattr"></dl>
+   <ul class="shperks" id="shperks"></ul>
+   <div class="shbuy"><b class="price" id="shprice"></b><button class="buy" id="shbuy"></button></div>
+   <small class="shnote" id="shnote"></small>
+   <div class="shcode"><code id="shcode"></code><button id="shcopy"></button></div>
+  </div>
+ </div>
 </aside>
 <div class="toast" id="toast"></div>
 <!-- Картка результату задачі (ui/zones.js) -->
@@ -370,9 +384,11 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 <script src="js/fx/particles.js"></script>
 <!-- Nexi: дані скінів, малювання, пози -->
 <script src="js/actors/nexi/skins.js"></script>
+<script src="js/actors/nexi/owners.js"></script>      <!-- персональні Nexi: правила унікальності, власники (крок 1 — без оплати) -->
 <script src="js/actors/nexi/sprite.js"></script>
 <script src="js/actors/nexi/poses.js"></script>
 <script src="js/actors/nexi/physics.js"></script>
+<script src="js/actors/nexi/nft_card.js"></script>    <!-- картка NFT персонального Nexi (піксель-арт, без перекладних написів) -->
 <script src="js/actors/cat/cat_sprite.js"></script>
 <!-- об'єкти кімнати (кожен — окремий блок). ЧИСТА ОСНОВА (власник, 29.10): стіни й підлога (3D «по дузі»), вікно з рамами,
      диван; зони додаємо по черзі (див. docs/HANDOFF.md): крок 1–2 — майстерня (скіни) й маркетинг -->
@@ -418,6 +434,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 <script src="js/ui/input.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/skinlab.js"></script>
+<script src="js/ui/shop.js"></script>                 <!-- аркуш «Персональний Nexi»: картка NFT, ціна, власник -->
 <script src="js/ui/chat.js"></script>
 <script src="js/ui/zones.js"></script>
 <script src="js/main.js"></script>

@@ -33,7 +33,14 @@
   const S = { idx: 0, shown: 0, mat: 1, occ: false, holoA: 1, scan: 0, zap: 0, look: 0, lookT: 6, fast: 0, motes: [], bolts: [], last: -1 };
   const botCv = document.createElement('canvas'), holoCv = document.createElement('canvas'); holoCv.width = SW; holoCv.height = SH;
   const hx = holoCv.getContext('2d', { willReadFrequently: true });
-  const presetOf = i => PRESETS[((i % PRESETS.length) + PRESETS.length) % PRESETS.length], look = i => skinLook(presetOf(i));
+  const presetOf = i => PRESETS[((i % PRESETS.length) + PRESETS.length) % PRESETS.length];
+  // ПЕРСОНАЛЬНІ NEXI (власник, 02.11: «у майстерні можна десь побачити всіх власників зі своїми Nexi»; actors/nexi/owners.js):
+  // коли власники є, кожен третій показ голограми — Nexi власника (з реліквією; на табличці — ім'я й номер у золотій рамці,
+  // під нею — «1/1»); готові скіни йдуть далі по черзі. Немає власників — як раніше, лише готові.
+  const slotOf = i => { const O = NX.owners ? NX.owners.list : [], m = ((i % 3) + 3) % 3, j = Math.floor(i / 3);
+    if (!O.length) return { pi: i, preset: presetOf(i) };
+    return m === 2 ? { owner: O[((j % O.length) + O.length) % O.length] } : { pi: j * 2 + m, preset: presetOf(j * 2 + m) }; };
+  const look = i => { const s = slotOf(i); return s.owner ? NX.owners.lookOf(s.owner.key) : skinLook(s.preset); };
   // реліквії: кадр предмета (sprite.js → renderItem) оновлюється 10 разів за секунду (блискавки, полум'я, відблиски); межі
   // намальованого — раз, щоб будь-яка реліквія була однакового розміру на орбіті
   const RCV = {};
@@ -324,13 +331,15 @@
         c.restore();
         if (S.mat < 1) { const yy = py - hover - top + h * .93 * (1 - ease(S.mat)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(220,255,255,.9)'; c.fillRect(px - w * .32, yy, w * .64, .9); P.glow(c, px, yy, 16, 'rgba(160,240,255,.7)', .5); c.restore(); }
         orbit(c, t, px, oy, S.holoA, true); RL.filter(r => r.front).forEach(r => drawRelic(c, t, r, S.holoA));
-        // голо-табличка: назва скіна в рамці кольору рідкості; каруселька скінів
-        const id = presetOf(S.shown), rc = RARITY[SKINS[id].rar], name = NX.t('skin.skin.' + id).toUpperCase(), ty = py - hover - top - 9, N = PRESETS.length, cur = ((S.shown % N) + N) % N;
+        // голо-табличка: назва скіна в рамці кольору рідкості; каруселька скінів (Nexi власника — ім'я й номер, золото, «1/1»)
+        const sl = slotOf(S.shown), own = sl.owner, rc = own ? '#ffd45a' : RARITY[SKINS[sl.preset].rar], N = PRESETS.length, cur = own ? -1 : ((sl.pi % N) + N) % N;
+        const name = own ? NX.owners.nameOf(own).toUpperCase() + ' ' + NX.owners.noText(own) : NX.t('skin.skin.' + sl.preset).toUpperCase(), ty = py - hover - top - 9;
         c.save(); c.globalAlpha = S.holoA; c.font = '4px "Press Start 2P", monospace'; const tw = Math.min(64, c.measureText(name).width + 10);
         c.fillStyle = 'rgba(6,18,60,.78)'; c.fillRect(px - tw / 2, ty - 5, tw, 8); c.strokeStyle = rc; c.lineWidth = .6; c.strokeRect(px - tw / 2 + .3, ty - 4.7, tw - .6, 7.4);
         c.fillStyle = rc; c.fillRect(px - tw / 2 + 1.6, ty - 1.9, 1.6, 1.6);                                                                                        // вогник рідкості
         c.fillStyle = '#f4fbff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(name, px + 1, ty - .7, tw - 6); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-        for (let k = 0; k < N; k++) { const on = k === cur; c.fillStyle = on ? rc : 'rgba(150,230,255,.4)'; c.fillRect(px - N * 1.4 + k * 2.8, ty + 4.5, on ? 1.8 : 1.2, on ? 1.8 : 1.2); }
+        if (own) { c.fillStyle = rc; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('1/1', px, ty + 6); c.textAlign = 'left'; c.textBaseline = 'alphabetic'; }
+        else for (let k = 0; k < N; k++) { const on = k === cur; c.fillStyle = on ? rc : 'rgba(150,230,255,.4)'; c.fillRect(px - N * 1.4 + k * 2.8, ty + 4.5, on ? 1.8 : 1.2, on ? 1.8 : 1.2); }
         c.restore();
       }
       // СКАНУВАННЯ Nexi в капсулі: кільця бігають по ньому, з боків — світлові колони

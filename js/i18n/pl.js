@@ -7,7 +7,7 @@ NX.i18n.add('pl', {
     say: { js: 'Ładuję swój kod...', img: 'Rozglądam się po pokoju...', city: 'Włączam miasto za oknem...', wings: 'Buduję skrzydła 3D...', ready: 'Gotowe! Wchodź!' },
     step: { sky: 'niebo i gwiazdy', planet: 'planeta', far: 'dalekie kwartały', towers: 'wieżowce', near: 'autostrada i kolejka', glow: 'neonowa poświata', wall: 'ściany i podłoga', back: 'przy ścianach', finish: 'szlifuję detale', compose: 'światło i blask', mirror: 'lustrzana podłoga', warm: 'pierwsza klatka' } },
   nav: { ai: 'CENTRUM AI', analytics: 'ANALITYKA', marketing: 'MARKETING', workshop: 'WARSZTAT', tools: 'NARZĘDZIA', portal: 'PORTAL' },
-  cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje' },
+  cats: { skin: 'Skórki', relic: 'Relikwie', face: 'Twarz', ant: 'Anteny', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', acc: 'Akcesoria', theme: 'Kolory', fx: 'Efekty', act: 'Akcje', mood: 'Emocje', owners: 'Właściciele' },
   obj: { pillow: 'Poduszka', aiPc: 'Centrum AI · komputer', analytics: 'Analityka', marketing: 'Marketing', sofa: 'Kanapa', workshop: 'Warsztat', tools: 'Narzędzia', portal: 'Portal', rug: 'Stacja dokująca', ball: 'Piłka', window: 'Okno na miasto', nexiTag: 'NEXI · SKÓRKI', catTag: 'RUDY · POGŁASZCZ' },
   zones: {
     start: 'Biorę się: {task}!',
@@ -75,6 +75,14 @@ NX.i18n.add('pl', {
     skinLab: { lines: ['Zmieńmy mój wygląd! Wybierz skórki po prawej.'] },
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
+  own: {
+    preset: 'Gotowa skórka „{name}” — za darmo', avail: 'Unikalny! Nikt jeszcze nie ma takiego Nexi', taken: 'Takiego Nexi ma już {name} ({no}) — zmień choć jedną rzecz',
+    mine: 'Twój osobisty Nexi {no} · NFT 1/1', buy: 'KUP · {price}', busy: 'ZAJĘTY', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ', tryoff: 'PRZYMIARKA ZDJĘTA — KUP TEGO NEXI, BY GO ZATRZYMAĆ',
+    price: '{v}\u00a0€', title: 'OSOBISTY NEXI', yours: 'TWÓJ',
+    perks: ['Tylko twój: nikt inny nie założy takiego Nexi', 'NFT 1/1 w sieci Base — w twoim portfelu (tworzonym na e-mail)', 'Można odsprzedać; jeden Nexi na osobę'],
+    soon: 'SPRZEDAŻ WKRÓTCE', soonNote: 'Płatności kartą podłączymy w następnym kroku — wtedy ten Nexi stanie się twoim NFT 1/1.', haveOne: 'MASZ JUŻ SWOJEGO NEXI {no}', wear: 'ZAŁÓŻ',
+    copy: 'KOPIUJ KOD', copied: 'KOD SKOPIOWANY', owner: 'Właściciel: {name}', since: 'od {date}', founder: 'Założyciel', you: 'TY', none: 'Na razie brak właścicieli — bądź pierwszy!', demoName: 'Przykład {n}',
+    attr: { theme: 'Kolor', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', ant: 'Antena', head: 'Głowa', back: 'Plecy', hand: 'Relikwia' }, nothing: '—' },
   skin: {
     skin: { classic: 'Klasyk', neon: 'Neon', forest: 'Leśnik', winter: 'Zimowy', gamer: 'Gracz', techno: 'Techno', candy: 'Cukierek', astro: 'Astronauta', captain: 'Kapitan', samurai: 'Samuraj', cyber: 'Cyber', pumpkin: 'Dynia', frost: 'Szron', royal: 'Król', lava: 'Lawa', cosmos: 'Kosmos', rainbow: 'Tęcza' },
     rar: { common: 'Zwykły', rare: 'Rzadki', epic: 'Epicki', legendary: 'Legendarny' },
