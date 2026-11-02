@@ -13,7 +13,7 @@ NX.ui.hud = {
     const $ = this.$, T = NX.t;
     $('tagline').textContent = T('ui.tagline');
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
-    $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('save').textContent = T('ui.save'); $('lx').setAttribute('aria-label', T('ui.close'));
+    $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('lx').setAttribute('aria-label', T('ui.close'));
     // підказки для екранних читачів і title — теж мовою сайту
     [['world', 'ui.room'], ['lab', 'ui.lab'], ['pl', 'ui.prev'], ['pr', 'ui.next']].forEach(([id, k]) => { const el = $(id); if (el) el.setAttribute('aria-label', T(k)); });
     const sb = document.querySelector('#ask button'); if (sb) sb.setAttribute('aria-label', T('ui.send'));

@@ -7,9 +7,12 @@
  * ПЕРСОНАЛЬНІ NEXI (власник, 02.11: «повторювати скіни не можна; кожен — 99,99 € і NFT»; правила — actors/nexi/owners.js):
  *   приміряти можна будь-що, а ЗАЛИШИТИ (зберегти) — лише стандартний Nexi, 17 готових скінів або свій куплений. Рядок під
  *   прев'ю каже, що це за образ: готовий скін (безкоштовно) · унікальний (можна купити, ціна) · такий уже має власник (зміни
- *   хоча б одну річ) · твій Nexi; кнопка внизу — «ЗБЕРЕГТИ» / «КУПИТИ · 99,99 €» (аркуш з карткою NFT — ui/shop.js) /
+ *   хоча б одну річ) · твій Nexi; кнопка внизу — «ЗБЕРЕЖЕНО» / «КУПИТИ · 99,99 €» (аркуш з карткою NFT — ui/shop.js) /
  *   «ЗАЙНЯТО». Закрив лабораторію з образом, який не можна залишити, — примірку знято (повертається збережений).
- *   «Зберегти» пише вибір у localStorage (лише в цьому браузері; акаунти — крок 2, docs/NFT.md).
+ * ВИБІР ЗБЕРІГАЄТЬСЯ САМ (власник, 02.11: «скін, який людина обрала, має зберігатися — коли заходить повторно, у кожного
+ *   лишається такий, який був»): кожна зміна, яку можна залишити, одразу пишеться в localStorage (persist) — кнопка показує
+ *   «ЗБЕРЕЖЕНО»; main.js при запуску вдягає його (і заставка — splash.js). Поки акаунтів немає, «користувач» — його браузер
+ *   (телефон чи комп'ютер); з акаунтами (docs/NFT.md, крок 2) образ зберігатиметься на сервері — однаковий на всіх пристроях.
  * ========================================================================== */
 NX.ui.skinlab = {
   open: false, cat: null, kept: null,
@@ -22,12 +25,12 @@ NX.ui.skinlab = {
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (NX.ui.shop.open) NX.ui.shop.hide(); else this.hide(); });
     $('pl').onclick = () => this.cycle(-1); $('pr').onclick = () => this.cycle(1);
     $('save').onclick = () => this.keep();
-    $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.grid(); };
+    $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.persist(); this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
       const backs = WEAR_ACCS.filter(k => ACCS[k].slot === 'back'), heads = WEAR_ACCS.filter(k => ACCS[k].slot === 'head');
       NX.nexi.look = r() < .5 ? skinLook(p(SKINS), { hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: 'none' })   // половина разів — готовий скін
         : { face: 'standard', ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? backs[r() * backs.length | 0] : null, head: r() < .35 ? heads[r() * heads.length | 0] : null, hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: 'none' };
-      this.grid(); NX.nexi.emote('surprise', 1.5); };
+      this.persist(); this.grid(); NX.nexi.emote('surprise', 1.5); };
     this.kept = { ...NX.nexi.look };                                                          // збережений образ (main.js уже перевірив, що його можна залишити)
     NX.ui.shop.init();
     this.relabel();
@@ -43,14 +46,20 @@ NX.ui.skinlab = {
   /** Закрити: якщо на Nexi примірка, яку не можна залишити (персональний образ без покупки), — повернути збережений. */
   hide() {
     if (!this.open) return; this.open = false; NX.ui.shop.hide(); document.getElementById('lab').classList.remove('open');
-    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = { ...this.kept }; NX.ui.hud.toast(NX.t('own.tryoff')); }
+    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = { ...this.kept }; NX.ui.hud.toast(NX.t('own.tryoff')); } else this.persist();
   },
-  /** Кнопка внизу: зберегти (стандарт / готовий скін / свій) · купити (вільний персональний — аркуш NFT) · зайнято (чужий). */
+  /** Кнопка внизу: «ЗБЕРЕЖЕНО» (стандарт / готовий скін / свій — уже збережено, тап — підтвердження) · купити (вільний
+   *  персональний — аркуш NFT) · зайнято (чужий). */
   keep() {
-    const L = NX.nexi.look, st = NX.owners.status(L);
+    const st = NX.owners.status(NX.nexi.look);
     if (st.kind === 'avail') return NX.ui.shop.show('buy');
     if (st.kind === 'taken') return NX.ui.hud.toast(NX.t('own.takenToast'));
-    this.kept = { ...L }; try { localStorage.setItem('nexi-look', JSON.stringify(L)); } catch (e) {} NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love');
+    this.persist(); NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love');
+  },
+  /** Запам'ятати образ на Nexi, якщо його можна залишити (у цьому браузері — localStorage 'nexi-look'); примірку — ні. */
+  persist() {
+    const L = NX.nexi.look; if (!NX.owners.keepable(L)) return false;
+    this.kept = { ...L }; try { localStorage.setItem('nexi-look', JSON.stringify(L)); } catch (e) {} return true;
   },
   /** Рядок під прев'ю (що це за образ) і напис на кнопці збереження / купівлі. */
   state() {
@@ -62,7 +71,7 @@ NX.ui.skinlab = {
       : NX.t('own.mine', { no: O.noText(st.owner) });
     $('owncode').textContent = st.kind === 'preset' ? '' : O.code(L);
     sv.className = 'save' + (st.kind === 'avail' ? ' buy' : st.kind === 'taken' ? ' busy' : '');
-    sv.textContent = st.kind === 'avail' ? NX.t('own.buy', { price: O.priceText() }) : st.kind === 'taken' ? NX.t('own.busy') : NX.t('ui.save');
+    sv.textContent = st.kind === 'avail' ? NX.t('own.buy', { price: O.priceText() }) : st.kind === 'taken' ? NX.t('own.busy') : NX.t('ui.kept');
   },
   isOn(c, id) { const L = NX.nexi.look; if (c.k === 'skin') return skinOf(L) === id && !L.hand; if (c.k === 'acc' || c.k === 'relic') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return (L[c.k] ?? DEFAULT_LOOK[c.k]) === id; },
   apply(c, id) {
@@ -72,7 +81,7 @@ NX.ui.skinlab = {
     else if (c.k === 'act') { n.temp = id; n.tempT = NX.time + 4; }
     else if (c.k === 'mood') n.emote(id, 3);
     else L[c.k] = id;
-    if (c.k !== 'act' && c.k !== 'mood') this.installFx();
+    if (c.k !== 'act' && c.k !== 'mood') { this.installFx(); this.persist(); }                // обраний скін — одразу збережено (примірку — ні)
     this.grid();
   },
   /** Ефект встановлення скіна: у капсулі майстерні — маніпулятор «зашиває» скін блискавкою (objects/workshop.js), інакше — іскри. */
