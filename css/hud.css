@@ -31,7 +31,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .bub{position:fixed;z-index:6;display:none;max-width:min(300px,70vw);background:#050a26f2;border:2px solid var(--cyan);box-shadow:0 0 14px #3be8ff77;padding:9px 12px;font:500 13px/1.4 var(--f-b);pointer-events:none}
 .bub b{display:block;color:var(--cyan);font:400 7px var(--f-d);margin-bottom:5px}
 .bub::after{content:"";position:absolute;left:var(--tail,40px);bottom:-9px;width:12px;height:12px;background:#050a26;border:solid var(--cyan);border-width:0 2px 2px 0;transform:rotate(45deg)}
-.chat{right:max(14px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 28px));display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.chat{right:max(14px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 28px));display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+/* порожнє місце контейнера діалогу (ліворуч від кнопки) — прозоре й не ловить тапи: на телефоні під ним передня підлога (02.11) */
+.chat>*{pointer-events:auto}
 .chat .tg{background:var(--glass);color:var(--cyan);border:2px solid var(--cyan);padding:9px 12px;font:400 8px var(--f-d);cursor:pointer}
 .panel{width:100%;background:var(--glass);border:2px solid var(--line);padding:10px;backdrop-filter:blur(8px);display:none}
 .panel.open{display:block}

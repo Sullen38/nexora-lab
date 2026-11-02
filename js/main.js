@@ -40,5 +40,5 @@
   if (!placed) { [NX.nexi.x, NX.nexi.y] = NX.objects.rug.home; NX.nexi.gy = NX.nexi.y; }
   NX.ui.chat.add('b', NX.t('chat.greet'));
   await B.reveal();                                                                  // плавний перехід заставки в кімнату
-  setTimeout(() => NX.nexi.do('home', false), 300);
+  setTimeout(() => { if (!NX.nexi.lastCmd) NX.nexi.do('home', false); }, 300);         // привітання на доку — якщо людина ще нічого не наказала (тап під час переходу не губиться)
 })();
