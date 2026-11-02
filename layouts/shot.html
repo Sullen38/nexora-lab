@@ -1,0 +1,108 @@
+<!doctype html>
+<!-- layouts/shot.html — СКРІНШОТ МАГАЗИНУ: смуга з підписом (≤ 20 % висоти — правило Google Play; так само й для App Store)
+     + справжній кадр гри 1:1 (без масштабування — піксель-арт без розмиття). Стилі: a «Неонова вивіска», b «Слово Nexi»,
+     c «Голо-рамка». Дані дає render/compose.js: window.build(DATA). -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400..900&display=block">
+<link rel="stylesheet" href="common.css">
+<style>
+  .app { position: absolute; display: block; }
+  .band { position: absolute; left: 0; top: 0; width: 100%; overflow: visible; }
+  .hl { color: var(--cyan); }
+
+  /* ---------- A · НЕОНОВА ВИВІСКА: як вивіски зон у кімнаті ---------- */
+  .sa .band { background: linear-gradient(#060a22, #0b1142 62%, #050818); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .sa .ceil { position: absolute; left: 0; right: 0; top: 0; height: var(--u8); display: flex; justify-content: space-between; }
+  .sa .ceil i { display: block; width: 9%; height: 100%; }
+  .sa .sign { position: relative; display: flex; align-items: center; gap: var(--g); padding: var(--pady) var(--padx); background: #0a1036;
+    border: var(--u8) solid var(--cyan); box-shadow: 0 0 0 var(--u8) #3be8ff3a, 0 0 0 calc(2 * var(--u8)) #3be8ff14, 0 0 calc(5 * var(--u8)) #2ad4ff88, inset 0 0 0 calc(var(--u8) / 2) #3be8ff30;
+    width: fit-content; max-width: var(--signW); }
+  .sa .sign .h1 { font-family: var(--fp); color: #fff; text-transform: uppercase; text-shadow: 0 0 calc(2 * var(--u8)) #2ad4ffcc; white-space: normal; max-width: var(--h1W); }
+  .sa .tag { position: absolute; left: calc(4 * var(--u8)); top: calc(-1 * var(--tagH) / 2 - var(--u8) / 2); height: var(--tagH); padding: 0 calc(2 * var(--u8));
+    display: flex; align-items: center; background: var(--pink); color: var(--ink); font-family: var(--fp); box-shadow: 0 0 calc(3 * var(--u8)) #ff4fd899; }
+  .sa .sub { margin-top: var(--gap2); font-family: var(--fb); font-weight: 600; color: #cdd6ff; text-align: center; max-width: var(--signW); }
+
+  /* ---------- B · СЛОВО NEXI: бабл, як у грі (темний, блакитна рамка), Nexi говорить сам ---------- */
+  .sb .band { display: flex; align-items: center; justify-content: center; }
+  .sb .band > canvas.bg { position: absolute; left: 0; top: 0; }
+  .sb .bub { position: relative; width: var(--bubW); filter: drop-shadow(0 0 calc(3 * var(--u8)) #3be8ffaa); }
+  .sb .bub .o { background: var(--cyan); padding: var(--u8); clip-path: var(--steps); }
+  .sb .bub .i { background: var(--bubble); clip-path: var(--steps); display: flex; align-items: center; gap: var(--g); padding: var(--pady) var(--padx); }
+  .sb .bub .ava { flex: none; }
+  .sb .bub .txt { flex: 1; min-width: 0; }
+  .sb .bub .lbl { font-family: var(--fp); color: var(--cyan); }
+  .sb .bub .say { font-family: var(--fb); font-weight: 800; color: #fff; }
+  .sb .bub canvas.tail { position: absolute; top: calc(100% - var(--u8)); }
+
+  /* ---------- C · ГОЛО-РАМКА: чистий діловий вигляд, кадр гри в світній рамці ---------- */
+  .sc #root { background: radial-gradient(120% 60% at 20% 0%, #2a1170 0%, #120a3f 45%, #090a2a 100%); }
+  .sc .grid { position: absolute; inset: 0; background-image: linear-gradient(#ffffff08 1px, transparent 1px), linear-gradient(90deg, #ffffff08 1px, transparent 1px); background-size: var(--u8x4) var(--u8x4); }
+  .sc .band { display: flex; flex-direction: column; justify-content: center; padding-left: var(--padx); padding-right: var(--padx); }
+  .sc .kick { display: flex; align-items: center; gap: calc(2 * var(--u8)); font-family: var(--fp); color: var(--pink); text-shadow: 0 0 calc(2 * var(--u8)) #ff4fd8aa; }
+  .sc .h1 { margin-top: var(--gap1); font-family: var(--fb); font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+  .sc .h1 .hl { background: linear-gradient(90deg, var(--cyan), #9be9ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sc .sub { margin-top: var(--gap2); font-family: var(--fb); font-weight: 500; color: #b4bdf0; }
+  .sc .frame { position: absolute; padding: var(--bw); border-radius: var(--rad); background: linear-gradient(160deg, var(--cyan), var(--violet) 45%, var(--pink));
+    box-shadow: 0 0 calc(6 * var(--u8)) #7a5cff88, 0 0 calc(14 * var(--u8)) #ff4fd833; }
+  .sc .frame .clip { width: 100%; height: 100%; border-radius: calc(var(--rad) - var(--bw)); overflow: hidden; background: var(--navy); }
+  .sc .frame img { display: block; }
+</style></head>
+<body><div id="root"></div>
+<script src="px.js"></script>
+<script>
+/** DATA: { W, H, style: 'a'|'b'|'c', band, app: { src, x, y, w, h, bw, rad }, t: { kicker, h1, sub, say, nexi }, avatar, tailX } */
+window.build = async function (D) {
+  await PX.fonts();
+  const R = document.getElementById('root'), s = D.W / 1320, n = v => Math.round(v * s), p8 = v => Math.max(8, Math.round(v * s / 8) * 8);
+  document.body.className = 's' + D.style; R.style.width = D.W + 'px'; R.style.height = D.H + 'px';
+  const css = (k, v) => R.style.setProperty(k, v);
+  css('--u8', p8(8) + 'px'); css('--u8x4', p8(32) + 'px');
+  const el = (tag, cls, html, parent = R) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; parent.appendChild(e); return e; };
+  const A = D.app, im = await PX.img(A.src);
+  if (im.width !== A.w || im.height !== A.h) throw new Error(`кадр ${im.width}×${im.height}, а місце ${A.w}×${A.h} — масштабувати не можна`);
+  const band = el('div', 'band'); band.style.height = D.band + 'px';
+
+  if (D.style === 'a') {
+    const app = el('img', 'app'); app.src = A.src; Object.assign(app.style, { left: A.x + 'px', top: A.y + 'px', width: A.w + 'px', height: A.h + 'px' }); R.insertBefore(app, band);
+    const ceil = el('div', 'ceil', null, band); for (let i = 0; i < 8; i++) { const b = el('i', null, null, ceil); b.style.background = i % 2 ? 'var(--pink)' : 'var(--cyan)'; b.style.boxShadow = `0 0 ${p8(24)}px ${i % 2 ? '#ff4fd8' : '#3be8ff'}`; }
+    css('--signW', (D.W - n(160)) + 'px'); css('--padx', p8(48) + 'px'); css('--pady', p8(D.band > 500 ? 48 : 32) + 'px'); css('--g', p8(32) + 'px'); css('--tagH', p8(48) + 'px'); css('--gap2', n(D.band > 500 ? 44 : 26) + 'px');
+    const sign = el('div', 'sign', null, band);
+    if (D.t.kicker) el('div', 'tag', PX.plain(D.t.kicker), sign).style.fontSize = p8(24) + 'px';
+    const ic = PX.icon('chat', p8(8), '#3be8ff'); ic.style.filter = 'drop-shadow(0 0 ' + p8(16) + 'px #2ad4ff)'; sign.appendChild(ic);
+    const h1 = el('div', 'h1', PX.plain(D.t.h1), sign); css('--h1W', (D.W - n(160) - 2 * p8(48) - 2 * p8(8) - ic.width - p8(32)) + 'px');
+    PX.fit(h1, { max: p8(56), min: p8(32), step: 8, lh: 1.4, lines: 2 });
+    { const r = document.createRange(); r.selectNodeContents(h1); h1.style.width = Math.ceil(Math.max(...[...r.getClientRects()].map(q => q.width))) + 'px'; }   // вивіска — по найдовшому рядку
+    if (D.t.sub) { const sub = el('div', 'sub', PX.rich(D.t.sub), band); PX.fit(sub, { max: n(42), min: n(30), step: 2, lh: 1.3, lines: 2 }); }
+  }
+
+  if (D.style === 'b') {
+    const app = el('img', 'app'); app.src = A.src; Object.assign(app.style, { left: A.x + 'px', top: A.y + 'px', width: A.w + 'px', height: A.h + 'px' }); R.insertBefore(app, band);
+    band.appendChild(Object.assign(PX.dither(D.W, D.band, [[0, '#3a137a'], [.55, '#1b0e55'], [1, '#070c2c']], p8(8), 5), { className: 'bg px' }));
+    css('--bubW', (D.W - n(160)) + 'px'); css('--steps', PX.steps(p8(8), 2)); css('--padx', p8(40) + 'px'); css('--pady', p8(D.band > 500 ? 40 : 24) + 'px'); css('--g', p8(32) + 'px');
+    const bub = el('div', 'bub', null, band), o = el('div', 'o', null, bub), i = el('div', 'i', null, o);
+    const k = Math.max(2, Math.round(p8(D.band > 500 ? 192 : 128) / 56)), ava = await PX.sprite(D.avatar, k); ava.classList.add('ava'); i.appendChild(ava);
+    const tx = el('div', 'txt', null, i);
+    el('div', 'lbl', 'NEXI', tx).style.cssText = `font-size:${p8(24)}px;line-height:${p8(24)}px;margin-bottom:${p8(16)}px`;
+    const say = el('div', 'say', PX.rich(D.t.say), tx); PX.fit(say, { max: n(68), min: n(40), step: 2, lh: 1.18, lines: 2 });
+    // хвостик — донизу, на Nexi (tailX — його x на сторінці)
+    const tw = p8(80), th = Math.min(p8(104), D.band - (bub.offsetTop + bub.offsetHeight) + p8(8)), t = PX.tail(tw, Math.max(p8(32), th), p8(8), '#3be8ff', '#050a26', p8(8), 0);
+    t.classList.add('tail'); bub.appendChild(t);
+    const bx = bub.getBoundingClientRect().left; t.style.left = Math.round(Math.min(bub.offsetWidth - tw - p8(80), Math.max(p8(80), (D.tailX || D.W / 2) - bx - tw / 2)) / p8(8)) * p8(8) + 'px';
+  }
+
+  if (D.style === 'c') {
+    el('div', 'grid');
+    css('--padx', n(80) + 'px'); css('--gap1', n(18) + 'px'); css('--gap2', n(22) + 'px'); css('--bw', p8(8) + 'px'); css('--rad', n(A.rad || 48) + 'px');
+    R.appendChild(band); band.style.height = (A.y - n(20)) + 'px';
+    if (D.t.kicker) { const k = el('div', 'kick', null, band); k.style.fontSize = p8(28) + 'px'; k.appendChild(PX.icon('spark', p8(4), '#ff4fd8')); el('span', null, PX.plain(D.t.kicker), k); }
+    const h1 = el('div', 'h1', PX.rich(D.t.h1), band); PX.fit(h1, { max: n(108), min: n(64), step: 2, lh: 1.04, lines: 2 });
+    if (D.t.sub) { const sub = el('div', 'sub', PX.rich(D.t.sub), band); PX.fit(sub, { max: n(40), min: n(28), step: 2, lh: 1.3, lines: 2 }); }
+    const bw = p8(8), f = el('div', 'frame'); Object.assign(f.style, { left: (A.x - bw) + 'px', top: (A.y - bw) + 'px', width: (A.w + 2 * bw) + 'px', height: (A.h + 2 * bw) + 'px' });
+    const clip = el('div', 'clip', null, f), app = el('img', null, null, clip); app.src = A.src; Object.assign(app.style, { width: A.w + 'px', height: A.h + 'px' });
+  }
+  await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  // перевірки для render/compose.js: текст не вилазить, смуга з написами не більша за 20 % (Google Play)
+  const over = [...R.querySelectorAll('.h1,.sub,.say')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.className);
+  return { over, bandPct: +(100 * D.band / D.H).toFixed(1) };
+};
+</script></body></html>

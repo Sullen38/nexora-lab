@@ -1,0 +1,79 @@
+<!doctype html>
+<!-- layouts/banner.html — БАНЕР GOOGLE PLAY 1024×500 (feature graphic): головне — по центру (краї можуть обрізатися), мало
+     тексту, без значків магазинів, пристроїв, цін і «найкращий / №1 / новий / безкоштовно». Тло — справжній кадр кімнати 1:1,
+     Nexi й Рудик — спрайти гри, збільшені в ціле число разів (без розмиття). Стилі a / b / c — як у скріншотів. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400..900&display=block">
+<link rel="stylesheet" href="common.css">
+<style>
+  .bg { position: absolute; inset: 0; background-repeat: no-repeat; image-rendering: pixelated; }
+  .shade { position: absolute; inset: 0; }
+  .hl { color: var(--cyan); }
+  .name { font-family: var(--fp); color: var(--cyan); text-shadow: 0 0 14px #2ad4ff; white-space: nowrap; }
+  /* A */
+  .sa .sign { position: absolute; padding: 22px 28px 20px; background: #0a1036e6; border: 6px solid var(--cyan); box-shadow: 0 0 0 6px #3be8ff33, 0 0 28px #2ad4ff88; }
+  .sa .tagl { position: absolute; font-family: var(--fb); font-weight: 800; color: #fff; text-shadow: 0 2px 0 #050818, 0 0 18px #050818; }
+  /* B */
+  .sb .name { position: absolute; text-shadow: 0 0 14px #2ad4ff, 0 3px 0 #050818, 0 0 3px #050818; }
+  .sb .bub { position: absolute; filter: drop-shadow(0 0 18px #3be8ffaa); }
+  .sb .bub .o { background: var(--cyan); padding: 6px; clip-path: var(--steps); }
+  .sb .bub .i { background: #050a26; clip-path: var(--steps); padding: 22px 28px 24px; }
+  .sb .bub .lbl { font-family: var(--fp); font-size: 16px; line-height: 16px; color: var(--cyan); margin-bottom: 14px; }
+  .sb .bub .say { font-family: var(--fb); font-weight: 800; color: #fff; }
+  .sb .bub canvas.tail { position: absolute; }
+  /* C */
+  .sc #root { background: radial-gradient(90% 120% at 15% 10%, #3a1590 0%, #170b4a 50%, #0b0a2e 100%); }
+  .sc .grid { position: absolute; inset: 0; background-image: linear-gradient(#ffffff0a 1px, transparent 1px), linear-gradient(90deg, #ffffff0a 1px, transparent 1px); background-size: 32px 32px; }
+  .sc .blob { position: absolute; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(#ff4fd855, transparent 65%); }
+  .sc .kick { position: absolute; font-family: var(--fp); font-size: 24px; color: var(--pink); text-shadow: 0 0 12px #ff4fd8aa; }
+  .sc .h1 { position: absolute; font-family: var(--fb); font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+  .sc .h1 .hl { background: linear-gradient(90deg, var(--cyan), #9be9ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sc .sub { position: absolute; font-family: var(--fb); font-weight: 500; color: #c3c9f5; }
+  .sc .frame { position: absolute; padding: 6px; border-radius: 30px; background: linear-gradient(160deg, var(--cyan), var(--violet) 45%, var(--pink)); box-shadow: 0 0 40px #7a5cff99; }
+  .sc .frame .clip { width: 100%; height: 100%; border-radius: 24px; overflow: hidden; background-repeat: no-repeat; image-rendering: pixelated; }
+</style></head>
+<body><div id="root"></div>
+<script src="px.js"></script>
+<script>
+/** DATA: { W, H, style, bg: { src, x, y }, nexi, cat, t: { name, tag, say, h1, kicker, sub }, shot: { src, x, y, w, h } } */
+window.build = async function (D) {
+  await PX.fonts();
+  const R = document.getElementById('root'); document.body.className = 's' + D.style; R.style.width = D.W + 'px'; R.style.height = D.H + 'px';
+  const el = (tag, cls, html, parent = R) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; parent.appendChild(e); return e; };
+  const at = (e, x, y, w, h) => { Object.assign(e.style, { left: x + 'px', top: y + 'px' }); if (w != null) e.style.width = w + 'px'; if (h != null) e.style.height = h + 'px'; return e; };
+  const crop = async (e, src, x, y) => { await PX.img(src); Object.assign(e.style, { backgroundImage: `url(${src})`, backgroundPosition: `${-x}px ${-y}px`, backgroundSize: 'auto' }); };   // спершу завантажити, потім тло
+  const put = async (src, k, x, y, flip) => { const c = await PX.sprite(src, k, flip); c.style.position = 'absolute'; at(c, x, y); R.appendChild(c); return c; };
+  const shadow = (x, y, w, h) => { const c = PX.canvas(w, h), g = c.getContext('2d'); g.fillStyle = '#05081899';
+    for (let j = 0; j < h; j += 4) { const k = Math.sqrt(1 - ((j + 2 - h / 2) / (h / 2)) ** 2), ww = Math.round(w * k / 4) * 4; g.fillRect((w - ww) / 2, j, ww, 4); } c.style.position = 'absolute'; at(c, x, y); R.appendChild(c); };
+
+  if (D.style === 'a') {
+    await crop(el('div', 'bg'), D.bg.src, D.bg.x, D.bg.y);
+    el('div', 'shade').style.background = 'linear-gradient(90deg, #050818f0 0%, #050818d0 34%, #05081840 62%, #05081810 100%)';
+    const sign = at(el('div', 'sign'), 72, 104); el('div', 'name', PX.plain(D.t.name), sign).style.fontSize = '40px';
+    const tg = at(el('div', 'tagl', PX.rich(D.t.tag)), 76, 236, 470); PX.fit(tg, { max: 50, min: 34, step: 2, lh: 1.12, lines: 2 });
+    shadow(574, 452, 232, 28); await put(D.nexi, 5, 570, 186); shadow(800, 456, 120, 20); await put(D.cat, 4, 796, 380, true);
+  }
+  if (D.style === 'b') {
+    await crop(el('div', 'bg'), D.bg.src, D.bg.x, D.bg.y);
+    el('div', 'shade').style.background = 'linear-gradient(#05081870, #050818b0)';
+    shadow(116, 452, 280, 30); await put(D.nexi, 6, 112, 130);
+    R.style.setProperty('--steps', PX.steps(6, 2));
+    const bub = at(el('div', 'bub'), 452, 92, 500), o = el('div', 'o', null, bub), i = el('div', 'i', null, o);
+    el('div', 'lbl', 'NEXI', i); const say = el('div', 'say', PX.rich(D.t.say), i); PX.fit(say, { max: 44, min: 28, step: 2, lh: 1.16, lines: 2 });
+    const t = PX.tail(42, 54, 6, '#3be8ff', '#050a26', 6, -1); t.style.transform = 'rotate(90deg) scaleX(-1)'; t.style.transformOrigin = '0 0';
+    // хвостик ліворуч на рівні голови Nexi
+    t.classList.add('tail'); bub.appendChild(t); at(t, 6, 66);
+    at(el('div', 'name', PX.plain(D.t.name)), 462, bub.offsetTop + bub.offsetHeight + 34).style.fontSize = '28px';
+  }
+  if (D.style === 'c') {
+    el('div', 'grid'); at(el('div', 'blob'), 520, -120);
+    at(el('div', 'kick', PX.plain(D.t.kicker)), 72, 112);
+    const h1 = at(el('div', 'h1', PX.rich(D.t.h1)), 70, 150, 470); PX.fit(h1, { max: 64, min: 44, step: 2, lh: 1.06, lines: 2 });
+    const sub = at(el('div', 'sub', PX.rich(D.t.sub)), 72, h1.offsetTop + h1.offsetHeight + 22, 450); PX.fit(sub, { max: 30, min: 22, step: 2, lh: 1.25, lines: 2 });
+    const S = D.shot, f = at(el('div', 'frame'), 576, 30, S.w + 12, S.h + 12); await crop(el('div', 'clip', null, f), S.src, S.x, S.y);
+  }
+  await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  const over = [...R.querySelectorAll('.h1,.sub,.say,.tagl')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.className);
+  return { over };
+};
+</script></body></html>

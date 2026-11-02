@@ -1,0 +1,14 @@
+# клон гри й шрифти (tools/setup.sh) — не наші файли
+.cache/
+node_modules/
+# сирі кадри гри — відтворюються скриптами (rig/raw.js, shots/*_raw.js)
+out/raw/
+# відео — великі, у git не кладемо (власнику — файлами)
+out/video/
+*.mp4
+*.mov
+*.webm
+# ескізи en / pl / nl — відтворюються (node shots/sketch.js uk,en,pl,nl); у git — uk і аркуші огляду
+out/sketches/en/
+out/sketches/pl/
+out/sketches/nl/

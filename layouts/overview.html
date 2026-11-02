@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- layouts/overview.html — АРКУШ ДЛЯ ПЕРЕГЛЯДУ (не для магазинів): ескізи поруч, зменшені, з підписами. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400..900&display=block">
+<link rel="stylesheet" href="common.css">
+<style>
+  #root { background: #0b0d22; padding: 56px 56px 48px; }
+  h1 { font-family: var(--fp); font-size: 32px; color: var(--cyan); text-shadow: 0 0 12px #2ad4ff; }
+  .lead { font-family: var(--fb); font-size: 26px; color: #b8c0ee; margin: 18px 0 40px; max-width: 1900px; line-height: 1.35; }
+  .cols { display: flex; gap: 48px; align-items: flex-start; }
+  .col { width: var(--cw); }
+  .col h2 { font-family: var(--fp); font-size: 22px; color: #fff; margin-bottom: 10px; }
+  .col p { font-family: var(--fb); font-size: 22px; color: #9aa5dd; margin-bottom: 18px; min-height: 60px; line-height: 1.3; }
+  .col img { display: block; width: 100%; border-radius: 10px; box-shadow: 0 0 0 2px #ffffff14; }
+  .col .cap { font-family: var(--fb); font-size: 18px; color: #7380bb; margin: 10px 0 22px; }
+  .grid { display: grid; gap: 18px; }
+  .grid img { width: 100%; display: block; border-radius: 8px; }
+  .grid .l { font-family: var(--fp); font-size: 16px; color: var(--pink); margin-bottom: 8px; }
+</style></head>
+<body><div id="root"></div>
+<script>
+/** DATA: { W, title, lead, cols: [{ title, note, items: [{ src, cap }] }], cw } */
+window.build = async function (D) {
+  const R = document.getElementById('root'); R.style.width = D.W + 'px'; R.style.setProperty('--cw', D.cw + 'px');
+  const el = (t, c, h, p = R) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; p.appendChild(e); return e; };
+  el('h1', null, D.title); el('div', 'lead', D.lead);
+  const cols = el('div', 'cols');
+  for (const c of D.cols) { const col = el('div', 'col', null, cols); el('h2', null, c.title, col); el('p', null, c.note, col);
+    const pic = (it, p) => { if (!it.crop) { const i = el('img', null, null, p); i.src = it.src; return; }   // crop — яку частку висоти показати (зверху)
+      const w = el('div', null, null, p); w.style.cssText = `overflow:hidden;border-radius:8px;aspect-ratio:${it.ar} / ${it.crop}`; const i = el('img', null, null, w); i.src = it.src; i.style.borderRadius = '0'; };
+    if (c.grid) { const g = el('div', 'grid', null, col); g.style.gridTemplateColumns = `repeat(${c.grid}, 1fr)`; for (const it of c.items) { const d = el('div', null, null, g); el('div', 'l', it.cap, d); pic(it, d); } }
+    else for (const it of c.items) { const i = el('img', null, null, col); i.src = it.src; el('div', 'cap', it.cap, col); } }
+  await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  R.style.height = 'auto'; return { h: R.scrollHeight };
+};
+</script></body></html>

@@ -1,0 +1,13 @@
+{
+  "name": "nexora-promo",
+  "private": true,
+  "description": "Реклама Nexora AI: скріншоти, банери й відео для App Store і Google Play — знімаються скриптами з гри Sullen38/nexora-lab (лише читання)",
+  "scripts": {
+    "setup": "bash tools/setup.sh",
+    "sketch:raw": "node shots/sketch_raw.js uk && node shots/sketch_raw.js en && node shots/sketch_raw.js pl && node shots/sketch_raw.js nl",
+    "sketch": "node shots/sketch.js uk,en,pl,nl && node shots/overview.js"
+  },
+  "dependencies": {
+    "playwright": "1.63.0"
+  }
+}

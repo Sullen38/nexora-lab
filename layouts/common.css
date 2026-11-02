@@ -1,0 +1,16 @@
+/* layouts/common.css — спільне для макетів: кольори й шрифти гри (css/hud.css у Sullen38/nexora-lab), основа сторінки.
+   Шрифти приходять із fonts.googleapis.com / fonts.gstatic.com — у зйомці ці запити перехоплює rig/game.js (routeFonts). */
+:root {
+  --navy: #050818; --deep: #070c2c; --ink: #0a0f2e; --bubble: #050a26;
+  --cyan: #3be8ff; --pink: #ff4fd8; --violet: #7a5cff; --gold: #ffc94d; --green: #3bff8a; --white: #f4f7ff; --mute: #8393cc;
+  --fp: 'Press Start 2P', monospace; --fb: 'Rubik', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow: hidden; background: var(--navy); color: var(--white); -webkit-font-smoothing: antialiased; }
+#root { position: relative; overflow: hidden; }
+.abs { position: absolute; }
+.px { image-rendering: pixelated; }
+.fp { font-family: var(--fp); font-weight: 400; }
+.fb { font-family: var(--fb); }
+/* підсвічене слово в заголовку: *слово* у тексті */
+em { font-style: normal; }

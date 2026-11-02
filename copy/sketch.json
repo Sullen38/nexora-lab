@@ -1,0 +1,63 @@
+{
+  "_": "Тексти ескізів стилю (Реклама · 1). *слово* — підсвічене. Чернетка: остаточні — після «так» на стиль і план. Обіцяємо лише те, що буде в застосунку (docs/APP.md гри, етап 1: справжній AI-чат, задачі AI-центру й маркетингу, чернетки). [[…]] — не переносити (одним рядком).",
+  "shot_ai": {
+    "uk": {
+      "kicker": "AI-ЦЕНТР",
+      "h1": "Відповідає *клієнтам*",
+      "sub": "Листи, відповіді й підсумки зустрічей — Nexi пише чернетки за тебе",
+      "say": "Клієнт написав? *Я вже відповідаю!*"
+    },
+    "en": {
+      "kicker": "AI CENTER",
+      "h1": "Replies to your *clients*",
+      "sub": "Emails, replies and meeting notes — Nexi drafts them for you",
+      "say": "A client wrote? *I'm already replying!*"
+    },
+    "pl": {
+      "kicker": "CENTRUM AI",
+      "h1": "Odpowiada *klientom*",
+      "sub": "Maile, odpowiedzi i podsumowania spotkań — Nexi pisze za ciebie szkice",
+      "say": "Klient napisał? *Już odpowiadam!*"
+    },
+    "nl": {
+      "kicker": "AI-CENTRUM",
+      "h1": "Beantwoordt je *klanten*",
+      "sub": "Mails, antwoorden en notulen — Nexi maakt de concepten voor je",
+      "say": "Bericht van een klant? *Ik antwoord al!*"
+    }
+  },
+  "banner": {
+    "uk": {
+      "name": "NEXORA AI",
+      "tag": "Впізнай *всесвіт Nexi*",
+      "say": "Привіт! Я Nexi — *твій AI-помічник*",
+      "kicker": "NEXORA AI",
+      "h1": "AI-помічник *для бізнесу*",
+      "sub": "У кожного свій Nexi"
+    },
+    "en": {
+      "name": "NEXORA AI",
+      "tag": "Discover the *Nexi universe*",
+      "say": "Hi! I'm Nexi, *your AI assistant*",
+      "kicker": "NEXORA AI",
+      "h1": "AI assistant *for business*",
+      "sub": "Everyone gets their own Nexi"
+    },
+    "pl": {
+      "name": "NEXORA AI",
+      "tag": "Poznaj *wszechświat Nexi*",
+      "say": "Cześć! Jestem Nexi, *twój asystent AI*",
+      "kicker": "NEXORA AI",
+      "h1": "Asystent AI *dla firmy*",
+      "sub": "Każdy ma swojego Nexi"
+    },
+    "nl": {
+      "name": "NEXORA AI",
+      "tag": "Ontdek het *[[Nexi-universum]]*",
+      "say": "Hoi! Ik ben Nexi, *je AI-assistent*",
+      "kicker": "NEXORA AI",
+      "h1": "AI-assistent *voor je bedrijf*",
+      "sub": "Iedereen z'n eigen Nexi"
+    }
+  }
+}
