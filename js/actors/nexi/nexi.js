@@ -23,14 +23,14 @@ NX.nexi = {
   do(id, byUser = true, opt = {}) {
     const A = NX.acts[id]; if (!A) return;
     this.taskOpt = opt.task || null;   // конкретна задача зони (ui/zones.js)
-    if (byUser) this.lastCmd = NX.time;
+    if (byUser) { this.lastCmd = NX.time; NX.cam.unfocus(); }                       // команда користувача — камера знову на Nexi
     this.finishTask(false);
     this.autoRun = !byUser;                                                           // сценарій знає, чи це вільний час (майстерня: без лабораторії скінів)
     this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
     this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
   },
   /** Просто піти в точку підлоги (тап по підлозі). */
-  walkTo(x, y) { this.lastCmd = NX.time; this.finishTask(false); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy] }, { loc: 'floor' }]; this.cur = null; },
+  walkTo(x, y) { this.lastCmd = NX.time; NX.cam.unfocus(); this.finishTask(false); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy] }, { loc: 'floor' }]; this.cur = null; },
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };

@@ -7,6 +7,10 @@
  * Ширина кімнати — від NX.cfg.ROOM_X0 до ROOM_X1 (ширша за картинку: крайні зони, core/config.js).
  * Тап (дотик без перетягування) передається в NX.input.onTap(x,y) у
  * координатах кімнати.
+ * ФОКУС УВАГИ (власник, 02.11: «коли з Рудиком якась подія — камера переходить на нього, він якийсь час у центрі уваги,
+ * потім камера повертається на Nexi»): focus(x, сек) — замість Nexi камера тримає в центрі точку x() (кіт; вірус — між котом
+ * і вірусом), поки не мине час; команда користувача Nexi (nexi.js: do / walkTo) — unfocus(). На комп'ютері видно всю кімнату —
+ * нічого не змінюється. Хто кличе — actors/cat/cat.js: look().
  * iPhone / iPad: свайп від лівого чи правого краю екрана — жест браузера «назад» / «вперед»; хто гортав кімнату від краю,
  * випадав зі сторінки (власник, 02.11). Дотик біля краю канвас «забирає собі» (touchstart з preventDefault) — тоді Safari
  * (iOS 13.4+) цей жест не починає, а кімната гортається як звичайно (тапи й перетягування — pointer-події, їм це не заважає).
@@ -23,6 +27,8 @@ NX.cam = {
   viewW: 1664,   // ширина видимої області (одиниці кімнати)
   mobile: false,
   dragUntil: 0,  // до якого часу камера не слідкує за Nexi (користувач гортав)
+  foc: null,     // фокус уваги: { x() — центр, until — до якого часу NX.time } (подія з Рудиком)
+  focEnd: -99,   // коли фокус скінчився (дрібна подія одразу після — камера не смикається туди-сюди)
 
   /** Перерахунок під розмір вікна. Викликається на старті і при resize. */
   layout(vw, vh) {
@@ -41,8 +47,12 @@ NX.cam = {
     this.front = Math.round(extra - this.top);
     this.x = NX.px.clamp(this.x, C.ROOM_X0, Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW));
   },
-  /** Камера м'яко тримає Nexi в центрі (якщо кімната ширша за екран). */
+  /** Фокус уваги на x() на sec секунд. Довший фокус, що вже йде, коротший не перебиває (force — замінити). */
+  focus(x, sec, force) { const until = NX.time + sec; if (!force && this.foc && this.foc.until > until) return; this.foc = { x, until }; },
+  unfocus() { if (this.foc) this.focEnd = NX.time; this.foc = null; },
+  /** Камера м'яко тримає Nexi в центрі (якщо кімната ширша за екран) — або точку фокуса уваги, поки він триває. */
   follow(tx, dt) {
+    const F = this.foc; if (F) { if (NX.time > F.until) this.unfocus(); else { const fx = F.x(); if (Number.isFinite(fx)) tx = fx; } }
     if (performance.now() < this.dragUntil) return;
     const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW);
     const want = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max);
