@@ -605,8 +605,10 @@ def check(L):
         cr = lambda o, p, q: (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0])
         return cr(a, b, c) * cr(a, b, d) < 0 and cr(c, d, a) * cr(c, d, b) < 0
     W = catmull([tuple(p) for p in L['wall']], 4); eye = (774, -520); behind = set()
+    Xs = lambda p: 774 + (p[0] - 774) * 520 / (520 + p[1])                           # (Декор стін · 4) точка поза кадром (за краєм кімнати) не видна — не рахуємо
     for it in allit:
         for p_ in fpr(it):
+            if not -76 <= Xs(p_) <= 1611: continue
             if any(crosses(eye, p_, W[k], W[k + 1]) for k in range(len(W) - 1)): behind.add(it['id'])
     return bad, sorted(behind)
 DESKS = ('mk_desk', 'ws_base', 'an_top', 'tl_top', 'mk_screen', 'an_back', 'tl_back')   # столи й екрани (стіни за голо-екранами) зон — для порівняння розмірів на екрані

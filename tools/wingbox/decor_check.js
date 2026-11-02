@@ -6,7 +6,8 @@
 //        кадру — зони з живими частинами (маніпулятор, маячок, голо-панелі, руни порталу); 3) «порожня» кімната (лише стіни
 //        крил, рама, місто): піксель, що хоч в одному кадрі відрізнявся від неї, — зайнятий; 4) перетин декору із зайнятим,
 //        розширеним на MARGIN од. Вікно (місто живе) не рахуємо. Камера комп'ютера (уся кімната) — геометрія та сама, що й на телефоні.
-// Живе декору (objects/decor.js: риби за склом, мерехтіння) теж вимикається — це декор, не зона.
+// Живе декору (objects/decor.js: риби за склом, мерехтіння) теж вимикається — це декор, не зона; (· 4) рослини, що гойдаються,
+// метелики й світлячки (objects/decor_live.js) додаються до маски декору в крайніх положеннях — і теж не мають заходити на зони.
 // Перед запуском: python3 tools/build.py.
 const { chromium } = require('playwright'); const fs = require('fs'), path = require('path');
 const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html'), MARGIN = 3;
@@ -21,6 +22,7 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html'), 
     const S = 2, X0 = NX.cfg.ROOM_X0, Y0 = -20, W = Math.round((NX.cfg.ROOM_X1 - X0) * S), H = 420 * S, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const c = cv.getContext('2d'); c.setTransform(S, 0, 0, S, -X0 * S, -Y0 * S); let n = 0;
     for (const sd of ['left', 'right']) { const B = NX.arc.built[sd]; if (B.layers.length === 5) { const l = B.layers[1]; c.drawImage(l.cv, l.x0, l.y0, l.x1 - l.x0, l.y1 - l.y0); B.layers.splice(1, 1); B.comp = null; n++; } }
+    if (NX.decorLive && NX.decorLive.extentTo) NX.decorLive.extentTo(c);                  // (· 4) живе декору (рослини гойдаються, метелики, світлячки) — у крайніх положеннях
     const d = c.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H); for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3] > 60 ? 1 : 0;
     window.DC = { S, X0, Y0, W, H, m }; NX.nexi.layer = () => null; NX.cat.layer = () => null; if (NX.guests) NX.guests.spawn = () => {};
     if (NX.objects.decorLive) NX.objects.decorLive.drawBack = () => {};                   // живе декору (риби, медузи, світіння) — теж декор, не зона

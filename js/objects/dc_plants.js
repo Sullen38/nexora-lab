@@ -11,6 +11,8 @@
  *     spec: {kind, w, h, seed, pal: green|light|sage|neon, hang — звисає (база вгорі), leaves}
  *   Кеш — за видом, розміром і зерном (ті самі рослини після зміни мови не будуються вдруге).
  * Контур навколо всієї рослини дає рушій (outline шару «біля стіни»), жилки й контури листків — тут.
+ * (Декор стін · 4) пишніші: більше листків у монстери, папороті, пальми, потоса й бонсая, більше пасм у висячих; висячі й верхівки
+ * над поруччям гойдаються — objects/decor_live.js (той самий спрайт, зсуви рядків).
  * ========================================================================== */
 NX.arc = NX.arc || {};
 (() => {
@@ -111,7 +113,7 @@ NX.arc = NX.arc || {};
 
   // ---------- рослини v3 (28.10): монстера, папороть, арека, сансев'єра, ліана, неонова, бонсай ----------
   function v3(S, W, H, seed, sp) {
-    const k0 = sp.kind === 'pothos' ? 'vine' : sp.kind, pal = PALS[sp.pal] || (k0 === 'neon' ? PALS.neon : GREEN), n = sp.leaves || ({ monstera: 7, fern: 13, palm: 11, vine: 6, bonsai: 3 }[k0] || 7);
+    const k0 = sp.kind === 'pothos' ? 'vine' : sp.kind, pal = PALS[sp.pal] || (k0 === 'neon' ? PALS.neon : GREEN), n = sp.leaves || ({ monstera: 9, fern: 16, palm: 13, vine: 8, bonsai: 4 }[k0] || 7);
     const potTop = sp.hang ? 0 : H - .4, cx = W / 2, pw = W * .4, ops = [], up = potTop - 1.5, asp = (W - 2.8) / Math.max(1, sp.hang ? H : up), hw = W / 2 - 1.4;
     const reach = (len, a, curl, k = 1.2) => Math.min(len, hw * k / Math.max(.35, Math.sin(Math.min(1.57, Math.abs(a) + .9 * Math.abs(curl)))));
     const leafOp = (base, ang, len, w, curl, kind, sd, lp, o, z) => ops.push({ t: 'leaf', base, ang, len, w, curl, kind, sd, pal: lp, o, z });
@@ -555,7 +557,7 @@ NX.arc = NX.arc || {};
     },
     /** Епіфілюм «риб'ячий скелет»: пласкі зелені стебла з глибокими зубцями-«ребрами», що звисають дугою. */
     epiphyllum(S, W, H, seed) {
-      for (let st = 0; st < 4; st++) { const pts = hangPts(W * (.2 + .2 * st), .3, H * (.55 + .43 * hash(seed, st)), 1.2 + hash(seed, st + 7), st * 1.6, 22);
+      for (let st = 0; st < 5; st++) { const pts = hangPts(W * (.14 + .18 * st), .3, H * (.55 + .43 * hash(seed, st)), 1.2 + hash(seed, st + 7), st * 1.6, 22);
         for (let k = 1; k < pts.length; k++) { const [x0, y0] = pts[k - 1], [x1, y1] = pts[k], a = Math.atan2(x1 - x0, -(y1 - y0)), wv = .9 * Math.sin(Math.PI * k / pts.length) + .35, tooth = k % 2 ? 1 : -1, nx = Math.cos(a), ny = Math.sin(a);
           S.poly([[x0 - nx * wv * .3, y0 - ny * wv * .3], [x0 + tooth * nx * wv, y0 + tooth * ny * wv], [x1 + nx * wv * .3, y1 + ny * wv * .3], [x1 - nx * wv * .3, y1 - ny * wv * .3]], (u, v, i, j) => ramp(['#1a5a1a', '#2a7a26', '#3c9a34', '#5ab84a', '#86d468'], .45 + (hash(i, j) - .5) * .1 + (1 - v) * .2, i, j, .05)); }
         polyline(S, pts, '#1a4a14', .14); }
@@ -569,17 +571,6 @@ NX.arc = NX.arc || {};
       for (let k = 0; k < W * .8; k++) S.poly(ell(hash(k, seed + 3) * W, .3 + hash(k, seed + 6) * 1.3, .5, .45, 8), (u, v, i, j) => ramp(LP, .6 - v * .3, i, j, .05));
       OUTL(S);
     },
-    /** Мох і дрібна зелень на трубі під стелею (одна «гірлянда» вздовж усієї труби): подушки моху згори, короткі пасма з
-     *  листочками звисають, де-не-де — довше пасмо й крихітні квіточки. */
-    pipemoss(S, W, H, seed) {
-      const MP = ['#0a2a10', '#123e18', '#1c5622', '#28702e', '#38903c', '#52ac4e', '#7cc86a'];
-      for (let k = 0; k < W * 1.6; k++) { const x = hash(k, seed) * W, y = .3 + hash(seed, k) * H * .18, r = .45 + .4 * hash(k, seed + 2); S.poly(ell(x, y, r * 1.2, r, 8), (u, v, i, j) => ramp(MP, .35 + (1 - v) * .45 + (hash(i >> 1, j) - .5) * .2, i, j, .06)); }
-      const n = Math.max(3, Math.round(W / 1.6));
-      for (let st = 0; st < n; st++) { if (hash(st, seed + 5) < .3) continue; const len = H * (.3 + .7 * Math.pow(hash(seed, st + 11), 1.6)), pts = hangPts(W * (st + .5) / n, H * .1, len * .9, .4 + hash(st, seed) * .6, st + seed, 10);
-        polyline(S, pts, '#2a5a2a', .12); pts.forEach(([x, y], k) => { if (k && k % 2 === 0) for (const sd of [-1, 1]) S.poly(ell(x + sd * .35, y, .3, .24, 6), MP[3 + ((k + st) % 3)]); });
-        if (hash(st, seed + 9) > .8) { const [fx, fy] = pts[pts.length - 1]; S.poly(ell(fx, fy + .3, .35, .35, 6), ['#ff9ad8', '#ffe27a', '#c8a0ff'][(st + seed) % 3]); } }
-      OUTL(S);
-    },
     /** М'ята: кущик дрібних зубчастих листочків, соковита світла зелень (аквапоніка). */
     mint(S, W, H, seed) {
       const cx = W / 2, by = H - .2, MP = ['#0e3a1e', '#16542a', '#22703a', '#34904a', '#4cb060', '#7ad080', '#b0f0a0'];
@@ -589,8 +580,8 @@ NX.arc = NX.arc || {};
     /** «Нитка перлів» (сенеціо): пасма з круглих зелених намистин з відблиском, «шапка» намистин угорі. Звисає. */
     pearls(S, W, H, seed) {
       const PP = ['#14401a', '#226024', '#348034', '#4ea046', '#78c068'];
-      for (let st = 0; st < 6; st++) {
-        const x0 = W * (.14 + .72 * st / 5), len = H * (.42 + .52 * hash(seed, st)); let px = x0, py = .9;
+      for (let st = 0; st < 8; st++) {
+        const x0 = W * (.1 + .8 * st / 7), len = H * (.42 + .52 * hash(seed, st)); let px = x0, py = .9;
         for (let k = 0; py < len - 1; k++) { const nx = x0 + Math.sin(k * .8 + st) * 1.1, ny = py + 1.2, r = .58 + .12 * hash(st, k);
           line(S, [px, py], [nx, ny], '#2a4a20', .22); S.poly(ell(nx, ny, r, r, 9), (u, v, i, j) => u < .38 && v < .42 ? '#dcffd0' : ramp(PP, .85 - Math.hypot(u - .4, v - .4) * 1.2, i, j)); px = nx; py = ny; }
       }
@@ -599,8 +590,8 @@ NX.arc = NX.arc || {};
     /** Традесканція «зебрина»: пасма з загостреними листками — фіолетові зі срібною серединкою. Звисає. */
     tradescantia(S, W, H, seed) {
       const TP = ['#22082e', '#3e1450', '#5c2272', '#7c3a92', '#a06ab4', '#c8a0dc', '#eedcff'];
-      for (let st = 0; st < 5; st++) {
-        const x0 = W * (.18 + .64 * st / 4), len = H * (.38 + .58 * hash(seed, st)), pts = [];
+      for (let st = 0; st < 7; st++) {
+        const x0 = W * (.12 + .76 * st / 6), len = H * (.38 + .58 * hash(seed, st)), pts = [];
         for (let k = 0; k <= 12; k++) { const t = k / 12; pts.push([x0 + Math.sin(t * 4 + st) * 1.5 * t, .8 + t * (len - .8)]); }
         for (let k = 1; k < pts.length; k++) line(S, pts[k - 1], pts[k], '#4a1a5a', .3);
         for (let k = 1; k < pts.length; k += 2) { const side = (k + st) % 4 < 2 ? 1 : -1, sz = 2 + 1.3 * hash(seed, k + st);
@@ -618,8 +609,8 @@ NX.arc = NX.arc || {};
     },
     /** Хойя: пасма з товстими восковими листками (темні, з цятками) і парасольки рожевих квіток-зірочок. Звисає. */
     hoya(S, W, H, seed) {
-      for (let st = 0; st < 4; st++) {
-        const x0 = W * (.2 + .6 * st / 3), len = H * (.42 + .52 * hash(seed, st)), pts = [];
+      for (let st = 0; st < 5; st++) {
+        const x0 = W * (.16 + .68 * st / 4), len = H * (.42 + .52 * hash(seed, st)), pts = [];
         for (let k = 0; k <= 10; k++) { const t = k / 10; pts.push([x0 + Math.sin(t * 3 + st * 2) * 1.3 * t, .8 + t * (len - .8)]); }
         for (let k = 1; k < pts.length; k++) line(S, pts[k - 1], pts[k], '#3a5a2a', .32);
         for (let k = 2; k < pts.length; k += 2) { const side = (k / 2 + st) % 2 ? 1 : -1;
