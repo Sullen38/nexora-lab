@@ -46,7 +46,7 @@ NX.i18n.add('nl', {
     merlin: { n: 'Merlijn', s: ['Abracadabra!'] }, genie: { n: 'Geest uit de lamp', s: ['Uw wens is mijn bevel!', 'Wens vervuld!'] },
     tinMan: { n: 'Blikken Houthakker', s: ['Olie… alsjeblieft…', 'Dank je, vriend!'] },
     silver: { n: 'Lange John Silver', s: ['Hier ligt een schat begraven!'], p: 'Piasters! Piasters!' }, gorynych: { n: 'Zmej Gorynytsj', s: ['Hatsjoe!'] } },
-  chat: { quick: { work: 'Werk', city: 'Stad', dance: 'Dans', cat: 'Kat', plants: 'Water', fish: 'Vissen', skin: 'Skins' },
+  chat: { quick: { work: 'Werk', city: 'Stad', dance: 'Dans', cat: 'Kat', plants: 'Water', fish: 'Vissen', upstairs: 'Boven', skin: 'Skins' },
     fallback: 'Ik kan nu: werken bij marketing en analyse aan mijn bureaus, diensten koppelen bij tools, skins wisselen in de Skins-zone, uitrusten op de bank, naar de stad kijken, dansen en spelen met Gember. Meer zones komen eraan! Wat gaan we doen?',
     greet: 'Hoi! Ik ben Nexi. Tik op een zone, de bank of het raam en ik ga erheen. Nieuwe look? Ga naar de Skins-zone.' },
   act: {
@@ -64,6 +64,7 @@ NX.i18n.add('nl', {
     petCat: { title: 'De kat aaien', steps: ['Naar Gember', 'Aaien ♥'], lines: ['Gember, kom hier! Wie is de beste kat?', 'Kattenpauze: ik aai Gember even.'] },
     garden: { title: 'De muurplanten water geven', steps: ['Gieter pakken', 'Naar de planten vliegen', 'Elke plant water geven ✓'], lines: ['Ik ben botanicus — tijd om het groen op de muren water te geven!', 'De planten hebben dorst. Ik vlieg met de gieter!', 'Een beetje water en de bladeren glanzen weer.'] },
     feedFish: { title: 'De vissen voeren', steps: ['Naar de aquaria vliegen', 'Voerautomaat indrukken', 'Kijken hoe ze eten ✓'], lines: ['Etenstijd in de aquaria!', 'De vissen wachten op voer — ik kom eraan!', 'Ik voer de vissen en de kwallen.'] },
+    upstairs: { title: 'Bovenverdieping: drone bijvullen', steps: ['Naar de bovenverdieping vliegen', 'De sproeidrone roepen', 'Water bijvullen ✓'], lines: ['Naar boven — de sproeidrone heeft vast geen water meer!', 'Ik kijk even boven en vul de drone bij.', 'Drone, hierheen! Tijd om bij te vullen.'] },
     feedCat: { title: 'De kat voeren', steps: ['Naar Gember', 'Snoepje gegeven ✓'], lines: ['Gember heeft honger! Ik geef hem een snoepje.'] },
     dance: { title: 'Dansen op het kleed', steps: ['Muziek!', 'Dansen ♪'], lines: ['Even dansen voor de stemming!'] },
     wander: { title: 'Rondje door de kamer', steps: ['Wandelen'], lines: ['Even rondlopen en nadenken.'] },
@@ -107,5 +108,5 @@ NX.i18n.add('nl', {
     mood: { happy: 'Blij', love: 'Liefde', surprise: 'Verrassing', idea: 'Idee', sleepy: 'Slaperig', sad: 'Verdrietig', angry: 'Boos', cool: 'Cool' },
     act: { stand: 'Staan', walk: 'Lopen', run: 'Rennen', wave: 'Zwaaien', think: 'Denken', point: 'Wijzen', talk: 'Vertellen', cheer: 'Juichen', spin: 'Draaien', stretch: 'Rekken', look: 'Rondkijken', jump: 'Springen', work: 'Werken', sleep: 'Slapen', dance: 'Dansen', read: 'Lezen', meditate: 'Mediteren', bye: 'Gedag', drink: 'Koffie', hammer: 'Repareren' },
   },
-  kw: { garden: 'water geven|planten|bloem|gieter|tuin', feedFish: 'vis|aquarium|kwal', selfie: 'selfie|foto', ai: 'ai|chat|mail|tekst|antwoord|klant', analytics: 'analys|rapport|verkoop|data|cijfers', marketing: 'market|advertent|post|campagne|nieuwsbrief', tools: 'tool|integrat|crm|agenda', portal: 'portaal|project|team', petCat: 'kat|gember|aai', feedCat: 'voer', sofa: 'bank|rust|lees', sleep: 'slaap|dutje', dance: 'dans', home: 'thuis|station|home', window: 'raam|stad|vuurwerk', skin: 'skin|uiterlijk|kleur', sofaWork: 'werk|taak' },
+  kw: { upstairs: 'verdieping|naar boven|balkon|drone|mezzanine', garden: 'water geven|planten|bloem|gieter|tuin', feedFish: 'vis|aquarium|kwal', selfie: 'selfie|foto', ai: 'ai|chat|mail|tekst|antwoord|klant', analytics: 'analys|rapport|verkoop|data|cijfers', marketing: 'market|advertent|post|campagne|nieuwsbrief', tools: 'tool|integrat|crm|agenda', portal: 'portaal|project|team', petCat: 'kat|gember|aai', feedCat: 'voer', sofa: 'bank|rust|lees', sleep: 'slaap|dutje', dance: 'dans', home: 'thuis|station|home', window: 'raam|stad|vuurwerk', skin: 'skin|uiterlijk|kleur', sofaWork: 'werk|taak' },
 });

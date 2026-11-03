@@ -174,7 +174,7 @@ NX.nexi = {
       if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
       if (r >= .36 && r < .47 && ok('ai', 'aicenter') && !(NX.virus && NX.virus.busy())) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }   // вірус на столі — не зараз (крок 15)
       if (r < .5) { this.do('sofaWork', false); return; }
-      if (r < .62) { this.do(Math.random() < .55 ? 'garden' : 'feedFish', false); return; }            // (· 6) доглядає стіни: полив і годування риб
+      if (r < .62) { const q = Math.random(); this.do(q < .42 ? 'garden' : q < .76 ? 'feedFish' : 'upstairs', false); return; }   // (· 6) доглядає стіни: полив і годування риб; (· 7) другий поверх — заправити дрона
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }

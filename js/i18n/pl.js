@@ -46,7 +46,7 @@ NX.i18n.add('pl', {
     merlin: { n: 'Merlin', s: ['Abrakadabra!'] }, genie: { n: 'Dżin', s: ['Słucham i jestem posłuszny!', 'Życzenie spełnione!'] },
     tinMan: { n: 'Blaszany Drwal', s: ['Oliwy… proszę…', 'Dziękuję, przyjacielu!'] },
     silver: { n: 'Długi John Silver', s: ['Tu zakopano skarb!'], p: 'Piastry! Piastry!' }, gorynych: { n: 'Żmij Gorynycz', s: ['Apsik!'] } },
-  chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', plants: 'Podlej', fish: 'Ryby', skin: 'Skórki' },
+  chat: { quick: { work: 'Praca', city: 'Miasto', dance: 'Taniec', cat: 'Kot', plants: 'Podlej', fish: 'Ryby', upstairs: 'Antresola', skin: 'Skórki' },
     fallback: 'Na razie umiem: pracować w marketingu i analityce przy swoich biurkach, podłączać usługi w narzędziach, zmieniać skórki w strefie „Skórki”, odpoczywać na kanapie, patrzeć na miasto, tańczyć i bawić się z Rudym. Kolejne strefy wkrótce! Co robimy?',
     greet: 'Cześć! Jestem Nexi. Dotknij strefy, kanapy lub okna, a pójdę tam. Nowy wygląd — w strefie „Skórki”.' },
   act: {
@@ -64,6 +64,7 @@ NX.i18n.add('pl', {
     petCat: { title: 'Pogłaskać kota', steps: ['Idę do Rudego', 'Głaszczę ♥'], lines: ['Rudy, chodź tu! Kto jest najlepszym kotem?', 'Kocia przerwa: pogłaszczę Rudego.'] },
     garden: { title: 'Podlać rośliny na ścianach', steps: ['Biorę konewkę', 'Lecę do roślin', 'Podlewam każdą ✓'], lines: ['Jestem botanikiem — czas podlać zieleń na ścianach!', 'Roślinki chcą pić. Startuję z konewką!', 'Trochę wody i liście znów błyszczą.'] },
     feedFish: { title: 'Nakarmić ryby', steps: ['Lecę do akwariów', 'Naciskam karmnik', 'Patrzę, jak jedzą ✓'], lines: ['Pora obiadu w akwariach!', 'Rybki czekają na karmę — lecę!', 'Nakarmię rybki i meduzy.'] },
+    upstairs: { title: 'Antresola: zatankować drona', steps: ['Wzlatuję na antresolę', 'Wołam drona-podlewacza', 'Dolewam mu wody ✓'], lines: ['Lecę na górę — dron-podlewacz pewnie nie ma już wody!', 'Zajrzę na antresolę i zatankuję drona.', 'Dronie, do mnie! Pora dolać wody.'] },
     feedCat: { title: 'Nakarmić kota', steps: ['Idę do Rudego', 'Daję smakołyk ✓'], lines: ['Rudy jest głodny! Dam mu smakołyk.'] },
     dance: { title: 'Taniec na dywanie', steps: ['Muzyka!', 'Tańczę ♪'], lines: ['Chwila tańca dla humoru!'] },
     wander: { title: 'Spacer po pokoju', steps: ['Spaceruję'], lines: ['Przejdę się i pomyślę.'] },
@@ -107,5 +108,5 @@ NX.i18n.add('pl', {
     mood: { happy: 'Radość', love: 'Miłość', surprise: 'Zdziwienie', idea: 'Pomysł', sleepy: 'Senność', sad: 'Smutek', angry: 'Złość', cool: 'Luz' },
     act: { stand: 'Stoi', walk: 'Chodzi', run: 'Biegnie', wave: 'Macha', think: 'Myśli', point: 'Wskazuje', talk: 'Opowiada', cheer: 'Cieszy się', spin: 'Obrót', stretch: 'Przeciąga się', look: 'Rozgląda się', jump: 'Skacze', work: 'Pracuje', sleep: 'Śpi', dance: 'Tańczy', read: 'Czyta', meditate: 'Medytuje', bye: 'Żegna się', drink: 'Pije kawę', hammer: 'Naprawia' },
   },
-  kw: { garden: 'podlej|podlać|roślin|kwiat|konewk', feedFish: 'ryb|akwari|meduz', selfie: 'selfie|zdjęc', ai: 'ai|czat|mail|tekst|odpowied|klient', analytics: 'analit|raport|sprzeda|metryk|dane|liczb', marketing: 'market|reklam|post|kampani|newsletter', tools: 'narzędz|integrac|crm|kalendarz|poczt', portal: 'portal|projekt|zespół', petCat: 'kot|rudy|pogłaszcz', feedCat: 'nakarm|karm', sofa: 'kanap|odpocz|czytaj', sleep: 'spać|sen|drzemk', dance: 'tańcz|taniec', home: 'dom|stacj|start', window: 'okno|miasto|fajerwer', skin: 'skórk|wygląd|kolor|strój', sofaWork: 'prac|zadani' },
+  kw: { upstairs: 'antresol|piętr|balkon|dron', garden: 'podlej|podlać|roślin|kwiat|konewk', feedFish: 'ryb|akwari|meduz', selfie: 'selfie|zdjęc', ai: 'ai|czat|mail|tekst|odpowied|klient', analytics: 'analit|raport|sprzeda|metryk|dane|liczb', marketing: 'market|reklam|post|kampani|newsletter', tools: 'narzędz|integrac|crm|kalendarz|poczt', portal: 'portal|projekt|zespół', petCat: 'kot|rudy|pogłaszcz', feedCat: 'nakarm|karm', sofa: 'kanap|odpocz|czytaj', sleep: 'spać|sen|drzemk', dance: 'tańcz|taniec', home: 'dom|stacj|start', window: 'okno|miasto|fajerwer', skin: 'skórk|wygląd|kolor|strój', sofaWork: 'prac|zadani' },
 });

@@ -257,29 +257,88 @@
     S.ell(2.5, 3.6, 1.4, 1, '#3a4268'); S.ell(21.5, 3.6, 1.4, 1, '#3a4268');                                             // мотори
     S.ell(12, 12, 3.4, 1.9, (x, y, u, v) => u < -.3 && v < 0 ? '#c8e8ff' : '#3a8aff'); S.set(12, 13, '#1a2040');       // бачок з водою, сопло
   });
-  const ROUTE = ['dc_tbp0', 'dc_tbp1', 'dc_tbp2', 'dc_tbp3', 'dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3']
-    .map(id => byId[id]).filter(Boolean).map(B => { const { P } = NX.arc.kit.basis(B), y = B.st === 'dc_hang' ? B.yt + (B.yb - B.yt) * .32 : B.yt, q = X.proj(P(0, B.dep / 2, y)); return [q[0], Math.max(11, q[1] - 7)]; });
+  const ROUTE_ID = ['dc_tbp0', 'dc_tbp1', 'dc_tbp2', 'dc_tbp3', 'dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3'].filter(id => byId[id]);
+  const ROUTE = ROUTE_ID.map(id => byId[id]).map(B => { const { P } = NX.arc.kit.basis(B), y = B.st === 'dc_hang' ? B.yt + (B.yb - B.yt) * .32 : B.yt, q = X.proj(P(0, B.dep / 2, y)); return [q[0], Math.max(11, q[1] - 7)]; });
   const LEGS = []; (() => { let tt = 0; for (let k = 0; k < ROUTE.length; k++) { const a = ROUTE[k], b = ROUTE[(k + 1) % ROUTE.length], d = Math.hypot(b[0] - a[0], b[1] - a[1]), fly = Math.max(1.2, d / 26);
     LEGS.push({ a, b, t0: tt, hover: 2.4, fly }); tt += 2.4 + fly; } LEGS.T = tt; })();
-  /** Де дрон у час t: зависає над рослиною (spray), потім летить до наступної (плавно, дугою вгору). */
-  function droneAt(t) {
-    const tt = t % LEGS.T; let L = LEGS[LEGS.length - 1]; for (const g of LEGS) if (tt >= g.t0) L = g;
+  // (· 7) ВИКЛИК ДО NEXI (власник: «Nexi на другому поверсі»): Nexi на ранці перед антресоллю кличе дрона й доливає йому води з
+  // лійки. CALL — куди й коли дрон прилітає (FIN с, дугою), коли бачок повний (t1: «бочка» — тап-обертання з decor_live — і
+  // серце) і коли летить далі (tg); маршрут продовжується з монстери на антресолі — праворуч від Nexi, тож видно, як дрон одразу
+  // її поливає (OFF — зсув фази маршруту: міняється, коли дрон уже біля Nexi, тож стрибка не видно); перші BOOST_T с після
+  // заправки дрон поливає щедріше (більше бризок і туману).
+  let CALL = null, OFF = 0, BOOST = -99;
+  const FIN = 1.8, BACK = 1.3, BOOST_T = 16, I_GO = Math.max(0, ROUTE_ID.includes('dc_mzp2') ? ROUTE_ID.indexOf('dc_mzp2') : ROUTE_ID.indexOf('dc_mzp0')), sstep = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+  /** Де дрон у час t на маршруті: зависає над рослиною (spray), потім летить до наступної (плавно, дугою вгору). */
+  function routeAt(t) {
+    const tt = (((t + OFF) % LEGS.T) + LEGS.T) % LEGS.T; let L = LEGS[LEGS.length - 1]; for (const g of LEGS) if (tt >= g.t0) L = g;
     const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt > L.hover - .3 ? lt - L.hover + .3 : null, wx: L.a[0], wy: L.a[1] + 8 };
     const u = (lt - L.hover) / L.fly, e = u * u * (3 - 2 * u); return { x: L.a[0] + (L.b[0] - L.a[0]) * e, y: L.a[1] + (L.b[1] - L.a[1]) * e - Math.sin(u * Math.PI) * Math.min(10, Math.abs(L.b[0] - L.a[0]) * .12), spray: false, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt - L.hover + .3, wx: L.a[0], wy: L.a[1] + 8 };
   }
-  const droneY = D => Math.max(10, D.y), MIST = glowSpr('#d8f4ff', 5);
+  /** Де дрон у час t: маршрут або (· 7) політ до Nexi / зависання біля лійки (fill — скільки води долито, 0..1) / повернення. */
+  function droneAt(t) {
+    const C = CALL; if (C && C.off != null && t >= C.t0 + FIN) { OFF = C.off; C.off = null; }
+    const D = routeAt(t); if (!C || t < C.t0) return D;
+    if (t > C.tg + BACK) { CALL = null; return D; }
+    const k = Math.min(sstep((t - C.t0) / FIN), t > C.tg ? 1 - sstep((t - C.tg) / BACK) : 1), arc = Math.sin(Math.PI * k) * (k < 1 ? 5 : 0), B = t <= C.tg && C.from ? C.from : D;
+    return { x: B.x + (C.x - B.x) * k, y: B.y + (C.y - B.y) * k - arc + (k >= 1 ? Math.sin(t * 3.1) * .4 : 0), spray: k < .02 && D.spray, dir: k > .98 ? C.face : t > C.tg ? (D.x >= C.x ? 1 : -1) : (C.x >= B.x ? 1 : -1),
+      wet: k < .02 ? D.wet : null, wx: D.wx, wy: D.wy, fill: t >= C.t0 + FIN ? Math.min(1, (t - C.t0 - FIN) / Math.max(.1, C.t1 - C.t0 - FIN)) : 0, done: t > C.t1 ? t - C.t1 : -1 };
+  }
+  /** (· 7) Покликати дрона до лійки Nexi: прилетить у (x, y) за FIN с від t0 і повисить dur с (поки Nexi доливає), face — куди
+   *  дивитись (на Nexi), spout — носик лійки (звідти струмінь у бачок); linger с після заправки ще біля Nexi («бочка», серце),
+   *  потім летить поливати рослини антресолі. -> через скільки секунд прилетить. */
+  function droneCall(x, y, t0, dur, face = -1, spout = null, linger = 1) {
+    if (!ROUTE.length) return 0; const t1 = t0 + FIN + dur, tg = t1 + linger, now = CALL ? droneAt(t0) : null;   // уже летить до Nexi — новий виклик з того ж місця
+    CALL = { x, y, t0, t1, tg, face, spout, from: now && { x: now.x, y: now.y }, off: (((LEGS[I_GO].t0 - .9 - tg) % LEGS.T) + LEGS.T) % LEGS.T }; BOOST = t1; return FIN;
+  }
+  /** (· 7) Де Nexi зависає перед другим поверхом: праворуч від дверей пілона (двері видно), трохи перед фасадом антресолі, голова —
+   *  на 5 од. нижче верху кадру (вище — стеля: стати на саму антресоль Nexi не може — він вищий, ніж від плити до стелі).
+   *  -> { x, y — ступні, z, dy — рядок підлоги на тій глибині (масштаб), s — масштаб спрайта, spout — носик лійки (поза hoverWater),
+   *  dock — де зависає дрон під носиком }. */
+  function upstairs() {
+    const S = items.find(B => B.st === 'dc_mz'), DR = byId.dc_door; if (!S || !DR) return null;
+    const d = S.dc, R = d.R - d.P - 4, VX = PZ.VP[0];
+    const front = X0 => { let lo = d.a0, hi = d.a1; for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2, x = d.C[0] + R * Math.sin(m * D2R), z = d.C[1] + R * Math.cos(m * D2R); if (VX + (x - VX) * PZ.s(z) < X0) lo = m; else hi = m; } return d.C[1] + R * Math.cos(lo * D2R); };
+    const { P } = NX.arc.kit.basis(DR), doorR = Math.max(...[-1, 1].map(u => X.proj(P(u * DR.w / 2, 0, DR.yb))[0]));
+    let x = doorR + 26, z = 0, dy = 0, s = 1;
+    for (let k = 0; k < 4; k++) { z = front(x); dy = PZ.VP[1] + (372 - PZ.VP[1]) * PZ.s(z); s = NX.room.scaleAt(Math.max(dy, 352)) * SPRITE_K; x = doorR + 2 + 20 * s; }
+    const y = Math.ceil(5 + 52 * s);
+    return { x: Math.round(x * 10) / 10, y, z, dy, s, spout: [x + 24 * s, y - 18 * s], dock: [x + 27 * s, y - 9 * s] };
+  }
+  const droneY = D => Math.max(10, D.y), MIST = glowSpr('#d8f4ff', 5), TANK = glowSpr('#3be8ff', 4.6), HALO = glowSpr('#3be8ff', 11), TAU2 = Math.PI * 2;
+  const HEART = ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'];
   function drawDrone(c, t, vx0, vx1) {
     if (!ROUTE.length) return; const D = droneAt(t); if (D.x < vx0 - 10 || D.x > vx1 + 10) return;
-    const w = 10, h = w * DRONE.h / DRONE.w, x = D.x, y = droneY(D);
+    const w = 10, h = w * DRONE.h / DRONE.w, x = D.x, y = droneY(D), bo = t > BOOST && t - BOOST < BOOST_T;   // (· 7) bo — щойно заправлений: щедріше
     c.save(); c.imageSmoothingEnabled = true;
-    if (D.spray) { c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const f = (t * 1.6 + k / 14) % 1, a = (hash(k, 3) - .5) * .9; c.globalAlpha = .75 * (1 - f); c.fillStyle = k % 3 ? '#9af6ff' : '#ffffff'; c.fillRect(x + Math.sin(a) * f * 6 - .3, y + h * .45 + f * 9, .6, .6); } c.globalCompositeOperation = 'source-over'; }
+    if (D.spray) { const n = bo ? 26 : 14; c.globalCompositeOperation = 'lighter'; for (let k = 0; k < n; k++) { const f = (t * 1.6 + k / n) % 1, a = (hash(k, 3) - .5) * (bo ? 1.3 : .9); c.globalAlpha = .75 * (1 - f); c.fillStyle = k % 3 ? '#9af6ff' : '#ffffff'; c.fillRect(x + Math.sin(a) * f * (bo ? 7 : 6) - .3, y + h * .45 + f * (bo ? 11 : 9), .6, .6); } c.globalCompositeOperation = 'source-over'; }
     if (D.wet != null && D.wet < 1.8) { const k = D.wet / 1.8, px = D.wx, py = D.wy;                                  // (· 5) після поливу: хмаринка туману над листям і краплі стікають
-      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .26 * (1 - k); const gm = MIST.r * (1 + k * .8); c.drawImage(MIST.cv, px - gm, py - gm * .6, gm * 2, gm * 1.2);
-      for (let q = 0; q < 6; q++) { const d0 = hash(q, 17) * .5, f = Math.max(0, (D.wet - d0) / 1.3); if (f <= 0 || f >= 1) continue; const dx = (hash(q, 19) - .5) * 7, yy = py + 1 + f * f * 7;
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = (bo ? .36 : .26) * (1 - k); const gm = MIST.r * (1 + k * .8) * (bo ? 1.5 : 1); c.drawImage(MIST.cv, px - gm, py - gm * .6, gm * 2, gm * 1.2);
+      for (let q = 0; q < (bo ? 10 : 6); q++) { const d0 = hash(q, 17) * .5, f = Math.max(0, (D.wet - d0) / 1.3); if (f <= 0 || f >= 1) continue; const dx = (hash(q, 19) - .5) * (bo ? 9 : 7), yy = py + 1 + f * f * 7;
         c.globalAlpha = .9 * (1 - f); c.fillStyle = '#c8f4ff'; c.fillRect(px + dx - .2, yy - .35, .4, .7); c.fillStyle = '#ffffff'; c.fillRect(px + dx - .1, yy - .35, .2, .2); }
       c.globalCompositeOperation = 'source-over'; }
+    if (D.fill > 0 && D.done < 0 && CALL && CALL.spout) {                               // (· 7) струмінь з лійки Nexi в бачок: хвилястий, світлі краплі біжать униз, бризки
+      const [sx, sy] = CALL.spout, ex = x - .4, ey = y - h * .42, n = 8; c.globalCompositeOperation = 'lighter';
+      for (let q = 0; q < n; q++) { const u0 = q / n, u1 = (q + 1) / n, w0 = Math.sin(t * 23 + q * 1.7) * .25 * u0, w1 = Math.sin(t * 23 + q * 1.7 + 1.7) * .25 * u1;
+        c.globalAlpha = .55; c.strokeStyle = '#8ad8ff'; c.lineWidth = .9 - u0 * .3; c.beginPath(); c.moveTo(sx + (ex - sx) * u0 + w0, sy - 1.5 + (ey - sy + 1.5) * u0); c.lineTo(sx + (ex - sx) * u1 + w1, sy - 1.5 + (ey - sy + 1.5) * u1); c.stroke(); }
+      for (let q = 0; q < 3; q++) { const u = (t * 2.6 + q / 3) % 1; c.globalAlpha = .95; c.fillStyle = '#ffffff'; c.fillRect(sx + (ex - sx) * u - .25, sy - 1.5 + (ey - sy + 1.5) * u - .3, .5, .6); }
+      for (let q = 0; q < 4; q++) { const f = (t * 3.1 + q / 4) % 1, a = (q % 2 ? 1 : -1) * (.8 + hash(q, 23) * 1.4); c.globalAlpha = .85 * (1 - f); c.fillStyle = q % 2 ? '#c8f4ff' : '#ffffff';
+        c.fillRect(ex + a * f * 2.2 - .2, ey - Math.sin(f * Math.PI) * 1.6 + f * .6 - .2, .4, .4); }
+      c.globalCompositeOperation = 'source-over'; }
+    if (D.fill > 0 && D.done < .9) {                                                    // (· 7) сяйво навколо дрона росте, поки бачок наповнюється; повний — спалах-кільце й іскри
+      const fade = D.done > 0 ? 1 - D.done / .9 : 1; c.globalCompositeOperation = 'lighter';
+      c.globalAlpha = (.12 + .3 * D.fill) * (.8 + .2 * Math.sin(t * 9)) * fade; const gr = HALO.r * (.7 + .5 * D.fill); c.drawImage(HALO.cv, x - gr, y - gr, gr * 2, gr * 2);
+      if (D.done >= 0 && D.done < .55) { const f = D.done / .55; c.globalAlpha = .9 * (1 - f); c.strokeStyle = '#9af6ff'; c.lineWidth = .7; c.beginPath(); c.arc(x, y, 3 + f * 10, 0, TAU2); c.stroke();
+        for (let q = 0; q < 8; q++) { const a = q / 8 * TAU2 + .3, r = 4 + f * 11; c.fillStyle = q % 2 ? '#ffffff' : '#9af6ff'; c.fillRect(x + Math.cos(a) * r - .3, y + Math.sin(a) * r * .8 - .3, .6, .6); } }
+      c.globalCompositeOperation = 'source-over'; }
+    if (D.done >= 0 && D.done < 1.2) {                                                   // (· 7) «дякую»: піксельне серце злітає над дроном
+      const k = D.done / 1.2, px = .7, hx = x + 1.5 - 3.5 * px, hy = y - 6 - k * 7; c.globalAlpha = Math.min(1, (1 - k) * 1.6);
+      HEART.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') { c.fillStyle = i === 1 && j === 1 ? '#ffffff' : j > 2 ? '#d82aa8' : '#ff4fd8'; c.fillRect(hx + i * px, hy + j * px, px, px); } }));
+    }
     const spin = NX.decorLive ? NX.decorLive.droneSpin(t) : 0;                          // (· 5) тап — «бочка»
     c.globalAlpha = 1; c.translate(x, y); if (D.dir < 0) c.scale(-1, 1); if (spin) c.rotate(spin); c.drawImage(DRONE.cv, -w / 2, -h / 2, w, h);
+    if (D.fill > 0 && D.done < .6) {                                                     // (· 7) бачок наповнюється: світиться дедалі ясніше
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = (.2 + .55 * D.fill) * (.75 + .25 * Math.sin(t * 14)) * (D.done > 0 ? 1 - D.done / .6 : 1);
+      c.drawImage(TANK.cv, -TANK.r, h * .36 - TANK.r * .7, TANK.r * 2, TANK.r * 1.4); c.globalCompositeOperation = 'source-over'; }
     c.globalAlpha = .55; c.fillStyle = '#e8f0ff'; const r = (t * 40) % 2 < 1; for (const hx of [-w * .4, w * .4]) c.fillRect(hx - (r ? 2.2 : 1.6), -h * .38, r ? 4.4 : 3.2, .35);   // гвинти (миготять)
     c.globalAlpha = 1; c.fillStyle = (t % 1) < .5 ? '#3bff8a' : '#14602e'; c.fillRect(-w * .2, -h * .05, .45, .45);   // вогник
     c.restore();
@@ -334,7 +393,7 @@
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
     c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore();
   }
-  NX.decor = { droneAt, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items, SPR, CREW, JELLY: jelly };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js) і акваріумів · 5 (objects/decor_aqua.js)
+  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items, SPR, CREW, JELLY: jelly };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
   NX.addObject({
     id: 'decorLive',
     /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */

@@ -150,6 +150,8 @@
    *  зачиняються. -> false, коли зачинені (нічого не малюємо). */
   const openAt = k => k < 0 ? 0 : k < .9 ? k / .9 : k < 3.6 ? 1 : k < 4.5 ? 1 - (k - 3.6) / .9 : 0;
   const doorOpen = t => Math.max((t % 17) < 11 ? 0 : openAt((t % 17) - 11), openAt(t - TP.door));   // сама — раз на 17 с; від тапу — одразу
+  /** (· 7) Другий поверх вітає Nexi, що підлетів на ранці: двері пілона відчиняються (якщо зачинені), ліхтар спалахує. */
+  const greet = t => { if (doorOpen(t) <= 0) TP.door = t; TP.lamp = t; };
   function paintDoor(c, fw, fh, t) {
     const o0 = doorOpen(t); if (o0 <= 0) return false; const o = o0 * o0 * (3 - 2 * o0), s = o * fw * .5;
     const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#5a2a10'); g.addColorStop(.4, '#c8641e'); g.addColorStop(1, '#ffb24a'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
@@ -561,7 +563,7 @@
 
   // =============================== КАДР ===============================
   NX.decorLive = {
-    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care,
+    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care, greet,
     /** Для tools/wingbox/decor_check.js: усе живе цього файлу в крайніх положеннях — на контекст у координатах кімнати
      *  (рослини — обидва крайні нахили з поривом; метелики, листочки, світлячки — точки за 2 хвилини). */
     extentTo(c) {

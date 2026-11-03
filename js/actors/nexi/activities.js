@@ -29,6 +29,8 @@
  * Декор стін · 6 (власник: «Nexi доглядає стіни»): ПОЛИВ (garden) — на ранці з лійкою облітає рослини стіни, що ближче
  *   (ліва: кошик, корита, мухоловка; права: потос у макраме, кокедами), рослина «оживає»; ГОДУВАННЯ (feedFish) — зависає біля
  *   акваріума й тисне кнопку годівнички: риби пливуть до корму й з'їдають його, у медузарії — хмара планктону, медузи сяють.
+ * Декор стін · 7 (план: «Nexi на другому поверсі»): ДРУГИЙ ПОВЕРХ (upstairs) — на ранці до антресолі (двері пілона й ліхтар
+ *   вітають), кличе дрона-поливальника й доливає йому води з лійки; дрон дякує й летить щедро поливати рослини антресолі.
  * ========================================================================== */
 (() => {
   // (· 6) біля стіни: рядок підлоги на глибині z (масштаб Nexi — як у кімнаті там), куди долетіти, щоб лійка була над рослиною,
@@ -42,6 +44,7 @@
   const hoverBeside = e => { const dy = floorAt(e.z), s = sprK(dy); return { p: [inRoom(e.x + e.side * (24 * s + 3)), e.y + 28 * s], dy, d: -e.side }; };   // кнопка — на пульті: бік руки неважливий
   const wallFloor = side => NX.room.clampWalk(side === 'left' ? 230 : 1460, 446, 'nexi');
   const pourFx = dir => { const n = NX.nexi, s = sprK(n.depthY()), d = sideOf(dir); for (let k = 0; k < 3; k++) NX.fx.emit('rain', n.x + d * (24 + Math.random() * 2) * s, n.y - (18 - Math.random() * 2) * s, { vx: d * (8 + Math.random() * 16), vy: 6 + Math.random() * 20, g: 170, ttl: .5, h: 2.4, s: 1.2, col: Math.random() < .7 ? '#8ad8ff' : '#e8fbff' }); };
+  const pourInto = () => { const n = NX.nexi, s = sprK(n.depthY()), d = sideOf(1); for (let k = 0; k < 2; k++) NX.fx.emit('rain', n.x + d * (24 + Math.random() * 2) * s, n.y - (18 - Math.random() * 2) * s, { vx: d * (10 + Math.random() * 8), vy: 14 + Math.random() * 10, g: 170, ttl: .16 + Math.random() * .05, h: 2.4, s: 1.2, col: Math.random() < .7 ? '#8ad8ff' : '#e8fbff' }); };   // (· 7) з лійки — у бачок дрона
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
   NX.acts = {
     home: { route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
@@ -161,6 +164,21 @@
           { work: { pose: 'hoverLook', dur: aq === 'jelly' ? 3.6 : 5.4 } }, { do: () => n.emote(aq === 'jelly' ? 'surprise' : 'love', 2) }); });
       L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } });
       return L; } },
+
+    // ---------- (Декор стін · 7) ДРУГИЙ ПОВЕРХ: на ранці злітає до антресолі — двері пілона відчиняються, ліхтар спалахує (вітають);
+    // кличе дрона-поливальника (махає лійкою) і доливає йому води; дрон — «бочка», серце, і летить щедро поливати рослини антресолі.
+    // Стати на саму антресоль Nexi не може: він вищий (≈ 60 од.), ніж від плити до стелі (≈ 50), а двері пілона — йому до пояса;
+    // розмір Nexi не міняємо (власник), тож другий поверх він доглядає з ранця, перед фасадом. Де зависає — objects/decor.js: upstairs(). ----------
+    upstairs: { color: '#ffb24a', route() {
+      const U = NX.decor && NX.decor.upstairs && NX.decor.upstairs(), n = NX.nexi; if (!U) return [line('upstairs')];
+      const f = wallFloor('right'), REF = 2.6;
+      return [{ walk: f }, { face: 1 }, line('upstairs'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
+        { fly: [U.x, U.y], dy: U.dy }, { face: 1 }, { do: () => { if (NX.decorLive) NX.decorLive.greet(NX.time); n.emote('happy', 1.5); } }, { work: { pose: 'hoverLook', dur: 1 } },
+        { do: () => { NX.decor.droneCall(U.dock[0], U.dock[1], NX.time, REF, -1, U.spout); n.emote('happy', 2); } }, { work: { pose: 'hoverCall', dur: 1.8 } },
+        { work: { pose: 'hoverWater', dur: REF, tick: () => pourInto() } },
+        { do: () => { if (NX.decorLive) NX.decorLive.TP.drone = NX.time; n.emote('love', 2.2); } }, { work: { pose: 'hoverLook', dur: 2.4 } },   // дивиться, як дрон полетів поливати монстеру
+        { fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } }];
+    } },
 
     wander: { color: '#3be8ff', route() { const b = NX.room.walkBounds(); return [{ walk: NX.room.clampWalk(80 + Math.random() * 1380, b.minY + Math.random() * (b.maxY - b.minY)) }, { work: { pose: 'look', dur: 3 } }]; } },
 

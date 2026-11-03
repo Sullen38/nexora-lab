@@ -45,6 +45,8 @@ function poseFor(a,t,moving){
  case'hoverPour':{const k=Math.floor(t*5)%2;p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:k?1:3};p.la={x:-4,y:4};p.tool='cup';p.hy=1;p.bob=Math.round(Math.sin(t*5));break}
  case'hoverPress':{const k=Math.floor(t*4)%2;p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:k?-1:1};p.la={x:-4,y:4};p.bob=Math.round(Math.sin(t*5));break}
  case'hoverLook':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.la={x:-4,y:5};p.ra={x:4,y:5};p.look=Math.round(Math.sin(t*1.3)*1.4);p.hx=Math.round(Math.sin(t*1.3));p.bob=Math.round(Math.sin(t*5));p.face='happy';break;
+ // (Декор стін · 7) на ранці перед другим поверхом: кличе дрона-поливальника — махає лійкою
+ case'hoverCall':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:5,y:-3+Math.round(Math.sin(t*9.42478)*2)};p.la={x:-4,y:4};p.tool='can';p.face='happy';p.bob=Math.round(Math.sin(t*5));break;
  case'toss':{const k=(t%1.2)<.5;p.ra=k?{x:3,y:-8}:{x:7,y:0};p.tool=k?'coin':null;p.face='happy';break}
  case'push':{const k=Math.floor(t*5)%2;p.back=1;p.ra={x:3,y:k?-2:0};p.la={x:-3,y:k?0:-2};break}
  case'carry':p.la={x:-2,y:3};p.ra={x:2,y:3};p.tool='tablet';break;
