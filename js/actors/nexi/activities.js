@@ -157,9 +157,9 @@
       return L; } },
 
     feedFish: { color: '#3be8ff', route() {
-      const A = NX.decorAqua, n = NX.nexi, side = n.x < 774 ? 'left' : 'right'; if (!A || !A.feederAt) return [line('feedFish')];
+      const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер медіа-стіна)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
-      (side === 'left' ? ['reef', 'jelly'] : ['shark']).forEach(aq => { const e = A.feederAt(aq); if (!e) return; const h = hoverBeside(e);
+      ['reef', 'jelly'].forEach(aq => { const e = A.feederAt(aq); if (!e) return; const h = hoverBeside(e);
         L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverPress', dur: .9, end: () => A.feed(aq, NX.time) } },
           { work: { pose: 'hoverLook', dur: aq === 'jelly' ? 3.6 : 5.4 } }, { do: () => n.emote(aq === 'jelly' ? 'surprise' : 'love', 2) }); });
       L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } });

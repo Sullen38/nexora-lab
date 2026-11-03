@@ -17,7 +17,7 @@ NX.i18n.add('pl', {
     tools: { crm: { t: 'Podłącz CRM', r: 'CRM podłączony: zsynchronizowano {n} kontaktów.' }, calendar: { t: 'Synchronizuj kalendarz', r: 'Kalendarz zsynchronizowany: {n} spotkań w tym tygodniu, przypomnienia włączone.' }, auto: { t: 'Ustaw automatyzację', r: 'Zgłoszenia ze strony trafiają teraz same do CRM. Oszczędność {n} h tygodniowo.' } },
   },
   sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
-  decor: { poster: { title: 'NEXI • BOTANIK', sub: 'PODLEWAJ Z MIŁOŚCIĄ' }, danger: 'NIEBEZPIECZNE · DRAPIEŻNIKI', rudik: { title: 'RUDY', sub: 'POGROMCA WIRUSÓW' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+  decor: { poster: { title: 'NEXI • BOTANIK', sub: 'PODLEWAJ Z MIŁOŚCIĄ' }, wall: { title: 'NEXORA · LIVE', map: 'MIASTO', sales: 'SPRZEDAŻ', log: 'DZIENNIK', status: 'STATUS', online: 'ONLINE', today: 'DZISIAJ', lines: ['NOWY KLIENT', 'E-MAIL WYSŁANY', 'SPOTKANIE O 15:00', 'ZAMÓWIENIE #482', 'RAPORT GOTOWY', 'POST OPUBLIKOWANY'] }, rudik: { title: 'RUDY', sub: 'POGROMCA WIRUSÓW' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
   city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · ASYSTENT AI DLA BIZNESU · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {

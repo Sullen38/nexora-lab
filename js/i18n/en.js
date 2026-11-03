@@ -17,7 +17,7 @@ NX.i18n.add('en', {
     tools: { crm: { t: 'Connect CRM', r: 'CRM connected: {n} contacts synced.' }, calendar: { t: 'Sync calendar', r: 'Calendar synced: {n} meetings this week, reminders on.' }, auto: { t: 'Set up automation', r: 'Website leads now go straight to CRM. Saves {n} h a week.' } },
   },
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
-  decor: { poster: { title: 'NEXI • BOTANIST', sub: 'WATER WITH LOVE' }, danger: 'DANGER · PREDATORS', rudik: { title: 'GINGER', sub: 'VIRUS HUNTER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+  decor: { poster: { title: 'NEXI • BOTANIST', sub: 'WATER WITH LOVE' }, wall: { title: 'NEXORA · LIVE', map: 'CITY', sales: 'SALES', log: 'LOG', status: 'STATUS', online: 'ONLINE', today: 'TODAY', lines: ['NEW CLIENT', 'EMAIL SENT', 'MEETING AT 3 PM', 'ORDER #482', 'REPORT READY', 'POST PUBLISHED'] }, rudik: { title: 'GINGER', sub: 'VIRUS HUNTER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {

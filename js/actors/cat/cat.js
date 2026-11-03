@@ -71,7 +71,7 @@ NX.cat = {
   /* ---------------- (Декор стін · 9) РУДИК І ДЕКОР: риби за склом, метелики ---------------- */
   /** Найближчий акваріум (маски скла objects/decor.js): точка підлоги під ним, низ скла на екрані. */
   aqSpot() { const MK = NX.decor && NX.decor.MK; if (!MK) return null; let best = null;
-    for (const aq of ['reef', 'jelly', 'shark']) { const M = MK[aq]; if (!M) continue; const cx = M.x + M.w / 2, d = Math.abs(cx - this.x); if (!best || d < best.d) best = { aq, d, cx, y1: M.y + M.h, M }; }
+    for (const aq of ['reef', 'jelly']) { const M = MK[aq]; if (!M) continue; const cx = M.x + M.w / 2, d = Math.abs(cx - this.x); if (!best || d < best.d) best = { aq, d, cx, y1: M.y + M.h, M }; }
     return best; },
   /** Сідає під акваріумом, задирає голову й стежить за рибами (камера — на нього); лапкою «ловить» рибу — риби сахаються, як від
    *  тапу (TP.aq), а він здивовано сідає знову. */

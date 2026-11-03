@@ -17,7 +17,7 @@ NX.i18n.add('nl', {
     tools: { crm: { t: 'CRM koppelen', r: 'CRM gekoppeld: {n} contacten gesynchroniseerd.' }, calendar: { t: 'Agenda synchroniseren', r: 'Agenda gesynchroniseerd: {n} afspraken deze week, herinneringen aan.' }, auto: { t: 'Automatisering instellen', r: 'Aanvragen via de site gaan nu vanzelf naar het CRM. Bespaart {n} uur per week.' } },
   },
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
-  decor: { poster: { title: 'NEXI • BOTANICUS', sub: 'GIET MET LIEFDE' }, danger: 'GEVAAR · ROOFDIEREN', rudik: { title: 'GEMBER', sub: 'VIRUSJAGER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+  decor: { poster: { title: 'NEXI • BOTANICUS', sub: 'GIET MET LIEFDE' }, wall: { title: 'NEXORA · LIVE', map: 'STAD', sales: 'VERKOOP', log: 'LOGBOEK', status: 'STATUS', online: 'ONLINE', today: 'VANDAAG', lines: ['NIEUWE KLANT', 'E-MAIL VERZONDEN', 'AFSPRAAK OM 15:00', 'BESTELLING #482', 'RAPPORT KLAAR', 'POST GEPLAATST'] }, rudik: { title: 'GEMBER', sub: 'VIRUSJAGER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
   city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
