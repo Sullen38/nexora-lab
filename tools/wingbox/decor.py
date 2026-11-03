@@ -90,6 +90,7 @@ POTS = {   # дизайни вазонів: форма (taper — звужени
     'koke-pink': dict(shape='moss', mat='moss', band='pink'),         # кокедама: мохова куля, обв'язана рожевим шнуром
     'koke-gold': dict(shape='moss', mat='moss', band='gold'),         #   … золотим
     'koke-cyan': dict(shape='moss', mat='moss', band='cyan'),         #   … блакитним
+    'lava':     dict(shape='orb', mat='stone', band='orange'),        # (· 5) куля з лавового каменю з помаранчевим неоном (макраме)
 }
 INVIS = ('dc_lt_',)                                                                 # невидиме (світло на стіну) — без перевірок
 ONWALL = ('dc_shadow', 'dc_climb')                                                  # лежить НА стіні (тінь, плющ) — під речами, накладання з декором не рахуємо
@@ -185,7 +186,8 @@ def decor_side(L, sgn, C, R, verbose=True):
         while Yb < 140 and all(scr(p)[1] <= min(free_y(scr(p)[0] + dx) for dx in (-6, -3, 0, 3, 6)) - 1.5 for p in corners(Yb + .25)): Yb += .25
         Ytop = min(Yw(-7., p[2]) for p in corners(0.))
         PY.update(a0=round(ap - dT(), 3), a1=ap, Yb=round(Yb, 2), Ytop=round(Ytop, 2))
-        pyl = item(W, 'dc_pylon', apm, PY['D'], chord(W, ap - dT(), ap) + .3, PY['Yb'], PY['Ytop'], 'dc_pylon', inset=.5, dc=dict(PY, sgn=sgn, C=[round(C[0], 2), round(C[1], 2)], R=R, deck=MZ['top']))
+        pyl = item(W, 'dc_pylon', apm, PY['D'], chord(W, ap - dT(), ap) + .3, PY['Yb'], PY['Ytop'], 'dc_pylon', inset=.5, dc=dict(PY, sgn=sgn, C=[round(C[0], 2), round(C[1], 2)], R=R, deck=MZ['top'], plant='shroom',
+                   fungi=[[-3.1, MZ['top'] + 3.5, 2.6], [3.2, MZ['top'] + 6.8, 2.3], [-2.6, MZ['top'] + 10., 2.]]))   # (· 5) світні гриби-трутовики: u, Y, r
         add(pyl)
         # вікна на боковій грані (лицем уздовж антресолі, до глядача) — рушій дає маски видимих пікселів (objects/decor.js). Бокова
         # грань — грань коробки пілона (u = ±w/2), глибина від стіни ins = fin − v (fin — де лицьова грань: стрілка хорди + D)
@@ -281,11 +283,14 @@ def decor_side(L, sgn, C, R, verbose=True):
         for k, (u, kind) in enumerate(((.07, 'basil'), (.2, 'mint'), (.33, 'lettuce'), (.46, 'straw'))):
             a = a0 + (a1 - a0) * u; top = Yc - TB['r'] + 1.2; hh = min(13., top - (yl + 2.4 + 2.))
             add(item(W, f'dc_tbp{k}', a, 6., 10., top, top - hh, 'dc_pot', inset=ri - 3, on=tb(a), dc=dict(kind=kind, pot=dict(shape='net', mat='dark', band=['pink', 'cyan', 'lil', 'green'][k], name='net-' + ['pink', 'cyan', 'lil', 'green'][k], pw=5, ph=2), seed=71 + k, net=1)))
-        # під акватрубою: іспанський мох, кулька тіландсій на дротяному кільці, дисхідія й епіфілум
-        for k, (X, kind, w, ln, frm) in enumerate(((1214., 'tillandsia', 11., 22., 'drape'), (1239., 'airplant', 10., 15., 'wire'), (1226., 'dischidia', 9., 20., 'drape'))):
+        # під акватрубою: іспанський мох, дисхідія; (· 5) кулька тіландсій у дротяному кільці — під правим кінцем (там місце є)
+        for k, (X, kind, w, ln, frm) in enumerate(((1214., 'tillandsia', 11., 22., 'drape'), (1296., 'airplant', 10., 16., 'wire'), (1226., 'dischidia', 9., 20., 'drape'))):
             a = W.a_of(X, ri); (x, z), _, _ = W.at(a, ri); y0 = ys(Yc + TB['r'] - 1.5, z); y1 = min(y0 + ln, min(free_y(X + dx) for dx in (-w / 2 - 4, 0, w / 2 + 4)) - 1.5)
             if y1 - y0 < 8: continue
             hang(f'dc_tbm{k}', X, y0, y1, kind, w=w, inset=ri, seed=(121 + k) if k < 2 else (181 + k - 2), frm=frm); out[-1]['on'] = tb(a)
+        # (· 5) ЕПІФІЛЮМ («риб'ячий скелет», з рожевою квіткою) — довгим каскадом на макраме з латунного кронштейна, у вузькому
+        # проміжку між маніпулятором майстерні й акватрубою (гойдається скромно: поруч рука маніпулятора)
+        hang('dc_epi', 1197.2, 2., 62.5, 'epiphyllum', w=6.8, inset=5., seed=182, frm='hook', pot=pot_of('lava', 4.8, 4.4))
         # ---------- П3. ПЛАКАТ РУДИКА (Декор стін · 4; власник: «плакат Рудика — прикольний, піксельний») — між акватрубою й
         # пілоном (біля входу на другий поверх); напис — зі словників (4 мови); живе — сам Рудик (кліпає, хвіст, лазерні очі)
         tbX1 = max(p[0] for it in out if it['id'].startswith('dc_tb') and it['st'] == 'dc_tube' for p in hull(screen_poly(it)))
@@ -400,6 +405,47 @@ def decor_side(L, sgn, C, R, verbose=True):
         top = max(Yw(ys(poster['yb'], z) + 2.5, z), poster['yb'] + 2.); bot = min(Yw(free_y(X) - 1.5, z) for X in (450., 474., 498.))
         add(item(W, 'dc_tr2', am, 5., chord(W, a0, a1, 3.), bot, top, 'dc_trough', inset=.9, dc=dict(kind='lysimachia', seed=153, th=3., pot=dict(shape='trough', mat='steel', band='gold', name='trough-gold'))))
         TR.append(out[-1])
+        # ---------- (· 5) ПОВЕРНУЛИСЯ: МОХОВИЙ КОРЧ-ПОЛИЦЯ під сотами — сріблястий корч уздовж стіни на двох латунних кронштейнах
+        # (мох, лишайник; по ньому повзе равлик — objects/decor_live.js); по корчу — даваллія «заяча лапка» (пухнасті кореневища-
+        # «лапки» й мереживні вайї там, де над корчем є місце); ВЕНЕРИНА МУХОЛОВКА в нефритовій чаші під скляною кулею з бананами
+        # (ловить муху — objects/decor_live.js); ПЛАТИЦЕРІУМ на дубовій дошці — під висячим кошиком. Корч — сегментами по дузі
+        # (як антресоль і риф): межі кожного на екрані тісні, тож під сотами вистачає місця
+        DX0, DX1, DI, dr, NS = 41., 98., 2.8, 1.62, 6
+        da0, da1 = W.a_of(DX0, DI), W.a_of(DX1, DI)
+        dlow = min(Yw(free_y(X) - 1., W.at(W.a_of(X, DI), DI)[0][1]) for X in [DX0 - 2 + q * 2 for q in range(int((DX1 - DX0) / 2) + 3)])
+        dYc = round(dlow - dr - .75, 2)                                                   # .75 — лишайник звисає
+        def roof(X0, X1):
+            """найнижчий край речей (екран) над стовпчиками X0..X1 — щоб рослина під ними їх не торкалась"""
+            lo = -99.
+            for it in out:
+                if it['st'] in ONWALL or it['id'].startswith(INVIS) or it['st'] == 'dc_drift': continue
+                P = hull(screen_poly(it)); n = len(P)
+                if min(p[1] for p in P) > ys(dYc, W.at(da0, DI)[0][1]) - 2: continue
+                for q in range(n):
+                    (xa, ya), (xb, yb) = P[q], P[(q + 1) % n]
+                    if X0 <= xa <= X1: lo = max(lo, ya)
+                    for Xc in (X0, X1):
+                        if (xa - Xc) * (xb - Xc) < 0: lo = max(lo, ya + (yb - ya) * (Xc - xa) / (xb - xa))
+            return lo
+        dsegs = []; acc = 0.
+        for i in range(NS):
+            sa = da0 + (da1 - da0) * i / NS; sb = sa + (da1 - da0) / NS; am = (sa + sb) / 2; w = chord(W, sa, sb, DI) + .3
+            Xa, Xb = sorted((W.X(sa, DI + dr), W.X(sb, DI + dr))); (x, z), _, _ = W.at(am, DI + dr + .3)
+            ytop = dYc - dr - .5                                                           # мох угорі
+            fr = 0.
+            if Xb < 76.:                                                                  # даваллія — ліва частина корча (права — мухоловка)
+                lim = Yw(roof(Xa - 1.5, Xb + 1.5) + 1.6, z); fr = round(max(0., min(4.6, ytop - lim)), 2)
+            seg = dict(i=i, n=NS, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, DI=DI, dr=dr, Yc=dYc, fr=fr, seed=77)
+            if i == 0: seg['plant'] = 'davallia'
+            it = item(W, f'dc_drift{i}', am, 2 * dr + .5, w, round(dYc + dr + .75, 2), round(ytop - fr, 2), 'dc_drift', inset=round(DI - dr - .25, 2), dc=seg)
+            add(it); dsegs.append(it); acc += chord(W, sa, sb, DI)
+        for it in dsegs: it['dc']['tot'] = round(acc, 2)
+        X = 91.4; a = W.a_of(X, DI); (x, z), _, _ = W.at(a, DI + 2.6); w = 13. / s(z)
+        sg_ = min(dsegs, key=lambda q: abs((q['dc']['sa'] + q['dc']['sb']) / 2 - a)); sup = dict(Y=round(dYc - dr * .78, 2), id=sg_['id'])
+        h = min(16., sup['Y'] - Yw(roof(X - 7.5, X + 7.5) + 1.6, z))
+        plant_on(sup, 'dc_drp0', a, 'flytrap', round(w, 2), round(h, 2), 'jade', 3.6, 2.6, DI, seed=5)
+        stag = flatw('dc_stag', 181., 200., 77.4, min(free_y(X) for X in (181., 190.5, 200.)) - 1.2, 'dc_art', 5.6, d=5., dc=dict(kind='staghorn', plant='staghorn', seed=141))
+        wshadow(stag, dy=2., k=.38)
         # ---------- (· 3) ОБ'ЄМ: тіні на стіні й кольорове світло акваріумів і сот
         wshadow(neon, dy=3.); wshadow(poster, dy=3.); wshadow(basket, dy=5., rnd=1, top=.2)
         for o in TR: wshadow(o, dy=3., k=.3, top=0.)
@@ -417,7 +463,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             a = MZ['a0'] + (MZ['a1'] - MZ['a0']) * q / 160; (x, z), _, _ = W.at(a, MZ['P'] - .9); rail_pts.append((VX + (x - VX) * s(z), ys(MZ['top'] - MZ['rail'] - .9, z)))
     for n_, it in enumerate(out):
         d = it.get('dc') or {}; st = it['st']; per = round(3.6 + 1.8 * hh(n_, 3), 2)
-        if st == 'dc_hang': d['sway'] = dict(amp=round(max(.8, min(2.6, (it['yb'] - it['yt']) * .045)), 2), per=per)
+        if st == 'dc_hang': d['sway'] = dict(amp=round(max(.8, min(2.6 if it['id'] != 'dc_epi' else .9, (it['yb'] - it['yt']) * .045)), 2), per=per)
         elif st == 'dc_spill': d['sway'] = dict(amp=.8, per=per)
         elif st == 'dc_trough': d['sway'] = dict(amp=1., per=per)
         elif st == 'dc_pot' and str(it.get('on', '')).startswith('dc_mz') and rail_pts:
@@ -427,6 +473,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             cut = Yw(yc, zc)
             if cut - it['yt'] > 3: d['sway'] = dict(cut=round(cut, 2), amp=round(min(1.6, (cut - it['yt']) * .05), 2), per=round(per + 1, 2))
         elif st == 'dc_pot' and str(it.get('on', '')).startswith(('dc_tb', 'dc_rf')): d['sway'] = dict(amp=.45, per=per)
+        elif st == 'dc_pot' and str(it.get('on', '')).startswith('dc_drift'): d['sway'] = dict(amp=.5, per=per)
     if verbose: report(L, out, 'right' if sgn > 0 else 'left')
     return out
 
@@ -487,7 +534,7 @@ def check_screen(L, items, margin=MARGIN):
         if hit: bad.append((it['id'], hit, [round(x0), round(x1), round(y0), round(y1)]))
         if y0 < 1 and not it['id'].startswith(INCEIL): bad.append((it['id'], 'CEIL', round(y0, 1)))
     return bad
-SUPPORTS = ('dc_mz', 'dc_reef', 'dc_tube', 'dc_hex', 'dc_column')                                   # опори-смуги: сегменти / соти однієї групи
+SUPPORTS = ('dc_mz', 'dc_reef', 'dc_tube', 'dc_hex', 'dc_column', 'dc_drift')                                   # опори-смуги: сегменти / соти однієї групи
 def group_key(it, by):
     """до якої групи належить річ: опора (антресоль, риф, труба, соти) разом з тим, що на ній стоїть чи з неї звисає"""
     j = it
@@ -604,9 +651,11 @@ if __name__ == '__main__':
     a = ap.parse_args()
     p = os.path.join(REPO, 'js', 'objects', 'arc_layout.js'); src = open(p, encoding='utf8').read()
     m = re.search(r'NX\.arcLayout = (\{.*?\});', src, flags=re.S); LAY = json.loads(m.group(1))
+    both = []
     for name, sgn in (('right', 1), ('left', -1)):
         Ls = LAY[name]; Ls['items'] = [it for it in Ls['items'] if it.get('layer') != 'up']
-        up = decor_side(Ls, sgn, Ls['C'], Ls['R']); Ls['items'] = Ls['items'] + up
+        up = decor_side(Ls, sgn, Ls['C'], Ls['R']); Ls['items'] = Ls['items'] + up; both += up
+    du = check_unique(both); print('  UNIQUE (обидві стіни разом):', 'повтори ' + str(du) if du else 'none')
     if a.plan:
         cfg = open(os.path.join(REPO, 'js', 'core', 'config.js'), encoding='utf8').read(); sy = float(re.search(r'SOFA_Y:\s*([\d.]+)', cfg).group(1))
         zf = D * (FL - 220) / (sy - 220) - D; sk = (lambda v: 1.45 + 1.25 * max(0, min(1, (v - 352) / 330)))(sy) / (1.45 + 1.25 * max(0, min(1, (362 - 352) / 330))); sw = 234 * sk / s(zf)

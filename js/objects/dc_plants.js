@@ -104,11 +104,11 @@ NX.arc = NX.arc || {};
   const CACHE = new Map();
   /** spec: {kind, w, h, seed, pal, hang, leaves}. Основа — посередині внизу спрайта (hang — угорі: ліана, непентес). */
   function dcPlant(sp) {
-    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves].join('|'); let r = CACHE.get(key); if (r) return r;
+    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap].join('|'); let r = CACHE.get(key); if (r) return r;
     const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, S = F.Sheet(0, 0, W, H, U);
     if (OWN[k0]) OWN[k0](S, W, H, seed, sp);
     else v3(S, W, H, seed, sp);
-    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U }; CACHE.set(key, r); return r;
+    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U, meta: S.meta || null }; CACHE.set(key, r); return r;
   }
 
   // ---------- рослини v3 (28.10): монстера, папороть, арека, сансев'єра, ліана, неонова, бонсай ----------
@@ -260,18 +260,32 @@ NX.arc = NX.arc || {};
         fillLeaf(S, leaf([cx, by], a, len, len * .55, 0, 'broad', seed + q), SUCC, { q0: ring ? .55 : .4, hi: a < 0, tipc: '#ff8ab0', tipt: .8, thin: 1 });
       }
     },
-    /** Венерина мухоловка: розетка листків, пастки на черешках — дві частки з «віями», червоні всередині. */
-    flytrap(S, W, H, seed) {
-      const cx = W / 2, by = H - .4, n = 4;
-      for (let q = 0; q < 5; q++) fillLeaf(S, leaf([cx, by], (q / 4 - .5) * 2.6, H * .32, H * .14, 0, 'broad', seed + q), GREEN2, { q0: .45, hi: q < 2, thin: 1 });
-      for (let q = 0; q < n; q++) {
-        const u = q / (n - 1), a = (u - .5) * 1.5 + (hash(seed, q) - .5) * .3, len = H * (.5 + .3 * hash(seed, q + 5)), tx = cx + Math.sin(a) * len, ty = by - Math.cos(a) * len, r = Math.max(1.3, W * .14);
-        line(S, [cx, by], [tx, ty + r * .4], OUT, .9); line(S, [cx, by], [tx, ty + r * .4], '#2f8c4a', .45);
-        const lob = (dir) => S.poly(ell(tx, ty, r, r * .62, 14, dir > 0 ? Math.PI : 0, dir > 0 ? Math.PI * 2 : Math.PI).map(([x, y]) => [x, y - dir * r * .2]), (uu, vv, i, j, X, Y) => {
-          const e = Math.abs(Y - ty) / (r * .62); return e > .78 ? '#7ae07a' : e > .55 ? '#3aa858' : (hash(i, j) > .5 ? '#e4364a' : '#b81e36'); });
-        lob(1); lob(-1);
-        for (let t = -r; t <= r; t += .7) { S.set(tx + t, ty - r * .62 - .5, '#e8ffd0'); S.set(tx + t, ty + r * .62 + .5, '#e8ffd0'); }   // «вії»
+    /** Венерина мухоловка: розетка листків, три пастки на черешках — дві частки з «віями», червоні всередині (Декор стін · 5:
+     *  більші; sp.snap = k — пастка k ЗАКРИТА (зімкнені частки, вії переплетені); S.meta.traps — де пастки, для живого шару:
+     *  муха сідає, пастка клацає — objects/decor_live.js). */
+    flytrap(S, W, H, seed, sp) {
+      const cx = W / 2, by = H - .3, n = 3, traps = [];
+      for (let q = 0; q < 7; q++) fillLeaf(S, leaf([cx, by], (q / 6 - .5) * 2.8, H * .3, H * .15, 0, 'broad', seed + q), GREEN2, { q0: .5, hi: q < 3, thin: 1 });
+      for (let q = 0; q < 2; q++) {                                                        // молоді пастки біля розетки (менші, завжди відкриті)
+        const a = (q ? 1 : -1) * 1.15, l = H * .3, tx = cx + Math.sin(a) * l, ty = by - Math.cos(a) * l, r = Math.min(W * .13, H * .1);
+        line(S, [cx, by], [tx, ty], '#2f8c4a', .45); S.poly(ell(tx, ty, r, r * .62, 12, Math.PI, Math.PI * 2).map(([x, y]) => [x, y - r * .2]), '#c82a3e'); S.poly(ell(tx, ty, r, r * .62, 12, 0, Math.PI).map(([x, y]) => [x, y + r * .2]), '#a01e32');
       }
+      for (let q = 0; q < n; q++) {
+        const u = q / (n - 1), a = (u - .5) * 1.5 + (hash(seed, q) - .5) * .15, len = H * (q === 1 ? .66 : .46 + .08 * hash(seed, q + 5)), r = Math.max(1.5, Math.min(W * .24, H * .18));
+        const tx = cx + Math.sin(a) * len, ty = by - Math.cos(a) * len; traps.push([tx, ty, r]);
+        line(S, [cx, by], [tx, ty + r * .5], OUT, .95); line(S, [cx, by], [tx, ty + r * .5], '#2f8c4a', .5);
+        if (sp && sp.snap === q) {                                                         // ЗАКРИТА: частки зімкнені, вії переплетені, ледь видно червоне
+          S.poly(ell(tx, ty, r * 1.02, r * .46, 16), (uu, vv, i, j, X, Y) => { const e = Math.abs(Y - ty) / (r * .46); return e < .14 ? '#a01a30' : e > .8 ? '#2a7a3a' : ramp(GREEN2, .75 - e * .45, i, j, .08); });
+          for (let t = -r * .9; t <= r * .9; t += .5) S.set(tx + t, ty + (((t / .5) | 0) % 2 ? -.55 : .55), '#e8ffd0');
+        } else {
+          const lob = (dir) => S.poly(ell(tx, ty, r, r * .64, 16, dir > 0 ? Math.PI : 0, dir > 0 ? Math.PI * 2 : Math.PI).map(([x, y]) => [x, y - dir * r * .22]), (uu, vv, i, j, X, Y) => {
+            const rr = Math.hypot((X - tx) / r, (Y - ty + dir * r * .22) / (r * .64)); return rr > .84 ? '#7ae07a' : rr > .7 ? '#3aa858' : rr < .22 ? '#ff7a8a' : (hash(i, j) > .5 ? '#e4364a' : '#b81e36'); });
+          lob(1); lob(-1);
+          S.set(tx - r * .3, ty - r * .2, '#ffe0e8'); S.set(tx + r * .25, ty + r * .25, '#ffe0e8');                         // чутливі волоски
+          for (let t = -r; t <= r; t += .6) { S.set(tx + t, ty - r * .64 - .55, '#e8ffd0'); S.set(tx + t, ty + r * .64 + .55, '#e8ffd0'); }   // «вії»
+        }
+      }
+      S.meta = { traps };
     },
     /** Непентес: крона листків угорі (база — угорі), вусики з глечиками звисають униз. */
     pitcher(S, W, H, seed, sp) {
@@ -503,12 +517,12 @@ NX.arc = NX.arc || {};
     },
     /** Платицеріум («оленячий ріг») на дошці: кругла «щитова» вая знизу і сріблясто-зелені роги, що галузяться. */
     staghorn(S, W, H, seed) {
-      const cx = W / 2, cy = H * .62, SP = ['#2a4a2a', '#3e6a3a', '#5a8a50', '#7aaa6a', '#a0c88c', '#c8e4b4'];
-      S.poly(ell(cx, cy, W * .24, H * .2, 18), (u, v, i, j) => ramp(['#4a3a1a', '#6a5a2a', '#8a7a3a', '#a89a5a'], .5 - Math.hypot(u - .5, v - .5) + (hash(i >> 1, j >> 1) - .5) * .25, i, j, .05));
+      const cx = W / 2, cy = H * .66, SP = ['#2a5a2a', '#3e7a3a', '#5a9a50', '#7cbc6a', '#a4d88c', '#d0f0b4'];
+      S.poly(ell(cx, cy, W * .3, H * .26, 18), (u, v, i, j) => ramp(['#4a3a1a', '#6a5a2a', '#8a7a3a', '#a89a5a', '#c8b47a'], .55 - Math.hypot(u - .5, v - .5) + (hash(i >> 1, j >> 1) - .5) * .25, i, j, .05));
       const horn = (x, y, a, l, w, d, k) => { const e = [x + Math.sin(a) * l, y - Math.cos(a) * l], nx = Math.cos(a) * w, ny = Math.sin(a) * w;
         S.poly([[x - nx, y - ny], [x + nx, y + ny], [e[0] + nx * .7, e[1] + ny * .7], [e[0] - nx * .7, e[1] - ny * .7]], (u, v, i, j) => ramp(SP, .45 + (1 - v) * .3 + (hash(i, j) > .85 ? .25 : 0), i, j, .06));
         if (d < 2) { horn(e[0], e[1], a - .45, l * .62, w * .72, d + 1, k * 2); horn(e[0], e[1], a + .4, l * .58, w * .7, d + 1, k * 2 + 1); } };
-      [[-1.25, .8], [-.55, 1], [.15, .9], [.85, 1], [1.4, .8]].forEach(([a, k], q) => horn(cx + Math.sin(a) * W * .12, cy - H * .05, a, Math.min(H * .32 * k, W * .22), .9, 0, q));
+      [[-1.3, .85], [-.6, 1], [.1, .95], [.8, 1], [1.4, .85]].forEach(([a, k], q) => horn(cx + Math.sin(a) * W * .12, cy - H * .05, a, Math.min(H * .52 * k, W * .3), 1.4, 0, q));
       OUTL(S);
     },
     // ===== · 3: ЛІАНИ З ТРУБ (кожна — свого виду) =====
@@ -560,7 +574,11 @@ NX.arc = NX.arc || {};
       for (let st = 0; st < 5; st++) { const pts = hangPts(W * (.14 + .18 * st), .3, H * (.55 + .43 * hash(seed, st)), 1.2 + hash(seed, st + 7), st * 1.6, 22);
         for (let k = 1; k < pts.length; k++) { const [x0, y0] = pts[k - 1], [x1, y1] = pts[k], a = Math.atan2(x1 - x0, -(y1 - y0)), wv = .9 * Math.sin(Math.PI * k / pts.length) + .35, tooth = k % 2 ? 1 : -1, nx = Math.cos(a), ny = Math.sin(a);
           S.poly([[x0 - nx * wv * .3, y0 - ny * wv * .3], [x0 + tooth * nx * wv, y0 + tooth * ny * wv], [x1 + nx * wv * .3, y1 + ny * wv * .3], [x1 - nx * wv * .3, y1 - ny * wv * .3]], (u, v, i, j) => ramp(['#1a5a1a', '#2a7a26', '#3c9a34', '#5ab84a', '#86d468'], .45 + (hash(i, j) - .5) * .1 + (1 - v) * .2, i, j, .05)); }
-        polyline(S, pts, '#1a4a14', .14); }
+        polyline(S, pts, '#1a4a14', .14);
+        if (st === 2 || (st === 4 && H > 30)) { const [fx, fy] = pts[pts.length - 3], R2 = Math.min(W * .3, 2.2);   // (· 5) квітка «королева ночі»: рожеві пелюстки віялом, біла серединка, тичинки
+          for (let k = 0; k < 7; k++) { const a = Math.PI * (.15 + .7 * k / 6), px = fx + Math.cos(a) * R2 * .55, py = fy + Math.sin(a) * R2 * .7; S.poly(ell(px, py, R2 * .34, R2 * .62, 10).map(([x, y]) => rot(x, y, px, py, a - Math.PI / 2)), (u, v, i, j) => ramp(['#a01a5a', '#d83a86', '#ff6ab0', '#ffb0d8'], .9 - v * .5, i, j, .05)); }
+          S.poly(ell(fx, fy + R2 * .35, R2 * .42, R2 * .38, 12), (u, v, i, j) => ramp(['#e8d8e8', '#fff4fa', '#ffffff'], .8 - v * .4, i, j, .04));
+          for (let k = 0; k < 4; k++) S.set(fx + (k - 1.5) * .35, fy + R2 * .9 + (k % 2) * .3, '#ffe24a'); } }
       OUTL(S);
     },
     /** Лізимахія «монетна» (повзуча): золотисто-салатові круглі листочки густими пасмами з корита. */

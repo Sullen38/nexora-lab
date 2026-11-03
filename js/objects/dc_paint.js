@@ -452,6 +452,12 @@ NX.arc = NX.arc || {};
           const bar = Math.floor((x - 1.7) / 1.1), hgt = 2 + 5 * hash(bar, 5); return ((x - 1.7) % 1.1) < .75 && 9 - yy < hgt ? E(hgt > 5.5 ? col('#ffd23a') : col('#3bff8a')) : ramp(pal(['#020a06', '#04140c']), .5, i, j);
         }
         if (Y > M.deck + 5 && Y < M.deck + 15 && Math.abs(x - w / 2) < .7 && ((Y - M.deck - 5) % 2) < 1.1) return ramp(PL.DARK, .1, i, j);   // гнізда вогників (живі)
+        for (const [fu, fY, fr] of M.fungi || []) {                                       // (· 5) СВІТНІ ТРУТОВИКИ: півкола-поличками, кільця росту, пластинки знизу світяться
+          const dx = (x - w / 2 - fu) / fr, dy = (Y - fY) / (fr * .58); if (dy > .5 || dx * dx + dy * dy > 1) continue;
+          if (dy > .22) return E(((x * 3.2) | 0) % 2 ? N.cyan[2] : N.cyan[1]);                                                     // пластинки (світяться)
+          const rr = Math.hypot(dx, dy); if (rr > .84) return E(N.cyan[2]);                                                         // світний край
+          return ramp(pal(['#06202a', '#0a3440', '#0e4c58', '#167078', '#20969a']), .9 - rr * .6 + (Math.abs(((rr * 4.2) % 1) - .5) < .12 ? -.25 : 0) + (hash(i >> 1, j >> 1) - .5) * .12, i, j);
+        }
         const pw = 13, py = Math.floor((Y + 60) / pw), ly = (Y + 60) - py * pw; if (ly < .35) return ramp(PNL, .06, i, j);
         return ramp(PNL, (.4 + hash(py, 3) * .1) * L + (ly < 1 ? .1 : 0), i, j);
       };
@@ -593,12 +599,12 @@ NX.arc = NX.arc || {};
       return;
     }
     if (k === 'staghorn') {                                                           // ПЛАТИЦЕРІУМ на дубовій дошці: фаска, волокна, латунні гвинти, моховий пад
-      const D = B.dep, pl = G.sub(0, D - .8, w, 1.3, B.yt, B.yb);
+      const D = B.dep, pl = G.sub(0, D - .8, w * .66, 1.3, B.yt + H * .12, B.yb - H * .06);                       // (· 5) дошка менша — рослина ширша за неї
       G.partF(pl, Fc => { const L = lit(Fc.n, A.centre(Fc)), WP = pal(['#1a0c06', '#2e180c', '#442612', '#5c361a', '#764824', '#905c30', '#aa723e']);
         return (u, v, i, j) => { const x = u * Fc.fw, y = v * Fc.fh, e = Math.min(x, Fc.fw - x, y, Fc.fh - y); if (Fc.k === 'front' && e < .7) return ramp(WP, .75 * L - (e < .3 ? .2 : 0), i, j);
           if (Fc.k === 'front' && (Math.abs(x - 1.4) < .35 || Math.abs(x - Fc.fw + 1.4) < .35) && (Math.abs(y - 1.4) < .35 || Math.abs(y - Fc.fh + 1.4) < .35)) return ramp(PL.GOLD, .8, i, j);
           return ramp(WP, (.42 + Math.sin(y * 2.2 + Math.sin(x * .4) * 1.5) * .08) * L, i, j); }; });
-      const v = D - 2.4, cc = G.P(0, v, (B.yt + B.yb) / 2), bw = bbW(G, B, v);
+      const v = D - 1.7, cc = G.P(0, v, (B.yt + B.yb) / 2), bw = bbW(G, B, v);
       G.disc([cc[0], cc[1] + H * .1, cc[2] + .2], Math.min(bw, H) * .2, (u, vv, i, j) => ramp(MAT.moss, .4 + (hash(i >> 1, j >> 1) - .5) * .4, i, j));
       plantFace(G, { kind: d.plant || 'staghorn', seed: d.seed || 141 }, cc[0], cc[2], B.yt + .3, B.yb - .3, bw * .96, false);
       return;
@@ -624,6 +630,63 @@ NX.arc = NX.arc || {};
       quad(G, [P(-hw, dd / 2, ridge), P(hw, dd / 2, ridge), P(hw, 0, eave), P(-hw, 0, eave)], glassSh(w, rs, 0), nR);
       for (const [uu, nn] of [[-hw, neg(rU)], [hw, rU]]) G.face([P(uu, 0, eave), P(uu, dd, eave), P(uu, dd / 2, ridge)], P(uu, 0, eave), sub(P(uu, dd, eave), P(uu, 0, eave)), [0, ridge - eave, 0], glassSh(dd, eave - ridge, 0), nn);
       return;
+    }
+  };
+
+  // ================= (· 5) МОХОВИЙ КОРЧ-ПОЛИЦЯ (сегмент дуги) =================
+  const DRIFT = pal(['#16120e', '#2a241e', '#3e372e', '#565046', '#6e685c', '#888274', '#a49e8e', '#c4beae']);   // вибілений сріблясто-сірий корч
+  const FUR = pal(['#2a1406', '#46240c', '#683814', '#8a4e20', '#ac6a32', '#c88a4e', '#deac78', '#f0d4a8']);    // кореневища-«лапки» даваллії
+  const LICH = pal(['#2e3e38', '#4a5e56', '#6a8478', '#90aa9c', '#bcd2c6']);
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  /** Точка корча: сегмент M (decor.py: sa, sb, s0 — довжина від початку, DI — вісь від стіни), s — довжина від початку
+   *  всього корча, ins — на скільки од. від осі в кімнату, dy — униз. -> {c, r, a}. Та сама в objects/decor_live.js (равлик). */
+  function driftAt(M, s, ins = 0, dy = 0) {
+    const sg = M.sgn, C = M.C, ra = M.R - M.DI, len = M.len || (M.len = 2 * ra * Math.sin(Math.abs(M.sb - M.sa) * D2R / 2));   // хорда сегмента (як у decor.py)
+    const f = Math.max(0, Math.min(1, (s - M.s0) / len)), a = M.sa + (M.sb - M.sa) * f, rr = M.R - M.DI - ins, tp = Math.min(1, s / 2.2, (M.tot - s) / 2.2);
+    const r = M.dr * (1 - .16 * Math.sin(s * .41 + .7) ** 2) * (.55 + .45 * Math.max(0, tp));
+    return { c: [C[0] + sg * rr * Math.sin(a * D2R), M.Yc + .35 * Math.sin(s * .29 + 1.3) + .18 * Math.sin(s * .83 + .4) + dy, C[1] + rr * Math.cos(a * D2R)], r, a };
+  }
+  NX.arc.driftAt = driftAt;
+  SHP['st:dc_drift'] = (G, B) => {
+    const M = B.dc, N = 5, sd = M.seed || 77, P = []; driftAt(M, M.s0); const len = M.len;
+    for (let k = 0; k <= N; k++) { const s = M.s0 + len * k / N; P.push(Object.assign(driftAt(M, s), { s })); }
+    const E3 = [PZ.VP[0], PZ.VP[1], -PZ.D];
+    for (let k = 1; k <= N; k++) {                                                    // стовбур: стрічки до ока, верх — мох, тріщини вздовж
+      const a = P[k - 1], b = P[k], m = a.c.map((q, n) => (q + b.c[n]) / 2), pp = cross3(sub(b.c, a.c), sub(E3, m)), top0 = pp[1] < 0;
+      G.tube(a.c, b.c, a.r + b.r, (u, v, i, j) => {
+        const up = top0 ? u : 1 - u, s = a.s + (b.s - a.s) * v;
+        if (up < .24 && hash((s * 2.2) | 0, 7) > .3) return ramp(MAT.moss, .62 + hash(i >> 1, j >> 1) * .3 - up * 1.2, i, j);   // мох на верху
+        if (up < .34 && hash(i >> 1, (j >> 1) + 3) > .8) return ramp(LICH, .6, i, j);                                          // лишайник
+        const cr = Math.abs(Math.sin(up * 8.5 + Math.sin(s * .6 + sd) * 1.5)) < .13 && hash((s * 1.6) | 0, (up * 5) | 0) > .25;   // тріщини
+        const kn = Math.hypot(((s + sd) % 7.3) - 3.6, (up - .55) * 5) < .5;                                                    // сучок
+        return ramp(DRIFT, .22 + (1 - Math.abs(up - .32) * 1.7) * .55 - (cr ? .3 : 0) - (kn ? .22 : 0) + (hash(i >> 1, j) - .5) * .06, i, j);
+      });
+      if (k < N || M.i === M.n - 1) G.disc(b.c, b.r * .98, (u, v, i, j) => ramp(DRIFT, .62 - v * .45 - Math.hypot(u - .45, v - .4) * .3, i, j));   // стики (без щілин на дузі)
+    }
+    if (M.i === 0) G.disc(P[0].c, P[0].r * .98, (u, v, i, j) => { const rr = Math.hypot(u - .5, v - .5) * 2; return ramp(DRIFT, .7 - rr * .3 - (Math.abs(rr - .5) < .08 ? .2 : 0), i, j); });   // зріз-торець: кільця
+    for (let q = 0; q < 7; q++) {                                                     // мохові подушки над стовбуром (горбки силуету) і лишайник знизу
+      const s = M.s0 + len * (q + .5) / 7, h = hash(sd + M.i * 7, q);
+      if (h > .35) { const p = driftAt(M, s, .3, 0); G.disc([p.c[0], p.c[1] - p.r * .78, p.c[2]], .42 + .34 * hash(q, sd), (u, v, i, j) => ramp(MAT.moss, .75 - v * .5 + hash(i >> 1, j >> 1) * .2, i, j)); }
+      if (h < .3) { const p = driftAt(M, s, .2, 0), y0 = p.c[1] + p.r * .8, l = .4 + .35 * hash(q + 3, sd);                // бородатий лишайник: тонкий, блідий
+        G.tube([p.c[0], y0, p.c[2]], [p.c[0] + .15, y0 + l, p.c[2]], .14, (u, v, i, j) => (i + j) & 1 ? ramp(LICH, .85 - v * .3, i, j) : 0); }
+    }
+    if (M.i === 1 || M.i === M.n - 2) {                                               // латунний кронштейн: пластина на стіні, полиця під корчем, підкіс
+      const s = M.s0 + len * .5, p = driftAt(M, s), w0 = driftAt(M, s, -M.DI + .06, .2).c, w1 = driftAt(M, s, -M.DI + .06, 2.3).c;
+      G.tube(w0, [p.c[0], p.c[1] + p.r * .7, p.c[2]], .5, brassT); G.tube(w1, driftAt(M, s, .2, p.r * .75).c, .42, brassT);
+      G.disc(w0, .62, (u, v, i, j) => Math.hypot(u - .5, v - .5) < .16 ? ramp(PL.DARK, .3, i, j) : ramp(PL.GOLD, .75 - v * .4, i, j));
+    }
+    if (M.plant || M.fr > 0 || M.i < 3) {                                              // ДАВАЛЛІЯ «заяча лапка»: пухнасті кореневища по корчу й дрібні мереживні вайї
+      for (let q = 0; q < 3; q++) { if (hash(sd + M.i, q + 11) < .3) continue;
+        const s0 = M.s0 + len * (.15 + .3 * q), s1 = s0 + 1.6 + hash(q, M.i) * 1.2, a = driftAt(M, s0, .55, -.15), b = driftAt(M, s1, .9, a.r * .55);
+        const top = [a.c[0], a.c[1] - a.r * .72, a.c[2]], end = [b.c[0], b.c[1] - b.r * .1, b.c[2]];
+        G.tube(top, end, .78, (u, v, i, j) => { const tip = hash(i, j) > .72; return tip ? ramp(FUR, .85, i, j) : ramp(FUR, .3 + (1 - Math.abs(u - .4) * 2) * .45 + (hash(i >> 1, j) - .5) * .2, i, j); });
+        G.disc(end, .42, (u, v, i, j) => ramp(FUR, .7 - v * .4 + (hash(i, j) - .5) * .25, i, j));
+        const f = driftAt(M, s0 + .4, .35, 0), fh = .9 + Math.max(0, M.fr || 0) * .8;     // вайя над «лапкою»: стрижень і мереживні частки
+        const f0 = [f.c[0], f.c[1] - f.r * .8, f.c[2]], f1 = [f0[0], f0[1] - fh, f0[2] + (q - 1) * .3];
+        G.tube(f0, f1, .16, (u, v, i, j) => ramp(pal(['#1a3a14', '#2e5a22', '#4a7a32']), .6, i, j));
+        G.disc([f1[0], f1[1] + fh * .35, f1[2]], fh * .42, (u, v, i, j) => { const x = (u - .5) * 6, y = v * 5; if (Math.abs(x) > 2.6 * (1 - v * .6) + .3) return 0;
+          return hash((x * 2) | 0, (y * 2) | 0) > .42 ? ramp(pal(['#0c3216', '#165024', '#227036', '#38924a', '#5cb46a']), .45 + (1 - v) * .4, i, j) : 0; });
+      }
     }
   };
 

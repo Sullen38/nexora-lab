@@ -272,7 +272,8 @@
     const w = 10, h = w * DRONE.h / DRONE.w, x = D.x, y = droneY(D);
     c.save(); c.imageSmoothingEnabled = true;
     if (D.spray) { c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const f = (t * 1.6 + k / 14) % 1, a = (hash(k, 3) - .5) * .9; c.globalAlpha = .75 * (1 - f); c.fillStyle = k % 3 ? '#9af6ff' : '#ffffff'; c.fillRect(x + Math.sin(a) * f * 6 - .3, y + h * .45 + f * 9, .6, .6); } c.globalCompositeOperation = 'source-over'; }
-    c.globalAlpha = 1; c.translate(x, y); if (D.dir < 0) c.scale(-1, 1); c.drawImage(DRONE.cv, -w / 2, -h / 2, w, h);
+    const spin = NX.decorLive ? NX.decorLive.droneSpin(t) : 0;                          // (· 5) тап — «бочка»
+    c.globalAlpha = 1; c.translate(x, y); if (D.dir < 0) c.scale(-1, 1); if (spin) c.rotate(spin); c.drawImage(DRONE.cv, -w / 2, -h / 2, w, h);
     c.globalAlpha = .55; c.fillStyle = '#e8f0ff'; const r = (t * 40) % 2 < 1; for (const hx of [-w * .4, w * .4]) c.fillRect(hx - (r ? 2.2 : 1.6), -h * .38, r ? 4.4 : 3.2, .35);   // гвинти (миготять)
     c.globalAlpha = 1; c.fillStyle = (t % 1) < .5 ? '#3bff8a' : '#14602e'; c.fillRect(-w * .2, -h * .05, .45, .45);   // вогник
     c.restore();
@@ -309,15 +310,18 @@
     fx.globalAlpha = 1;
     // мешканці: дальші — раніше; дальші — трохи тьмяніші (товща води)
     const list = CREW[aq].map((m, k) => Object.assign(where(aq, A, m, k, t), { m, k })).sort((p, q) => q.p[2] - p.p[2]);
+    const DL = NX.decorLive;
     for (const e of list) {
       const [kind, size, sp] = e.m, jel = aq === 'jelly', f = jel ? Math.floor((t * (.55 + .2 * hash(e.k, 4)) + hash(e.k, 6)) * 4) % 4 : Math.floor(t * (3 + 4 * sp) + e.k) % 2;
       const S = frame(kind, f), q = X.proj(e.p), k = sOf(e.p[2]), w = size * k, h = w * S.h / S.w;
+      const pu = DL && DL.fishPush(aq, q, t); if (pu) { q[0] += pu[0]; q[1] += pu[1]; if (!jel) e.dir = pu[2]; }   // (· 5) тап: розпливаються від пальця
       fx.globalAlpha = jel ? .92 : Math.max(.72, Math.min(1, 1.25 - (e.p[2] - 40) / 400));
       if (e.dir < 0 && !jel) { fx.save(); fx.translate(q[0], q[1]); fx.scale(-1, 1); fx.drawImage(S.cv, -w / 2, -h / 2, w, h); fx.restore(); }
       else { const y0 = q[1] - (jel ? h * .2 : h / 2); fx.drawImage(S.cv, q[0] - w / 2, y0, w, h);
         if (jel) { fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = .38; fx.drawImage(S.cv, q[0] - w * .58, y0 - h * .04, w * 1.16, h * 1.08); fx.globalCompositeOperation = 'source-over'; } }   // медузи світяться
     }
     fx.globalAlpha = 1;
+    if (DL) DL.aqFx(fx, aq, t);                                                         // (· 5) бульбашки від тапу
     // маска скла
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
     c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore();
@@ -325,6 +329,8 @@
   NX.decor = { droneAt, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items };            // для перевірок (tools) і живого шару · 4 (objects/decor_live.js)
   NX.addObject({
     id: 'decorLive',
+    /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */
+    tapFirst(x, y) { return !!(NX.decorLive && NX.decorLive.tap(x, y)); },
     drawBack(c, t) {
       if (c.isRefl || !buildMasks()) return;
       const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
