@@ -14,6 +14,8 @@
  *     Змія Горинича; Nexi отримує пиріжок, подарунок, чари Мерліна, змащує Залізного Дроворуба (якщо вільний).
  *   Крок 15: на Чеширського кота й від Змія Рудик сердиться — очі червоні (NX.cat.grr); полює на вірус — гості його не кличуть.
  *   Крок 15.1: погоня за Чеширським котом і Колобком, поклон Кота в чоботях, Змій — камера на Рудику (NX.cat.look).
+ *   Крок 16: спрайти — HD (guest_art.js, сітка 48×58 × .75); кадр гостя береться щонайбільше 12 разів на секунду з кешу
+ *     готових кадрів (guest_art.js: frame — поза, крок, фаза анімації, ніс, черевичок), речі перемальовуються 8 разів.
  * Тап по гостю — він повторює репліку; наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
  * ========================================================================== */
 NX.guests = (() => {
@@ -154,10 +156,11 @@ NX.guests = (() => {
   function layerOf(o, id, pose, fr, extra) {
     const [W, H, K] = A.size(id), s = NX.room.scaleAt(o.y) * K * .98 * (o.zoom || 1), w = W * s, h = H * s, top = o.y - (o.alt || 0) - h;
     return { y: o.y + (o.onPad ? -40 : 0), refl: !o.onPad && !(o.alt > 30), box: [o.x - w / 2 - 4, top - 30, o.x + w / 2 + 4, o.y + 4], draw: c => {
-      if (o._rt !== NX.time) { o._rt = NX.time; A.draw(id, pose, fr, NX.time, o.cv || (o.cv = document.createElement('canvas')), extra || o.g); }
+      const gx = extra || o.g, tq = Math.floor(NX.time * 12) / 12, key = pose + '|' + fr + '|' + tq + '|' + (gx.nose ? Math.round(gx.nose) : 0) + '|' + (gx.lostShoe ? 1 : 0);   // кадр — щонайбільше 12 разів на секунду; готові кадри — з кешу (guest_art.js: frame)
+      if (o._key !== key || !o.img) { o._key = key; o.img = A.frame(id, pose, fr, tq, gx); }
       c.save(); c.globalAlpha = (o.alpha != null ? o.alpha : 1) * (1 - (o.fade || 0));
       c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(o.x, o.y + 1, w * .26 * Math.max(.3, 1 - (o.alt || 0) / 120), 2.2 * s, 0, 0, 7); c.fill();
-      c.imageSmoothingEnabled = false; c.translate(o.x, 0); c.scale(o.dir || 1, 1); c.drawImage(o.cv, -w / 2, top, w, h); c.restore();
+      c.imageSmoothingEnabled = false; c.translate(o.x, 0); c.scale(o.dir || 1, 1); c.drawImage(o.img, -w / 2, top, w, h); c.restore();
     } };
   }
   /** Репліка: темна плашка з неоновим кантом над головою, текст — піксельним шрифтом (вміщується в будь-якій мові). */
@@ -177,8 +180,9 @@ NX.guests = (() => {
       L.draw = c => { d0(c); bubble(c, g, s, top); }; out.push(L);
       const c = g.comp; if (c && !c.hidden) out.push(layerOf(Object.assign(c, { alpha: g.alpha, zoom: g.zoom }), c.id, c.pose, c.fr || 0, {}));
     });
-    S.props.forEach(p => { const pr = p.cv || (p.cv = document.createElement('canvas')), s = NX.room.scaleAt(p.y) * 1.1 * (p.zoom || 1), w = 16 * s, h = 12 * s, al = Math.min(1, (p.until - NX.time) / 1.5);
-      out.push({ y: p.y, refl: true, box: [p.x - w / 2, p.y - h - (p.alt || 0), p.x + w / 2, p.y + 2], draw: c => { A.drawProp(p.type, NX.time, pr); c.save(); c.globalAlpha = Math.max(0, Math.min(p.alpha != null ? p.alpha : 1, p.follow ? 1 : al));
+    const [PW, PH, PK] = A.PROP;                                                                      // речі: сітка 24×16 (guest_art.js), у кімнаті — того самого розміру
+    S.props.forEach(p => { const pr = p.cv || (p.cv = document.createElement('canvas')), s = NX.room.scaleAt(p.y) * PK * (p.zoom || 1), w = PW * s, h = PH * s, al = Math.min(1, (p.until - NX.time) / 1.5);
+      out.push({ y: p.y, refl: true, box: [p.x - w / 2, p.y - h - (p.alt || 0), p.x + w / 2, p.y + 2], draw: c => { const tq = Math.floor(NX.time * 8) / 8; if (p._t !== tq) { p._t = tq; A.drawProp(p.type, tq, pr); } c.save(); c.globalAlpha = Math.max(0, Math.min(p.alpha != null ? p.alpha : 1, p.follow ? 1 : al));
         c.imageSmoothingEnabled = false; c.drawImage(pr, p.x - w / 2, p.y - h - (p.alt || 0), w, h); c.restore(); } }); });
     S.fx.forEach(f => out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), xx = P.lerp(f.x0, f.x1, k), yy = P.lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 10, ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
       c.save(); c.strokeStyle = '#e8d0a0'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xx - Math.cos(ang) * 12, yy - Math.sin(ang) * 12); c.lineTo(xx, yy); c.stroke(); c.fillStyle = '#d02a2a'; c.fillRect(xx - Math.cos(ang) * 12 - 1.5, yy - Math.sin(ang) * 12 - 1.5, 3, 3); c.restore(); } }));
