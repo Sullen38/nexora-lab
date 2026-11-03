@@ -483,6 +483,45 @@
     c.restore();
   }
 
+  // =============================== (Декор стін · 6) ДОГЛЯД: NEXI ПОЛИВАЄ РОСЛИНИ НА СТІНАХ ===============================
+  /** Куди Nexi летить з лійкою (actors/nexi/activities.js garden): предмет, що саме полити (foliage — листя збоку, top — верх
+   *  корита, pot — верх вазона, ball — верх кокедами), і з якого боку він (dir: +1 — ліворуч від рослини, лійкою вправо). */
+  const CARE = { left: [['dc_basket', 'foliage', 1], ['dc_tr1', 'top', -1], ['dc_tr0', 'top', -1], ['dc_drp0', 'pot', -1]],
+    right: [['dc_hangR', 'pot', -1], ['dc_kk2', 'ball', 1], ['dc_kk0', 'ball', 1]] };
+  /** Точка поливу (екран) і глибина z предмета. */
+  function careTarget(B, kind) {
+    const { P } = basis(B), d = B.dc || {}, ph = (d.pot && d.pot.ph) || 4, T = B.yb - B.yt, v = B.dep / 2;
+    let u = 0, Y = B.yt;
+    if (kind === 'foliage') { u = -B.w * .3; Y = B.yt + T * .28 + 20; }
+    else if (kind === 'top') Y = B.yt + .3;
+    else if (kind === 'pot') Y = d.frm === 'hook' ? B.yt + Math.min(16, T * .3) - ph - .4 : B.yb - ph - .4;
+    else if (kind === 'ball') Y = B.yb - ph - .4;
+    const W = P(u, v, Y), p = proj(W); return { x: p[0], y: p[1], z: W[2] };
+  }
+  const WFX = [];
+  const care = {
+    /** Місця поливу на стіні side ('left' | 'right'): [{id, x, y — куди лити (екран), z — глибина, dir}]. */
+    spots(side) { return (CARE[side] || []).map(([id, kind, dir]) => { const B = byId[id]; return B ? Object.assign(careTarget(B, kind), { id, dir }) : null; }).filter(Boolean); },
+    /** Полили: рослина потрушується (якщо жива), свіже сяйво, іскорки вгору, краплі стікають униз (над зонами — недалеко). */
+    water(id, t = NX.time) {
+      const B = byId[id]; if (!B) return; const L = LP.find(q => q.key === id); if (L) L.shake = t;
+      const { P } = basis(B), a = proj(P(-B.w / 2, B.dep / 2, B.yt)), b = proj(P(B.w / 2, B.dep / 2, B.yb));
+      WFX.push({ t0: t, x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), y0: a[1], y1: b[1] });
+    },
+  };
+  function drawCare(c, t) {
+    for (let i = WFX.length - 1; i >= 0; i--) if (t - WFX[i].t0 > 3) WFX.splice(i, 1);
+    if (!WFX.length) return; c.save(); c.globalCompositeOperation = 'lighter';
+    for (const F of WFX) { const a = t - F.t0, cx = (F.x0 + F.x1) / 2, cy = (F.y0 + F.y1) / 2, r = Math.max(F.x1 - F.x0, F.y1 - F.y0) * .6, g = glow('#7aff9a');
+      c.globalAlpha = .45 * Math.sin(Math.min(1, a / 3) * Math.PI); c.drawImage(g.cv, cx - r, cy - r, r * 2, r * 2);                        // «ожила»: свіже зелене сяйво
+      for (let q = 0; q < 10; q++) { const f = (a * .7 + hash(q, 3)) % 1, x = F.x0 + (F.x1 - F.x0) * hash(q, 5), y = cy - f * r * .9; c.globalAlpha = (1 - f) * Math.min(1, (3 - a) * 2); c.fillStyle = q % 2 ? '#b8ffc8' : '#9af6ff'; c.fillRect(x - .25, y - .25, .5, .5); }
+      c.globalCompositeOperation = 'source-over';
+      for (let q = 0; q < 6; q++) { const d0 = hash(q, 7) * 1.2, f = (a - d0) / 1.1; if (f < 0 || f > 1) continue; const x = F.x0 + (F.x1 - F.x0) * (.15 + .7 * hash(q, 9)), y = F.y1 - 2 + f * f * 7;   // краплі з листя
+        c.globalAlpha = .9 * (1 - f); c.fillStyle = '#8ad8ff'; c.fillRect(x - .2, y - .4, .4, .8); c.fillStyle = '#ffffff'; c.fillRect(x - .1, y - .4, .2, .2); }
+      c.globalCompositeOperation = 'lighter'; }
+    c.restore();
+  }
+
   // =============================== (· 5) ВИДНІСТЬ ДЕКОРУ ===============================
   /** Власник: «щоб елементи було краще видно» (особливо на комп'ютері). Раз на збірку крила: видимі пікселі шару «біля стіни»
    *  (декор; зони попереду — віднімаються) -> накладка: декор трохи яскравіший (+10 % свого кольору) і холодний контровий
@@ -522,7 +561,7 @@
 
   // =============================== КАДР ===============================
   NX.decorLive = {
-    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt,
+    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care,
     /** Для tools/wingbox/decor_check.js: усе живе цього файлу в крайніх положеннях — на контекст у координатах кімнати
      *  (рослини — обидва крайні нахили з поривом; метелики, листочки, світлячки — точки за 2 хвилини). */
     extentTo(c) {
@@ -532,6 +571,7 @@
       for (let k = 0; k < 2400; k++) { const t = k * .05;
         for (const L of LP) if (L.e.sp.kind === 'flytrap' && L.meta) { const st = trapAt(L, t); if (st.fly) { const p = plantPt(L, st.fly[0], st.fly[1]); c.fillRect(p[0] - 1, p[1] - .7, 2, 1.4); } }
         if (k % 8 === 0) { const S = snailAt(t * 4); if (S) c.fillRect(S.x - 1.8 * S.s, S.y - 2.3 * S.s, 3.6 * S.s, 2.4 * S.s); }
+        if (k === 0 && NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, 0, -1e9, 1e9);   // (· 6) годівнички на кришках
         if (k < 120) for (const C of CONES) { const f = k / 119, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f; c.fillRect(C.x - hw, y - .3, hw * 2, .6); }
         if (k % 4 === 0) for (const m of MOTES) { const [x, y] = moteAt(m, t * 2); c.fillRect(x - .2, y - .2, .4, .4); }
         if (PYL && PYL.dc.fungi && k < 200) { const { P } = basis(PYL); for (const [fu, fY, fr] of PYL.dc.fungi) { const f = k / 200, pp = proj(P(fu + Math.sin(f * 7) * (fr * .75 + .7), -.4 - f * 1.6, fY + fr * .35 - f * 14)); c.fillRect(pp[0] - .3, pp[1] - .3, .6, .6); } }
@@ -551,6 +591,7 @@
       T('plants', () => drawPlants(c, t, vx0, vx1));
       T('snail', () => drawSnail(c, t, vx0, vx1));
       T('air', () => drawAir(c, t, vx0, vx1));
+      T('care', () => { drawCare(c, t); if (NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, t, vx0, vx1); });   // (· 6) полив і годівнички
       T('fx', () => { drawLeaves(c, t, vx0, vx1); drawButterflies(c, t, vx0, vx1); drawFlies2(c, t, vx0, vx1); drawTapFx(c, t); });
     },
   };

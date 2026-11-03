@@ -316,7 +316,7 @@
       fx.globalAlpha = .8 * (1 - f * .5); fx.drawImage(BUB.cv, q[0] - s, q[1] - s, s * 2, s * 2); }
     fx.globalAlpha = 1;
     // мешканці: дальші — раніше; дальші — трохи тьмяніші (товща води)
-    const list = CREW[aq].map((m, k) => Object.assign(where(aq, A, m, k, t), { m, k })).sort((p, q) => q.p[2] - p.p[2]);
+    const list = CREW[aq].map((m, k) => Object.assign(AQX && AQX.adjust ? AQX.adjust(aq, A, m, k, t, where(aq, A, m, k, t)) : where(aq, A, m, k, t), { m, k })).sort((p, q) => q.p[2] - p.p[2]);   // (· 6) годування: пливуть до корму
     const DL = NX.decorLive;
     for (const e of list) {
       const [kind, size, sp] = e.m, jel = aq === 'jelly', f = jel ? Math.floor((t * (.55 + .2 * hash(e.k, 4)) + hash(e.k, 6)) * 4) % 4 : Math.floor(t * (3 + 4 * sp) + e.k) % 2;
@@ -325,10 +325,10 @@
       fx.globalAlpha = jel ? .92 : Math.max(.72, Math.min(1, 1.25 - (e.p[2] - 40) / 400));
       if (e.dir < 0 && !jel) { fx.save(); fx.translate(q[0], q[1]); fx.scale(-1, 1); fx.drawImage(S.cv, -w / 2, -h / 2, w, h); fx.restore(); }
       else { const y0 = q[1] - (jel ? h * .2 : h / 2); fx.drawImage(S.cv, q[0] - w / 2, y0, w, h);
-        if (jel) { fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = .38; fx.drawImage(S.cv, q[0] - w * .58, y0 - h * .04, w * 1.16, h * 1.08); fx.globalCompositeOperation = 'source-over'; } }   // медузи світяться
+        if (jel) { fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = Math.min(1, .38 * (AQX && AQX.glow ? AQX.glow(aq, t) : 1)); fx.drawImage(S.cv, q[0] - w * .58, y0 - h * .04, w * 1.16, h * 1.08); fx.globalCompositeOperation = 'source-over'; } }   // медузи світяться (· 6: після годування — яскравіше)
     }
     fx.globalAlpha = 1;
-    if (AQX) { AQX.front(fx, aq, A, t); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 5) морський сніг, поверхня, анциструс на склі…
+    if (AQX) { AQX.front(fx, aq, A, t, list); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 5) морський сніг, поверхня, анциструс на склі… (· 6: корм — риби його з'їдають)
     if (DL) DL.aqFx(fx, aq, t);                                                         // (· 5) бульбашки від тапу
     // маска скла
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';

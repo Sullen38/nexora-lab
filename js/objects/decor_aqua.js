@@ -230,12 +230,70 @@
     { const S = CASSIO[Math.floor(t * 1.4) % 2], p = proj([JL.cx - r * .3, bot - .6, JL.cz - r * .5]), k = sOf(JL.cz - r * .5) * 1.5; fx.drawImage(S.cv, p[0] - S.w * k / 2, p[1] - S.h * k, S.w * k, S.h * k); }   // кассіопея на дні
   }
 
+  // ---------- (Декор стін · 6) ГОДУВАННЯ: Nexi тисне кнопку годівнички (actors/nexi/activities.js feedFish) ----------
+  /** Годівничка на кришці: риф — над лівим краєм скла (на екрані), акватруба — над правим кінцем; x — у координатах малюнка скла. */
+  const FEEDER = { reef: MR && { M: MR, x: MR.T - 12 }, tube: MT && { M: MT, x: MT.T - 9 } };
+  const FEED = {};
+  /** Почати годування акваріума aq у час t: пластівці сиплються з годівнички 1.6 с; медузарій — хмара планктону. */
+  function feed(aq, t) {
+    if (aq === 'jelly') { FEED.jelly = { t0: t }; return; }
+    const F = FEEDER[aq]; if (!F) return;
+    FEED[aq] = { t0: t, fl: Array.from({ length: 16 }, (_, k) => ({ x: F.x + (hash(k, 5) - .5) * 3, t0: t + k * .1, vy: .9 + .7 * hash(k, 7), sw: hash(k, 9) * 6, c: ['#ffb24a', '#e86a2a', '#7ac84a', '#ffd27a'][k % 4], eaten: -1 })) };
+  }
+  const flakeAt = (F, f, t) => { const a = t - f.t0; return a < 0 ? null : [f.x + Math.sin(a * 1.7 + f.sw) * .8, .4 + a * f.vy * (a < 1 ? .6 : 1)]; };
+  /** Риби пливуть до корму (кличе objects/decor.js: позиція з «прогулянки» r -> зсунута до найближчого пластівця). */
+  function adjust(aq, A, m, k, t, r) {
+    const E = FEED[aq], F = FEEDER[aq]; if (!E || !F || t - E.t0 > 16) return r;
+    const w = Math.min(1, Math.max(0, (t - E.t0 - .4) / 1.4)) * Math.min(1, Math.max(0, (16 - (t - E.t0)) / 2)) * (m[0] === 'seahorse' ? .35 : m[0] === 'shrimp' || m[0] === 'axolotl' ? .5 : .9);
+    if (w <= 0) return r; let best = null, bd = 1e9;
+    E.fl.forEach((f, q) => { if (f.eaten >= 0) return; const p = flakeAt(F.M, f, t); if (!p) return; const W = F.M.W(p[0], p[1], 2 + (k % 3)), d = Math.hypot(W[0] - r.p[0], W[1] - r.p[1], W[2] - r.p[2]) + ((q + k) % 4) * 3; if (d < bd) { bd = d; best = W; } });
+    if (!best) return r; const p = r.p.map((v, i) => v + (best[i] - v) * w + (i === 1 ? Math.sin(t * 9 + k) * .4 * w : 0)), a = proj(r.p), b = proj(best);
+    return { p, dir: Math.abs(b[0] - a[0]) > .5 ? (b[0] > a[0] ? 1 : -1) : r.dir };
+  }
+  /** Корм у воді: пластівці тонуть і хитаються; риба поруч — з'їдає (бульбашка). */
+  function drawFeed(fx, aq, t, list) {
+    const E = FEED[aq], F = FEEDER[aq]; if (!E || !F || t - E.t0 > 18) return; const M = F.M;
+    for (const f of E.fl) { if (f.eaten >= 0 && t - f.eaten > .5) continue; const p = flakeAt(M, f, t); if (!p || p[1] > M.fh - 3) continue; const W = M.W(p[0], p[1], 2), q = proj(W);
+      if (f.eaten < 0 && list) for (const e of list) if (Math.hypot(e.p[0] - W[0], e.p[1] - W[1], e.p[2] - W[2]) < 2.6) { f.eaten = t; break; }
+      if (f.eaten >= 0) { const a = (t - f.eaten) / .5; fx.globalAlpha = .8 * (1 - a); fx.fillStyle = '#e8fbff'; fx.beginPath(); fx.arc(q[0], q[1] - a * 2, .3 + a * .3, 0, TAU); fx.fill(); continue; }
+      fx.globalAlpha = 1; fx.fillStyle = f.c; fx.fillRect(q[0] - .3, q[1] - .22, .6, .44); }
+    fx.globalAlpha = 1;
+  }
+  /** Медузарій після годування: хмара світного планктону спускається згори; медузи світяться яскравіше (glow). */
+  function drawBloom(fx, t) {
+    const E = FEED.jelly; if (!E || !JL) return; const a = t - E.t0; if (a < 0 || a > 10) return; const r = JL.r, at = (u, y) => proj([JL.cx + (u - .5) * 2 * r * .92, y, JL.cz - r]);
+    fx.save(); fx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 60; k++) { const d = .2 + .8 * hash(k, 31), y = JL.top + 12 + a * (6 + 10 * hash(k, 33)) * d, u = .5 + (hash(k, 35) - .5) * Math.min(1, a * .5 + .2) + Math.sin(a * .8 + k) * .04, p = at(u, y);
+      fx.globalAlpha = Math.min(1, a * 2) * (1 - a / 10) * (.5 + .5 * Math.sin(t * 5 + k)); fx.fillStyle = ['#9af6ff', '#ffb0f0', '#d8ff9a'][k % 3]; fx.beginPath(); fx.arc(p[0], p[1], .35, 0, TAU); fx.fill(); }
+    fx.restore();
+  }
+  /** Годівнички на кришках (поза склом — малює objects/decor_live.js, без маски): бункер з кормом, вогник; під час годування
+   *  барабан крутиться, вогник блимає. */
+  function drawFeeders(c, t, vx0, vx1) {
+    for (const aq of ['reef', 'tube']) { const F = FEEDER[aq]; if (!F) continue; const M = F.M, p = M.S(F.x, aq === 'reef' ? -5 : -.3), k = sOf(M.W(F.x, 0)[2]); if (p[0] < vx0 - 10 || p[0] > vx1 + 10) continue;
+      const E = FEED[aq], on = E && t - E.t0 < 1.8, w = 3.4 * k, h = 3 * k;
+      c.save(); c.fillStyle = '#c8ccdd'; c.fillRect(p[0] - w / 2, p[1] - h, w, h); c.fillStyle = '#6a7298'; c.fillRect(p[0] - w / 2, p[1] - h, w, .45 * k);
+      c.fillStyle = '#ffb24a'; c.fillRect(p[0] - w * .3, p[1] - h * .72, w * .6, h * .42);                                       // віконце з кормом
+      c.fillStyle = on && Math.floor(t * 8) % 2 ? '#ffffff' : '#3bff8a'; c.fillRect(p[0] + w * .3, p[1] - h * .9, .5 * k, .5 * k);   // вогник
+      if (on) { const a = t * 9; c.strokeStyle = '#ffd27a'; c.lineWidth = .3 * k; c.beginPath(); c.moveTo(p[0] + Math.cos(a) * w * .25, p[1] - h * .5 + Math.sin(a) * h * .2); c.lineTo(p[0] - Math.cos(a) * w * .25, p[1] - h * .5 - Math.sin(a) * h * .2); c.stroke(); }
+      c.fillStyle = '#060313'; c.globalAlpha = .9; c.fillRect(p[0] - w / 2, p[1] - h, w, .22); c.fillRect(p[0] - w / 2, p[1] - .22, w, .22); c.restore(); }
+  }
+
   NX.decorAqua = {
     /** До риб (objects/decor.js drawAq). */
     back(fx, aq, A, t) { if (aq === 'reef' && R) reefBack(fx, A, t); else if (aq === 'tube' && TB) tubeBack(fx, A, t); else if (aq === 'jelly') jellyBack(fx, A, t); },
-    /** Після риб. */
-    front(fx, aq, A, t) { if (aq === 'reef' && R) reefFront(fx, A, t); else if (aq === 'tube' && TB) tubeFront(fx, A, t); },
+    /** Після риб (list — риби кадру: корм, до якого риба доплила, з'їдено). */
+    front(fx, aq, A, t, list) { drawFeed(fx, aq, t, list); if (aq === 'reef' && R) reefFront(fx, A, t); else if (aq === 'tube' && TB) tubeFront(fx, A, t); else if (aq === 'jelly') drawBloom(fx, t); },
     /** Особлива поведінка мешканця (objects/decor.js where): рибка-клоун — в анемоні. */
     where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : null; },
+    adjust, feed, drawFeeders,
+    /** Медузи після годування світяться яскравіше (множник сяйва). */
+    glow(aq, t) { const E = FEED.jelly; if (aq !== 'jelly' || !E) return 1; const a = t - E.t0; return a < 0 || a > 10 ? 1 : 1 + 1.4 * Math.min(1, a * 1.5) * (1 - a / 10); },
+    /** Біля якого краю акваріума Nexi зависає й тисне кнопку годівнички: точка краю на екрані (на середині висоти), глибина z
+     *  (масштаб Nexi) і з якого боку від краю він (side: −1 — ліворуч, +1 — праворуч). Риф — лівий край (годівничка там),
+     *  акватруба — правий кінець, медузарій — праворуч від колони. */
+    feederAt(aq) {
+      if (aq === 'jelly') { if (!JL) return null; const W = [JL.cx + JL.r, JL.top + 72, JL.cz], p = proj(W); return { x: p[0], y: p[1], z: W[2], side: 1 }; }
+      const F = FEEDER[aq]; if (!F) return null; const M = F.M, W = aq === 'reef' ? M.W(M.T, M.fh * .45) : M.W(M.T, M.fh * .5), p = proj(W); return { x: p[0], y: p[1], z: W[2], side: aq === 'reef' ? -1 : 1 }; },
   };
 })();

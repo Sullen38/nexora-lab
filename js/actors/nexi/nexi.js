@@ -42,6 +42,7 @@ NX.nexi = {
       wsPad: ws ? [up, { do: () => ws.leave() }, { fly: ws.front() }] : [],
       tlHover: tl ? [up, { fly: tl.stand() }] : [],
       aiDesk: ai ? [up, { do: () => ai.finish() }, { fly: ai.front() }] : [],
+      wallHover: [up, { fly: this.wallFloor || NX.room.clampWalk(this.x, 440, 'nexi') }],                    // (· 6) біля стіни на ранці — спершу вниз
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {
@@ -173,6 +174,7 @@ NX.nexi = {
       if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
       if (r >= .36 && r < .47 && ok('ai', 'aicenter') && !(NX.virus && NX.virus.busy())) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }   // вірус на столі — не зараз (крок 15)
       if (r < .5) { this.do('sofaWork', false); return; }
+      if (r < .62) { this.do(Math.random() < .55 ? 'garden' : 'feedFish', false); return; }            // (· 6) доглядає стіни: полив і годування риб
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }

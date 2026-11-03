@@ -6,7 +6,7 @@
  * Пізніше сюди підключається бекенд з мовною моделлю (метод reply()).
  * ========================================================================== */
 NX.ui.chat = {
-  QUICK: [['work', 'sofaWork'], ['city', 'window'], ['dance', 'dance'], ['cat', 'petCat'], ['skin', 'skin']],   // швидкі команди (лише наявні сценарії)
+  QUICK: [['work', 'sofaWork'], ['city', 'window'], ['dance', 'dance'], ['cat', 'petCat'], ['plants', 'garden'], ['fish', 'feedFish'], ['skin', 'skin']],   // швидкі команди (лише наявні сценарії; · 6 — полив і риби)
   /** Ключові слова всіх 4 мов разом (js/i18n/*.js -> kw), щоб розуміти будь-якою. */
   kw() { const out = {}; Object.values(NX.i18n.dict).forEach(d => Object.entries(d.kw || {}).forEach(([k, v]) => { out[k] = out[k] ? out[k] + '|' + v : v; })); return Object.entries(out).map(([k, v]) => [k, new RegExp(v, 'i')]); },
   init() {

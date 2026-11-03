@@ -46,7 +46,7 @@ NX.i18n.add('en', {
     merlin: { n: 'Merlin', s: ['Abracadabra!'] }, genie: { n: 'Genie', s: ['Your wish is my command!', 'Wish granted!'] },
     tinMan: { n: 'Tin Woodman', s: ['Oil… please…', 'Thank you, friend!'] },
     silver: { n: 'Long John Silver', s: ['Treasure buried here!'], p: 'Pieces of eight!' }, gorynych: { n: 'Zmey Gorynych', s: ['Achoo!'] } },
-  chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', skin: 'Skins' },
+  chat: { quick: { work: 'Work', city: 'City', dance: 'Dance', cat: 'Cat', plants: 'Water', fish: 'Fish', skin: 'Skins' },
     fallback: 'Right now I can: work in marketing and analytics at my desks, connect services in tools, change skins in the Skins zone, rest on the sofa, watch the city, dance and play with Ginger. More zones soon! What shall we do?',
     greet: "Hi! I'm Nexi. Tap a zone, the sofa or the window and I'll go there. New look? Visit the Skins zone." },
   act: {
@@ -62,6 +62,8 @@ NX.i18n.add('en', {
     sofa: { title: 'Rest on the sofa', steps: ['Sitting down', 'Reading the news'], lines: ["I'll rest a bit and read business news.", 'The sofa is the best place for new ideas.'] },
     sleep: { title: 'Nap on the sofa', steps: ['Lying down', 'Zzz...'], lines: ["I'm a bit tired... Wake me up when you need me."] },
     petCat: { title: 'Pet the cat', steps: ['Going to Ginger', 'Petting ♥'], lines: ["Ginger, come here! Who's the best cat?", "Cat break: I'll pet Ginger."] },
+    garden: { title: 'Water the wall plants', steps: ['Grab the watering can', 'Fly up to the plants', 'Water each one ✓'], lines: ['I am a botanist — time to water the wall greenery!', 'The plants are thirsty. Taking off with the watering can!', 'A little water and the leaves shine again.'] },
+    feedFish: { title: 'Feed the fish', steps: ['Fly to the aquariums', 'Press the feeder', 'Watch them eat ✓'], lines: ['Lunch time in the aquariums!', 'The fish are waiting for food — on my way!', 'Feeding the fish and the jellyfish.'] },
     feedCat: { title: 'Feed the cat', steps: ['Going to Ginger', 'Giving a treat ✓'], lines: ["Ginger is hungry! I'll give him a treat."] },
     dance: { title: 'Dance on the rug', steps: ['Music!', 'Dancing ♪'], lines: ['A little dance for the mood!'] },
     wander: { title: 'Walk around', steps: ['Walking'], lines: ["I'll take a walk and think."] },
@@ -105,5 +107,5 @@ NX.i18n.add('en', {
     mood: { happy: 'Joy', love: 'Love', surprise: 'Surprise', idea: 'Idea', sleepy: 'Sleepy', sad: 'Sad', angry: 'Angry', cool: 'Cool' },
     act: { stand: 'Stand', walk: 'Walk', run: 'Run', wave: 'Wave', think: 'Think', point: 'Point', talk: 'Talk', cheer: 'Cheer', spin: 'Spin', stretch: 'Stretch', look: 'Look around', jump: 'Jump', work: 'Work', sleep: 'Sleep', dance: 'Dance', read: 'Read', meditate: 'Meditate', bye: 'Bye', drink: 'Coffee', hammer: 'Repair' },
   },
-  kw: { selfie: 'selfie|photo', ai: 'ai|chat|email|mail|text|answer|reply|client', analytics: 'analyt|report|sales|metric|data|numbers', marketing: 'market|ads|advert|post|campaign|newsletter', tools: 'tool|integrat|crm|calendar', portal: 'portal|project|team', petCat: 'cat|ginger|pet', feedCat: 'feed|food', sofa: 'sofa|rest|read', sleep: 'sleep|nap', dance: 'dance', home: 'home|dock', window: 'window|city|firework', skin: 'skin|look|color|outfit', sofaWork: 'work|task' },
+  kw: { garden: 'water|plant|garden|flower', feedFish: 'fish|aquarium|jelly', selfie: 'selfie|photo', ai: 'ai|chat|email|mail|text|answer|reply|client', analytics: 'analyt|report|sales|metric|data|numbers', marketing: 'market|ads|advert|post|campaign|newsletter', tools: 'tool|integrat|crm|calendar', portal: 'portal|project|team', petCat: 'cat|ginger|pet', feedCat: 'feed|food', sofa: 'sofa|rest|read', sleep: 'sleep|nap', dance: 'dance', home: 'home|dock', window: 'window|city|firework', skin: 'skin|look|color|outfit', sofaWork: 'work|task' },
 });

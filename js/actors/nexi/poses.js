@@ -40,6 +40,11 @@ function poseFor(a,t,moving){
  case'jump':p.ll={dx:-1,lift:2};p.rl={dx:1,lift:2};p.la={x:-5,y:-5};p.ra={x:5,y:-5};p.face='happy';break;
  case'gaze':p.back=1;p.la={x:1,y:6};p.ra={x:-1,y:6};p.hy=Math.round(Math.sin(t*.8));break;
  case'water':p.ra={x:6,y:1+Math.round(Math.sin(t*4))};p.la={x:-3,y:6};p.tool='can';p.hy=1;break;
+ // (Декор стін · 6) на ранці біля стіни: поливає з лійки, сипле корм, тисне кнопку годівнички, роздивляється
+ case'hoverWater':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:2+Math.round(Math.sin(t*4))};p.la={x:-4,y:4};p.tool='can';p.hy=1;p.bob=Math.round(Math.sin(t*5));break;
+ case'hoverPour':{const k=Math.floor(t*5)%2;p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:k?1:3};p.la={x:-4,y:4};p.tool='cup';p.hy=1;p.bob=Math.round(Math.sin(t*5));break}
+ case'hoverPress':{const k=Math.floor(t*4)%2;p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:k?-1:1};p.la={x:-4,y:4};p.bob=Math.round(Math.sin(t*5));break}
+ case'hoverLook':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.la={x:-4,y:5};p.ra={x:4,y:5};p.look=Math.round(Math.sin(t*1.3)*1.4);p.hx=Math.round(Math.sin(t*1.3));p.bob=Math.round(Math.sin(t*5));p.face='happy';break;
  case'toss':{const k=(t%1.2)<.5;p.ra=k?{x:3,y:-8}:{x:7,y:0};p.tool=k?'coin':null;p.face='happy';break}
  case'push':{const k=Math.floor(t*5)%2;p.back=1;p.ra={x:3,y:k?-2:0};p.la={x:-3,y:k?0:-2};break}
  case'carry':p.la={x:-2,y:3};p.ra={x:2,y:3};p.tool='tablet';break;

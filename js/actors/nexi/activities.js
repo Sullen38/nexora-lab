@@ -26,8 +26,22 @@
  * Крок 15: за столом AI-центру Рудик часом складає Nexi компанію (cat.js: joinAI) — тоді Nexi на фініші радіє з любов'ю;
  *   ВІРУС (actors/virus/virus.js) — Nexi біжить до AI-центру, дивиться, як Рудик спопеляє його лазером з очей, і дякує
  *   (act.virus: lines — на початку, thanks — після лазера, ai — якщо вірус утік і AI видалив його сам).
+ * Декор стін · 6 (власник: «Nexi доглядає стіни»): ПОЛИВ (garden) — на ранці з лійкою облітає рослини стіни, що ближче
+ *   (ліва: кошик, корита, мухоловка; права: потос у макраме, кокедами), рослина «оживає»; ГОДУВАННЯ (feedFish) — зависає біля
+ *   акваріума й тисне кнопку годівнички: риби пливуть до корму й з'їдають його, у медузарії — хмара планктону, медузи сяють.
  * ========================================================================== */
 (() => {
+  // (· 6) біля стіни: рядок підлоги на глибині z (масштаб Nexi — як у кімнаті там), куди долетіти, щоб лійка була над рослиною,
+  // поруч з акваріумом — збоку від краю; точка підлоги під стіною, звідки злітає; вода з лійки
+  const floorAt = z => NX.persp.VP[1] + (372 - NX.persp.VP[1]) * NX.persp.s(z), sprK = dy => NX.room.scaleAt(Math.max(dy, 352)) * SPRITE_K;
+  const inRoom = x => Math.max(NX.cfg.ROOM_X0 + 30, Math.min(NX.cfg.ROOM_X1 - 30, x));
+  // Спрайт Nexi зараз не віддзеркалюється (actors/nexi/physics.js: sq — NaN, тож scale(NaN) пропускається) — лійка завжди праворуч;
+  // поки так, Nexi стає ліворуч від рослини (лійкою до неї); полагодять фізику — спрацює й бажаний бік (dir місця).
+  const faceOk = () => Number.isFinite(NX.nexiPhys && NX.nexiPhys.sq), sideOf = d => (faceOk() ? d : 1);
+  const hoverAt = sp => { const dy = floorAt(sp.z), s = sprK(dy), d = sideOf(sp.dir); return { p: [inRoom(sp.x - d * 23 * s), sp.y + 17 * s], dy, d }; };
+  const hoverBeside = e => { const dy = floorAt(e.z), s = sprK(dy); return { p: [inRoom(e.x + e.side * (24 * s + 3)), e.y + 28 * s], dy, d: -e.side }; };   // кнопка — на пульті: бік руки неважливий
+  const wallFloor = side => NX.room.clampWalk(side === 'left' ? 230 : 1460, 446, 'nexi');
+  const pourFx = dir => { const n = NX.nexi, s = sprK(n.depthY()), d = sideOf(dir); for (let k = 0; k < 3; k++) NX.fx.emit('rain', n.x + d * (24 + Math.random() * 2) * s, n.y - (18 - Math.random() * 2) * s, { vx: d * (8 + Math.random() * 16), vy: 6 + Math.random() * 20, g: 170, ttl: .5, h: 2.4, s: 1.2, col: Math.random() < .7 ? '#8ad8ff' : '#e8fbff' }); };
   const P = () => NX.cfg.POI, line = id => (NX.nexi.taskOpt && NX.ui.zones.has(id) ? { say: NX.t('zones.start', { task: NX.t(`zones.${id}.${NX.nexi.taskOpt}.t`) }) } : { say: NX.pick('act.' + id + '.lines') });
   NX.acts = {
     home: { route() { const h = NX.objects.rug.home; return [{ walk: h }, { loc: 'dock' }, { face: 1 }, line('home'), { work: { pose: 'wave', dur: 2.5 } }]; } },
@@ -126,6 +140,27 @@
         { work: { pose: 'scan', dur: 2.6 } }, { do: () => NX.ui.skinlab.show(true) },
         { work: { pose: 'stand', dur: 10, tick: () => { const c = NX.nexi.cur; if (NX.ui.skinlab.open && c && c._t > 9) c._t = 7; } } },   // поки лабораторія відкрита — чекає
         { work: { pose: 'cheer', dur: 1.3 } }, { do: () => W.leave() }, { fly: W.front() }, { loc: 'floor' }]; } },
+
+    // ---------- (Декор стін · 6) ДОГЛЯД ЗА СТІНАМИ: на ранці з лійкою поливає рослини на стіні; тисне кнопки годівничок ----------
+    // Власник (03.11, план «Nexi доглядає стіни»): Nexi — ботанік, тож сам поливає зелень на стінах і годує риб. Куди летіти й що
+    // полити — objects/decor_live.js (care.spots), годівнички й риби, що пливуть до корму, — objects/decor_aqua.js (feed). Масштаб
+    // біля стіни — як у кімнаті на тій глибині (dy: рядок підлоги під рослиною). Стіна — та, що ближче до Nexi.
+    garden: { color: '#3bff8a', route() {
+      const C = NX.decorLive && NX.decorLive.care, n = NX.nexi, side = n.x < 774 ? 'left' : 'right', S = C ? C.spots(side) : []; if (!S.length) return [line('garden')];
+      const f = wallFloor(side), L = [{ walk: f }, { face: sideOf(S[0].dir) }, line('garden'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      S.forEach(sp => { const h = hoverAt(sp); let done = false;
+        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverWater', dur: 2.4, tick: (dt, k) => { pourFx(h.d); if (!done && k > .3) { done = true; C.water(sp.id); } } } }); });
+      L.push({ work: { pose: 'hoverLook', dur: .9 } }, { fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.3 } });
+      return L; } },
+
+    feedFish: { color: '#3be8ff', route() {
+      const A = NX.decorAqua, n = NX.nexi, side = n.x < 774 ? 'left' : 'right'; if (!A || !A.feederAt) return [line('feedFish')];
+      const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      (side === 'left' ? ['reef', 'jelly'] : ['tube']).forEach(aq => { const e = A.feederAt(aq); if (!e) return; const h = hoverBeside(e);
+        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverPress', dur: .9, end: () => A.feed(aq, NX.time) } },
+          { work: { pose: 'hoverLook', dur: aq === 'jelly' ? 3.6 : 5.4 } }, { do: () => n.emote(aq === 'jelly' ? 'surprise' : 'love', 2) }); });
+      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } });
+      return L; } },
 
     wander: { color: '#3be8ff', route() { const b = NX.room.walkBounds(); return [{ walk: NX.room.clampWalk(80 + Math.random() * 1380, b.minY + Math.random() * (b.maxY - b.minY)) }, { work: { pose: 'look', dur: 3 } }]; } },
 
