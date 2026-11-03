@@ -478,6 +478,43 @@
     c.restore();
   }
 
+  // =============================== (· 5) ВИДНІСТЬ ДЕКОРУ ===============================
+  /** Власник: «щоб елементи було краще видно» (особливо на комп'ютері). Раз на збірку крила: видимі пікселі шару «біля стіни»
+   *  (декор; зони попереду — віднімаються) -> накладка: декор трохи яскравіший (+10 % свого кольору) і холодний контровий
+   *  відблиск на краях, звернених до світла (до середини кімнати й угору) — там, де за краєм видно стіну (біля зон — ні: інакше
+   *  ореол навколо зони). Рахується шматками по кадрах, кладеться світлом у готове злиття крила (S.comp) — один раз на злиття;
+   *  зони не змінюються (їхні пікселі в накладці порожні). */
+  const LIFT = {};
+  function liftStep(side) {
+    const S = NX.arc.built && NX.arc.built[side]; if (!S || !S.layers || S.layers.length < 2 || !S.comp) return;
+    const D = S.layers[1]; let J = LIFT[side];
+    if (!J || J.D !== D) {
+      const W = D.cv.width, H = D.cv.height, k = W / (D.x1 - D.x0), mk = () => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; return [cv, cv.getContext('2d', { willReadFrequently: true })]; };
+      const [, dx] = mk(), [, zx] = mk(); dx.drawImage(D.cv, 0, 0);
+      for (let n = 2; n < S.layers.length; n++) { const Z = S.layers[n]; zx.drawImage(Z.cv, (Z.x0 - D.x0) * k, (Z.y0 - D.y0) * k, (Z.x1 - Z.x0) * k, (Z.y1 - Z.y0) * k); }
+      const out = dx.createImageData(W, H);
+      J = LIFT[side] = { D, W, H, k, d: dx.getImageData(0, 0, W, H).data, z: zx.getImageData(0, 0, W, H).data, out, row: 0, cv: null, applied: null, dir: side === 'right' ? -1 : 1 };
+      return;
+    }
+    if (!J.cv) {
+      const { W, H, d, z, dir } = J, o = J.out.data, y1 = Math.min(H, J.row + 48), R2 = Math.max(1, Math.round(J.k * .6));
+      const wall = (x, y) => x < 0 || y < 0 || x >= W || y >= H ? true : (() => { const q = (y * W + x) * 4; return d[q + 3] < 128 && z[q + 3] < 128; })();
+      for (let y = J.row; y < y1; y++) for (let x = 0; x < W; x++) {
+        const q = (y * W + x) * 4; if (d[q + 3] < 200 || z[q + 3] >= 128) continue;
+        const r = d[q], g = d[q + 1], b = d[q + 2], m = Math.max(r, g, b); if (m < 30) continue;                       // контур і тіні — як є
+        let ar = r * .1, ag = g * .1, ab = b * .1;
+        if (wall(x + dir * R2, y) || wall(x, y - R2) || wall(x + dir * R2, y - R2)) { ar += 20 + r * .17; ag += 27 + g * .17; ab += 36 + b * .17; }   // контровий відблиск
+        o[q] = Math.min(255, ar); o[q + 1] = Math.min(255, ag); o[q + 2] = Math.min(255, ab); o[q + 3] = 255;
+      }
+      J.row = y1; if (J.row < H) return;
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.getContext('2d').putImageData(J.out, 0, 0); J.cv = cv; J.d = J.z = J.out = null;
+    }
+    if (J.applied !== S.comp) {
+      const c = S.comp.getContext('2d'), Rd = S.comp.width / (S.box[2] - S.box[0]); c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
+      c.drawImage(J.cv, (D.x0 - S.box[0]) * Rd, (D.y0 - S.box[1]) * Rd, (D.x1 - D.x0) * Rd, (D.y1 - D.y0) * Rd); c.restore(); J.applied = S.comp;
+    }
+  }
+
   // =============================== КАДР ===============================
   NX.decorLive = {
     LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt,
@@ -499,22 +536,17 @@
       c.restore(); LP.forEach(L => { L.q = -1; });
     },
     draw(c, t, Rd, vx0, vx1) {
-      buildPlants();
+      const P = this.prof, T = P ? (k, f) => { const a = performance.now(); f(); P[k] = (P[k] || 0) + performance.now() - a; } : (k, f) => f();   // NX.decorLive.prof = {} — заміри частин (мс)
+      T('build', () => { buildPlants(); liftStep('left'); liftStep('right'); });
       const m = c.getTransform(); c.__base = [m.a, m.b, m.c, m.d, m.e, m.f];
-      maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor);
-      maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass);
-      drawPylonBits(c, t, vx0, vx1);
-      drawFungi(c, t, vx0, vx1);
-      drawLED(c, t, vx0, vx1);
-      drawArt(c, t, vx0, vx1);
-      drawRudik(c, t, vx0, vx1);
-      drawPlants(c, t, vx0, vx1);
-      drawSnail(c, t, vx0, vx1);
-      drawAir(c, t, vx0, vx1);
-      drawLeaves(c, t, vx0, vx1);
-      drawButterflies(c, t, vx0, vx1);
-      drawFlies2(c, t, vx0, vx1);
-      drawTapFx(c, t);
+      T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); });
+      T('led', () => drawLED(c, t, vx0, vx1));
+      T('art', () => drawArt(c, t, vx0, vx1));
+      T('rudik', () => drawRudik(c, t, vx0, vx1));
+      T('plants', () => drawPlants(c, t, vx0, vx1));
+      T('snail', () => drawSnail(c, t, vx0, vx1));
+      T('air', () => drawAir(c, t, vx0, vx1));
+      T('fx', () => { drawLeaves(c, t, vx0, vx1); drawButterflies(c, t, vx0, vx1); drawFlies2(c, t, vx0, vx1); drawTapFx(c, t); });
     },
   };
 })();
