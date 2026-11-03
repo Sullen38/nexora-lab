@@ -19,6 +19,9 @@
  * Крок 17 (власник, 03.11): ТАП ПО БРАМІ кличе випадкового гостя (разом — не більше трьох); підказки «з порталу: …» немає —
  *   гості просто з'являються; ТАП ПО ГОСТЮ — своя репліка (guests.<id>.t, по черзі) і своя дія (TAP: Яга мете, Піноккіо бреше —
  *   ніс росте, Дон Кіхот атакує й падає, Чеширський кіт тане, Горинич чхає…), після якої гість продовжує свою сценку.
+ * Крок 19 (власник: «появу та зникнення героїв — більш красиво»): ТЕЛЕПОРТ — спалах з променями у вихорі, кільце енергії
+ *   на майданчику (розходиться / сходиться), гість матеріалізується рядками знизу вгору (верхній фронт тремтить, кольоровий
+ *   зсув, світна лінія сканера, світний силует), іскри злітаються до тіла; зникнення — те саме навпаки й спалах у кінці.
  * Наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
  * ========================================================================== */
 NX.guests = (() => {
@@ -90,7 +93,7 @@ NX.guests = (() => {
   function make(id) {
     const sc = SCENES[id], p = pad(), g = { id, x: p[0], y: p[1], dir: -1, pose: 'stand', fr: 0, ft: 0, alt: 0, alpha: 0, zoom: .25, g: {}, cv: document.createElement('canvas'), q: [], cur: null, onPad: true, speed: sc.speed || 1 };
     const back = sc.flyer ? [] : sc.rollBack ? [{ run: front(), pose: 'roll' }, { hop: p }] : [{ [sc.runBack ? 'run' : 'go']: front() }, { hop: p }];   // назад: до брами, на майданчик
-    g.q = [{ appear: .7 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, { vanish: .7 }];
+    g.q = [{ appear: 1.9 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, { vanish: 1.6 }];
     S.portalT = NX.time + 2; if (nexiFree()) NX.nexi.emote(['surprise', 'happy', 'idea'][Math.random() * 3 | 0], 2);
     return g;                                                                                                             // підказки «з порталу: …» немає (власник, 03.11): гостя просто видно
   }
@@ -139,8 +142,14 @@ NX.guests = (() => {
   /** Крок черги: повертає true, коли зроблено. */
   function step(g, a, dt) {
     a._t = (a._t || 0) + dt;
-    if (a.appear || a.vanish) { const k = Math.min(1, a._t / (a.appear || a.vanish)), e = a.appear ? k : 1 - k; g.alpha = e; g.zoom = .25 + .75 * e; g.dir = Math.floor(a._t * (a.vanish ? 12 : 0)) % 2 ? 1 : g.dir;
-      if (Math.random() < .5) NX.fx.emit('portal', g.x + (Math.random() - .5) * 30, g.y - Math.random() * 50); return k >= 1; }
+    if (a.appear || a.vanish) {                                                                              // ТЕЛЕПОРТ (крок 19): спалах у вихорі, матеріалізація рядками знизу вгору
+      const k = Math.min(1, a._t / (a.appear || a.vanish)), e = a.appear ? k : 1 - k; g.alpha = 1; g.zoom = 1; g.tp = { k: e, inn: !!a.appear, t0: a._t };
+      if (!a.st) { a.st = 1; S.fx.push({ type: 'flash', x: g.x, y: g.y - 30, t0: NX.time, dur: .45 }); S.fx.push({ type: 'ring', x: g.x, y: g.y, t0: NX.time, dur: a.appear ? 1.4 : 1.2, inn: !!a.appear });
+        if (a.vanish) g.pose = 'stand'; }
+      if (a.vanish && k > .96 && !a.st2) { a.st2 = 1; S.fx.push({ type: 'flash', x: g.x, y: g.y - 30, t0: NX.time, dur: .4 }); }
+      for (let i = 0; i < 2; i++) if (Math.random() < .8) { const h = 50 * (a.appear ? e : 1 - e), ang = Math.random() * 6.283, r = 26 + Math.random() * 10;   // іскри: злітаються до тіла (поява) / розлітаються у вихор (зникнення)
+        const sx = g.x + Math.cos(ang) * r, sy = g.y - h - Math.sin(ang) * r * .5, tx = g.x, ty = g.y - h; NX.fx.emit('portal', a.appear ? sx : tx, a.appear ? sy : ty, { vx: (a.appear ? tx - sx : sx - tx) * 2.2, vy: (a.appear ? ty - sy : sy - ty) * 2.2, ttl: .45, s: 1.3 }); }
+      if (k >= 1) g.tp = null; return k >= 1; }
     if (a.hop) { if (!a.from) a.from = [g.x, g.y]; const k = Math.min(1, a._t / .5); g.x = P.lerp(a.from[0], a.hop[0], k); g.y = P.lerp(a.from[1], a.hop[1], k); g.alt = Math.sin(k * Math.PI) * 12; g.pose = 'stand';
       if (Math.abs(a.hop[0] - a.from[0]) > 2) g.dir = Math.sign(a.hop[0] - a.from[0]); if (k >= 1) { g.alt = 0; g.onPad = atPad(g); } return k >= 1; }
     if (a.go || a.run) {
@@ -195,7 +204,21 @@ NX.guests = (() => {
       if (o._key !== key || !o.img) { o._key = key; o.img = A.frame(id, pose, fr, tq, gx); }
       c.save(); c.globalAlpha = (o.alpha != null ? o.alpha : 1) * (1 - (o.fade || 0));
       c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(o.x, o.y + 1, w * .26 * Math.max(.3, 1 - (o.alt || 0) / 120), 2.2 * s, 0, 0, 7); c.fill();
-      c.imageSmoothingEnabled = false; c.translate(o.x, 0); c.scale(o.dir || 1, 1); c.drawImage(o.img, -w / 2, top, w, h); c.restore();
+      c.imageSmoothingEnabled = false; c.translate(o.x, 0); c.scale(o.dir || 1, 1);
+      const T = o.tp;
+      if (!T) c.drawImage(o.img, -w / 2, top, w, h);
+      else {                                                                                             // телепорт: рядки спрайта з'являються знизу вгору (e 0 → 1), з кольоровим зсувом і світною лінією сканера
+        const img = o.img, IH = img.height, IW = img.width, e = T.k, yk = h / IH, rows = IH, lim = Math.floor(rows * e), fr = Math.floor(NX.time * 24);
+        for (let r = rows - 1; r >= rows - lim; r--) { const sy = r, dy = top + r * yk, nd = (rows - r) - lim, jit = nd > -3 ? (P.hash(fr + r) - .5) * 4 * s : 0;   // верхні 3 рядки тремтять
+          c.drawImage(img, 0, sy, IW, 1, -w / 2 + jit, dy, w, yk + .3); }
+        if (lim > 0 && lim < rows) { c.globalCompositeOperation = 'lighter'; const r = rows - lim, dy = top + r * yk;                     // кольоровий зсув і лінія сканера на фронті
+          c.globalAlpha = .6; c.drawImage(img, 0, r, IW, 3, -w / 2 - 2 * s, dy, w, yk * 3); c.drawImage(img, 0, r, IW, 3, -w / 2 + 2 * s, dy, w, yk * 3);
+          c.globalAlpha = 1; c.fillStyle = T.inn ? '#bff8ff' : '#ff9af0'; c.fillRect(-w / 2 - 3 * s, dy - .6, w + 6 * s, 1.2); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillRect(-w / 2, dy + 1, w, .6);
+          c.globalCompositeOperation = 'source-over'; }
+        c.globalCompositeOperation = 'lighter'; c.globalAlpha = .18 + .25 * Math.sin(NX.time * 20) * e; c.fillStyle = T.inn ? '#9af6ff' : '#ff9af0';                    // світний силует
+        for (let r = rows - 1; r >= rows - lim; r--) c.drawImage(img, 0, r, IW, 1, -w / 2, top + r * yk, w, yk + .3);
+        c.globalCompositeOperation = 'source-over'; }
+      c.restore();
     } };
   }
   /** Репліка: темна плашка з неоновим кантом над головою, текст — піксельним шрифтом (вміщується в будь-якій мові). */
@@ -219,8 +242,16 @@ NX.guests = (() => {
     S.props.forEach(p => { const pr = p.cv || (p.cv = document.createElement('canvas')), s = NX.room.scaleAt(p.y) * PK * (p.zoom || 1), w = PW * s, h = PH * s, al = Math.min(1, (p.until - NX.time) / 1.5);
       out.push({ y: p.y, refl: true, box: [p.x - w / 2, p.y - h - (p.alt || 0), p.x + w / 2, p.y + 2], draw: c => { const tq = Math.floor(NX.time * 8) / 8; if (p._t !== tq) { p._t = tq; A.drawProp(p.type, tq, pr); } c.save(); c.globalAlpha = Math.max(0, Math.min(p.alpha != null ? p.alpha : 1, p.follow ? 1 : al));
         c.imageSmoothingEnabled = false; c.drawImage(pr, p.x - w / 2, p.y - h - (p.alt || 0), w, h); c.restore(); } }); });
-    S.fx.forEach(f => out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), xx = P.lerp(f.x0, f.x1, k), yy = P.lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 10, ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
-      c.save(); c.strokeStyle = '#e8d0a0'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xx - Math.cos(ang) * 12, yy - Math.sin(ang) * 12); c.lineTo(xx, yy); c.stroke(); c.fillStyle = '#d02a2a'; c.fillRect(xx - Math.cos(ang) * 12 - 1.5, yy - Math.sin(ang) * 12 - 1.5, 3, 3); c.restore(); } }));
+    S.fx.forEach(f => { if (f.type !== 'arrow') return; out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), xx = P.lerp(f.x0, f.x1, k), yy = P.lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 10, ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
+      c.save(); c.strokeStyle = '#e8d0a0'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xx - Math.cos(ang) * 12, yy - Math.sin(ang) * 12); c.lineTo(xx, yy); c.stroke(); c.fillStyle = '#d02a2a'; c.fillRect(xx - Math.cos(ang) * 12 - 1.5, yy - Math.sin(ang) * 12 - 1.5, 3, 3); c.restore(); } }); });
+    S.fx.forEach(f => { if (f.type !== 'flash' && f.type !== 'ring') return; const k = Math.min(1, (NX.time - f.t0) / f.dur), sc = NX.room.scaleAt(f.y) * .98;
+      if (f.type === 'flash') out.push({ y: 998, draw: c => { const a = Math.sin(k * Math.PI), r = (18 + 30 * k) * sc; P.glow(c, f.x, f.y, r, 'rgba(200,240,255,.95)', a); P.glow(c, f.x, f.y, r * .45, '#ffffff', a * .9);   // спалах
+          c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.strokeStyle = '#e8f8ff'; c.lineWidth = 1; for (let i = 0; i < 6; i++) { const an = i * 1.047 + k * 2, L = r * (.7 + i % 2 * .25); c.beginPath(); c.moveTo(f.x, f.y); c.lineTo(f.x + Math.cos(an) * L, f.y + Math.sin(an) * L * .6); c.stroke(); } c.restore(); } });
+      else out.push({ y: f.y - 1, refl: false, draw: c => { const q = f.inn ? k : 1 - k, rr = (6 + 34 * q) * sc, a = (1 - q) * .9;   // кільце енергії на підлозі: розходиться (поява) / сходиться (зникнення)
+          c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.strokeStyle = f.inn ? '#9af6ff' : '#ff9af0'; c.lineWidth = 1.6; c.beginPath(); c.ellipse(f.x, f.y + 1, rr, rr * .38, 0, 0, 7); c.stroke();
+          c.globalAlpha = a * .45; c.lineWidth = .8; c.strokeStyle = '#ffffff'; c.beginPath(); c.ellipse(f.x, f.y + 1, rr * .8, rr * .3, 0, 0, 7); c.stroke();
+          for (let i = 0; i < 10; i++) { const an = i * .628 + NX.time * 3; c.fillStyle = i % 2 ? '#e2c4ff' : '#9af6ff'; c.fillRect(f.x + Math.cos(an) * rr - .8, f.y + 1 + Math.sin(an) * rr * .38 - .8, 1.6, 1.6); }
+          c.restore(); } }); });
     return out;
   }
   /** Гість під точкою (тап, наведення): межі спрайта. */
