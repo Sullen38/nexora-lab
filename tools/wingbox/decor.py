@@ -404,12 +404,12 @@ def decor_side(L, sgn, C, R, verbose=True):
         for k, (X, kind, pot) in enumerate(((326., 'spathiphyllum', 'enamel'), (350., 'syngonium', 'terra'))):
             a = W.a_of(X, RF['P'] * .5); (x, z), _, _ = W.at(a, RF['P'] * .5); Y0 = RF['top'] - RF['lid']; h = min(17., Y0 - Yw(3., z))
             seg = min(segs, key=lambda sg: abs((sg['dc']['sa'] + sg['dc']['sb']) / 2 - a))
-            add(item(W, f'dc_rfp{k}', a, 7.2, 11., Y0, Y0 - h, 'dc_pot', inset=RF['P'] * .5 - 3.6, on=seg['id'], dc=dict(kind=kind, pot=pot_of(pot, 6., 4.), seed=161 + k)))
+            add(item(W, f'dc_rfp{k}', a, 7.2, 16., Y0, Y0 - h, 'dc_pot', inset=RF['P'] * .5 - 3.6, on=seg['id'], dc=dict(kind=kind, pot=pot_of(pot, 6., 4.), seed=161 + k)))
         # ---------- (· 4) ВИСЯЧІ У ПРОМІЖКАХ (труби під стелею прибрано — власник: «смужки зверху не потрібні»): кожна рослина —
         # на своєму кріпленні: скляна куля на дроті зі стелі, мідний конус-кишеня на цеглі, керамічний «місяць» на стіні
-        hang('dc_hp0', 88.6, 1.5, 56., 'bananas', w=8.4, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))
-        hang('dc_hp1', 371.5, 4., 92., 'adansonii', w=11., inset=5.2, seed=192, frm='cone', pot=dict(shape='cone', mat='copper', band='gold', name='cone-copper', pw=9., ph=10.))
-        hang('dc_hp2', 292., 2.5, 18., 'dolphins', w=12., inset=4.6, seed=193, frm='moon', pot=dict(shape='moon', mat='ceram', band='pink', name='moon-ceram', pw=10.5, ph=5.2))
+        hang('dc_hp0', 88.6, 1.5, 56., 'bananas', w=9.6, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))
+        hang('dc_hp1', 371.5, 4., 92., 'adansonii', w=15., inset=5.2, seed=192, frm='cone', pot=dict(shape='cone', mat='copper', band='gold', name='cone-copper', pw=9., ph=10.))
+        hang('dc_hp2', 292., 2.5, 18., 'dolphins', w=16., inset=4.6, seed=193, frm='moon', pot=dict(shape='moon', mat='ceram', band='pink', name='moon-ceram', pw=10.5, ph=5.2))
         a0, a1 = W.a_of(450., 3.), W.a_of(498., 3.); am = (a0 + a1) / 2; (x, z), _, _ = W.at(am, 3.)
         top = max(Yw(ys(poster['yb'], z) + 2.5, z), poster['yb'] + 2.); bot = min(Yw(free_y(X) - 1.5, z) for X in (450., 474., 498.))
         add(item(W, 'dc_tr2', am, 5., chord(W, a0, a1, 3.), bot, top, 'dc_trough', inset=.9, dc=dict(kind='lysimachia', seed=153, th=3., pot=dict(shape='trough', mat='steel', band='gold', name='trough-gold'))))
