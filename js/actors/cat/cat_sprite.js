@@ -23,6 +23,7 @@ function drawCat(pose, fr, t, cv, pal, md) {                                    
     BUN(hx, hy, 13, 11); P(hx + 5, hy, 3, 1, C.D); P(hx + 6, hy + 1, 1, 1, C.D);                                                                         // голова + смужка на лобі
     P(hx + 4, hy + 6, 5, 4, C.W); P(hx + 3, hy + 7, 7, 3, C.W);                                                                                          // мордочка
     if (eyes === 'open' || eyes === 'meow') { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 3, 3, 4, C.E); P(ex, hy + 3, 1, 1, '#ffffff'); P(ex + 2, hy + 5, 1, 1, '#ffffff'); } }
+    else if (eyes === 'up') { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 2, 3, 4, C.E); P(ex + 1, hy + 2, 1, 1, '#ffffff'); P(ex, hy + 5, 3, 1, C.W); } }   // дивиться вгору: зіниці підняті, знизу білок
     else if (eyes === 'happy') { for (const ex of [hx + 2, hx + 8]) { P(ex, hy + 5, 1, 1, C.E); P(ex + 1, hy + 4, 1, 1, C.E); P(ex + 2, hy + 5, 1, 1, C.E); } }
     else if (eyes === 'angry' || eyes === 'hiss') {                                                                   // злий: червоні очі, внутрішній кут повіки скошений, брови «галочкою»
       for (const [ex, ix] of [[hx + 2, hx + 4], [hx + 8, hx + 8]]) { P(ex, hy + 4, 3, 3, hot ? '#ff3a26' : '#ff2438'); P(ex + 1, hy + 5, 1, 1, hot ? '#ffffff' : '#ffd890'); if (hot) P(ex + 1, hy + 4, 1, 1, '#ffd0b0'); P(ix, hy + 4, 1, 1, C.E); }
@@ -46,6 +47,11 @@ function drawCat(pose, fr, t, cv, pal, md) {                                    
       [9, 12, 17, 20].forEach((lx, i) => { const u = up(i); paw(lx + (u ? (i < 2 ? -1 : 1) : 0), 18 - u, 5 - u); });
       BUN(8, 11 + bb, 15, 9); P(11, 18 + bb, 9, 1, C.W); [12, 15, 18].forEach(sx => P(sx, 11 + bb, 1, 3, C.D));
       head(18, 4 + bb, blink); break;
+    }
+    case 'gaze': {                                                                                                     // (декор · 9) задивився вгору: сидить, голова задерта, очі вгору, хвіст ходить
+      const sw = Math.round(Math.sin(t * 4.5)); P(5, 21, 9, 2, C.O); P(4 + sw, 19, 3, 3, C.O); P(4 + sw, 19, 3, 1, C.D);
+      BUN(9, 10, 12, 13); P(12, 13, 6, 9, C.W); [10, 11].forEach(sx => P(sx, 12, 1, 3, C.D)); paw(12, 19, 4); paw(16, 19, 4);
+      head(11, -1, blink === 'open' ? 'up' : blink); break;
     }
     case 'sit': case 'groom': case 'meow': case 'happy': case 'paw': {
       const sw = Math.round(Math.sin(t * 3)); P(5, 21, 9, 2, C.O); P(4 + sw, 19, 3, 3, C.O); P(4 + sw, 19, 3, 1, C.D);          // хвіст навколо лап

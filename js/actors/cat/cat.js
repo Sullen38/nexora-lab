@@ -23,6 +23,9 @@
  *   повертається на Nexi»): look(сек) — фокус камери на Рудику (core/camera.js: focus; телефон — на комп'ютері видно всю
  *   кімнату). Події: вірус (від тривоги до «пуф» + гордий момент; коли вірус поруч — між котом і вірусом), злий (просто так,
  *   розбудили, голодний, Змій), погоня за Чеширським котом і Колобком, поклон Кота в чоботях, гра з голо-рибкою.
+ * Декор стін · 9 (план «Рудик і декор»): сідає під найближчим акваріумом, задирає голову (поза gaze) і стежить за рибами, лапкою
+ *   «ловить» — риби сахаються (objects/decor_live.js TP.aq, як від тапу); полює на метелика: підбігає, припадає (голова за ним),
+ *   стрибає — метелик тікає (TP.fly).
  * ========================================================================== */
 NX.cat = {
   FLOOR: 378,   // кіт ходить ТІЛЬКИ по підлозі (y >= FLOOR); на меблі — лише стрибком
@@ -56,12 +59,37 @@ NX.cat = {
       return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .44) return this.set('groom', 4 + Math.random() * 3);
     if (r < .64) { const b = NX.objects.ball; return this.goTo(b.x - 12, b.y, () => { this.set('pounce', .5, () => { b.kick((Math.random() - .3) * 160, (Math.random() - .5) * 60); }); }, null, true); }
-    if (r < .8) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
-    if (r < .9 && this.spots().aiDeskL && !(NX.virus && NX.virus.busy())) { const k = Math.random() < .5 ? 'aiDeskL' : 'aiDeskR'; return this.toSpot(k, () => this.deskLife(k)); }   // на стіл AI-центру
+    if (r < .7 && this.aqSpot()) return this.watchFish();                                                                 // (декор · 9) стежить за рибами
+    if (r < .76 && this.flyNear()) return this.huntFly();                                                                 // (декор · 9) полює на метелика
+    if (r < .82) { const n = NX.nexi; return this.goTo(n.x + (Math.random() < .5 ? -28 : 28), Math.max(n.y, 362), () => this.set('sit', 6)); }
+    if (r < .92 && this.spots().aiDeskL && !(NX.virus && NX.virus.busy())) { const k = Math.random() < .5 ? 'aiDeskL' : 'aiDeskR'; return this.toSpot(k, () => this.deskLife(k)); }   // на стіл AI-центру
     const [wx, wy] = NX.room.clampWalk(60 + Math.random() * 1400, 362 + Math.random() * NX.cam.front * .7);
     return this.goTo(wx, wy, () => this.set('sit', 3));
   },
   set(pose, dur, done) { this.mode = 'act'; this.pose = pose; this.timer = dur; this.then = done || null; },
+
+  /* ---------------- (Декор стін · 9) РУДИК І ДЕКОР: риби за склом, метелики ---------------- */
+  /** Найближчий акваріум (маски скла objects/decor.js): точка підлоги під ним, низ скла на екрані. */
+  aqSpot() { const MK = NX.decor && NX.decor.MK; if (!MK) return null; let best = null;
+    for (const aq of ['reef', 'jelly', 'tube']) { const M = MK[aq]; if (!M) continue; const cx = M.x + M.w / 2, d = Math.abs(cx - this.x); if (!best || d < best.d) best = { aq, d, cx, y1: M.y + M.h, M }; }
+    return best; },
+  /** Сідає під акваріумом, задирає голову й стежить за рибами (камера — на нього); лапкою «ловить» рибу — риби сахаються, як від
+   *  тапу (TP.aq), а він здивовано сідає знову. */
+  watchFish() { const S = this.aqSpot(); if (!S) return this.decide(); const [x, y] = NX.room.clampWalk(S.cx + (Math.random() - .5) * 24, 388, 'cat');
+    return this.goTo(x, y, () => { this.dir = S.cx >= this.x ? 1 : -1; this.look(5, null, false, true);
+      const swat = n => this.set('paw', 1.1, () => { const T = NX.decorLive && NX.decorLive.TP, M = S.M; if (T) T.aq = { aq: S.aq, x: S.cx + (Math.random() - .5) * M.w * .5, y: S.y1 - 4, t0: NX.time };
+        this.set('gaze', 2.4 + Math.random() * 2, () => n < 1 && Math.random() < .6 ? swat(n + 1) : this.set('sit', 1.5)); });
+      this.set('gaze', 3.5 + Math.random() * 3, () => swat(0)); }); },
+  /** Метелик (objects/decor_live.js) не далі ніж за 160 од. по x — його номер і де він. */
+  flyNear() { const DL = NX.decorLive; if (!DL || !DL.butterflyAt) return null; let best = null;
+    for (let v = 0; v < 2; v++) { const B = DL.butterflyAt(v, NX.time); if (!B) continue; const d = Math.abs(B.x - this.x); if (d < 160 && (!best || d < best.d)) best = { v, d, B }; }
+    return best; },
+  /** Полює: підбігає під метелика, припадає (приціл: голова за ним), стрибає вгору — метелик тікає; сідає, дивиться вслід. */
+  huntFly() { const F = this.flyNear(); if (!F) return this.decide(); const [x, y] = NX.room.clampWalk(F.B.x, 386, 'cat');
+    return this.goTo(x, y, () => { this.flyV = F.v; this.look(5, null, false, true);
+      this.set('crouch', 1.8 + Math.random(), () => { const B = NX.decorLive.butterflyAt(F.v, NX.time) || F.B, dx = Math.max(-18, Math.min(18, B.x - this.x));
+        this.startJump(this.x + dx, this.y, () => { this.flyV = null; const T = NX.decorLive.TP; if (T && T.fly[F.v]) T.fly[F.v].push(NX.time); NX.fx.emit('note', this.x, this.y - 24);
+          this.set('gaze', 2.2, () => this.set('groom', 2.5)); }); this.jump.hi = 40; this.jump.dur = .62; }); }, null, true); },
   /** Іти до точки (якщо ціль на висоті — спершу до точки під нею, потім стрибок). */
   goTo(x, y, done, from, run) {
     if (this.alt > 0) { const d = this.down || [this.x + 8 * this.dir, this.ground]; this.alt = 0; this.at = null; this.down = null;   // спершу зістрибнути вниз — туди, звідки застрибнув
@@ -168,6 +196,7 @@ NX.cat = {
       const g = NX.guests.S.list.find(g => g.alpha > .8 && Math.abs(g.x - this.x) < 46 && Math.abs(g.y - this.ground) < 26);
       if (g) { this.wokeT = t + 80; this.dir = Math.sign(g.x - this.x) || this.dir; this.grr(1.8); this.look(3.6, null, false, true); this.set('sit', 1.9, () => this.set('sleep', 8 + Math.random() * 8, () => this.set('stretch', 1.4))); } }
     if (this.laser && Math.random() < .85) { const [tx, ty] = this.laser.V.hit(); NX.fx.emit('spark', tx + (Math.random() - .5) * 5, ty + (Math.random() - .5) * 4, { col: Math.random() < .55 ? '#ff5a3a' : '#ffd27a' }); }
+    if (this.flyV != null && this.pose === 'crouch' && NX.decorLive) { const B = NX.decorLive.butterflyAt(this.flyV, t); if (B && Math.abs(B.x - this.x) > 3) this.dir = Math.sign(B.x - this.x); }   // (· 9) приціл: голова за метеликом
     this.ft += dt; const sp = this.mode === 'walk' ? (this.run ? 80 : 34) : 0;
     if (this.ft > (this.run ? .08 : .14)) { this.ft = 0; this.frame++; }
     if (this.mode === 'walk') {

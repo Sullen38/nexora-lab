@@ -563,7 +563,7 @@
 
   // =============================== КАДР ===============================
   NX.decorLive = {
-    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care, greet,
+    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care, greet, butterflyAt,
     /** Для tools/wingbox/decor_check.js: усе живе цього файлу в крайніх положеннях — на контекст у координатах кімнати
      *  (рослини — обидва крайні нахили з поривом; метелики, листочки, світлячки — точки за 2 хвилини). */
     extentTo(c) {
