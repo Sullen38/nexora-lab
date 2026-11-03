@@ -191,7 +191,11 @@
       const pt = (q, a, ins, y) => { const rad = q.R - ins; return [q.C[0] + q.sgn * rad * Math.sin(a * D2R), y, q.C[1] + rad * Math.cos(a * D2R)]; };
       segs.forEach(q => poly.push(X.proj(pt(q, q.sa, q.P - .4, q.yta + q.lid - ov)), X.proj(pt(q, q.sb, q.P - .4, q.ytb + q.lid - ov))));
       [...segs].reverse().forEach(q => poly.push(X.proj(pt(q, q.sb, q.P - .4, q.ybb - q.base + ov)), X.proj(pt(q, q.sa, q.P - .4, q.yba - q.base + ov))));
-      AQ.farm = { ids: [], segs, poly, ov, pt }; }
+      const F = NX.arc.FARM, bars = [], y0 = d.yta + d.lid, H = (d.yba - d.base) - y0, D2 = 1 / ((d.R - d.P) * D2R);                      // (· 14) що ПОПЕРЕДУ рослин: стійки-імпости й передні кромки полиць — з маски геть
+      segs.forEach(q => { if (!(q.i % 2)) { const a2 = q.sa + F.post * D2; bars.push([[q.sa, y0 - .2], [a2, y0 - .2], [a2, y0 + H + .2], [q.sa, y0 + H + .2]].map(([a, y]) => X.proj(pt(q, a, q.P + .15, y)))); }
+        if (q.i === q.n - 1) { const a1 = q.sb - F.post * D2; bars.push([[a1, y0 - .2], [q.sb, y0 - .2], [q.sb, y0 + H + .2], [a1, y0 + H + .2]].map(([a, y]) => X.proj(pt(q, a, q.P + .15, y)))); }
+        for (let k = 1; k < F.tiers; k++) { const ys = y0 + F.tierY(H, k); bars.push([[q.sa, ys], [q.sb, ys], [q.sb, ys + F.shelf], [q.sa, ys + F.shelf]].map(([a, y]) => X.proj(pt(q, a, q.P, y)))); } });
+      AQ.farm = { ids: [], segs, poly, bars, ov, pt }; }
     const jl = wins('jelly'); if (jl.length) { const d = jl[0].dc; AQ.jelly = { ids: jl.map(B => B.id), cx: d.cx, cz: d.cz, r: d.r, top: d.top, bot: d.bot }; }
     for (const aq of ['door', 'pylon']) { const w = wins(aq); if (w.length) AQ[aq] = { ids: w.map(B => B.id), B: w[0] }; }   // (· 4) вікна пілона: малює objects/decor_live.js
   })();
@@ -230,8 +234,9 @@
     const L = SD.left, R = SD.right; if (L === lastL && R === lastR) return true; lastL = L; lastR = R;
     const live = [...((L && L.live) || []), ...((R && R.live) || [])];
     for (const aq of Object.keys(AQ)) {
-      if (AQ[aq].poly) { if (!MK[aq]) { const Rm = 3, pl = AQ[aq].poly, x0 = Math.floor(Math.min(...pl.map(p => p[0]))), y0 = Math.floor(Math.min(...pl.map(p => p[1]))), x1 = Math.ceil(Math.max(...pl.map(p => p[0]))), y1 = Math.ceil(Math.max(...pl.map(p => p[1])));   // (· 13) маска з многокутника (нутро ферми)
+      if (AQ[aq].poly) { if (!MK[aq]) { const Rm = 3, pl = AQ[aq].poly, x0 = Math.floor(Math.min(...pl.map(p => p[0]))), y0 = Math.max(0, Math.floor(Math.min(...pl.map(p => p[1])))), x1 = Math.ceil(Math.max(...pl.map(p => p[0]))), y1 = Math.ceil(Math.max(...pl.map(p => p[1])));   // (· 13) маска з многокутника (нутро ферми)
           const cv = document.createElement('canvas'); cv.width = Math.ceil((x1 - x0) * Rm); cv.height = Math.ceil((y1 - y0) * Rm); const c = cv.getContext('2d'); c.scale(Rm, Rm); c.fillStyle = '#fff'; c.beginPath(); pl.forEach((p, k) => k ? c.lineTo(p[0] - x0, p[1] - y0) : c.moveTo(p[0] - x0, p[1] - y0)); c.closePath(); c.fill();
+          if (AQ[aq].bars) { c.globalCompositeOperation = 'destination-out'; for (const b of AQ[aq].bars) { c.beginPath(); b.forEach((p, k) => k ? c.lineTo(p[0] - x0, p[1] - y0) : c.moveTo(p[0] - x0, p[1] - y0)); c.closePath(); c.fill(); } c.globalCompositeOperation = 'source-over'; }   // рама попереду
           MK[aq] = { cv, x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; } continue; }
       const es = live.filter(E => AQ[aq].ids.includes(E.id) && E.mask); if (!es.length) { delete MK[aq]; continue; }
       let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; es.forEach(({ mask: m }) => { x0 = Math.min(x0, m.x); y0 = Math.min(y0, m.y); x1 = Math.max(x1, m.x + m.w); y1 = Math.max(y1, m.y + m.h); });
