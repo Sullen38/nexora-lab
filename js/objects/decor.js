@@ -3,8 +3,9 @@
  * ----------------------------------------------------------------------------
  * Нерухоме декору — у растрі крила (objects/dc_paint.js, розкладка tools/wingbox/decor.py). Тут — те, що рухається, і
  * його небагато (власник: «живого — небагато й вразбіг»):
- *   • три акваріуми: РИФ над аналітикою (морські риби), МЕДУЗАРІЙ між аналітикою й маркетингом (медузи), АКВАТРУБА над
- *     інструментами (прісноводні) — КОЖНА ІСТОТА СВОГО ВИДУ, жодна не повторюється (власник: «щоб нічого не повторювалось»);
+ *   • три акваріуми: РИФ над аналітикою (морські риби), МЕДУЗАРІЙ між аналітикою й маркетингом (медузи), КОНТЕЙНЕР ХИЖАКІВ
+ *     на правій стіні за маніпулятором (· 10: молот-акула, баракуда, піранії; вугор, вудильник, скат — objects/decor_aqua.js)
+ *     — КОЖНА ІСТОТА СВОГО ВИДУ, жодна не повторюється (власник: «щоб нічого не повторювалось»);
  *     бульбашки від розпилювачів;
  *   • тепле мерехтіння ліхтаря й світних грибів на антресолі;
  *   • (Декор стін · 3) ДРОН-ПОЛИВАЛЬНИК облітає рослини (аквапоніка, антресоль, висячий сад під нею), зависає й розпилює воду;
@@ -21,8 +22,7 @@
 (() => {
   const X = NX.px3d, LIVE = NX.arc.LIVE, hash = NX.art.hash, PZ = NX.persp, D2R = Math.PI / 180;
   const NOP = { every: 1e9, draw: () => false };                                     // вікно: лише маска (вміст малює цей файл)
-  for (let k = 0; k < 12; k++) { LIVE['dc_rfg' + k] = NOP; LIVE['dc_tbg' + k] = NOP; } LIVE.dc_jellyg = NOP; LIVE.dc_door = NOP; LIVE.dc_pyg = NOP;   // (· 4) двері й колба пілона
-  LIVE.dc_tbs0 = NOP; LIVE.dc_tbs1 = NOP;                                                                                        // (· 8) круглі вікна біосфер
+  for (let k = 0; k < 12; k++) { LIVE['dc_rfg' + k] = NOP; LIVE['dc_shg' + k] = NOP; } LIVE.dc_jellyg = NOP; LIVE.dc_door = NOP; LIVE.dc_pyg = NOP;   // (· 4) двері й колба пілона; (· 10) скло контейнера хижаків
 
   // ---------- піксель-арт спрайти ----------
   const PX = 4, OUTC = [6, 3, 19];
@@ -182,25 +182,19 @@
   // ---------- акваріуми з розкладки ----------
   const LAY = NX.arcLayout || {}, items = [...((LAY.left || {}).items || []), ...((LAY.right || {}).items || [])], byId = {};
   items.forEach(B => byId[B.id] = B);
-  const wins = aq => items.filter(B => (B.st === 'dc_win' || B.st === 'dc_winr') && B.dc && B.dc.aq === aq);
+  const wins = aq => items.filter(B => B.st === 'dc_win' && B.dc && B.dc.aq === aq);
   const AQ = {};
   (() => {
     const rf = wins('reef'); if (rf.length) { const d = rf[0].dc; AQ.reef = { ids: rf.map(B => B.id), C: d.C, R: d.R, sgn: d.sgn, a0: Math.min(...rf.map(B => B.dc.sa)), a1: Math.max(...rf.map(B => B.dc.sb)), P: d.P, top: d.top, bot: d.bot }; }
-    const tb = wins('tube'), tbs = tb.filter(B => B.dc.part !== 'bulb'), bulbs = tb.filter(B => B.dc.part === 'bulb').sort((p, q) => p.dc.k - q.dc.k);
-    if (tbs.length) { const d = tbs[0].dc; AQ.tube = { ids: tb.map(B => B.id), C: d.C, R: d.R, sgn: d.sgn, a0: Math.min(...tbs.map(B => B.dc.sa)), a1: Math.max(...tbs.map(B => B.dc.sb)), ins: d.ins, r: d.r, Yc: d.Yc, bulbs: bulbs.map(B => B.dc) }; }   // (· 8) bulbs — біосфери
+    const sk = wins('shark').sort((p, q) => p.dc.i - q.dc.i); if (sk.length) { const d = sk[0].dc; AQ.shark = { ids: sk.map(B => B.id), C: d.C, R: d.R, sgn: d.sgn, a0: Math.min(...sk.map(B => B.dc.sa)), a1: Math.max(...sk.map(B => B.dc.sb)), P: d.P, top: d.top, bot: d.bot, segs: sk.map(B => B.dc) }; }   // (· 10) контейнер хижаків: segs — модулі (полиця мілкіша)
     const jl = wins('jelly'); if (jl.length) { const d = jl[0].dc; AQ.jelly = { ids: jl.map(B => B.id), cx: d.cx, cz: d.cz, r: d.r, top: d.top, bot: d.bot }; }
     for (const aq of ['door', 'pylon']) { const w = wins(aq); if (w.length) AQ[aq] = { ids: w.map(B => B.id), B: w[0] }; }   // (· 4) вікна пілона: малює objects/decor_live.js
   })();
   const arcPt = (A, a, d, y) => { const rad = A.R - d; return [A.C[0] + A.sgn * rad * Math.sin(a * D2R), y, A.C[1] + rad * Math.cos(a * D2R)]; };
-  /** (· 8) Точка світу в біосфері bd (вікно dc_tbs*): dx — уздовж стіни в одиницях кола на екрані (центр 0), dy — униз від центру,
-   *  back — углиб від лицьової площини (0 — скло, 2rb — стіна). */
-  const bulbPt = (bd, dx, dy, back = 0) => { const a = bd.a * D2R, rad = bd.R - (bd.ins + bd.rb - .15 - back), sg = bd.sgn, q = dx * (bd.sq || 1);
-    return [bd.C[0] + sg * rad * Math.sin(a) + sg * Math.cos(a) * q, bd.Yb + dy, bd.C[1] + rad * Math.cos(a) - Math.sin(a) * q]; };
   const sOf = z => PZ.D / (PZ.D + z);
   // мешканці: kind, розмір (од. світу, довжина), швидкість, зерно; кожен вид — один раз
   const CREW = {
     reef: [['clown', 8.8, 1, 1], ['tang', 10.5, .8, 2], ['ytang', 8.8, .7, 3], ['mandarin', 6.8, .35, 4], ['idol', 9.5, .6, 5], ['puffer', 7.4, .3, 6], ['seahorse', 8.6, .12, 7]],
-    tube: [['betta', 8.8, .5, 11], ['axolotl', 10.5, .22, 12], ['koi', 10.5, .55, 13], ['discus', 8, .4, 14], ['tetra', 5.4, 1.1, 15], ['glow', 5.8, .9, 16], ['shrimp', 4, .15, 17]],
     jelly: [['moon', 16, 1, 21], ['nettle', 14, 1, 22], ['comb', 8.5, 1, 23], ['crystal', 14.5, 1, 24], ['flower', 12.5, 1, 25]],
   };
   /** Де мешканець зараз (світ) і куди дивиться: плавна «прогулянка» сумою синусоїд у межах об'єму акваріума. */
@@ -214,18 +208,14 @@
     }
     const span = A.a1 - A.a0, u = .5 + .42 * Math.sin(t * w + ph) + .06 * Math.sin(t * w * 2.7 + ph * 2), a = A.a0 + 1.2 + (span - 2.4) * u;
     const da = Math.cos(t * w + ph) + .16 * 2.7 * Math.cos(t * w * 2.7 + ph * 2), dir = da * A.sgn;
-    if (aq === 'reef') {
-      const low = kind === 'mandarin' ? .9 : kind === 'seahorse' ? .35 + .25 * Math.sin(t * .3 + ph) : .15 + .6 * h(8);
-      const y = A.top + 6 + (A.bot - A.top - 10) * Math.max(0, Math.min(1, low + .12 * Math.sin(t * w * 1.7 + ph * 3))), d = 2 + (A.P - 4) * (.5 + .45 * Math.sin(t * w * .8 + ph * 5));
-      return { p: arcPt(A, a, d, y), dir };
-    }
-    const bot = kind === 'axolotl' || kind === 'shrimp', rr = A.r - 3.2, psi = bot ? 1.25 + .15 * Math.sin(t * .4 + ph) : (h(9) - .5) * 2.2 + .5 * Math.sin(t * w * 1.3 + ph * 2), rho = bot ? rr * .92 : rr * (.25 + .55 * h(10));
-    return { p: arcPt(A, a, A.ins + rho * Math.cos(psi) * .7, A.Yc + rho * Math.sin(psi)), dir };
+    const low = kind === 'mandarin' ? .9 : kind === 'seahorse' ? .35 + .25 * Math.sin(t * .3 + ph) : .15 + .6 * h(8);   // риф (і запас для хижаків без decor_aqua)
+    const y = A.top + 6 + (A.bot - A.top - 10) * Math.max(0, Math.min(1, low + .12 * Math.sin(t * w * 1.7 + ph * 3))), d = 2 + (A.P - 4) * (.5 + .45 * Math.sin(t * w * .8 + ph * 5));
+    return { p: arcPt(A, a, d, y), dir };
   }
   /** Бульбашки: струмені від розпилювачів (світ). */
   const STREAMS = {
     reef: A => [[A.a0 + (A.a1 - A.a0) * .3, A.P * .4], [A.a0 + (A.a1 - A.a0) * .78, A.P * .6]].map(([a, d]) => ({ p: arcPt(A, a, d, A.bot - 2), h: A.bot - A.top - 6, n: 7 })),
-    tube: A => [{ p: arcPt(A, A.a0 + (A.a1 - A.a0) * .45, A.ins, A.Yc + A.r * .55), h: A.r * 1.4, n: 4 }].concat((A.bulbs || []).map((bd, k) => ({ p: bulbPt(bd, (k ? -.45 : .5) * bd.rb, bd.rb * .62, bd.rb), h: bd.rb * 1.25, n: 5 }))),   // (· 8) розпилювач у кожній біосфері
+    shark: A => [[.12, .5], [.42, .3], [.66, .6]].map(([u, d]) => { const S = A.segs[Math.min(A.segs.length - 1, Math.floor(u * A.segs.length))]; return { p: arcPt(A, A.a0 + (A.a1 - A.a0) * u, A.P * d, S.bot - 2), h: S.bot - S.top - 6, n: 6 }; }),   // (· 10) три розпилювачі в контейнері
     jelly: A => [{ p: [A.cx + A.r * .5, A.bot - 2, A.cz - 2], h: A.bot - A.top - 8, n: 12 }],
   };
 
@@ -255,7 +245,7 @@
     const shr = items.find(B => B.dc && B.dc.kind === 'shroom'); const sh = shr && at(shr.id, .45); if (sh) GLOWS.push({ p: sh, s: glowSpr('#3be8ff', 8), a: t => .2 + .12 * (.5 + .5 * Math.sin(t * 1.3)) });
   })();
 
-  // ---------- ДРОН-ПОЛИВАЛЬНИК (Декор стін · 3): облітає рослини аквапоніки, антресолі й макраме, зависає й розпилює воду ----------
+  // ---------- ДРОН-ПОЛИВАЛЬНИК (Декор стін · 3): облітає рослини антресолі й макраме (· 10: аквапоніки над трубою вже немає), зависає й розпилює воду ----------
   const DRONE = sprite(24, 14, S => {
     S.ell(12, 7.5, 6.2, 3.4, (x, y, u, v) => v < -.2 ? '#f0f4ff' : v < .35 ? '#c8d0ec' : '#8a92b8');                   // корпус
     for (let x = 12; x < 17; x++) S.set(x, 6, '#101830'); S.set(15, 6, '#3be8ff'); S.set(16, 6, '#9af6ff');           // візор з «оком»
@@ -263,7 +253,7 @@
     S.ell(2.5, 3.6, 1.4, 1, '#3a4268'); S.ell(21.5, 3.6, 1.4, 1, '#3a4268');                                             // мотори
     S.ell(12, 12, 3.4, 1.9, (x, y, u, v) => u < -.3 && v < 0 ? '#c8e8ff' : '#3a8aff'); S.set(12, 13, '#1a2040');       // бачок з водою, сопло
   });
-  const ROUTE_ID = ['dc_tbp0', 'dc_tbp1', 'dc_tbp2', 'dc_tbp3', 'dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3'].filter(id => byId[id]);
+  const ROUTE_ID = ['dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3'].filter(id => byId[id]);
   const ROUTE = ROUTE_ID.map(id => byId[id]).map(B => { const { P } = NX.arc.kit.basis(B), y = B.st === 'dc_hang' ? B.yt + (B.yb - B.yt) * .32 : B.yt, q = X.proj(P(0, B.dep / 2, y)); return [q[0], Math.max(11, q[1] - 7)]; });
   const LEGS = []; (() => { let tt = 0; for (let k = 0; k < ROUTE.length; k++) { const a = ROUTE[k], b = ROUTE[(k + 1) % ROUTE.length], d = Math.hypot(b[0] - a[0], b[1] - a[1]), fly = Math.max(1.2, d / 26);
     LEGS.push({ a, b, t0: tt, hover: 2.4, fly }); tt += 2.4 + fly; } LEGS.T = tt; })();
@@ -399,7 +389,7 @@
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
     c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore();
   }
-  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items, SPR, CREW, JELLY: jelly, bulbPt };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
+  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items, SPR, CREW, JELLY: jelly };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
   NX.addObject({
     id: 'decorLive',
     /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */
@@ -407,7 +397,7 @@
     drawBack(c, t) {
       if (c.isRefl || !buildMasks()) return;
       const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
-      for (const aq of ['reef', 'jelly', 'tube']) drawAq(c, aq, t, Rd, vx0, vx1);
+      for (const aq of ['reef', 'jelly', 'shark']) drawAq(c, aq, t, Rd, vx0, vx1);
       if (NX.decorLive) NX.decorLive.draw(c, t, Rd, vx0, vx1);                       // (· 4) живі рослини, пілон, плакат Рудика, штучки — objects/decor_live.js
       drawDrone(c, t, vx0, vx1); drawFlies(c, t, vx0, vx1);
       if (!GLOWS.length) return;

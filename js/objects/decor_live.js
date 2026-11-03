@@ -450,7 +450,7 @@
     if (!hit) { let best = null, ar = 1e9; for (const L of LP) if (x >= L.x0 + 4 && x <= L.x1 - 4 && y >= L.y0 - 1 && y <= L.y1 + 1) { const a = (L.x1 - L.x0) * (L.y1 - L.y0); if (a < ar) { ar = a; best = L; } }
       if (best && best.e.sp.kind === 'flytrap') { const ph = (((t + 5 + FT.off) % 15) + 15) % 15; if (ph < 9.6) FT.off += 9.6 - ph; }   // мухоловка: муха одразу летить до пастки
       if (best) { best.shake = t; for (let q = 0; q < 2 + (best.e.amp > 1.5 ? 1 : 0); q++) TP.fall.push({ x: x + (Math.random() - .5) * 6, y, y1: Math.min(best.y1 - 2, y + 22), t0: t + q * .15, s: Math.random() }); hit = 'plant'; } }
-    if (!hit) for (const aq of ['reef', 'tube', 'jelly']) { const M = MK[aq]; if (!M || !inB(x, y, [M.x, M.y, M.x + M.w, M.y + M.h])) continue;
+    if (!hit) for (const aq of ['reef', 'shark', 'jelly']) { const M = MK[aq]; if (!M || !inB(x, y, [M.x, M.y, M.x + M.w, M.y + M.h])) continue;
       if (!M.px) M.px = M.cv.getContext('2d').getImageData(0, 0, M.cv.width, M.cv.height);
       const i = Math.floor((x - M.x) / M.w * M.cv.width), j = Math.floor((y - M.y) / M.h * M.cv.height); if (i < 0 || j < 0 || i >= M.cv.width || j >= M.cv.height || M.px.data[(j * M.cv.width + i) * 4 + 3] < 128) continue;
       TP.aq = { aq, x, y, t0: t }; hit = 'aq'; break; }

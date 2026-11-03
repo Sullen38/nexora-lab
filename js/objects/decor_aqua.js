@@ -2,16 +2,17 @@
  * objects/decor_aqua.js — АКВАРІУМИ · 5: удвічі живіші (Декор стін · 5)
  * ----------------------------------------------------------------------------
  * Власник (03.11): «окремо попрацюй над акваріумами — треба їх зробити в два рази краще». Нерухоме — у малюнках скла
- * (objects/dc_paint.js: риф — глибина шарами, живий камінь з печерою, удвічі більше коралів; акватруба — уся в довжину
- * труби, імла з далекими стеблами). Тут — живе, на те саме полотно, що й риби (objects/decor.js drawAq: back — до риб,
+ * (objects/dc_paint.js: риф — глибина шарами, живий камінь з печерою, удвічі більше коралів; контейнер хижаків — вулканічне
+ * дно з лавою, затонулий мех, клітка для корму). Тут — живе, на те саме полотно, що й риби (objects/decor.js drawAq: back — до риб,
  * front — після), під тією самою маскою скла (що попереду — лишається попереду):
  *   • РИФ: промені світла гойдаються, КАУСТИКА біжить по камінню й піску, ламінарія й щупальця анемони колишуться, МУРЕНА
  *     визирає з печери й «дихає» ротом, САД ВУГРІВ (три види) виринає з піску й ховається (тап по рифу — ховаються одразу),
  *     КРАБ ходить боком і погрожує клешнями, КРЕВЕТКА-ЧИСТИЛЬНИК біля печери, РИБКА-КЛОУН живе в анемоні (кружляє над нею),
  *     нові риби — королівська грамма й крилатка; морський сніг, мерехтіння поверхні.
- *   • АКВАТРУБА: каустика по ґрунту, валіснерія колишеться, з вазонів аквапоніки звисає КОРІННЯ, КОРИДОРАСИ (панда й
- *     бронзовий) риються в ґрунті, АНЦИСТРУС і РАВЛИК-НЕРЕТИНА повзуть по склу, рослини «перлять» бульбашками кисню,
- *     нові риби — гупі й карликовий тетраодон.
+ *   • АКВАРІУМ ХИЖАКІВ (· 10, замість акватруби; власник: «супер-акваріум з небезпечними рибами, футуристичний»):
+ *     МОЛОТ-АКУЛА кружляє на всю довжину, БАРАКУДА завмирає й шугає, зграя ПІРАНІЙ тремтить і рве корм, ЕЛЕКТРИЧНИЙ ВУГОР
+ *     в'ється по дну й б'є розрядом (спалах, блискавки), ВУДИЛЬНИК чатує в темному куті з ліхтариком, СКАТ-ХВОСТОКОЛ ковзає
+ *     по полиці; промені прожекторів, лавові тріщини пульсують, частинки мулу, захисна сітка-лазер мерехтить.
  *   • МЕДУЗАРІЙ: підсвітка повільно змінює колір (рожевий — фіолетовий — блакитний), планктон підіймається, каустика
  *     струменить, на дні пульсує перевернута медуза кассіопея.
  * Кожна істота — свого виду, жодна не повторюється (власник: «щоб нічого не повторювалось»).
@@ -20,23 +21,24 @@
 (() => {
   const DC = NX.decor; if (!DC) return;
   const X = NX.px3d, hash = NX.art.hash, proj = X.proj, { sprite, items, SPR, CREW } = DC, TAU = Math.PI * 2, D2R = Math.PI / 180;
-  const REEF = NX.arc.REEF, TUBE = NX.arc.TUBE;
+  const REEF = NX.arc.REEF, SHK = NX.arc.SHARK;
   const sm = f => f * f * (3 - 2 * f);
 
   // ---------- малюнок скла -> світ ----------
   function mapper(aq) {
-    const S = items.filter(B => B.st === 'dc_win' && B.dc && B.dc.aq === aq && B.dc.part !== 'bulb').sort((a, b) => a.dc.i - b.dc.i); if (!S.length) return null;   // (· 8) біосфери — окремо (BLB)
+    const S = items.filter(B => B.st === 'dc_win' && B.dc && B.dc.aq === aq).sort((a, b) => a.dc.i - b.dc.i); if (!S.length) return null;
     const d0 = S[0].dc, rad = d0.R - d0.ins, sg = d0.sgn, C = d0.C, pt = a => [C[0] + sg * rad * Math.sin(a * D2R), C[1] + rad * Math.cos(a * D2R)];
     const seg = S.map(B => { const a = pt(B.dc.sa), b = pt(B.dc.sb), am = (B.dc.sa + B.dc.sb) / 2; return { s0: B.dc.s0, len: Math.hypot(b[0] - a[0], b[1] - a[1]), a, b, n: [-sg * Math.sin(am * D2R), -Math.cos(am * D2R)], sa: B.dc.sa, sb: B.dc.sb }; });
-    const top = aq === 'reef' ? d0.top : d0.Yc - d0.r + .4, fh = aq === 'reef' ? d0.bot - d0.top : 2 * d0.r - .8;
-    /** back — на стільки од. углиб від скла (до стіни). */
+    const top = d0.top, fh = d0.bot - d0.top;                                            // хижаки: fh — глибока частина; у модулів свій верх / низ (рівні на екрані) — y масштабується
+    seg.forEach((g, k) => { g.top = S[k].dc.top; g.ky = (S[k].dc.bot - S[k].dc.top) / fh; });
+    /** back — на стільки од. углиб від скла (до стіни); y — в одиницях першого модуля: 0 — поверхня, fh — дно. */
     const W = (x, y, back = 0) => { let g = seg[0]; for (const q of seg) if (x >= q.s0) g = q; const u = (x - g.s0) / g.len;
-      return [g.a[0] + (g.b[0] - g.a[0]) * u - g.n[0] * back, top + y, g.a[1] + (g.b[1] - g.a[1]) * u - g.n[1] * back]; };
+      return [g.a[0] + (g.b[0] - g.a[0]) * u - g.n[0] * back, g.top + y * g.ky, g.a[1] + (g.b[1] - g.a[1]) * u - g.n[1] * back]; };
     /** Точка світу (x, z) -> x малюнка (найближчий сегмент). */
     const xOf = (wx, wz) => { let best = 0, bd = 1e9; for (const g of seg) { const vx = g.b[0] - g.a[0], vz = g.b[1] - g.a[1], L2 = vx * vx + vz * vz, u = Math.max(0, Math.min(1, ((wx - g.a[0]) * vx + (wz - g.a[1]) * vz) / L2)), px = g.a[0] + vx * u, pz = g.a[1] + vz * u, dd = (px - wx) ** 2 + (pz - wz) ** 2; if (dd < bd) { bd = dd; best = g.s0 + u * g.len; } } return best; };
     return { W, S: (x, y, back) => proj(W(x, y, back)), T: d0.tot, fh, top, xOf, d0 };
   }
-  const MR = mapper('reef'), MT = mapper('tube'), JL = (() => { const B = items.find(B => B.id === 'dc_jellyg'); return B ? B.dc : null; })();
+  const MR = mapper('reef'), MS = mapper('shark'), JL = (() => { const B = items.find(B => B.id === 'dc_jellyg'); return B ? B.dc : null; })();
   const sOf = z => 520 / (520 + z);
 
   // ---------- каустика: тайл, що повторюється (світла сітка «сонячних зайчиків» на дні) ----------
@@ -82,16 +84,6 @@
     for (let k = 0; k < 7; k++) { S.set(13 + k * .4, 4 - k * (f ? .5 : .35), '#ffffff'); S.set(13 + k * .3, 4 - k * (f ? .3 : .55), '#f0f0f0'); }
     S.set(12, 4, '#101018'); for (let k = 0; k < 4; k++) S.set(6 + k * 1.5, 7, '#ffd23a');
   }));
-  const CORY = [['#e8e0d0', '#101018'], ['#b8783a', '#3a5a4a']].map(([b, m], sp) => [0, 1].map(f => sprite(14, 8, S => {   // коридораси: панда (білий, чорні «окуляри») і бронзовий
-    S.tri([[3, 4], [0, 2 + f], [0, 6 + f]], b); S.ell(7.5, 4.2, 5.2, 2.6, (x, y, u, v) => sp === 0 ? (x > 9 && x < 12 && y < 5 ? m : x > 2 && x < 5 && y < 4 ? m : v < -.2 ? '#ffffff' : b) : (v < -.2 ? '#d8985a' : hash(x, y) > .8 ? '#5a8a6a' : b));
-    S.tri([[6, 2], [8, 0], [9, 2]], sp ? '#a0682a' : m); S.set(11, 3, '#ffffff'); S.set(12, 3, '#101018'); S.set(13, 6, '#c8b8a0'); S.set(12, 7, '#c8b8a0');
-  })));
-  const PLECO = [0, 1].map(f => sprite(20, 11, S => {                                 // анциструс на склі: бурий, жовті цятки, «вусики» на морді, плавці розкриті
-    S.tri([[4, 5.5], [0, 2 + f], [0, 9 - f]], '#4a3a2a'); S.ell(10, 5.5, 7.5, 3.6, (x, y, u, v) => hash(x, y) > .8 ? '#e8d070' : v < -.3 ? '#6a5a40' : '#4a3a2a');
-    S.tri([[8, 2.4], [12, -.5], [14, 2.4]], '#5a4a32'); S.tri([[9, 8.6], [12, 11], [13, 8.6]], '#5a4a32');
-    for (let k = 0; k < 5; k++) S.set(17 + (k % 2), 4 + k * .7, '#d8c890'); S.set(15, 4, '#ffffff'); S.set(15, 5, '#101018');
-  }));
-  const NERITE = sprite(8, 7, S => { S.ell(4, 3.4, 3.4, 3, (x, y, u, v) => Math.sin((u + v * .4) * 9) > .2 ? '#1a1410' : '#e8c040'); S.set(5, 6, '#c8b090'); S.set(6, 6, '#c8b090'); });   // равлик-неретина: смугаста «зебра»
   const CASSIO = [0, 1].map(f => sprite(24, 10, S => {                                // кассіопея: перевернута медуза — блюдце на дні, руки-«квіти» вгору (пульсує)
     S.ell(12, 8, 9 + f, 2, (x, y, u, v) => v < 0 ? '#c8a878' : '#a08050', 220);
     for (let k = 0; k < 7; k++) { const x = 4 + k * 2.7, h = 3 + (k % 3) + f; S.ell(x, 7 - h, 1.3, h * .55, (xx, y, u, v) => (xx + y) % 2 ? '#5ad8b0' : '#b8f0d8', 220); S.set(x, 7 - h * 1.5, '#ffffff', 230); }
@@ -107,10 +99,6 @@
       S.ell(18, 11, 10, 4.6, (x) => ((x >> 1) % 2) ? '#c8281a' : '#fff0e8');
       for (let k = 0; k < 9; k++) { const x = 11 + k * 1.6; S.line(x, 7, x - 1.5 + ph * .4, 0 + (k % 2) * 1.5, k % 2 ? '#f8e8e0' : '#c8281a'); }
       eye(S, 25, 9); S.set(28, 11, '#a01a1a'); }),
-    guppy: ph => sprite(18, 10, S => {                                                  // гупі (самець): сіро-блакитне тільце, величезний хвіст-віяло помаранчево-синій
-      S.tri([[7, 5], [0, 0 + ph], [0, 10 + ph]], (x, y) => (x + y) % 3 ? '#ff7a2a' : '#3a8aff'); S.ell(11, 5, 5.5, 2.4, (x, y, u, v) => v < -.2 ? '#d8f0ff' : '#8aa8c8'); eye(S, 14, 4); }),
-    pea: ph => sprite(11, 9, S => {                                                     // карликовий тетраодон: жовто-зелений з темними плямами, великі очі
-      S.tri([[3, 4.5], [0, 2.5 + ph], [0, 6.5 + ph]], '#c8d870'); S.ell(6, 4.5, 4.5, 3.6, (x, y, u, v) => v > .4 ? '#f8f8e0' : hash(x, y) > .7 ? '#3a5a2a' : '#c8e060'); S.set(7, 2, '#ffffff'); S.set(8, 2, '#101018'); S.set(8, 3, '#101018'); }),
   });
   if (DC.JELLY) DC.JELLY.pelagia = p => sprite(30, 64, S => {                         // пелагія «нічне світло»: бузковий дзвін у світних бородавках, довгі нитки, рожеві рюші
     const cy = 10, rx = 11 * (1 + p * .12), ry = 8.5 * (1 - p * .18);
@@ -118,7 +106,7 @@
     for (let k = 0; k < 8; k++) { const x0 = 15 + (k - 3.5) * rx / 4.3; for (let q = 0; q < 50; q++) S.set(x0 + Math.sin(q * .15 + k + p * 5) * (.8 + q * .04), cy + 1 + q, '#e0a8ff', 150); }
     for (let k = 0; k < 4; k++) { const x0 = 15 + (k - 1.5) * 2; for (let q = 0; q < 26; q++) { const x = x0 + Math.sin(q * .3 + k * 2 + p * 6) * 1.8; S.set(x, cy + 2 + q, '#ff8ad8', 220); if (q % 2) S.set(x + 1, cy + 2 + q, '#ffc8f0', 200); } }
   }, false);
-  if (CREW) { CREW.reef.push(['gramma', 6.2, .75, 8], ['lion', 11.5, .22, 9]); CREW.tube.push(['guppy', 5.4, 1, 18], ['pea', 3.4, .7, 19]); if (DC.JELLY) CREW.jelly.push(['pelagia', 13, 1, 26]); }
+  if (CREW) { CREW.reef.push(['gramma', 6.2, .75, 8], ['lion', 11.5, .22, 9]); if (DC.JELLY) CREW.jelly.push(['pelagia', 13, 1, 26]); }
 
   // ---------- РИФ ----------
   const R = MR && (() => {
@@ -182,88 +170,81 @@
     fx.restore();
   }
 
-  // ---------- АКВАТРУБА ----------
-  const TB = MT && (() => {
-    const fh = MT.fh, T = MT.T, sub_ = x => TUBE.sub(x, fh);
-    const ROOTS = items.filter(B => /^dc_tbp\d$/.test(B.id)).map((B, k) => ({ x: MT.xOf(B.x, B.z), k }));
-    return { fh, T, sub_, ROOTS };
+  // ---------- (· 10) АКВАРІУМ ХИЖАКІВ: контейнер утримання на всю праву стіну (за маніпулятором) ----------
+  // Координати скла: x 0..T уздовж, y від верху; fh — висота глибокої частини, від xS починається полиця (висота fhS).
+  const SK = MS && (() => {
+    const Wn = items.filter(B => B.st === 'dc_win' && B.dc && B.dc.aq === 'shark').sort((a, b) => a.dc.i - b.dc.i), sh = Wn.find(B => !B.dc.deep);
+    const T = MS.T, fh = MS.fh, xS = sh ? sh.dc.s0 : T, fhS = sh ? sh.dc.bot - sh.dc.top : fh, floor = x => fh - (SHK ? SHK.fl(x, fh, fhS, xS) : 4) * (x < xS ? 1 : fh / fhS);   // y — в одиницях глибокого модуля (mapper масштабує)
+    const MUD = Array.from({ length: 40 }, (_, k) => ({ x: hash(k, 71) * T, y: hash(k, 72), sp: .3 + .6 * hash(k, 73), sd: k }));
+    return { T, fh, xS, fhS, floor, MUD };
   })();
-  function tubeBack(fx, A, t) {
-    bulbBack(fx, t);                                                                     // (· 8) біосфери — у тому самому полотні (маска скла — спільна на акваріум)
-    const { fh, T, sub_ } = TB;
-    caustics(fx, MT, 0, T, x => sub_(x) - 6, () => fh, t, .26, 5);
-    for (const R0 of TB.ROOTS) for (let q = 0; q < 6; q++) { const x0 = R0.x - 1.8 + q * .7, l = 4 + 5 * hash(q, R0.k + 3), pts = [];   // коріння аквапоніки: звисає в трубу, ворушиться
-      for (let s = 0; s <= 6; s++) { const f = s / 6; pts.push([x0 + Math.sin(t * .9 + q * 1.3 + f * 3) * .6 * f, .4 + f * l]); } strand(fx, MT, pts, .26, q % 2 ? '#f0e8d0' : '#d8ccb0', 1); }
-    for (let k = 0; k < TUBE.vall.length; k++) { const x0 = TUBE.vall[k], base = sub_(x0), pts = [], n = 12;               // валіснерія: стрічки до поверхні
-      for (let q = 0; q <= n; q++) { const f = q / n; pts.push([x0 + Math.sin(t * .8 + f * 3 + k * 1.4) * 1.6 * Math.pow(f, 1.4) + f * 1.2, base - f * fh * .72]); }
-      strand(fx, MT, pts, .5, k % 2 ? '#3a9a3a' : '#5ab84a'); }
-    for (let k = 0; k < 2; k++) { const c = (t * (.9 + k * .2) + k * 7) % 18, x = k ? 66 - c * 2.6 + Math.sin(c * 3) * .4 : 14 + c * 3.1, stop = Math.sin(c * 2.3) > .4, S = CORY[k][stop ? 0 : Math.floor(t * 5) % 2], p = MT.S(x, sub_(x) - .5, 2), kk = sOf(MT.W(x, 0, 2)[2]), dir = k ? -1 : 1;   // коридораси риються в ґрунті
-      fx.save(); fx.translate(p[0], p[1] - (stop ? 0 : Math.abs(Math.sin(t * 5)) * .3)); if (dir < 0) fx.scale(-1, 1); fx.drawImage(S.cv, -S.w * kk / 2, -S.h * kk * .8, S.w * kk, S.h * kk); fx.restore(); }
+  const HAMMER = [0, 1].map(f => sprite(44, 18, S => {                                  // молот-акула: сіра спина, білий низ, Т-подібна голова з очима на краях, спинний плавець, хвіст
+    S.tri([[6, 9], [0, 2 + f], [0, 13]], '#6a7a8a'); S.tri([[6, 9], [2, 12 + f], [8, 14]], '#5a6a7a');
+    S.ell(21, 9.5, 16, 4.6, (x, y, u, v) => v > .25 ? '#e8ecf0' : v > -.1 ? '#9aa8b4' : '#5c6c7c');
+    S.tri([[16, 5], [20, -1 + f], [25, 5]], '#5c6c7c'); S.tri([[24, 13], [26, 17 - f], [30, 13]], '#7a8a9a'); S.tri([[13, 13], [12, 17], [18, 13]], '#7a8a9a');
+    for (let x = 34; x < 44; x++) for (let y = 7; y <= 12; y++) S.set(x, y, y < 9 ? '#5c6c7c' : y < 11 ? '#8a9aa8' : '#e8ecf0');   // «молот»
+    S.set(43, 8, '#101018'); S.set(43, 11, '#101018'); S.set(42, 8, '#ffffff'); S.line(36, 12, 41, 12, '#3a2a3a'); for (let x = 36; x < 41; x += 2) S.set(x, 13, '#ffffff'); }));
+  const BARRA = [0, 1].map(f => sprite(40, 9, S => {                                   // баракуда: довга срібна стріла, темні плями, щелепа з зубами
+    S.tri([[5, 4.5], [0, 0 + f], [0, 9 - f]], '#8a98a8'); S.ell(21, 4.5, 17, 2.8, (x, y, u, v) => v > .3 ? '#f0f4f8' : (x % 6 < 2 && v < -.1 ? '#4a5868' : '#b8c4d0'));
+    S.tri([[14, 2], [17, 0], [22, 2]], '#6a7888'); S.line(33, 6, 39, 5, '#2a3040'); for (let x = 33; x < 39; x += 2) S.set(x, 5, '#ffffff'); S.set(36, 2, '#101018'); S.set(35, 2, '#ffffff'); }));
+  const PIRANHA = [0, 1].map(f => sprite(14, 10, S => {                                // піранья: високе тільце, сіро-зелена спина, червоне черево, зуби
+    S.tri([[3, 5], [0, 1 + f], [0, 9 - f]], '#4a6a5a'); S.ell(8, 5, 5.5, 4.4, (x, y, u, v) => v > .35 ? '#e03a3a' : v > -.2 ? '#8aa090' : '#3a5a4a');
+    S.tri([[6, 1], [8, -1], [10, 1]], '#3a5a4a'); S.set(11, 3, '#101018'); S.set(10, 3, '#ffffff'); S.line(10, 7, 13, 6, '#2a1a1a'); S.set(11, 7 - f, '#ffffff'); S.set(13, 6, '#ffffff'); }));
+  const EEL = [0, 1].map(f => sprite(44, 10, S => {                                    // електричний вугор: довге оливкове тіло хвилею, світла смуга, плаский хвіст
+    for (let x = 0; x < 44; x++) { const y = 5 + Math.sin(x * .28 + f * 1.6) * 2.4, th = x < 6 ? 1 + x * .3 : 2.8; for (let q = -th; q <= th; q += 1) S.set(x, y + q, q > th - 1 ? '#c8c060' : q < -th + 1 ? '#3a4a2a' : '#6a7a3a'); }
+    S.set(42, 4, '#101018'); S.set(41, 4, '#ffffff'); }));
+  const ANGLER = [0, 1].map(f => sprite(22, 16, S => {                                 // вудильник: чорне кругле тіло, величезна паща з голками, вудочка з ліхтариком
+    S.ell(11, 10, 8, 5.5, (x, y, u, v) => v < -.5 ? '#2a2438' : '#141020'); S.tri([[4, 10], [0, 8 + f], [0, 13]], '#1a1628');
+    S.line(13, 12, 19, 11, '#3a1020'); for (let x = 12; x < 19; x += 2) { S.set(x, 11 - (x % 4 ? 1 : 0), '#f0f0ff'); S.set(x + 1, 13, '#f0f0ff'); }
+    S.set(14, 8, '#ff3a2a'); S.set(15, 8, '#ffd0a0'); S.line(12, 5, 9, 1 + f, '#6a6a8a'); S.set(8, 1 + f, '#5af8ff'); S.set(9, 1 + f, '#ffffff'); S.set(8, 0 + f, '#5af8ff'); }));
+  const RAY = [0, 1].map(f => sprite(30, 9, S => {                                     // скат-хвостокол: пласкі «крила» махають, довгий хвіст з шипом
+    S.ell(15, 5, 12, 2.8 - f * .8, (x, y, u, v) => v > .3 ? '#c8c0a8' : hash(x >> 1, y) > .8 ? '#6a7a68' : '#8a9a88'); S.line(2, 5, -2, 7 - f, '#8a9a88'); S.line(27, 5, 30, 3 + f, '#6a7a68');
+    S.set(26, 3, '#101018'); S.set(24, 3, '#101018'); S.set(29, 3 + f, '#ffffff'); }));
+  const spr = (fx, S, p, k, dir, rot = 0, a = 1) => { fx.save(); fx.globalAlpha = a; fx.translate(p[0], p[1]); if (rot) fx.rotate(rot); if (dir < 0) fx.scale(-1, 1); fx.drawImage(S.cv, -S.w * k / 2, -S.h * k / 2, S.w * k, S.h * k); fx.restore(); };
+  Object.assign(SPR, { hammer: ph => HAMMER[ph > 0 ? 1 : 0], barra: ph => BARRA[ph > 0 ? 1 : 0], piranha: ph => PIRANHA[ph > 0 ? 1 : 0] });   // через CREW (objects/decor.js frame: ph ±1 — два кадри)
+  if (CREW && SK) CREW.shark = [['hammer', 24, .25, 31], ['barra', 15, .9, 32], ['piranha', 5.4, 1.2, 33], ['piranha', 5.2, 1.2, 34], ['piranha', 5.6, 1.2, 35], ['piranha', 5, 1.2, 36], ['piranha', 5.3, 1.2, 37]];
+  let EELT = -99;                                                                        // останній розряд вугра
+  /** Де хижак (світ) і куди дивиться: молот кружляє на всю довжину (над полицею — вище), баракуда завмирає й шугає між
+   *  точками, піранії — тремтлива зграя, що дрейфує (при годуванні adjust тягне до м'яса). */
+  function sharkWhere(A, m, t) {
+    if (!SK) return null; const [kind, , , sd] = m, { T, fh, xS } = SK, h = q => hash(sd * 7 + q, 3), ph = h(2) * 6.28, lid = x => SK.floor(x) - (x > xS - 14 ? 9 : 5);   // не нижче дна (над полицею — мілко)
+    let x, y, dir, back = 3 + (A.P - 6) * (.4 + .4 * h(5));
+    if (kind === 'hammer') { const a = t * .085 + ph; x = T / 2 + (T / 2 - 22) * Math.sin(a); y = fh * .32 + 7 * Math.sin(t * .31 + ph) + 3 * Math.sin(t * .9); dir = Math.cos(a) >= 0 ? 1 : -1; y = Math.min(y, lid(x) - 3); back = 5 + 4 * Math.sin(t * .2 + ph); }
+    else if (kind === 'barra') { const c = t * .16 + ph, i = Math.floor(c), f = c - i, x0 = 25 + hash(i, 11) * (T - 50), x1 = 25 + hash(i + 1, 11) * (T - 50), y0 = 8 + hash(i, 13) * (fh * .45), y1 = 8 + hash(i + 1, 13) * (fh * .45), e = f < .7 ? 0 : sm((f - .7) / .3);
+      x = x0 + (x1 - x0) * e; y = y0 + (y1 - y0) * e + Math.sin(t * 2.1) * .4; dir = x1 >= x0 ? 1 : -1; y = Math.min(y, lid(x) - 2); }
+    else { const cx = T * .6 + 42 * Math.sin(t * .11 + 1), cy = fh * .5 + 9 * Math.sin(t * .17), k = sd - 33, ox = Math.sin(t * (1.3 + k * .17) + k * 2) * 9 + (k - 2) * 4, oy = Math.sin(t * (1.7 + k * .13) + k) * 5;
+      x = cx + ox; y = Math.min(cy + oy, lid(x) - 1); dir = Math.cos(t * (1.3 + k * .17) + k * 2) >= 0 ? 1 : -1; back = 4 + (k % 3) * 3; }
+    return { p: MS.W(Math.max(6, Math.min(T - 6, x)), y, back), dir };
   }
-  function tubeFront(fx, A, t) {
-    bulbFront(fx, t);
-    const { fh, T, sub_ } = TB;
-    { const c = (t * .35) % (T * 2), x = c < T ? 6 + c * .82 : 6 + (T * 2 - c) * .82, S = PLECO[Math.floor(t * 1.5) % 2], p = MT.S(x, fh * .62 + Math.sin(t * .2) * 2, -.2), k = sOf(MT.W(x, 0)[2]);   // анциструс на склі
-      fx.save(); fx.translate(p[0], p[1]); if (c >= T) fx.scale(-1, 1); fx.drawImage(S.cv, -S.w * k / 2, -S.h * k / 2, S.w * k, S.h * k); fx.restore(); }
-    { const x = 20 + ((t * .12) % (T - 30)), p = MT.S(x, fh * .2 + Math.sin(t * .05) * 1.2, -.2), k = sOf(MT.W(x, 0)[2]); fx.drawImage(NERITE.cv, p[0] - NERITE.w * k / 2, p[1] - NERITE.h * k / 2, NERITE.w * k, NERITE.h * k); }   // неретина
-    fx.save(); fx.globalCompositeOperation = 'lighter';                                  // рослини «перлять»: бульбашки кисню з листя
-    for (let k = 0; k < 10; k++) { const x0 = [8, 9.5, 19, 20.5, 30, 41, 42.5, 83.5, 77, 61][k], f = ((t * (.18 + .07 * hash(k, 2)) + hash(k, 5)) % 1), y = sub_(x0) - 4 - f * (sub_(x0) - 4), p = MT.S(x0 + Math.sin(f * 9 + k) * .5, y);
-      fx.globalAlpha = .7 * (1 - f); fx.fillStyle = '#e8ffff'; fx.beginPath(); fx.arc(p[0], p[1], .24, 0, TAU); fx.fill(); }
-    fx.globalAlpha = .4; fx.beginPath(); for (let x = 0; x <= T; x += 2) { const p = MT.S(x, .6 + .25 * Math.sin(x * .5 + t * 2.4)); x ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); } fx.lineWidth = .3; fx.strokeStyle = '#d8fff8'; fx.stroke();
+  function sharkBack(fx, A, t) {
+    const { T, fh, xS, floor, MUD } = SK;
+    fx.save();
+    for (let k = 0; k < 9; k++) { const x0 = 14 + k * 30, sw = Math.sin(t * .35 + k) * 1.4, a = fx.createLinearGradient(...MS.S(x0, 0), ...MS.S(x0, fh * .8));   // промені прожекторів з кришки
+      a.addColorStop(0, 'rgba(180,240,255,.16)'); a.addColorStop(1, 'rgba(180,240,255,0)'); fx.fillStyle = a; fx.beginPath();
+      for (const [xx, yy] of [[x0 - 1.2, 0], [x0 + 1.2, 0], [x0 + 5 + sw, fh * .8], [x0 - 1 + sw, fh * .8]]) { const p = MS.S(xx, yy); xx === x0 - 1.2 && yy === 0 ? fx.moveTo(p[0], p[1]) : fx.lineTo(p[0], p[1]); } fx.closePath(); fx.fill(); }
+    fx.globalCompositeOperation = 'lighter';
+    for (const [lx, w] of [[22, 9], [58, 7], [96, 12], [140, 8], [172, 10]]) { const g = .35 + .3 * Math.sin(t * 1.1 + lx), p = MS.S(lx, floor(lx) + 1.2, A.P - 2), k = sOf(MS.W(lx, 0)[2]);   // лава в тріщинах дна пульсує
+      const gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], w * k); gr.addColorStop(0, `rgba(255,120,40,${.35 * g})`); gr.addColorStop(1, 'rgba(255,60,20,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - w * k, p[1] - w * k, w * k * 2, w * k * 2); }
+    for (const m of MUD) { const y = ((m.y + t * .012 * m.sp) % 1) * fh * .9, x = m.x + Math.sin(t * .4 + m.sd) * 1.5, p = MS.S(x, y, 2 + (m.sd % 5)); fx.globalAlpha = .25 + .25 * Math.sin(t * 2 + m.sd); fx.fillStyle = '#9ab0c8'; fx.fillRect(p[0] - .2, p[1] - .2, .4, .4); }   // мул
+    { const on = (t % 5) < 4.4; for (let k = 0; k < 9; k++) { const y = fh * .06 + k * (fh * .88) / 8, p = MS.S(xS + .3, y, 1), q = MS.S(xS + .3, y, A.P - 1), ph = (t * 1.6 + k * .4) % 1;   // захисна сітка-лазер на межі з полицею
+      fx.globalAlpha = on ? .18 + .3 * Math.max(0, Math.sin(ph * 6.28)) : .05; fx.strokeStyle = '#3be8ff'; fx.lineWidth = .3; fx.beginPath(); fx.moveTo(p[0], p[1]); fx.lineTo(q[0], q[1]); fx.stroke(); } }
     fx.restore();
+    { const ang = 1 - Math.pow(Math.max(0, Math.sin(t * .09)), 3), x = 14 + ang * 10, y = fh - 12 + Math.sin(t * .6) * 1.2, p = MS.S(x, y, A.P - 5), k = sOf(MS.W(x, 0)[2]) * 9 / ANGLER[0].w;   // вудильник чатує в темному куті
+      spr(fx, ANGLER[Math.floor(t * 1.2) % 2], p, k, 1); const lp = MS.S(x - 1.2 + (Math.floor(t * 1.2) % 2 ? 0 : 0), y - 5.2, A.P - 5), g = .5 + .5 * Math.sin(t * 3.3);
+      fx.save(); fx.globalCompositeOperation = 'lighter'; const gr = fx.createRadialGradient(lp[0], lp[1], 0, lp[0], lp[1], 4 * k * 2); gr.addColorStop(0, `rgba(90,248,255,${.5 * g})`); gr.addColorStop(1, 'rgba(90,248,255,0)'); fx.fillStyle = gr; fx.fillRect(lp[0] - 8, lp[1] - 8, 16, 16); fx.restore(); }
+    { const c = (t * .09) % 2, u = c < 1 ? c : 2 - c, x = 40 + u * (xS - 70), dir = c < 1 ? 1 : -1, y = floor(x) - 2.2 + Math.sin(t * 1.3) * .6, p = MS.S(x, y, A.P - 4), k = sOf(MS.W(x, 0)[2]) * 17 / EEL[0].w;   // електричний вугор в'ється по дну
+      spr(fx, EEL[Math.floor(t * 4) % 2], p, k, dir, Math.sin(t * 1.3) * .08); if (t - EELT > 9 + hash(Math.floor(t / 9), 4) * 6) EELT = t; const z = t - EELT;
+      if (z < .7) { fx.save(); fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = (1 - z / .7) * .9; fx.strokeStyle = '#bff8ff'; fx.lineWidth = .35;   // розряд: спалах і блискавки
+        const gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 14 * k * 2); gr.addColorStop(0, 'rgba(120,240,255,.55)'); gr.addColorStop(1, 'rgba(120,240,255,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - 30, p[1] - 30, 60, 60);
+        for (let q = 0; q < 5; q++) { fx.beginPath(); let bx = p[0] + (hash(q, 21) - .5) * 8 * k, by = p[1]; fx.moveTo(bx, by); for (let s_ = 0; s_ < 5; s_++) { bx += (hash(q * 7 + s_ + Math.floor(t * 20), 23) - .5) * 5; by -= 2 + hash(q, s_) * 3; fx.lineTo(bx, by); } fx.stroke(); } fx.restore(); } }
+    { const c = (t * .07 + .5) % 2, u = c < 1 ? c : 2 - c, x = xS + 10 + u * (T - xS - 22), dir = c < 1 ? 1 : -1, y = floor(x) - 3 + Math.sin(t * .9) * .8, p = MS.S(x, y, A.P - 3), k = sOf(MS.W(x, 0)[2]) * 14 / RAY[0].w;   // скат ковзає по полиці
+      spr(fx, RAY[Math.floor(t * 2.2) % 2], p, k, dir); }
   }
-
-  // ---------- (· 8) БІОСФЕРИ під акватрубою (вікна dc_tbs0 — «болітце», dc_tbs1 — «річка»; скло кругле, радіус R на екрані) ----------
-  // Координати кулі: центр (0, 0) у лицьовій площині, dx — уздовж стіни (одиниці кола на екрані), dy — униз, back — углиб (bulbPt).
-  const BLB = ((DC.AQ.tube && DC.AQ.tube.bulbs) || []).map(bd => { const R = bd.rb - .6, fh = 2 * bd.rb - 1.2, BU = NX.arc.BULB;
-    return { bd, k: bd.k, R, fh, floor: u => BU.floor(bd.k, u, fh) - fh / 2, S: (dx, dy, back) => proj(DC.bulbPt(bd, dx, dy, back)), kz: back => sOf(DC.bulbPt(bd, 0, 0, back)[2]) }; });
-  const TURTLE = [0, 1].map(f => sprite(18, 10, S => {                                 // червоновуха черепашка: оливковий панцир з жовтим візерунком, зелена голівка з червоною смужкою, ласти по черзі
-    S.line(3, 7, 1, 8 + f, '#4a7a2a'); S.line(13, 7, 15, 9 - f, '#4a7a2a'); S.line(5, 7, 3.5, 9 - f, '#5a8a3a'); S.line(11, 7, 12.5, 9 + f, '#5a8a3a');
-    S.ell(8, 5, 6.2, 3.2, (x, y, u, v) => v > .55 ? '#c8b060' : (Math.abs(Math.sin(u * 6) * Math.cos(v * 5)) > .75 ? '#d8c850' : v < -.4 ? '#6a9a3a' : '#3a6a22'));
-    S.ell(15.5, 5.2, 2.4, 1.6, '#5aa040'); S.set(15, 5, '#e03a2a'); S.set(16, 5, '#e03a2a'); eye(S, 16, 4); S.line(1.5, 5.5, 0, 6, '#3a6a22'); }));
-  const FROG = [0, 1].map(f => sprite(9, 7, S => {                                     // африканська карликова жабка: бежево-бура в цяточках, лапки притиснуті / відштовхується
-    S.ell(4.5, 3.5, 2.8, 1.9, (x, y, u, v) => hash(x, y) > .75 ? '#5a4a30' : v < -.3 ? '#d8c8a0' : '#a89068');
-    if (f) { S.line(2, 4.5, 0, 6.5, '#a89068'); S.line(7, 4.5, 8.5, 6.5, '#a89068'); S.line(2.5, 2.5, .5, 1, '#a89068'); S.line(6.5, 2.5, 8.5, 1, '#a89068'); }
-    else { S.line(2, 4.5, 1, 5.8, '#a89068'); S.line(7, 4.5, 8, 5.8, '#a89068'); S.line(2.5, 2.8, 1.5, 2, '#a89068'); S.line(6.5, 2.8, 7.5, 2, '#a89068'); }
-    S.set(3, 2, '#101018'); S.set(6, 2, '#101018'); }));
-  const CRAY = [0, 1].map(f => sprite(20, 11, S => {                                   // блакитний флоридський рак: сині сегменти, великі клешні вперед, довгі вуса, ніжки по черзі
-    for (let k = 0; k < 4; k++) { const x0 = 9 + k * 1.8; S.line(x0, 8, x0 - 1.5, 10.5 - ((k + f) % 2), '#2a5ad0'); }
-    S.ell(11, 6.5, 5.5, 2.6, (x, y, u, v) => ((x >> 1) % 2) ? '#2a62e0' : '#3a80ff'); S.tri([[16, 5.5], [19.5, 4 + f], [19.5, 8.5]], '#2a62e0');
-    S.ell(6, 6, 3, 2.4, (x, y, u, v) => v < -.3 ? '#5a9aff' : '#2a62e0'); S.line(4, 5, 1.5, 3 - f, '#2a62e0'); S.ell(1.5, 2.5 - f, 1.6, 1.1, '#3a80ff'); S.line(.5, 2 - f, 2.5, 2 - f, '#ffffff');
-    S.line(5, 7.5, 1.5, 9.5 + f, '#2a62e0'); S.ell(1.8, 9.5 + f, 1.4, 1, '#3a80ff');
-    S.line(5, 4, 0, 1 + f, '#8ab0ff'); S.line(6, 4, 2, 0 + f, '#8ab0ff'); S.set(5, 4.5, '#101018'); }));
-  const DANIO = [0, 1].map(f => sprite(10, 5, S => {                                   // даніо реріо: сріблясте тільце в синіх поздовжніх смугах
-    S.tri([[2.5, 2.5], [0, .5 + f], [0, 4.5 - f]], '#c8d8ff'); S.ell(6, 2.5, 4, 1.9, (x, y, u, v) => (y % 2) ? '#2a4ad0' : '#e8f0ff'); S.set(8, 2, '#101018'); }));
-  const sprAt = (fx, S, p, k, dir, rot = 0) => { fx.save(); fx.translate(p[0], p[1]); if (rot) fx.rotate(rot); if (dir < 0) fx.scale(-1, 1); fx.drawImage(S.cv, -S.w * k / 2, -S.h * k / 2, S.w * k, S.h * k); fx.restore(); };
-  function bulbBack(fx, t) {
-    for (const B of BLB) {
-      const { R, k, S, floor } = B; if (!R) continue;
-      // каустика на дні (світлий малюнок пливе) і промінь згори
-      fx.save(); fx.beginPath(); for (let q = 0; q <= 24; q++) { const u = q / 24, p = S((u - .5) * 2 * R * .96, floor(u) - .3, .5); q ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); }
-      for (let q = 24; q >= 0; q--) { const u = q / 24, p = S((u - .5) * 2 * R * .96, Math.min(R * .94, floor(u) + 4), .5); fx.lineTo(p[0], p[1]); } fx.closePath(); fx.clip();
-      if (!CP) CP = fx.createPattern(CAU, 'repeat'); if (CP) { const c0 = S(-R, -R, 0); fx.globalCompositeOperation = 'lighter'; fx.fillStyle = CP; CP.setTransform(new DOMMatrix([.05, 0, 0, .05, t * (k ? 1.3 : .9), t * .6])); fx.globalAlpha = .3; fx.fillRect(c0[0] - 2, c0[1] - 2, R * 2.3, R * 2.3); }
-      fx.restore();
-      if (k === 0) {                                                                    // «болітце»: черепашка кружляє (зрідка спливає подихати), жабка біля поверхні, інколи штовхається вниз
-        const th = t * .32, br = Math.max(0, Math.sin(t * .11 + 1)) ** 8, dx = Math.cos(th) * R * .5, dy = R * .15 + Math.sin(th * 1.3) * R * .3 - br * R * .7, dir = -Math.sin(th) >= 0 ? 1 : -1;
-        sprAt(fx, TURTLE[Math.floor(t * 2.5) % 2], S(dx, dy, 6 + Math.sin(th) * 4), B.kz(8) * 10 / TURTLE[0].w, dir, dir * (-.15 + .15 * Math.sin(th * 1.3)));
-        const kick = (t % 7) < .9, ph = (t % 7) / 7, fx0 = -R * .35 + Math.sin(t * .4) * R * .25, fy = -R * .62 + (kick ? ph * 7 * R * .5 : Math.max(0, .9 - ph) * R * .5 / .9 * .9);
-        sprAt(fx, FROG[kick ? 1 : 0], S(fx0, Math.min(fy, R * .5), 3), B.kz(3) * 4.6 / FROG[0].w, 1, kick ? .5 : -.2);
-      } else {                                                                          // «річка»: рак ходить дном (стоїть — ворушить клешнями), зграйка даніо шугає вгорі
-        const c = (t * .18) % 2, u = .22 + (c < 1 ? c : 2 - c) * .56, stop = Math.sin(t * .7) > .55, cdir = c < 1 ? 1 : -1;
-        sprAt(fx, CRAY[stop ? Math.floor(t * 3) % 2 : Math.floor(t * 6) % 2], S((u - .5) * 2 * R * .8, floor(u) - 1.6, 4), B.kz(4) * 9.5 / CRAY[0].w, cdir);
-        for (let q = 0; q < 3; q++) { const w = 1.1 + q * .17, x = Math.sin(t * w + q * 2.1) * R * .62, y = -R * .25 + Math.sin(t * w * 1.9 + q * 1.3) * R * .3, vx = Math.cos(t * w + q * 2.1); sprAt(fx, DANIO[Math.floor(t * 9 + q) % 2], S(x, y, 3 + q * 4), B.kz(3 + q * 4) * 4.2 / DANIO[0].w, vx >= 0 ? 1 : -1, -Math.sin(t * w * 1.9 + q * 1.3) * .35 * vx); }
-      }
-    }
-  }
-  function bulbFront(fx, t) {
-    for (const B of BLB) {
-      const { R, k, S } = B; if (!R) continue;
-      fx.save(); fx.globalCompositeOperation = 'lighter';
-      for (let q = 0; q < 6; q++) { const f = ((t * (.14 + .06 * hash(q, 2 + k)) + hash(q, 5 + k)) % 1), u = .3 + .4 * hash(q, 7 + k), y0 = B.floor(u) - 1, p = S((u - .5) * 2 * R + Math.sin(f * 7 + q) * .6, y0 - f * (y0 + R * .82), 2);   // кисень з рослин
-        fx.globalAlpha = .7 * (1 - f); fx.fillStyle = '#e8ffff'; fx.beginPath(); fx.arc(p[0], p[1], .22, 0, TAU); fx.fill(); }
-      fx.globalAlpha = .35; fx.beginPath(); for (let q = 0; q <= 16; q++) { const u = q / 16, p = S((u - .5) * 2 * R * .84, -R * .85 + .2 * Math.sin(u * 9 + t * 2.4), 1); q ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); } fx.lineWidth = .3; fx.strokeStyle = '#d8fff8'; fx.stroke();   // поверхня води
-      fx.restore();
-    }
+  function sharkFront(fx, A, t, list) {
+    const { T, fh } = SK; void list;
+    fx.save(); fx.globalAlpha = .35; fx.beginPath(); for (let x = 0; x <= T; x += 3) { const p = MS.S(x, .6 + .25 * Math.sin(x * .4 + t * 2)); x ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); } fx.lineWidth = .3; fx.strokeStyle = '#bfe8ff'; fx.stroke(); fx.restore();   // поверхня
+    { const E = FEED.shark; if (E && t - E.t0 < 12) { const a = t - E.t0; fx.save(); fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = .35 * Math.min(1, a) * Math.max(0, 1 - a / 12);   // годування: вода каламутніє біля піраній
+      const cx = T * .62, p = MS.S(cx, fh * .5, 4), gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 16); gr.addColorStop(0, 'rgba(200,60,60,.6)'); gr.addColorStop(1, 'rgba(200,60,60,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - 20, p[1] - 20, 40, 40); fx.restore(); } }
   }
 
   // ---------- МЕДУЗАРІЙ ----------
@@ -287,13 +268,14 @@
 
   // ---------- (Декор стін · 6) ГОДУВАННЯ: Nexi тисне кнопку годівнички (actors/nexi/activities.js feedFish) ----------
   /** Годівничка на кришці: риф — над лівим краєм скла (на екрані), акватруба — над правим кінцем; x — у координатах малюнка скла. */
-  const FEEDER = { reef: MR && { M: MR, x: MR.T - 12 }, tube: MT && { M: MT, x: MT.T - 9 } };
+  const FEEDER = { reef: MR && { M: MR, x: MR.T - 12 }, shark: MS && { M: MS, x: MS.T - 9 } };
   const FEED = {};
   /** Почати годування акваріума aq у час t: пластівці сиплються з годівнички 1.6 с; медузарій — хмара планктону. */
   function feed(aq, t) {
     if (aq === 'jelly') { FEED.jelly = { t0: t }; return; }
     const F = FEEDER[aq]; if (!F) return;
-    FEED[aq] = { t0: t, fl: Array.from({ length: 16 }, (_, k) => ({ x: F.x + (hash(k, 5) - .5) * 3, t0: t + k * .1, vy: .9 + .7 * hash(k, 7), sw: hash(k, 9) * 6, c: ['#ffb24a', '#e86a2a', '#7ac84a', '#ffd27a'][k % 4], eaten: -1 })) };
+    const meat = aq === 'shark';                                                           // (· 10) хижакам — шматки м'яса: більші, важчі, червоні
+    FEED[aq] = { t0: t, fl: Array.from({ length: meat ? 7 : 16 }, (_, k) => ({ x: F.x + (hash(k, 5) - .5) * (meat ? 5 : 3), t0: t + k * (meat ? .25 : .1), vy: (meat ? 1.6 : .9) + .7 * hash(k, 7), sw: hash(k, 9) * 6, c: meat ? ['#d82a2a', '#b01a1a', '#ff6a5a'][k % 3] : ['#ffb24a', '#e86a2a', '#7ac84a', '#ffd27a'][k % 4], big: meat, eaten: -1 })) };
   }
   const flakeAt = (F, f, t) => { const a = t - f.t0; return a < 0 ? null : [f.x + Math.sin(a * 1.7 + f.sw) * .8, .4 + a * f.vy * (a < 1 ? .6 : 1)]; };
   /** Риби пливуть до корму (кличе objects/decor.js: позиція з «прогулянки» r -> зсунута до найближчого пластівця). */
@@ -311,7 +293,7 @@
     for (const f of E.fl) { if (f.eaten >= 0 && t - f.eaten > .5) continue; const p = flakeAt(M, f, t); if (!p || p[1] > M.fh - 3) continue; const W = M.W(p[0], p[1], 2), q = proj(W);
       if (f.eaten < 0 && list) for (const e of list) if (Math.hypot(e.p[0] - W[0], e.p[1] - W[1], e.p[2] - W[2]) < 2.6) { f.eaten = t; break; }
       if (f.eaten >= 0) { const a = (t - f.eaten) / .5; fx.globalAlpha = .8 * (1 - a); fx.fillStyle = '#e8fbff'; fx.beginPath(); fx.arc(q[0], q[1] - a * 2, .3 + a * .3, 0, TAU); fx.fill(); continue; }
-      fx.globalAlpha = 1; fx.fillStyle = f.c; fx.fillRect(q[0] - .3, q[1] - .22, .6, .44); }
+      fx.globalAlpha = 1; fx.fillStyle = f.c; if (f.big) { fx.fillRect(q[0] - .6, q[1] - .45, 1.2, .9); fx.fillStyle = '#ffb0a0'; fx.fillRect(q[0] - .2, q[1] - .25, .4, .3); } else fx.fillRect(q[0] - .3, q[1] - .22, .6, .44); }
     fx.globalAlpha = 1;
   }
   /** Медузарій після годування: хмара світного планктону спускається згори; медузи світяться яскравіше (glow). */
@@ -325,7 +307,7 @@
   /** Годівнички на кришках (поза склом — малює objects/decor_live.js, без маски): бункер з кормом, вогник; під час годування
    *  барабан крутиться, вогник блимає. */
   function drawFeeders(c, t, vx0, vx1) {
-    for (const aq of ['reef', 'tube']) { const F = FEEDER[aq]; if (!F) continue; const M = F.M, p = M.S(F.x, aq === 'reef' ? -5 : -.3), k = sOf(M.W(F.x, 0)[2]); if (p[0] < vx0 - 10 || p[0] > vx1 + 10) continue;
+    for (const aq of ['reef', 'shark']) { const F = FEEDER[aq]; if (!F) continue; const M = F.M, p = M.S(F.x, aq === 'reef' ? -5 : -5.5), k = sOf(M.W(F.x, 0)[2]); if (p[0] < vx0 - 10 || p[0] > vx1 + 10) continue;
       const E = FEED[aq], on = E && t - E.t0 < 1.8, w = 3.4 * k, h = 3 * k;
       c.save(); c.fillStyle = '#c8ccdd'; c.fillRect(p[0] - w / 2, p[1] - h, w, h); c.fillStyle = '#6a7298'; c.fillRect(p[0] - w / 2, p[1] - h, w, .45 * k);
       c.fillStyle = '#ffb24a'; c.fillRect(p[0] - w * .3, p[1] - h * .72, w * .6, h * .42);                                       // віконце з кормом
@@ -336,19 +318,19 @@
 
   NX.decorAqua = {
     /** До риб (objects/decor.js drawAq). */
-    back(fx, aq, A, t) { if (aq === 'reef' && R) reefBack(fx, A, t); else if (aq === 'tube' && TB) tubeBack(fx, A, t); else if (aq === 'jelly') jellyBack(fx, A, t); },
+    back(fx, aq, A, t) { if (aq === 'reef' && R) reefBack(fx, A, t); else if (aq === 'shark' && SK) sharkBack(fx, A, t); else if (aq === 'jelly') jellyBack(fx, A, t); },
     /** Після риб (list — риби кадру: корм, до якого риба доплила, з'їдено). */
-    front(fx, aq, A, t, list) { drawFeed(fx, aq, t, list); if (aq === 'reef' && R) reefFront(fx, A, t); else if (aq === 'tube' && TB) tubeFront(fx, A, t); else if (aq === 'jelly') drawBloom(fx, t); },
+    front(fx, aq, A, t, list) { drawFeed(fx, aq, t, list); if (aq === 'reef' && R) reefFront(fx, A, t); else if (aq === 'shark' && SK) sharkFront(fx, A, t, list); else if (aq === 'jelly') drawBloom(fx, t); },
     /** Особлива поведінка мешканця (objects/decor.js where): рибка-клоун — в анемоні. */
-    where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : null; },
+    where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : aq === 'shark' ? sharkWhere(A, m, t) : null; },
     adjust, feed, drawFeeders,
     /** Медузи після годування світяться яскравіше (множник сяйва). */
     glow(aq, t) { const E = FEED.jelly; if (aq !== 'jelly' || !E) return 1; const a = t - E.t0; return a < 0 || a > 10 ? 1 : 1 + 1.4 * Math.min(1, a * 1.5) * (1 - a / 10); },
     /** Біля якого краю акваріума Nexi зависає й тисне кнопку годівнички: точка краю на екрані (на середині висоти), глибина z
      *  (масштаб Nexi) і з якого боку від краю він (side: −1 — ліворуч, +1 — праворуч). Риф — лівий край (годівничка там),
-     *  акватруба — правий кінець, медузарій — праворуч від колони. */
+     *  контейнер хижаків — правий кінець (годівничка над полицею), медузарій — праворуч від колони. */
     feederAt(aq) {
       if (aq === 'jelly') { if (!JL) return null; const W = [JL.cx + JL.r, JL.top + 72, JL.cz], p = proj(W); return { x: p[0], y: p[1], z: W[2], side: 1 }; }
-      const F = FEEDER[aq]; if (!F) return null; const M = F.M, W = aq === 'reef' ? M.W(M.T, M.fh * .45) : M.W(M.T, M.fh * .5), p = proj(W); return { x: p[0], y: p[1], z: W[2], side: aq === 'reef' ? -1 : 1 }; },
+      const F = FEEDER[aq]; if (!F) return null; const M = F.M, W = aq === 'reef' ? M.W(M.T, M.fh * .45) : M.W(M.T, M.fh * .3), p = proj(W); return { x: p[0], y: p[1], z: W[2], side: aq === 'reef' ? -1 : 1 }; },
   };
 })();

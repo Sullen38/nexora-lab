@@ -17,8 +17,9 @@
  *   dc_reef    — РИФ (акваріум №1): кришка з «місячною» LED-лінійкою, тумба з дверцятами й неоном, хромові стійки; скло —
  *                вікна dc_rfg* (панорама рифу — малюнок; риби — живі)
  *   dc_column  — МЕДУЗАРІЙ (№2): цоколь і корона з неоновими кільцями, хромові стійки й обручі, труба в стелю; скло — dc_jellyg
- *   dc_tube    — АКВАТРУБА (№3): хомути, кронштейни, коліно в стіну, кришка з неоновим кільцем і трубою в стелю; скло — dc_tbg*
- *   dc_tblamp  — фітолампа над аквапонікою; dc_lantern — золотий ліхтар; dc_art — штучки ботаніка (книжки, кришталева
+ *   dc_shark   — АКВАРІУМ ХИЖАКІВ (№3, · 10): «контейнер утримання» на всю стіну за маніпулятором — модулі з темно-хромовою
+ *                рамою, аварійні смуги, червоні неонові кромки, прожектори на кришці, табло «НЕБЕЗПЕЧНО» (NX.t); скло — dc_shg*
+ *   dc_lantern — золотий ліхтар; dc_art — штучки ботаніка (книжки, кришталева
  *                куля, тераріум, колба з паростком, мікроскоп, міні-оранжерея з орхідеєю, золота статуетка Nexi)
  *   dc_poster0 / dc_neon — плакат (напис — NX.t, 4 мови) і неонова вивіска (без слів)
  *   (Декор стін · 4) dc_pylon — ПІЛОН другого поверху (торцева стіна від стелі: рама дверей з неоном і табличкою, рама колби,
@@ -794,71 +795,52 @@ NX.arc = NX.arc || {};
   };
 
   // ================= АКВАРІУМ №3: АКВАТРУБА (секція) =================
-  SHP['st:dc_tube'] = (G, B) => {
-    const d = B.dc, sg = d.sgn, C = d.C, r = d.r, ri = d.R - (d.r + d.gap), Yc = d.Yc, wr = d.R - .3;
-    const ax = (a, rad = ri, y = Yc) => [C[0] + sg * rad * Math.sin(a * D2R), y, C[1] + rad * Math.cos(a * D2R)];
-    const nIn = a => [-sg * Math.sin(a * D2R), 0, -Math.cos(a * D2R)], tg = a => [sg * Math.cos(a * D2R), 0, -Math.sin(a * D2R)];
-    const ring = (a, rad, w, sh) => { const c = ax(a), n = nIn(a); let p0 = null; for (let k = 0; k <= 18; k++) { const ph = k / 18 * Math.PI * 2, p = add3(add3(c, n, Math.cos(ph) * rad), [0, 1, 0], Math.sin(ph) * rad); if (p0) G.tube(p0, p, w, sh); p0 = p; } };
-    ring(d.sa, r + .5, 1.4, chromeT); if (d.i === d.n - 1) ring(d.sb, r + .5, 1.4, chromeT);
-    const shT = Math.min(Yc + r + 9, d.shy || Yc + r + 9); if (shT > Yc + r * .2) ditherFace(G, ax(d.sa, wr - .05, Yc + r * .2), ax(d.sb, wr - .05, Yc + r * .2), ax(d.sa, wr - .05, shT), nIn((d.sa + d.sb) / 2), (u, v) => .38 * Math.pow(1 - v, 1.5) * Math.min(1, v * 6 + .2));   // тінь труби на стіні (не на зони)
-    if (d.i % 2 === 0) {                                                                      // кронштейн зі стіни під трубу + сідло
-      const am = (d.sa + d.sb) / 2; G.tube(ax(am, wr, Yc + r * .15), ax(am, ri, Yc + r + .7), 1.4, steelT);
-      G.tube(ax(am - 1.2, ri, Yc + r + .7), ax(am + 1.2, ri, Yc + r + .7), 1.3, steelT); G.disc(ax(am, wr - .4, Yc + r * .15), .9, (u, v, i, j) => ramp(PL.CHROME, .75 - v * .4, i, j));
-    }
-    if (d.i === 0) {                                                                          // дальній кінець: коліно в стіну з фланцем і рожевим кільцем
-      ring(d.sa + .5, r + .25, .5, () => E(N.pink[1]));
-      G.tube(ax(d.sa + .1), ax(d.sa - 2.3, wr - 1.2, Yc), r * 1.3, tubeT(PL.CHROME, .1, .62));
-      G.disc(ax(d.sa - 2.5, wr - .5, Yc), r * .72, (u, v, i, j) => { const q = Math.hypot(u - .5, v - .5) * 2, a = Math.atan2(v - .5, u - .5);
-        if (q > .82) return ramp(PL.CHROME, .75 - (v - .5) * .5, i, j); if (Math.abs(q - .66) < .07 && ((a / (Math.PI * 2) * 6 % 1) + 1) % 1 < .3) return ramp(PL.CHROME, .9, i, j); return ramp(PL.MET, .45 - q * .2, i, j); });
-    }
-    if (d.i === d.n - 1) {                                                                    // ближній кінець: кришка з неоновим кільцем і болтами, труба подачі в стелю
-      const c = ax(d.sb + .15), n = nIn(d.sb), rr = r + .7, O = add3(add3(c, n, -rr), [0, -rr, 0]);
-      G.face(Array.from({ length: 20 }, (_, k) => { const ph = k / 20 * Math.PI * 2; return add3(add3(c, n, Math.cos(ph) * rr), [0, 1, 0], Math.sin(ph) * rr); }), O, n.map(q => q * 2 * rr), [0, 2 * rr, 0], (u, v, i, j) => {
-        const x = (u - .5) * 2, y = (v - .5) * 2, q = Math.hypot(x, y), a = Math.atan2(y, x);
-        if (q > 1) return 0; if (q > .88) return ramp(PL.CHROME, .9 - (q - .88) * 3 + (y < 0 ? .1 : -.1), i, j);
-        if (q > .76) return E(q > .8 && q < .84 ? N.pink[2] : N.pink[1]);
-        if (Math.abs(q - .62) < .06 && ((a / (Math.PI * 2) * 8 % 1) + 1) % 1 < .3) return ramp(PL.CHROME, .8, i, j);
-        if (q < .16) return ramp(PL.DARK, .1, i, j); if (q < .22) return E(N.cyan[1]);
-        return ramp(PL.MET, .3 + (1 - q) * .2 + (((x * 3 | 0) + (y * 3 | 0)) % 2) * .04, i, j);
-      }, tg(d.sb));
-      const p = ax(d.sb - 1.6, ri, Yc - r * .6); G.tube(p, [p[0], Ywz(-4, p[2]), p[2]], 4, steelT); G.disc(add3(p, [0, -1.2, 0]), 2.6, (u, v, i, j) => ramp(PL.MET, .5 - v * .3, i, j));
-    }
-  };
-  /** (· 8) БІОСФЕРА під акватрубою: скляна куля (саме скло — кругле вікно dc_tbs*, малюнок bulbPaint) на шийці з труби:
-   *  шийка — хромова трубка з двома хомутами, зверху муфта на трубі; обідок кулі — хромове кільце в лицьовій площині (трохи
-   *  ширше за скло), знизу — лапа-кронштейн у стіну з диском; на стіні — тінь дизерингом. */
-  SHP['st:dc_bulb'] = (G, B) => {
-    const d = B.dc, sg = d.sgn, C = d.C, rb = d.rb, Yb = d.Yb, a = d.a, wr = d.R - .3, ins = d.R - d.ins, fr = d.R - (d.ins + rb - .15), sq = d.sq || 1;   // sq — уздовж стіни вужче: на екрані коло
-    const ax = (rad, y, da = 0) => [C[0] + sg * rad * Math.sin((a + da) * D2R), y, C[1] + rad * Math.cos((a + da) * D2R)];
-    const nIn = [-sg * Math.sin(a * D2R), 0, -Math.cos(a * D2R)], tg = [sg * Math.cos(a * D2R), 0, -Math.sin(a * D2R)];
-    const cF = ax(fr, Yb);                                                                 // центр лицьової площини (там вікно)
-    // тінь на стіні (коло, нижче й лівіше)
-    ditherFace(G, ax(wr - .05, Yb - rb * .7, -rb * .95 / (d.R * D2R)), ax(wr - .05, Yb - rb * .7, rb * 1.05 / (d.R * D2R)), ax(wr - .05, Yb + rb * 1.0, -rb * .95 / (d.R * D2R)), nIn, (u, v) => { const q = Math.hypot(u - .47, v - .45) * 2; return q < .9 ? .34 * (1 - q * .5) : 0; });
-    // лапа в стіну знизу + диск
-    G.tube(ax(wr, Yb + rb * .55), ax(ins, Yb + rb * .72), 1.6, steelT); G.disc(ax(wr - .4, Yb + rb * .55), 1.1, (u, v, i, j) => ramp(PL.CHROME, .75 - v * .4, i, j));
-    // шийка з труби: трубка + хомути + муфта
-    const top = Yb - rb + .6, Yt = d.Yc + d.r - .4;
-    G.tube(ax(ins, Yt), ax(ins, top), 5.2, tubeT(PL.CHROME, .14, .66));
-    for (const y of [Yt + 1.4, top - 1.6]) { let p0 = null; for (let k = 0; k <= 14; k++) { const ph = k / 14 * Math.PI * 2, p = add3(add3(ax(ins, y), nIn, Math.cos(ph) * 3.2), tg, Math.sin(ph) * 3.2); if (p0) G.tube(p0, p, 1.1, chromeT); p0 = p; } }
-    if (!d.k) { let p0 = null; for (let k = 0; k <= 16; k++) { const ph = k / 16 * Math.PI * 2, p = add3(add3(ax(ins, Yt + .3), nIn, Math.cos(ph) * (d.r + .4)), [0, 1, 0], Math.sin(ph) * (d.r + .4)); if (p0) G.tube(p0, p, 1.2, chromeT); p0 = p; } }   // муфта на трубі (права куля — під кришкою труби: там кільце кришки)
-    // обідок кулі в лицьовій площині (хромове кільце, трохи ширше за скло) з неоновою смужкою ззовні (ліва — бірюзова, права — рожева) + 4 болти
-    { let p0 = null; for (let k = 0; k <= 36; k++) { const ph = k / 36 * Math.PI * 2, p = add3(add3(cF, tg, Math.cos(ph) * (rb - .25) * sq), [0, 1, 0], Math.sin(ph) * (rb - .25)); if (p0) G.tube(p0, p, 1.35, chromeT); p0 = p; } }
-    { const nc = d.k ? N.pink : N.cyan; let p0 = null; for (let k = 0; k <= 36; k++) { const ph = k / 36 * Math.PI * 2, p = add3(add3(cF, tg, Math.cos(ph) * (rb + .75) * sq), [0, 1, 0], Math.sin(ph) * (rb + .75)); if (p0 && (k % 9) > 1) G.tube(p0, p, .55, () => E(nc[1])); p0 = p; } }
-    for (let k = 0; k < 4; k++) { const ph = k / 4 * Math.PI * 2 + Math.PI / 4, p = add3(add3(cF, tg, Math.cos(ph) * (rb - .25) * sq), [0, 1, 0], Math.sin(ph) * (rb - .25)); G.disc(add3(p, nIn, -.6), .55, (u, v, i, j) => ramp(PL.CHROME, .95 - v * .5, i, j)); }
-  };
-  /** Фітолампа над аквапонікою: планка з рожево-фіолетовими світлодіодами знизу, два троси в стелю. */
-  SHP.dc_tblamp = (G, B) => {
-    const d = B.dc || {};
-    G.partF(G.sub(0, B.dep / 2, B.w, B.dep, B.yt, B.yb), Fc => {
-      if (Fc.k === 'bottom') return (u, v, i, j) => { const x = u * Fc.fw, y = v * Fc.fh; if (x < .8 || x > Fc.fw - .8 || y < .6 || y > Fc.fh - .6) return ramp(PL.STEEL, .3, i, j); const cl = ((x * 1.4) | 0) + ((y * 1.4) | 0); return E(cl % 3 === 0 ? col('#ff8af0') : cl % 3 === 1 ? col('#b44aff') : col('#ff4fd8')); };
-      const L = lit(Fc.n, A.centre(Fc)); return (u, v, i, j) => Fc.k === 'front' && v > .72 ? E(N.pink[1]) : ramp(PL.STEEL, .42 * L + (v < .25 ? .14 : 0), i, j);
+  // ================= АКВАРІУМ №3: КОНТЕЙНЕР ХИЖАКІВ (Декор стін · 10; власник: «супер-акваріум з небезпечними рибами,
+  //                   футуристичний, зовсім інший дизайн, на всю площину; маніпулятор — попереду») =================
+  /** Модуль контейнера: кришка (темний хром, червона неонова кромка, аварійні смуги, прожектор-плашка з LED), тумба (панелі з
+   *  вентиляцією, червоні вогники-індикатори, жовто-чорна смуга), стійка між модулями, торцеві стінки з неоном на кінцях;
+   *  на полиці (мілка частина) — сходинка рами. Табло «НЕБЕЗПЕЧНО» — на кришці середнього модуля (NX.t('decor.danger')). */
+  SHP['st:dc_shark'] = (G, B) => {
+    const d = B.dc, w = B.w, dep = B.dep, lid = d.lid, base = d.base, sg = d.sgn, yt = B.yt, yb = B.yb, RED = neonX('#ff3a3a');
+    G.partF(G.sub(0, dep / 2, w + .02, dep, yt, yt + lid), Fc => {                               // кришка
+      if (Fc.k === 'bottom') return null; const L = lit(Fc.n, A.centre(Fc));
+      if (Fc.k === 'front') return (u, v, i, j) => { const y = v * lid, x = d.s0 + u * Fc.fw;
+        if (y < .6) return ramp(PL.CHROME, .5 - y * .2, i, j); if (y > lid - .7) return E(RED[(i + j) % 5 ? 1 : 2]);          // червона неонова кромка над склом
+        if (y > 1.1 && y < 2.3) return (((x + y) / 1.6) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);                 // аварійна смуга
+        if (y > 2.9 && y < lid - 1.1 && ((x % 9) + 9) % 9 < 1.1) return E(((x / 9) | 0) % 2 ? col('#9af6ff') : col('#ffffff'));   // LED прожектора
+        return ramp(PL.STEEL, .3 * L + (y < 1 ? .1 : 0), i, j); };
+      if (Fc.k === 'top') return (u, v, i, j) => { const x = d.s0 + u * Fc.fw; return v > .3 && v < .7 && ((x % 9) + 9) % 9 < 2 ? ramp(PL.CHROME, .7, i, j) : ramp(PL.STEEL, .26 + v * .08, i, j); };
+      return (u, v, i, j) => ramp(PL.STEEL, .28 * L, i, j);
     });
-    for (const s of [-1, 1]) { const p = G.P(s * (B.w / 2 - 2), B.dep / 2, B.yt); G.tube(p, [p[0], s < 0 ? (d.c0 || B.yt - 30) : (d.c1 || B.yt - 30), p[2]], .45, darkT); }
+    G.partF(G.sub(0, dep / 2, w + .02, dep, yb - base, yb), Fc => {                               // тумба
+      if (Fc.k === 'top') return null; const L = lit(Fc.n, A.centre(Fc));
+      if (Fc.k === 'front') return (u, v, i, j) => { const y = v * base, x = d.s0 + u * Fc.fw, pc = ((x % 11) + 11) % 11;
+        if (y < .5) return E(RED[1]); if (y < 1.1) return ramp(PL.CHROME, .55, i, j);                                              // червона кромка під склом
+        if (y > base - .9) return (((x) / 1.6) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);                            // аварійна смуга знизу
+        if (pc < .5) return ramp(PL.STEEL, .06, i, j);
+        if (Math.abs(pc - 2.2) < .45 && y > 2 && y < 3) return E((((x / 11) | 0) + (j >> 1)) % 3 ? col('#ff3a3a') : col('#3bff8a'));   // індикатори
+        if (pc > 4 && pc < 9.5 && y > 1.9 && y < base - 1.3 && (y * 2.2) % 1 < .4) return ramp(PL.DARK, .1, i, j);                  // вентиляція
+        return ramp(PL.STEEL, .3 * L + (y < 2 ? .06 : 0), i, j); };
+      if (Fc.k === 'bottom') return (u, v, i, j) => v < .16 ? E(RED[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .2 + (1 - v) * .08, i, j);
+      return (u, v, i, j) => ramp(PL.STEEL, .26 * L, i, j);
+    });
+    const nW = sub(G.P(0, 0, 0), G.P(0, 1, 0));                                                     // тінь під тумбою на стіні
+    const shR = Math.min(yb + 8, d.shy || yb + 8); if (shR > yb) ditherFace(G, G.P(-w / 2 - .1, dep + .15, yb - 1), G.P(w / 2 + .1, dep + .15, yb - 1), G.P(-w / 2 - .1, dep + .15, shR), nW, (u, v) => .4 * Math.pow(1 - v, 1.6));
+    const post = u => G.partF(G.sub(u, dep / 2, 1.3, dep + .3, yt + lid - .2, yb - base + .2), Fc => { const L = lit(Fc.n, A.centre(Fc));   // стійка між модулями / торець
+      return (uu, v, i, j) => { const y = v * Fc.fh; return Fc.k === 'front' && Math.abs(uu - .5) < .16 ? E(RED[((j * 3) | 0) % 7 ? 1 : 2]) : Fc.k === 'front' ? ramp(PL.CHROME, (y % 6) < .6 ? .9 : .55 - Math.abs(uu - .5) * .4, i, j) : ramp(PL.STEEL, .3 * L + .04, i, j); }; });
+    post(-sg * (w / 2 - .6)); if (d.i === d.n - 1) post(sg * (w / 2 - .6));
+    if (d.i === 7) {                                                                                 // сходинка рами на межі глибокої частини й полиці: тумба полиці спирається на вертикальну панель
+      const pr = B.yb - d.base; G.partF(G.sub(-sg * (w / 2 - 1.2), dep / 2, 2.4, dep, yb, yb + 1.2), Fc => (u, v, i, j) => ramp(PL.STEEL, .22, i, j)); void pr;
+    }
+    if (d.i === 3) {                                                                                 // табло «НЕБЕЗПЕЧНО» на кришці: панель лицем до глядача (NX.t, 4 мови)
+      const sign = (c, fw, fh) => { c.fillStyle = '#1a0608'; c.fillRect(0, 0, fw, fh); c.strokeStyle = '#ff3a3a'; c.lineWidth = .35; c.strokeRect(.4, .4, fw - .8, fh - .8);
+        for (let k = 0; k < 3; k++) { c.fillStyle = k % 2 ? '#ffcc1a' : '#3a1010'; c.fillRect(1 + k * .7, 1, .5, fh - 2); c.fillRect(fw - 1.5 - k * .7, 1, .5, fh - 2); }
+        A.txt(c, NX.t('decor.danger'), fw / 2, fh / 2, fw - 7, fh * .5, '#ff5a4a', { glow: '#ff2a1a' }); };
+      G.partF(G.sub(0, dep + .05, w * .9, .4, yt + lid * .1, yt + lid * .9), Fc => Fc.k === 'front' ? A.shader('frame', Fc, B, { tex: A.texture(B, Fc, 6, sign), pal: PL.DARK, q: .1, bev: 0, ins: 0 }) : (u, v, i, j) => ramp(PL.DARK, .1, i, j));
+    }
   };
-
   // ================= СКЛО АКВАРІУМІВ: вікна (рушій дає маску видимих пікселів — риби живуть за склом: objects/decor.js) =================
   A.STY.dc_win = { pal: pal(['#040a2a', '#081440', '#0c1e58', '#122a70', '#1a3a8a']), q: .45, bev: 0, ins: 0 };
-  A.STY.dc_winr = Object.assign({}, A.STY.dc_win, { round: 1 });                        // (· 8) кругле скло біосфер (маска — коло)
   const BLOB = (c, x, y, rx, ry, fill) => { c.fillStyle = fill; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, 7); c.fill(); };
   const LN = (c, pts, w, st) => { c.strokeStyle = st; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); pts.forEach(([x, y], k) => k ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); };
   /** Скляний відблиск і рамка по краю (спільне для вікон). */
@@ -954,85 +936,51 @@ NX.arc = NX.arc || {};
   // ---- АКВАТРУБА: прісна вода, акваскейп (кожна рослина й прикраса — одна). (· 5) усе вміщено в довжину труби (раніше
   //      частина була за її кінцем), глибина шарами (далекі стебла в бірюзовій імлі), світло згори; валіснерія, коріння
   //      аквапоніки, каустика, коридораси, анциструс і равлик на склі — живі (objects/decor_aqua.js)
-  const TUBE = { sub: (x, fh) => fh * .8 - 1.1 * Math.sin(x * .09) - .7 * Math.sin(x * .31), vall: [51, 52.2, 53.4, 54.6] };
-  NX.arc.TUBE = TUBE;
-  function tubePaint(c, fw, fh, B) {
-    const d = B.dc, s0 = d.s0, T = d.tot || 86, g = c.createLinearGradient(0, 0, 0, fh);
-    g.addColorStop(0, '#0a3a4a'); g.addColorStop(.07, '#46e4d0'); g.addColorStop(.22, '#1ea8b4'); g.addColorStop(.6, '#0e5a84'); g.addColorStop(.9, '#0a2c56'); g.addColorStop(1, '#061a3a'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+  // ---- (· 10) КОНТЕЙНЕР ХИЖАКІВ: малюнок скла — одна панорама вздовж усіх модулів (x — від лівого краю, T ≈ 270); глибока
+  //      частина (x < xS, вікна deep) — вулканічне дно з лавою в тріщинах, затонулий бойовий мех (ребра, шолом з червоним оком),
+  //      ланцюги, клітка для корму; полиця (x ≥ xS) — мілке дно з «кістками» робота; усе в темно-синій товщі з променями
+  //      прожекторів; попередження на склі. Профіль дна — SHARK.fl (спільний з живим: objects/decor_aqua.js).
+  const SHARK = { fl: (x, fh, fhS, xS) => 4 + 1.3 * Math.sin(x * .21) + .6 * Math.sin(x * .77 + 2) };
+  NX.arc.SHARK = SHARK;
+  function sharkPaint(c, fw, fh, B) {
+    const d = B.dc, s0 = d.s0, T = d.tot || 270, deep = d.deep, g = c.createLinearGradient(0, 0, 0, fh);
+    g.addColorStop(0, '#0e3458'); g.addColorStop(.12, '#12507e'); g.addColorStop(.5, '#0a2e58'); g.addColorStop(1, '#061430'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
     c.save(); c.translate(-s0, 0);
-    const sub_ = x => TUBE.sub(x, fh);
-    c.fillStyle = 'rgba(190,255,240,.09)'; for (const x of [4, 19, 33, 48, 63, 78]) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 4, 0); c.lineTo(x + 9, fh * .8); c.lineTo(x + 3, fh * .8); c.closePath(); c.fill(); }   // світло згори
-    for (let k = 0; k < 26; k++) { const x = hash(k, 81) * T, h = fh * (.3 + .35 * hash(k, 82)), y = sub_(x) + 1; LN(c, [[x, y], [x + (hash(k, 83) - .5) * 2, y - h]], .5, 'rgba(20,90,80,.45)');   // далекі стебла в імлі
-      for (let q = 1; q < 5; q++) BLOB(c, x + (hash(k, 83) - .5) * 2 * q / 5 + (q % 2 ? .6 : -.6), y - h * q / 5, .6, .25, 'rgba(30,120,100,.4)'); }
-    // 1 корч з різдвяним мохом
-    { const x = 8, y = sub_(8); LN(c, [[x - 5, y], [x - 1, y - 4], [x + 2, y - 7.5]], 1.1, '#5a3420'); LN(c, [[x - 1, y - 4], [x + 4, y - 3.5], [x + 6, y - 5.5]], .8, '#6a4028'); for (let k = 0; k < 18; k++) BLOB(c, x - 3 + hash(k, 4) * 9.5, y - 2.6 - hash(k, 6) * 5, .7, .55, k % 2 ? '#4ac84a' : '#7ae86a'); }
-    // 2 яванська папороть на камені
-    { const x = 19, y = sub_(19); BLOB(c, x, y - .6, 2.6, 1.5, '#5a5a6a'); BLOB(c, x - .8, y - 1.2, 1, .5, '#7a7a8a'); for (let k = 0; k < 7; k++) { const a = -1 + k * .33; c.save(); c.translate(x, y - 1.6); c.rotate(a); BLOB(c, 0, -3.3, .72, 3.3, k % 2 ? '#1a6a3a' : '#228a4a'); LN(c, [[0, -.2], [0, -6.2]], .14, '#0a3a1a'); c.restore(); } }
-    // 3 мариміо (три мохові кулі)
-    { for (const [dx, r] of [[-1.6, 1.3], [.8, 1.6], [2.9, 1]]) { const x = 30 + dx, y = sub_(30) - r * .8; BLOB(c, x, y, r, r, '#2a8a3a'); BLOB(c, x - r * .3, y - r * .3, r * .45, r * .45, '#5ac85a'); } }
-    // 4 червона людвігія (стебла з червоними листочками)
-    { for (let k = 0; k < 4; k++) { const x = 39 + k * 1.5, h = fh * (.42 + .12 * hash(k, 3)), y = sub_(x); LN(c, [[x, y], [x + .4, y - h]], .3, '#8a3a2a'); for (let q = 1; q < 8; q++) { const yy = y - h * q / 8; BLOB(c, x - .7, yy, .7, .3, q > 4 ? '#ff5a3a' : '#c84a2a'); BLOB(c, x + 1, yy - .3, .7, .3, q > 4 ? '#ff7a4a' : '#d85a3a'); } } }
-    // 5 валіснерія — основи (стрічки живі)
-    { for (const x of TUBE.vall) BLOB(c, x, sub_(x) - .2, .5, .3, '#2a6a2a'); }
-    // 6 затонула голова робота (як шолом Nexi): очі світяться
-    { const x = 61, y = sub_(61); BLOB(c, x, y - 2.2, 3.4, 2.8, '#8a8ab8'); c.fillStyle = '#0a1030'; c.fillRect(x - 2.4, y - 3.2, 4.8, 1.8); BLOB(c, x - 1.2, y - 2.3, .5, .5, '#5af8ff'); BLOB(c, x + 1.2, y - 2.3, .5, .5, '#5af8ff'); LN(c, [[x + 2.2, y - 4.4], [x + 3.2, y - 6]], .3, '#b0b0d8'); BLOB(c, x + 3.2, y - 6.2, .4, .4, '#ff4fd8'); c.fillStyle = '#3a2a1a'; c.fillRect(x - 4, y - .6, 8, 1.2); for (let k = 0; k < 5; k++) BLOB(c, x - 3 + k * 1.4, y - 4.6 - (k % 2) * .4, .5, .4, '#3ab84a'); }
-    // 7 кіберзанорід: світні фіолетові кристали
-    { const x = 70, y = sub_(70); BLOB(c, x, y - .5, 2.4, 1.2, '#2a2040'); for (const [dx, h, a] of [[-1.2, 3.4, -.3], [0, 4.6, 0], [1.2, 3, .35], [.6, 2.2, .7]]) { c.save(); c.translate(x + dx, y - .8); c.rotate(a); c.fillStyle = '#b46aff'; c.beginPath(); c.moveTo(-.55, 0); c.lineTo(.55, 0); c.lineTo(.3, -h); c.lineTo(0, -h - .7); c.lineTo(-.3, -h); c.closePath(); c.fill(); c.fillStyle = '#f0d8ff'; c.fillRect(-.1, -h, .2, h * .8); c.restore(); } }
-    // 8 криптокорина (бронзово-рожеві листки)
-    { const x = 77, y = sub_(77); for (let k = 0; k < 6; k++) { c.save(); c.translate(x, y); c.rotate(-1 + k * .4); BLOB(c, 0, -2.3, .8, 2.3, k % 2 ? '#a0605a' : '#c87a6a'); c.restore(); } }
-    // 9 анубіас з білою квіткою
-    { const x = 83.5, y = sub_(83.5); BLOB(c, x, y - .5, 2, 1.2, '#4a4a5a'); for (let k = 0; k < 4; k++) { c.save(); c.translate(x - 1.5 + k, y - 1.2); c.rotate(-.6 + k * .4); BLOB(c, 0, -1.6, 1, 1.6, '#0e4a2a'); c.restore(); } LN(c, [[x + .5, y - 1], [x + .8, y - 4.6]], .25, '#3a7a3a'); BLOB(c, x + .8, y - 5.1, .5, .8, '#f4f0e0'); }
-    // 10 карликова ситняга (килим по всьому ґрунту)
-    { for (let k = 0; k < 120; k++) { const x = hash(k, 17) * T, y = sub_(x), h = 1.2 + 1.8 * hash(k, 19); LN(c, [[x, y], [x + (hash(k, 23) - .5), y - h]], .2, k % 3 ? '#5ad84a' : '#9af07a'); } }
-    // ґрунт: темний, різнокольоровий гравій і світні камінці
-    c.fillStyle = '#1a120e'; c.beginPath(); c.moveTo(-5, fh); for (let x = -5; x <= T + 5; x += 1.2) c.lineTo(x, sub_(x)); c.lineTo(T + 5, fh); c.closePath(); c.fill();
-    for (let k = 0; k < 140; k++) { const x = hash(k, 41) * T, y = sub_(x) + .4 + hash(k, 43) * (fh - sub_(x) - .6); c.fillStyle = ['#6a5a4a', '#8a7a6a', '#4a3a3a', '#a08a70'][k % 4]; c.fillRect(x, y, .45, .4); }
-    for (let k = 0; k < 9; k++) { const x = hash(k, 51) * T; BLOB(c, x, sub_(x) + .5, .4, .3, k % 2 ? '#5af8ff' : '#ff6ae0'); }
+    const fl = x => fh - SHARK.fl(x, fh, fh, 0);
+    c.fillStyle = 'rgba(150,220,255,.07)'; for (let k = 0; k < 9; k++) { const x = 14 + k * 30; c.beginPath(); c.moveTo(x - 1.5, 0); c.lineTo(x + 1.5, 0); c.lineTo(x + 6, fh * .85); c.lineTo(x - 2, fh * .85); c.closePath(); c.fill(); }   // промені прожекторів
+    for (let k = 0; k < 30; k++) { const x = hash(k, 81) * T, y = fh * (.25 + .5 * hash(k, 82)); c.fillStyle = 'rgba(80,140,200,.12)'; BLOB(c, x, y, 6 + 8 * hash(k, 83), 2 + 2 * hash(k, 84), 'rgba(60,110,170,.1)'); }   // далекі скелі в імлі
+    // вулканічне дно: чорний камінь, лава в тріщинах, жовто-сірий попіл
+    c.fillStyle = '#0e0c14'; c.beginPath(); c.moveTo(-5, fh + 2); for (let x = -5; x <= T + 5; x += 1.5) c.lineTo(x, fl(x)); c.lineTo(T + 5, fh + 2); c.closePath(); c.fill();
+    for (let k = 0; k < 160; k++) { const x = hash(k, 41) * T, y = fl(x) + .3 + hash(k, 43) * (fh - fl(x) - .4); c.fillStyle = ['#2a2630', '#3a3440', '#1a1822', '#4a4450'][k % 4]; c.fillRect(x, y, .5, .4); }
+    for (const [lx, w] of [[22, 9], [58, 7], [96, 12], [140, 8], [172, 10]]) { for (let q = 0; q < 5; q++) { const x = lx + (hash(q, lx) - .5) * w * 1.6, y = fl(x) + .8 + hash(q, lx + 1) * 1.6; LN(c, [[x - 1.2, y], [x + .4, y - .5], [x + 1.4, y + .3]], .35, q % 2 ? '#ff7a2a' : '#ffb04a'); } }   // лавові тріщини
+    for (const [rx, rw, rh] of [[10, 7, 5], [48, 9, 7], [84, 6, 4], [122, 11, 8], [160, 8, 6], [200, 9, 5], [245, 7, 4]]) { const y = fl(rx); BLOB(c, rx, y - rh * .35, rw, rh, '#17141f'); BLOB(c, rx - rw * .3, y - rh * .8, rw * .5, rh * .45, '#2a2634'); for (let q = 0; q < 6; q++) c.fillRect(rx - rw * .8 + hash(q, rx) * rw * 1.6, y - rh * .6 + hash(q, rx + 3) * rh * .5, .5, .4), c.fillStyle = '#3a3444'; }   // вулканічні брили
+    // затонулий бойовий мех (x 100..135): ребра корпусу, шолом з червоним оком, рука з клешнею, кабелі; обросло коралами-ялинками
+    { const x = 108, y = fl(108) - 1; c.save(); c.translate(x, y); c.rotate(-.18);
+      c.fillStyle = '#2e3440'; for (let k = 0; k < 6; k++) { c.beginPath(); c.ellipse(k * 3.2, -5, 1.1, 5 - k * .4, 0, 0, Math.PI * 2); c.fill(); }                   // ребра
+      c.fillStyle = '#3a4252'; c.fillRect(-2, -9.5, 20, 1.4); c.fillRect(-2, -1.6, 20, 1.2);                                                                       // хребет
+      c.fillStyle = '#4a5466'; c.fillRect(-9, -11, 8.5, 7); c.fillStyle = '#1a1e28'; c.fillRect(-8, -9, 6.5, 2.4); c.fillStyle = '#ff2a2a'; c.fillRect(-6.5, -8.6, 1.6, 1.6); c.fillStyle = '#ffd0d0'; c.fillRect(-6.2, -8.3, .5, .5);   // шолом, візор, око
+      c.strokeStyle = '#3a4252'; c.lineWidth = 1.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(18, -8); c.lineTo(24, -13); c.lineTo(27, -9); c.stroke(); c.fillStyle = '#4a5466'; c.fillRect(26, -11, 3.5, 2); c.fillRect(28, -9.5, 1.5, 3);   // рука з клешнею
+      LN(c, [[2, -2], [5, 2], [9, 1]], .35, '#a0a8b8'); LN(c, [[12, -10], [11, -14], [14, -17]], .3, '#6a7488');                                                      // кабелі
+      for (const [bx, by] of [[1, -10.5], [7, -11], [15, -10.5], [-8, -12]]) for (let q = 0; q < 5; q++) BLOB(c, bx + (hash(q, bx) - .5) * 2, by - q * .9, .7, .5, q % 2 ? '#c84a7a' : '#ff6aa0');   // корали-ялинки обросли
+      c.restore(); }
+    // клітка для корму (над полицею, x 232..246): дротяний куб на ланцюгу з кришки; ланцюги по стінці
+    { const x = 238, y0 = 1, y1 = fh * .28; LN(c, [[x, y0], [x, y1]], .5, '#7a8498'); for (let q = 0; q < 8; q++) c.fillRect(x - .7 + (q % 2) * .6, y0 + q * (y1 - y0) / 8, .6, .9), c.fillStyle = '#b0b8c8';
+      c.strokeStyle = '#8a94a8'; c.lineWidth = .4; c.strokeRect(x - 5, y1, 10, 8); for (let q = 1; q < 4; q++) { c.beginPath(); c.moveTo(x - 5 + q * 2.5, y1); c.lineTo(x - 5 + q * 2.5, y1 + 8); c.moveTo(x - 5, y1 + q * 2); c.lineTo(x + 5, y1 + q * 2); c.stroke(); }
+      c.fillStyle = '#b01a1a'; c.fillRect(x - 2, y1 + 3, 3.5, 2.6); c.fillStyle = '#ff6a5a'; c.fillRect(x - 1.5, y1 + 3.5, 1.2, .8); }
+    for (const cx of [40, 150, 205]) { for (let q = 0; q < 14; q++) { c.fillStyle = q % 2 ? '#5a6478' : '#3a4254'; c.fillRect(cx - .6 + Math.sin(q) * .4, q * 1.6, 1.2, 1.1); } }   // ланцюги зі стелі
+    // «кістки» робота на полиці (x 252..266): череп з двома очницями, ребра
+    { const x = 258, y = fl(258) - .6; BLOB(c, x, y - 2.4, 3.2, 2.6, '#9aa0b0'); c.fillStyle = '#1a1a24'; c.fillRect(x - 2, y - 3, 1.3, 1.2); c.fillRect(x + .6, y - 3, 1.3, 1.2); c.fillStyle = '#9aa0b0'; c.fillRect(x - 2.4, y - .6, 5, .8); for (let q = 0; q < 4; q++) c.fillRect(x + 4 + q * 1.4, y - 2.2 + (q % 2) * .5, .6, 2.6); }
+    // напис-попередження на склі глибокої частини (голо-трафарет, NX.t — 4 мови) і сітка контейнера на дальній стінці
+    c.globalAlpha = .55; A.txt(c, NX.t('decor.danger'), 118, fh * .2, 70, fh * .09, '#ff4a3a', { glow: '#ff2a1a' }); c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(60,200,255,.08)'; c.lineWidth = .3; for (let x = 0; x <= T; x += 12) { c.beginPath(); c.moveTo(x, fh * .1); c.lineTo(x, fh * .9); c.stroke(); } for (let y = fh * .1; y < fh * .9; y += 9) { c.beginPath(); c.moveTo(0, y); c.lineTo(T, y); c.stroke(); }
     c.restore();
-    c.fillStyle = 'rgba(0,10,30,.45)'; c.fillRect(0, 0, fw, fh * .045); c.fillRect(0, fh * .955, fw, fh * .045);   // край циліндра
-    c.fillStyle = 'rgba(230,255,255,.6)'; c.fillRect(0, fh * .1, fw, .5); c.fillStyle = 'rgba(230,255,255,.12)'; c.fillRect(0, fh * .14, fw, fh * .1);   // відблиски
+    // попередження на склі (смужка знизу) і відблиски
+    c.fillStyle = 'rgba(255,60,40,.12)'; c.fillRect(0, fh - 1.4, fw, .5);
+    c.fillStyle = 'rgba(230,255,255,.5)'; c.fillRect(0, fh * .04, fw, .4); c.fillStyle = 'rgba(230,255,255,.1)'; c.fillRect(0, fh * .05, fw, fh * .06);
     glassFX(c, fw, fh, s0);
+    void deep;
   }
-  for (let k = 0; k < 12; k++) { PAINT['dc_rfg' + k] = reefPaint; PAINT['dc_tbg' + k] = tubePaint; }
-  // ---- (· 8) БІОСФЕРИ: скло — коло (fw = fh = 2rb − 1.2); центр (fw/2, fh/2). Ліва (k 0) — «болітце» (паладаріум): темна торф'яна
-  //      вода, пісок і камінь-острівець, латаття з квіткою, ряска (живе: черепашка, карликова жабка — objects/decor_aqua.js);
-  //      права (k 1) — «гірська річка»: прозора блакитна вода, лавові камені, бакопа й ротала, затонулий неоновий знак «N»
-  //      (живе: блакитний рак, зграйка даніо). Профіль дна — BULB.floor (спільний з живим).
-  const BULB = { floor: (k, u, fw) => fw * (k ? .76 : .72) - (k ? 1.6 : 1.1) * Math.sin(u * 7 + k) - .5 * Math.sin(u * 19 + k * 3), lily: [.36, .3], rock: [.68, .46] };
-  NX.arc.BULB = BULB;
-  function bulbPaint(c, fw0, fh, B) {
-    c.save(); c.scale(fw0 / fh, 1); const fw = fh;                                     // грань уздовж стіни вужча (sq) — малюємо в квадраті, грань розтягне в коло на екрані
-    const d = B.dc, k = d.k, cx = fw / 2, cy = fh / 2, r = fw / 2, fl = u => BULB.floor(k, u, fw);
-    const g = c.createRadialGradient(cx - r * .3, cy - r * .35, r * .1, cx, cy, r * 1.05);
-    if (k) { g.addColorStop(0, '#5af0e8'); g.addColorStop(.3, '#1eb0c8'); g.addColorStop(.7, '#0c5a94'); g.addColorStop(1, '#061e48'); }
-    else { g.addColorStop(0, '#5ad8a8'); g.addColorStop(.3, '#1e8a78'); g.addColorStop(.7, '#0a4a4a'); g.addColorStop(1, '#06202a'); }
-    c.fillStyle = g; c.fillRect(0, 0, fw, fh);
-    c.fillStyle = 'rgba(190,255,240,.08)'; for (const x of [.2, .36, .52]) { c.beginPath(); c.moveTo(cx + (x - .5) * fw, 0); c.lineTo(cx + (x - .46) * fw, 0); c.lineTo(cx + (x - .3) * fw, fh * .8); c.lineTo(cx + (x - .36) * fw, fh * .8); c.closePath(); c.fill(); }   // світло згори
-    for (let q = 0; q < 14; q++) { const x = (.1 + .8 * hash(q, 91 + k)) * fw, h = fh * (.18 + .25 * hash(q, 92)), y = fl(x / fw) + .5; LN(c, [[x, y], [x + (hash(q, 93) - .5) * 2, y - h]], .45, k ? 'rgba(20,80,110,.5)' : 'rgba(30,90,60,.5)'); }   // далекі стебла
-    if (!k) {
-      { const x = cx + fw * .18, y = fl(.68) - .6; BLOB(c, x, y, 4.2, 2, '#4a4a5a'); BLOB(c, x - 1.2, y - .9, 2.2, 1, '#6a6a7a'); BLOB(c, x + 1, y - 1.6, 1.4, .7, '#8a8a9a'); for (let q = 0; q < 12; q++) BLOB(c, x - 3 + hash(q, 7) * 6, y - .6 - hash(q, 9) * 1.6, .6, .45, q % 2 ? '#3aa84a' : '#6ad05a'); }   // камінь-острівець з мохом
-      { const x = cx - fw * .14, y = cy - fh * .2; for (let q = 0; q < 3; q++) LN(c, [[x + q * .6, fl(.36) - .2], [x + q * 1.1 - .4, y + 1]], .3, '#2a6a3a'); BLOB(c, x, y, 3.4, 1.4, '#2a8a3a'); c.fillStyle = '#1e6a2a'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 3.4, y - .5); c.lineTo(x + 2.4, y - 1.3); c.closePath(); c.fill(); BLOB(c, x - .6, y - .4, 2.2, .8, '#4ab84a');   // латаття (лист з вирізом)
-        BLOB(c, x + 1.4, y - 2.2, 1.1, 1.3, '#ffd0e8'); BLOB(c, x + .5, y - 2, .9, 1.2, '#ff9ad0'); BLOB(c, x + 2.2, y - 2, .9, 1.1, '#ff9ad0'); BLOB(c, x + 1.4, y - 2.6, .5, .5, '#ffe27a'); }   // квітка
-      for (let q = 0; q < 16; q++) { const x = cx + (hash(q, 31) - .5) * fw * .8, y = fh * .085 + hash(q, 33) * 1.2; BLOB(c, x, y, .55, .3, q % 3 ? '#5ad84a' : '#9af07a'); }   // ряска на поверхні
-      { const x = cx - fw * .32, y = fl(.18); for (let q = 0; q < 5; q++) { c.save(); c.translate(x + q * .8, y); c.rotate(-.5 + q * .25); BLOB(c, 0, -2.4 - q % 2, .5, 2.6 + q % 2, q % 2 ? '#2a8a4a' : '#3aa85a'); c.restore(); } }   // стрілолист
-    } else {
-      for (const [dx, w, h, cl] of [[-.26, 4.4, 2.2, '#4a2a2a'], [-.08, 3.2, 2.8, '#5a3030'], [.2, 5, 2.4, '#3a2020'], [.34, 2.6, 1.6, '#6a3838']]) { const x = cx + dx * fw, y = fl(.5 + dx) - h * .4; BLOB(c, x, y, w, h, cl); for (let q = 0; q < 7; q++) BLOB(c, x - w * .6 + hash(q, 11) * w * 1.2, y - h * .3 + hash(q, 13) * h * .6, .35, .3, '#8a4a4a'); }   // лавові камені
-      { const x = cx - fw * .3; for (let q = 0; q < 4; q++) { const xx = x + q * 1.3, y = fl((xx) / fw), h = fh * (.3 + .08 * hash(q, 5)); LN(c, [[xx, y], [xx + .3, y - h]], .3, '#3a8a3a'); for (let s_ = 1; s_ < 7; s_++) { const yy = y - h * s_ / 7; BLOB(c, xx - .8, yy, .7, .55, '#4ac85a'); BLOB(c, xx + 1.1, yy - .3, .7, .55, '#6ae06a'); } } }   // бакопа (круглі листочки парами)
-      { const x = cx + fw * .3; for (let q = 0; q < 5; q++) { const xx = x + q * .9, y = fl(xx / fw), h = fh * (.34 + .1 * hash(q, 6)); LN(c, [[xx, y], [xx - .2, y - h]], .25, '#a04a5a'); for (let s_ = 1; s_ < 9; s_++) { const yy = y - h * s_ / 9; BLOB(c, xx - .6, yy, .55, .22, s_ > 5 ? '#ff6a9a' : '#d04a7a'); BLOB(c, xx + .6, yy - .2, .55, .22, s_ > 5 ? '#ff8ab0' : '#e05a8a'); } } }   // ротала (рожева)
-      { const x = cx + fw * .04, y = fl(.54) - 1.2; c.save(); c.translate(x, y); c.rotate(-.35); c.fillStyle = '#1a1030'; c.fillRect(-3.2, -4.4, 6.4, 5.2); c.fillStyle = '#2a1a48'; c.fillRect(-2.8, -4, 5.6, 4.4);   // затонулий неоновий знак «N»
-        c.strokeStyle = '#3be8ff'; c.lineWidth = .55; c.lineCap = 'round'; c.beginPath(); c.moveTo(-1.6, -.6); c.lineTo(-1.6, -3.4); c.lineTo(1.6, -.6); c.lineTo(1.6, -3.4); c.stroke(); c.strokeStyle = 'rgba(190,255,255,.7)'; c.lineWidth = .2; c.stroke(); c.restore(); }
-    }
-    c.fillStyle = k ? '#2a2420' : '#1a1a10'; c.beginPath(); c.moveTo(-1, fh + 1); for (let u = -.02; u <= 1.02; u += .02) c.lineTo(u * fw, fl(u)); c.lineTo(fw + 1, fh + 1); c.closePath(); c.fill();   // дно: пісок / гравій
-    for (let q = 0; q < 160; q++) { const u = hash(q, 41 + k), x = u * fw, y = fl(u) + .3 + hash(q, 43) * (fh - fl(u)); if (Math.hypot(x - cx, y - cy) > r - .8) continue; c.fillStyle = (k ? ['#5a4a40', '#8a7060', '#3a2e2a', '#a89080'] : ['#c8b890', '#a89870', '#e0d0a0', '#908060'])[q % 4]; c.fillRect(x, y, .45, .4); }
-    for (let q = 0; q < 6; q++) { const u = .15 + .7 * hash(q, 51 + k); BLOB(c, u * fw, fl(u) + .5, .4, .3, q % 2 ? '#5af8ff' : '#ff6ae0'); }   // світні камінці
-    // куля: темніший край (товща скла), блік-півмісяць угорі ліворуч, поверхня води
-    const v = c.createRadialGradient(cx, cy, r * .62, cx, cy, r); v.addColorStop(0, 'rgba(0,10,40,0)'); v.addColorStop(1, 'rgba(0,10,40,.55)'); c.fillStyle = v; c.fillRect(0, 0, fw, fh);
-    c.fillStyle = 'rgba(200,240,255,.5)'; c.beginPath(); c.ellipse(cx, fh * .075, r * .72, .5, 0, 0, Math.PI * 2); c.fill(); c.fillStyle = 'rgba(230,255,255,.1)'; c.fillRect(0, fh * .085, fw, fh * .07);
-    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .7; c.beginPath(); c.arc(cx, cy, r * .86, Math.PI * 1.1, Math.PI * 1.55); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1.6; c.beginPath(); c.arc(cx, cy, r * .78, Math.PI * 1.15, Math.PI * 1.5); c.stroke();
-    c.strokeStyle = 'rgba(160,220,255,.25)'; c.lineWidth = .5; c.beginPath(); c.arc(cx, cy, r * .9, Math.PI * .15, Math.PI * .45); c.stroke();
-    c.restore();
-  }
-  PAINT.dc_tbs0 = bulbPaint; PAINT.dc_tbs1 = bulbPaint;
+  for (let k = 0; k < 10; k++) PAINT['dc_shg' + k] = sharkPaint;
 
   // ================= ПЛАКАТ І НЕОН (пласкі: грань-малюнок) =================
   A.STY.dc_poster = { pal: PL.DARK, q: .4, bev: .3, ins: 0 };

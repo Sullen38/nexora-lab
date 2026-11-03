@@ -145,9 +145,7 @@ NX.arc.kit = (() => {
     // циліндр: тон за кутом грані (світліше з боку світла), смуга-обідок (band)
     const cylK = cylS ? (.78 + .3 * Math.max(-.6, Math.cos(F.ang - Math.PI * 1.5 - .5))) : 1;
     const spec = cylS && S.spec ? Math.pow(Math.max(0, Math.cos(F.ang - Math.PI * 1.5 + .55)), 10) * .5 : 0;   // глянцевий блік (купол): вузька світла смуга зліва-спереду
-    const round = !!S.round;                                                                                    // (декор · 8) кругле вікно: поза колом — дірка (маска скла теж кругла)
     return (u, v, i, j, t) => {
-      if (round && (u - .5) * (u - .5) + (v - .5) * (v - .5) > .25) return 0;
       const x = u * fw, y = v * fh;
       let q = q0 * cylK + spec + (.5 - v) * (top ? .06 : .14);
       if (glossTop) { X.SH.fl |= X.F_GLOSS; q = .3 + (1 - v) * .3 + (((i + j * 2) % 29) < 2 ? .2 : 0); }      // темне скло зверху: світліше до краю, глянець (віддзеркалення)

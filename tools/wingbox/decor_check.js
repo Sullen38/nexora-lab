@@ -52,9 +52,14 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html'), 
     // не зона: у його межах зайнятим вважаємо лише сильну зміну (сама лампа), слабке світло на склі акваріума — ні
     const bc = NX.arc.zone && NX.arc.zone('tools') && NX.arc.zone('tools').anchor('tlBeacon'), bp = bc && NX.px3d.proj(bc);
     const light = (X, Y) => bp && (Math.hypot(X - bp[0], Y - bp[1]) < 36 || (Math.abs(X - bp[0]) < 64 && Math.abs(Y - (bp[1] - 7)) < 16)) && Math.hypot(X - bp[0], Y - bp[1]) > 9;
+    // (· 10) маніпулятор майстерні — ПЕРЕД акваріумом хижаків (власник: «палка зі скінів — попереду, акваріум — на задньому фоні»):
+    // його прямокутник руху (як у decor.py zone_mask: armRig ± запас) не рахуємо зайнятим
+    const AR = NX.arcLayout.right.armRig, ap = AR && AR.pts.map(p => NX.px3d.proj(p)), ax0 = ap && Math.min(...ap.map(p => p[0])) - 14, ax1 = ap && Math.max(...ap.map(p => p[0])) + 16, ay0 = ap && Math.min(...ap.map(p => p[1])) - 22, ay1 = ap && Math.max(...ap.map(p => p[1])) + 14;
+    const arm = (X, Y) => ap && X >= ax0 && X <= ax1 && Y >= ay0 && Y <= ay1;
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
       const X = X0 + (i + .5) / S, Y = Y0 + (j + .5) / S; if (X > WIN.L - 2 && X < WIN.R + 2) continue;                  // вікно: місто живе — не рахуємо
       const ci = Math.round((X - NX.cam.x) * K), cj = Math.round((Y + NX.cam.top) * K); if (ci < 0 || cj < 0 || ci >= CW || cj >= CH) continue;
+      if (arm(X, Y)) continue;
       const q = (cj * CW + ci) * 4, th = light(X, Y) ? 90 : 22; let o = 0; for (let c = 0; c < 3; c++) if (mx[q + c] - e[q + c] > th || e[q + c] - mn[q + c] > th) o = 1; occ[j * W + i] = o;
     }
     const R = Math.round(MARGIN * S), grow = new Uint8Array(W * H);                                                   // поле: зайняте, розширене на MARGIN

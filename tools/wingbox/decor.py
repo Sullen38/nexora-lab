@@ -95,7 +95,7 @@ POTS = {   # дизайни вазонів: форма (taper — звужени
 INVIS = ('dc_lt_',)                                                                 # невидиме (світло на стіну) — без перевірок
 ONWALL = ('dc_shadow', 'dc_climb')                                                  # лежить НА стіні (тінь, плющ) — під речами, накладання з декором не рахуємо
 INCEIL = ('dc_mz', 'dc_pylon', 'dc_pyg')                                                       # (· 4) навмисно йде «в стелю» (пілон від стелі; ближній кінець антресолі) — без CEIL
-JOIN = {('dc_pylon', 'dc_mz'), ('dc_pylon', 'dc_tb')}                                 # (· 4) з'єднані: антресоль виходить з пілона, акватруба впирається в нього
+JOIN = {('dc_pylon', 'dc_mz')}                                                      # (· 4) з'єднані: антресоль виходить з пілона
 
 
 # ===================================== ДЕКОР КРИЛА =====================================
@@ -255,71 +255,53 @@ def decor_side(L, sgn, C, R, verbose=True):
         fb = lambda X: ys(MZ['bot'], W.at(W.a_of(X, MZ['P']), MZ['P'])[0][1])              # низ фасаду на екрані в стовпчику X
         for k, (X, kind, ln, w) in enumerate(((1436., 'ivy', 17, 13), (1452., 'ceropegia', 15, 11), (1500., 'rhipsalis', 16, 12), (1517., 'aeschynanthus', 17, 13))):
             a = W.a_of(X, MZ['P'] + .6); add(item(W, f'dc_mzs{k}', a, .3, w, MZ['top'] + ln, MZ['top'] - .3, 'dc_spill', inset=MZ['P'] + .6, on=mz(a)['id'], dc=dict(kind=kind, seed=91 + k)))
-        # ---------- П2. АКВАТРУБА над інструментами (акваріум №3): від маніпулятора, піднята над спалахом маячка інструментів
-        TB = dict(r=13., gap=2.5, X0=1207., X1=1372., n=7)
-        ri = TB['r'] + TB['gap']; a0, a1 = W.a_of(TB['X0'], ri), W.a_of(TB['X1'], ri)
-        Yc = 1e9
-        for k in range(61):
-            a = a0 + (a1 - a0) * k / 60
-            for dd in (-TB['r'], 0., TB['r']):
-                (x, z), _, _ = W.at(a, ri + dd); Yc = min(Yc, Yw(free_y(W.X(a, ri + dd)), z) - TB['r'])
-        Yc = round(Yc - 1.8, 2)
-        # (· 8) труба — якомога вище (під нею тепер дві кулі): ближній кінець X1 — як був (1305), центр — щоб верх там був на 4 од.
-        # від верху кадру (не в стелі); зони під трубою тепер далі (маска маячка — без променів), тож вище — краще
-        TB['X1'] = 1305.; a1 = W.a_of(TB['X1'], ri)
-        Yc = round(min(Yc, max(Yw(4.3, W.at(a1, ri + dd)[0][1]) for dd in (-TB['r'], 0., TB['r'])) + TB['r'] + .3), 2); TB['Yc'] = Yc; acc = 0.
-        while min(ys(Yc - TB['r'] - .3, W.at(a1, ri + dd)[0][1]) for dd in (-TB['r'], 0., TB['r'])) < 4.:   # (· 4) ближній кінець — не в стелі (з кришкою й трубою вгору)
-            TB['X1'] -= 1.; a1 = W.a_of(TB['X1'], ri)
-        n = TB['n'] = max(5, int(round((TB['X1'] - TB['X0']) / 19))); da = (a1 - a0) / n
-        for i in range(n):
-            sa, sb = a0 + i * da, a0 + (i + 1) * da; am = (sa + sb) / 2; wc = chord(W, sa, sb, ri)
-            seg = dict(TB, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, shy=shy(sa, sb))
-            add(item(W, f'dc_tb{i}', am, 2 * TB['r'], chord(W, sa, sb) + .2, Yc + TB['r'] + .3, Yc - TB['r'] - .3, 'dc_tube', inset=TB['gap'], dc=seg))
-            add(item(W, f'dc_tbg{i}', am, .3, wc + .12, Yc + TB['r'] - .4, Yc - TB['r'] + .4, 'dc_win', inset=ri - .3, on=f'dc_tb{i}', dc=dict(aq='tube', i=i, n=n, s0=round(acc, 2), sa=round(sa, 4), sb=round(sb, 4), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, ins=ri, r=TB['r'], Yc=Yc)))
+        # ---------- П2. АКВАРІУМ ХИЖАКІВ (акваріум №3; Декор стін · 10; власник: «перемалюй на всю ту площину, зовсім інший
+        # дизайн, супер-акваріум з небезпечними рибами, футуристичний; палка зі скінів (маніпулятор) — попереду, акваріум —
+        # на задньому фоні»): панорамна скляна стінка на всю стіну від вікна до плаката Рудика (X 1050..1316), від стелі до поля
+        # над зонами; низ — двома рівнями: глибока частина (ліворуч, за маніпулятором, над капсулою скінів) і мілка полиця
+        # праворуч (над маячком інструментів — його лампа лишається вільною). Маніпулятор майстерні — ПЕРЕД акваріумом (рушій
+        # малює зони після растра крил; маска зон для цих речей — без маніпулятора: noarm). Рама — «контейнер утримання»:
+        # темний хром, аварійні смуги, червоні неонові кромки, прожектори, табло «НЕБЕЗПЕЧНО» (NX.t, 4 мови) — objects/dc_paint.js
+        # st:dc_shark; скло — вікна dc_shg* (маска), малюнок sharkPaint; хижаки — objects/decor_aqua.js (shark).
+        SH = dict(P=16., lid=7., base=7., Xm=1238.)
+        zm2, _ = zone_mask(L, arm=False); zpx2 = zm2.load()
+        def free_y2(X, margin=MARGIN):
+            i0 = int((X - MX0) * MS)
+            for j in range(int((0 - MY0) * MS), ZH):
+                if any(0 <= i < ZW and zpx2[i, j] for i in (i0 - 2, i0, i0 + 2)): return MY0 + j / MS - margin
+            return 400.
+        a0, am_, a1 = W.a_of(1058., SH['P']), W.a_of(SH['Xm'], SH['P']), W.a_of(1316., SH['P'])
+        # верх і низ — РІВНІ НА ЕКРАНІ (у світі — похилі: стіна йде вглиб ліворуч), щоб акваріум був на всю площину: у кожного
+        # сегмента свій верх / низ (yt_a, yt_b, yb_a, yb_b — на його кінцях; коробка й скло — за гіршим з двох)
+        rowD = min(free_y2(X) for X in range(1058, 1239)) - 1.; rowS = min(free_y2(X) for X in range(1238, 1317)) - 1.   # рядки низу: глибока частина / полиця
+        SH.update(rowD=round(rowD, 1), rowS=round(rowS, 1))
+        # кожен сегмент — «модуль» зі своєю рамою (сходинки між модулями — на стійках); коробка модуля підганяється по справжніх
+        # кутах на екрані: верх кришки — рядок ≥ 1.5, низ тумби — рядок ≤ row (глибока частина / полиця)
+        bounds = [a0 + (am_ - a0) * k / 7 for k in range(8)] + [am_ + (a1 - am_) * k / 3 for k in range(1, 4)]
+        segs = []; acc = 0.
+        for i in range(10):
+            sa, sb = bounds[i], bounds[i + 1]; am = (sa + sb) / 2; deep = 1 if i < 7 else 0; row = rowD if deep else rowS
+            (x_, z_), _, _ = W.at(am, SH['P'] / 2); yt = Yw(1.5, z_); yb = Yw(row, z_)
+            d = dict(SH, i=i, n=10, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, deep=deep, noarm=1)
+            mk = lambda yt, yb: item(W, f'dc_sh{i}', am, SH['P'], chord(W, sa, sb) + .2, round(yb, 2), round(yt, 2), 'dc_shark', inset=.3, dc=d)
+            for _ in range(60):
+                pts = hull(screen_poly(mk(yt, yb))); miny, maxy = min(p[1] for p in pts), max(p[1] for p in pts); ok = True
+                if miny < 1.5: yt += .4; ok = False
+                if maxy > row: yb -= .4; ok = False
+                if ok: break
+            it = mk(yt, yb); add(it); segs.append(it)
+            acc += chord(W, sa, sb, SH['P'])
+        tot = acc; acc = 0.
+        for sg in segs:
+            d = sg['dc']; d['tot'] = round(tot, 2); sa, sb = d['sa'], d['sb']; wc = chord(W, sa, sb, SH['P'] + .1); d['shy'] = shy(sa, sb)
+            gt, gb = round(sg['yt'] + SH['lid'], 2), round(sg['yb'] - SH['base'], 2)   # скло — між кришкою й тумбою модуля
+            add(item(W, sg['id'].replace('dc_sh', 'dc_shg'), (sa + sb) / 2, .3, wc + .12, gb, gt, 'dc_win', inset=SH['P'] + .1 - .3, on=sg['id'],
+                     dc=dict(aq='shark', i=d['i'], n=10, s0=round(acc, 2), sa=sa, sb=sb, C=d['C'], R=R, sgn=sgn, ins=SH['P'] + .1, P=SH['P'], top=gt, bot=gb, deep=d['deep'], tot=round(tot, 2), noarm=1)))
             acc += wc
-        for sg in out:
-            if sg['id'].startswith(('dc_tb', 'dc_tbg')) and 'dc' in sg: sg['dc']['tot'] = round(acc, 2)
-        tb = lambda a: f'dc_tb{min(n - 1, max(0, int((a - a0) / da)))}'
-        la0, la1 = a0 + (a1 - a0) * .02, a0 + (a1 - a0) * .51; am = (la0 + la1) / 2
-        (x1_, z1_), _, _ = W.at(la1, ri - 2.5); yl = round(Yw(4.5, z1_), 2)
-        (x0_, z0_), _, _ = W.at(la0, ri); (xm_, zm_), _, _ = W.at(la1, ri)
-        add(item(W, 'dc_tblamp', am, 5., chord(W, la0, la1, ri), yl + 2.4, yl, 'neon', inset=ri - 2.5, glow=1, gr=30, dc=dict(c0=round(Yw(-3., z0_), 2), c1=round(Yw(-3., zm_), 2))))
-        for k, (u, kind) in enumerate(((.07, 'basil'), (.2, 'mint'), (.33, 'lettuce'), (.46, 'straw'))):
-            a = a0 + (a1 - a0) * u; top = Yc - TB['r'] + 1.2; hh = min(13., top - (yl + 2.4 + 2.))
-            add(item(W, f'dc_tbp{k}', a, 6., 10., top, top - hh, 'dc_pot', inset=ri - 3, on=tb(a), dc=dict(kind=kind, pot=dict(shape='net', mat='dark', band=['pink', 'cyan', 'lil', 'green'][k], name='net-' + ['pink', 'cyan', 'lil', 'green'][k], pw=5, ph=2), seed=71 + k, net=1)))
-        # ---------- (· 8) ДВІ БІОСФЕРИ під акватрубою (власник: «акваріум утричі кращий і більший, трохи інший — місця досить»):
-        # великі скляні кулі на коротких шийках з труби (вода тече з труби в кулі), кожна — свій біотоп (ліва — «болітце»:
-        # черепашка, карликова жабка, маримо; права — «річка»: блакитний рак, даніо, анубіас на корчі); живе — objects/decor_aqua.js.
-        # Куля — коробка 2rb × 2rb з лицем-кулею (objects/dc_paint.js st:dc_bulb) і круглим вікном (st:dc_winr — маска скла кругла).
-        # Розмір — найбільший, що лягає під трубу над полем зон (низ кулі ≤ free_y), ліва — не ближче 3 од. до епіфілюма.
-        # Колишні звиси під трубою (тіландсія, дисхідія, кулька тіландсій) прибрано — тут тепер кулі.
-        BULB = []
-        for k, (Xc, rb) in enumerate(((1221., 19.), (1298.5, 18.2))):
-            fr = TB['gap'] + 2 * rb - .15                                                  # куля на екрані — її лицьова площина (там вікно й обідок)
-            a = W.a_of(Xc, fr); (x, z), _, _ = W.at(a, fr); sz = s(z)
-            # стіна тут коса: уздовж неї одиниця світу на екрані ширша (kx), ніж по вертикалі (ky = s) — куля була б еліпсом;
-            # вікно й обідок звужуємо вздовж стіни на sq = ky / kx, щоб на екрані було коло
-            kx = abs(W.X(a + .5, fr) - W.X(a - .5, fr)) / chord(W, a - .5, a + .5, fr); sq = round(sz / kx, 4)
-            def bottom_ok(Yb):
-                for q in range(-24, 25):
-                    dx = q / 24.; X = Xc + dx * rb * sz; yb_ = ys(Yb + rb * math.sqrt(max(0., 1 - dx * dx)), z)
-                    if yb_ > free_y(X) - (5.5 if k else 3.): return False
-                return True
-            Yb = Yc + TB['r'] + rb + 3.
-            while bottom_ok(Yb + .25): Yb += .25
-            while not bottom_ok(Yb) and Yb > Yc: Yb -= .25
-            Yb = round(Yb, 2); neck = round(Yb - rb - (Yc + TB['r']), 2)
-            dcb = dict(k=k, rb=rb, sq=sq, Yb=Yb, Yc=Yc, r=TB['r'], neck=neck, ins=round(TB['gap'] + rb, 2), a=round(a, 4), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn)
-            add(item(W, f'dc_tbb{k}', a, 2 * rb, 2 * rb * sq, Yb + rb, Yb - rb, 'dc_bulb', inset=TB['gap'], on=tb(a), dc=dcb))
-            add(item(W, f'dc_tbs{k}', a, .3, (2 * rb - 1.2) * sq, Yb + rb - .6, Yb - rb + .6, 'dc_winr', inset=TB['gap'] + 2 * rb - .3, on=f'dc_tbb{k}', dc=dict(aq='tube', part='bulb', **dcb)))
-            BULB.append(out[-2])
-        # (· 5) ЕПІФІЛЮМ («риб'ячий скелет», з рожевою квіткою) — довгим каскадом на макраме з латунного кронштейна, у вузькому
-        # проміжку між маніпулятором майстерні й акватрубою (гойдається скромно: поруч рука маніпулятора)
-        hang('dc_epi', 1197.2, 2., 62.5, 'epiphyllum', w=6.8, inset=5., seed=182, frm='hook', pot=pot_of('lava', 4.8, 4.4))
+        shX1 = 1316.
         # ---------- П3. ПЛАКАТ РУДИКА (Декор стін · 4; власник: «плакат Рудика — прикольний, піксельний») — між акватрубою й
         # пілоном (біля входу на другий поверх); напис — зі словників (4 мови); живе — сам Рудик (кліпає, хвіст, лазерні очі)
-        tbX1 = max(p[0] for it in out if it['id'].startswith('dc_tb') and it['st'] in ('dc_tube', 'dc_bulb') for p in hull(screen_poly(it)))
-        PX0, PX1 = min(1322., tbX1 + 6.), 1375.                                                      # праворуч від кришки акватруби й правої кулі — до пілона
+        PX0, PX1 = shX1 + 8., 1375.                                                      # праворуч від акваріума хижаків — до пілона
         pa0, pa1 = W.a_of(PX0), W.a_of(PX1); pam = (pa0 + pa1) / 2
         pyb = min(Yw(free_y(X) - 6., W.at(W.a_of(X), ins)[0][1]) for X in [PX0 - 4 + q for q in range(int(PX1 - PX0) + 9)] for ins in (1.2, 4.6))
         pyt = max(Yw(5.5, W.at(a, ins)[0][1]) for a in (pa0, pa1) for ins in (1.2, 4.6))
@@ -355,7 +337,6 @@ def decor_side(L, sgn, C, R, verbose=True):
         # ---------- (· 3) ОБ'ЄМ: тіні на стіні й світло
         wshadow(rud, dy=3.)
         for o in [hangR] + KK: wshadow(o, dy=5., rnd=1, top=.3 if o is hangR else .55)
-        light('dc_lt_tube', 1300., 34., 'clamp', 46, inset=ri)
     else:
         # ---------- Л1. Над AI-центром: СОТИ-ПОЛИЦІ (кіберпанк: шестикутні комірки з неоновим кантом, кожна свого кольору й
         # візерунка дна) — у кожній своя річ; і неонова вивіска «Nexi з паростком» (без слів)
@@ -511,7 +492,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             f = (-math.sin(math.radians(it['turn'])), -math.cos(math.radians(it['turn']))); zc = it['z'] - f[1] * it['dep'] / 2
             cut = Yw(yc, zc)
             if cut - it['yt'] > 3: d['sway'] = dict(cut=round(cut, 2), amp=round(min(1.6, (cut - it['yt']) * .05), 2), per=round(per + 1, 2))
-        elif st == 'dc_pot' and str(it.get('on', '')).startswith(('dc_tb', 'dc_rf')): d['sway'] = dict(amp=.45, per=per)
+        elif st == 'dc_pot' and str(it.get('on', '')).startswith('dc_rf'): d['sway'] = dict(amp=.45, per=per)
         elif st == 'dc_pot' and str(it.get('on', '')).startswith('dc_drift'): d['sway'] = dict(amp=.5, per=per)
     # (· 5) ПИЛ І ПИЛОК у повітрі біля стін: прямокутники екрана над зонами (з полем) — порошинки живуть у них (objects/decor_live.js)
     air = []; XA, XB = (1190., 1598.) if sgn > 0 else (-60., 500.)
@@ -526,21 +507,16 @@ def decor_side(L, sgn, C, R, verbose=True):
 
 
 # ===================================== ПЕРЕВІРКА: НЕ ЗАХОДИТЬ НА ЗОНИ (екран) =====================================
-ROUND = ('dc_bulb', 'dc_winr')                                                        # (· 8) кулі: межі на екрані — коло на глибині центру
 BILLBOARD = ('dc_pot', 'dc_hang', 'dc_art', 'dc_lantern')                              # dc_art на стіні (платицеріум) — теж прямокутник                              # рослини й штучки — спрайт / дрібні форми лицем до глядача
 def screen_poly(it):
     """межі предмета на екрані: рослини й штучки — прямокутник «лицем до глядача» (ширина w, як спрайт рушія), решта — усі 8
     кутів коробки (на дузі біля 90° глибина коробки лягає на екрані вшир, а ширина — углиб: так точніше)"""
     f, r, P = frame(it); w = it['w'] / 2
-    if it['st'] in ROUND:
-        c = P(0, .15, (it['yb'] + it['yt']) / 2); rb = (it['yb'] - it['yt']) / 2 - (.6 if it['st'] == 'dc_bulb' else 0.)   # лицьова площина: там вікно й обідок
-        kx = it['w'] / (it['yb'] - it['yt'])                                             # коло на екрані: уздовж стіни вужче (dc.sq)
-        return [P3(*P(rb * kx * math.cos(q * math.pi / 12), .15, (it['yb'] + it['yt']) / 2 + rb * math.sin(q * math.pi / 12))) for q in range(24)]
     if it['st'] in BILLBOARD:
         c = P(0, it['dep'] / 2, 0); x0 = c[0] - w; x1 = c[0] + w; z = c[2]
         return [P3(x, y, z) for x in (x0, x1) for y in (it['yb'], it['yt'])] + [P3(*P(u, v, it['yb'])) for u in (-w * .4, w * .4) for v in (0, it['dep'])]
     return [P3(*P(u, v, y)) for u in (-w, w) for v in (0, it['dep']) for y in (it['yb'], it['yt'])]
-def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500):
+def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500, arm=True):
     """силуети зон на екрані (растр S px/од.): видимі грані предметів (і привидів — там живі екрани), живі частини"""
     from PIL import Image, ImageDraw
     im = Image.new('L', (int((X1 - X0) * S), int((Y1 - Y0) * S)), 0); d = ImageDraw.Draw(im)
@@ -551,7 +527,8 @@ def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500):
         for nm in ('front', 'left', 'right', 'top'):
             if V.get(nm) or it.get('ghost'): d.polygon([T(P3(*q)) for q in F[nm]], fill=255)
     A = L.get('anchors', {})
-    if L.get('armRig'):                                                             # маніпулятор майстерні: рухається (скан / встановлення) — з запасом
+    if L.get('armRig') and arm:                                                     # маніпулятор майстерні: рухається (скан / встановлення) — з запасом (arm=False: для
+                                                                                    # декору, що навмисно ЗА ним — акваріум хижаків · 10, власник: «палка зі скінів — попереду»)
         P = [P3(*p) for p in L['armRig']['pts']]; xs = [p[0] for p in P]; yy = [p[1] for p in P]
         d.rectangle([T((min(xs) - 14, min(yy) - 22)), T((max(xs) + 16, max(yy) + 14))], fill=255)
     if 'tlBeacon' in A:                                                             # маячок інструментів з ближнім сяйвом (лампа ~r 5; ореол спалаху — до 20)
@@ -575,10 +552,12 @@ def hull(pts):
     return lo[:-1] + up[:-1]
 def check_screen(L, items, margin=MARGIN):
     from PIL import Image, ImageDraw, ImageFilter
-    im, (X0, Y0, S) = zone_mask(L); grow = im.filter(ImageFilter.MaxFilter(2 * int(margin * S) + 1)); px = grow.load(); W, H = grow.size
+    im, (X0, Y0, S) = zone_mask(L); grow = im.filter(ImageFilter.MaxFilter(2 * int(margin * S) + 1)); pxA = grow.load(); W, H = grow.size
+    im2, _ = zone_mask(L, arm=False); pxN = im2.filter(ImageFilter.MaxFilter(2 * int(margin * S) + 1)).load()
     bad = []
     for it in items:
         if it['id'].startswith(INVIS): continue
+        px = pxN if it.get('dc', {}).get('noarm') else pxA                           # (· 10) за маніпулятором — можна (він попереду)
         P = hull(screen_poly(it)); xs = [p[0] for p in P]; yy = [p[1] for p in P]
         x0, x1, y0, y1 = min(xs), max(xs), min(yy), max(yy); hit = 0
         pm = Image.new('L', (W, H), 0); ImageDraw.Draw(pm).polygon([((p[0] - X0) * S, (p[1] - Y0) * S) for p in P], fill=255); pq = pm.load()
@@ -588,7 +567,7 @@ def check_screen(L, items, margin=MARGIN):
         if hit: bad.append((it['id'], hit, [round(x0), round(x1), round(y0), round(y1)]))
         if y0 < 1 and not it['id'].startswith(INCEIL): bad.append((it['id'], 'CEIL', round(y0, 1)))
     return bad
-SUPPORTS = ('dc_mz', 'dc_reef', 'dc_tube', 'dc_hex', 'dc_column', 'dc_drift', 'dc_bulb')                                   # опори-смуги: сегменти / соти однієї групи
+SUPPORTS = ('dc_mz', 'dc_reef', 'dc_shark', 'dc_hex', 'dc_column', 'dc_drift')                                   # опори-смуги: сегменти / соти однієї групи
 def group_key(it, by):
     """до якої групи належить річ: опора (антресоль, риф, труба, соти) разом з тим, що на ній стоїть чи з неї звисає"""
     j = it
@@ -642,7 +621,7 @@ def report(L, items, name):
 
 
 # ===================================== ПЛАН ЗВЕРХУ (картинка для власника) =====================================
-GROUPS = [('dc_pylon', 'П0 ПІЛОН'), ('dc_door', 'П0'), ('dc_pyg', 'П0'), ('dc_mz', 'П1 АНТРЕСОЛЬ (2-й поверх)'), ('dc_lantern', 'П1'), ('dc_green', 'П1'), ('dc_tb', 'П2 АКВАТРУБА (акваріум №3)'),
+GROUPS = [('dc_pylon', 'П0 ПІЛОН'), ('dc_door', 'П0'), ('dc_pyg', 'П0'), ('dc_mz', 'П1 АНТРЕСОЛЬ (2-й поверх)'), ('dc_lantern', 'П1'), ('dc_green', 'П1'), ('dc_sh', 'П2 АКВАРІУМ ХИЖАКІВ (акваріум №3)'),
           ('dc_poster1', 'П3 ПЛАКАТ РУДИКА'), ('dc_hangR', 'П4 ВИСЯЧИЙ САД'), ('dc_kk', 'П4'),
           ('dc_hx', 'Л1 СОТИ-ПОЛИЦІ'), ('dc_neon', 'Л1 НЕОН'), ('dc_rf', 'Л2 РИФ (акваріум №1)'), ('dc_jelly', 'Л3 МЕДУЗАРІЙ (акваріум №2)'), ('dc_poster', 'Л4 ПЛАКАТ')]
 def group_of(id):
