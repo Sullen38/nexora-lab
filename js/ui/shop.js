@@ -27,11 +27,11 @@ NX.ui.shop = {
     this.mode = mode; this.owner = owner || null; this.look = owner ? NX.owners.lookOf(owner.key) : Object.assign({}, NX.nexi.look);
     this.open = true; const s = this.$('sheet'); s.classList.add('open'); s.scrollTop = 0; this.render();
   },
-  hide() { if (!this.open) return; this.open = false; this.$('sheet').classList.remove('open'); },
+  hide() { if (!this.open) return; this.open = false; this.$('sheet').classList.remove('open'); NX.nftCard.stop(); },
   render() {
     const O = NX.owners, L = this.look, o = this.owner, $ = this.$, buy = this.mode === 'buy', st = O.status(L), next = { no: O.nextNo() };
     $('shtitle').textContent = o ? (o.mine ? NX.t('own.yours') + ' ' : '') + 'NEXI ' + O.noText(o) : NX.t('own.title') + ' ' + O.noText(next);
-    NX.nftCard(L, { no: o ? o.no : next.no }, $('nftcv'));                                // картка: скін + номер (покупка — наступний за чергою)
+    NX.nftCard.play(L, { no: o ? o.no : next.no }, $('nftcv'));                           // жива картка: скін + номер (покупка — наступний за чергою)
     $('shstat').textContent = o ? [NX.t('own.owner', { name: O.nameOf(o) + (o.founder ? ' · ' + NX.t('own.founder') : '') }), o.since ? NX.t('own.since', { date: O.dateText(o) }) : '', 'NFT 1/1 · Base'].filter(Boolean).join(' · ')
       : st.preset ? NX.t('own.presetBuy', { name: NX.t('skin.skin.' + st.preset) }) : NX.t('own.avail');
     const dl = $('shattr'); dl.innerHTML = '';                                          // атрибути — 8 частин образу (вони ж атрибути NFT)

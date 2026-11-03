@@ -108,7 +108,12 @@
 - `mint(to, id, key)`: лише MINTER; `require(!keyTaken[keccak256(key)])`; `id` = номер Nexi (#001 → 1).
 - «Один Nexi на гаманець» — у `_update`: якщо `to != 0` і `from != to` — `require(balanceOf(to) == 0)` (діє й на перепродажі).
 - Метадані (JSON): `name` «Nexi #001», `description`, `image` — PNG картки (той самий `nft_card.js` + `sprite.js`, намальовані
-  на сервері: `tools/nft/render.js`, `@napi-rs/canvas`), `animation_url` (необов'язково — сторінка з живим Nexi),
+  на сервері: `tools/nft/render.js`, `@napi-rs/canvas`; OpenSea радить ≥ 3000 px — піксель-арт 96×128 ×32 = 3072×4096 без
+  розмиття), **`animation_url` — ЖИВА картка** (власник, 03.11: «картка теж має бути анімованою, живою»): HTML-сторінка з тим
+  самим кодом (`NX.nftCard.play`; OpenSea показує HTML зі скриптами на сторінці NFT) або відео MP4/WebM циклу 4 с; у списках і
+  гаманцях, що не грають анімацію, — `image`. Кадр — `NX.nftCard(look, {no}, cv, t)`: поза й кліпання Nexi та все на картці
+  кратні циклу (LOOP 4 с); крила, плащ і реліквії мають свої ритми — для відео чи GIF без шва на кроці 4 підігнати їх під 4 с
+  (або цикл 8–12 с). Обмеження OpenSea — до 300 МБ (радять < 200).
   `attributes` — 8 частин (англійською: Color, Body, Arms, Legs, Antenna, Head, Back, Relic) і Code. Зберігання — IPFS
   (Pinata) або Arweave: після мінту не змінюється. `contractURI` — опис колекції для OpenSea.
 - Спершу **Base Sepolia** (тестова мережа) → перевірки → **Base**.
