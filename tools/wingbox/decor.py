@@ -371,7 +371,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         acc = 0.
         for sg in segs:                                                                 # скло кожної секції — вікно (рушій дає маску видимих пікселів: риби живуть за ним)
             d = sg['dc']; d['tot'] = round(tot, 2); sa, sb = d['sa'], d['sb']; wc = chord(W, sa, sb, RF['P'] + .1); d['shy'] = shy(sa, sb)
-            add(item(W, sg['id'].replace('dc_rf', 'dc_rfg'), (sa + sb) / 2, .3, wc + .12, RF['bot'], RF['top'], 'dc_win', inset=RF['P'] + .1 - .3, on=sg['id'],
+            add(item(W, sg['id'].replace('dc_rf', 'dc_rfg'), (sa + sb) / 2, .3, wc + .9, RF['bot'], RF['top'], 'dc_win', inset=RF['P'] + .1 - .3, on=sg['id'],
                      dc=dict(aq='reef', i=d['i'], n=d['n'], s0=round(acc, 2), sa=sa, sb=sb, C=d['C'], R=R, sgn=sgn, ins=RF['P'] + .1, P=RF['P'], top=RF['top'], bot=RF['bot'], tot=round(tot, 2))))
             acc += wc
         # ---------- Л3. МЕДУЗАРІЙ між аналітикою й маркетингом (акваріум №2): висока скляна колона з медузами, хромові

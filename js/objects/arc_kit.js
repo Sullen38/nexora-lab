@@ -161,7 +161,7 @@ NX.arc.kit = (() => {
       if (S.glass) q += (u > .12 && u < .2) || (u > .3 && u < .34) ? .35 : 0;                                // скло: блік
       if (S.metal) q += Math.sin(u * 9 + v * 3) * .1;
       let c = ramp(Pl, q, i, j);
-      if (emitAll) X.SH.fl |= F_EMIT;
+      if (emitAll) X.SH.fl |= F_EMIT; if (S.noout) X.SH.fl |= X.F_NOOUT;                                    // noout — без темного контуру (суцільне скло з кількох вікон по дузі: · 16)
       if (td) {
         const tx = Math.min(tw - 1, Math.max(0, (u * tw) | 0)), ty = Math.min(th - 1, Math.max(0, (v * th) | 0)), px = td[ty * tw + tx], a = px >>> 24;
         if (a) { const pc = (px | 0xff000000) >>> 0; c = a > 250 ? pc : mixc(c, pc, a / 255); if (X.lum(pc) > .5 && a > 140) X.SH.fl |= F_EMIT; }

@@ -83,8 +83,7 @@
   }
   function drawTray(fx, tr, t) {
     const A = trayAt(tr, t); if (A.hide) return A;
-    const w = FARM.trayW, hh = FARM.trayH, x = A.x, y = A.y, e = Math.max(0, Math.min(1, (x - (SH - 3)) / 7, ((T - SH + 3) - x) / 7));   // біля шахт — за дверцята
-    if (e <= 0) return A;
+    const w = FARM.trayW, hh = FARM.trayH, x = A.x, y = A.y, e = 1;                                                      // біля шахт лоток заходить ЗА стінку шахти (clip у draw — різко, без «танення»)
     quadF(fx, [[x - w / 2, y - hh], [x + w / 2, y - hh], [x + w / 2 - .7, y], [x - w / 2 + .7, y]], '#2a3038', e, MID);               // лоток
     quadF(fx, [[x - w / 2 + 1, y - hh], [x + w / 2 - 1, y - hh], [x + w / 2 - 1.2, y - hh + 1.2], [x - w / 2 + 1.2, y - hh + 1.2]], '#5a3a22', e, MID);   // субстрат
     quadF(fx, [[x - w / 2, y - hh], [x + w / 2, y - hh], [x + w / 2, y - hh + .45], [x - w / 2, y - hh + .45]], '#7a8a9a', e, MID);
@@ -140,20 +139,31 @@
   /** Сівба (ліва шахта): насіння сиплеться з бункера в лоток, іскорка; збір (права): різак блимає, листочки летять у кошик. */
   function stationFx(fx, A, t, tr) {
     if (!A || A.hide) return; const yb = A.y, yt = FARM.tierY(H, A.row);
-    if (A.sow >= 0 && A.sow < 1) { const f = A.sow, x = SH + 2; fx.save();
+    if (A.sow >= 0 && A.sow < 1) { const f = A.sow, x = SH + 4; fx.save();
       for (let q = 0; q < 6; q++) { const g = ((f * 1.6 + q * .17) % 1), p = S(x + (hash(q, 13) - .5) * 3 + 2, yt + 9 + g * (yb - yt - 12), MID); fx.globalAlpha = .9 * (1 - g * .3); fx.fillStyle = q % 2 ? '#e8d090' : '#c8a060'; fx.fillRect(p[0] - .35, p[1] - .35, .7, .7); }   // насіння
       const p = S(A.x, yb - FARM.trayH - 1, MID), k = kAt(A.x, yb, MID); fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = .6 * Math.sin(f * Math.PI); fx.fillStyle = '#9aff9a'; fx.fillRect(p[0] - 2 * k, p[1] - .3, 4 * k, .6); fx.restore(); }
-    if (A.harv >= 0 && A.harv < 1) { const f = A.harv, cx = T - SH / 2, p = S(cx, yt + 6, MID), k = kAt(cx, yt, MID); fx.save(); fx.globalCompositeOperation = 'lighter';
+    if (A.harv >= 0 && A.harv < 1) { const f = A.harv, cx = T - SH - 2, p = S(cx, yt + 6, MID), k = kAt(cx, yt, MID); fx.save(); fx.globalCompositeOperation = 'lighter';
       fx.globalAlpha = .7 * (Math.floor(t * 8) % 2 ? 1 : .4); fx.fillStyle = '#ff4fd8'; fx.fillRect(p[0] - .5 * k, p[1], 1 * k, 1 * k);                                       // різак блимає
       for (let q = 0; q < 7; q++) { const a = hash(q + tr.k * 9, 21) * TAU, d = (2 + 8 * f) * k, px = S(A.x, yb - 6, MID)[0] + Math.cos(a) * d, py = S(A.x, yb - 6, MID)[1] + Math.sin(a) * d * .5 + f * f * 9 * k; fx.globalAlpha = .9 * (1 - f); fx.fillStyle = q % 2 ? '#3bff8a' : '#e8ffb0'; fx.fillRect(px - .45 * k, py - .45 * k, .9 * k, .9 * k); }   // листочки летять
       fx.restore(); }
   }
 
+  /** Ліфти в шахтах: кабіна-каркас з лотком їде правою шахтою вниз (зібране — в кошик), лівою — вгору (нові лотки); трос, вогник. */
+  function liftsLive(fx, t) {
+    for (const [x0, dn, ph] of [[T - SH, 1, 0], [0, -1, .5]]) { const f = ((t * .04 + ph) % 1), u = f < .8 ? f / .8 : 1, cy = 4 + (H - 8) * (dn > 0 ? u : 1 - u), cx = x0 + SH / 2, w = SH - 3, h = 8;   // кабіна
+      const P = (dx, dy) => S(cx + dx, cy + dy, MID + 2), a = P(-w / 2, -h / 2), b = P(w / 2, -h / 2), c = P(w / 2, h / 2), d = P(-w / 2, h / 2), k = kAt(cx, cy, MID + 2);
+      fx.save(); fx.strokeStyle = '#9ab0c8'; fx.lineWidth = .6 * k; fx.beginPath(); fx.moveTo(a[0], a[1]); fx.lineTo(b[0], b[1]); fx.lineTo(c[0], c[1]); fx.lineTo(d[0], d[1]); fx.closePath(); fx.stroke();
+      const top = P(0, -h / 2), rt = S(cx, 0, MID + 2); fx.strokeStyle = '#6a7a8a'; fx.lineWidth = .4 * k; fx.beginPath(); fx.moveTo(rt[0], rt[1]); fx.lineTo(top[0], top[1]); fx.stroke();   // трос
+      quadF(fx, [[cx - w / 2 + 1, cy + h / 2 - 3], [cx + w / 2 - 1, cy + h / 2 - 3], [cx + w / 2 - 1.6, cy + h / 2 - .4], [cx - w / 2 + 1.6, cy + h / 2 - .4]], '#2a3038', 1, MID + 2);   // лоток у кабіні
+      quadF(fx, [[cx - w / 2 + 2, cy + h / 2 - 3], [cx + w / 2 - 2, cy + h / 2 - 3], [cx + w / 2 - 2.2, cy + h / 2 - 2], [cx - w / 2 + 2.2, cy + h / 2 - 2]], dn > 0 ? '#6a8a3a' : '#5a3a22', 1, MID + 2);
+      fx.fillStyle = Math.floor(t * 3) % 2 ? '#3bff8a' : '#14602e'; fx.fillRect(a[0] + 1 * k, a[1] + 1 * k, .8 * k, .8 * k); fx.restore(); }
+  }
   NX.decorFarm = {
     /** Кадр теплиці на полотно fx (координати кімнати; маску нутра без рами накладає objects/decor.js). */
-    draw(fx, A, t) { void A; fx.save(); fx.imageSmoothingEnabled = true; lampsLive(fx, t);
+    draw(fx, A, t) { void A; fx.save(); fx.imageSmoothingEnabled = true; lampsLive(fx, t); liftsLive(fx, t);
+      fx.save(); fx.beginPath(); [[SH, -2], [T - SH, -2], [T - SH, H + 2], [SH, H + 2]].forEach(([x, y], k) => { const p = S(x, y, MID); k ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); }); fx.closePath(); fx.clip();   // лотки — лише між шахтами
       for (let row = 0; row < FARM.tiers; row++) for (const tr of TR) if (tr.row === row) { const a = drawTray(fx, tr, t); stationFx(fx, a, t, tr); }
-      drawBot(fx, t); drawBees(fx, t); mistLive(fx, t); fx.restore(); },
+      drawBot(fx, t); drawBees(fx, t); fx.restore(); mistLive(fx, t); fx.restore(); },
     /** Тап по теплиці (objects/decor_live.js): x, y — екран -> точка нутра; хмарка туману, рослини поруч трусяться. -> true */
     tap(x, y, t) { let best = null, bd = 1e9; for (let fx_ = 0; fx_ <= T; fx_ += 4) for (let k = 0; k < FARM.tiers; k++) { const fy = FARM.rowY(H, k) - 8, p = S(fx_, fy, MID), d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = [fx_, fy]; } }
       TAP = { fx: best[0], fy: best[1], t0: t }; return true; },

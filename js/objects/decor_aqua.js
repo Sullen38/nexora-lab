@@ -16,7 +16,7 @@
  * ========================================================================== */
 (() => {
   const DC = NX.decor; if (!DC) return;
-  const X = NX.px3d, hash = NX.art.hash, proj = X.proj, { sprite, items, SPR, CREW } = DC, TAU = Math.PI * 2, D2R = Math.PI / 180;
+  const X = NX.px3d, hash = NX.art.hash, proj = X.proj, { sprite, items, SPR, CREW, ramp } = DC, TAU = Math.PI * 2, D2R = Math.PI / 180;
   const REEF = NX.arc.REEF;
   const sm = f => f * f * (3 - 2 * f);
 
@@ -102,7 +102,31 @@
     for (let k = 0; k < 8; k++) { const x0 = 15 + (k - 3.5) * rx / 4.3; for (let q = 0; q < 50; q++) S.set(x0 + Math.sin(q * .15 + k + p * 5) * (.8 + q * .04), cy + 1 + q, '#e0a8ff', 150); }
     for (let k = 0; k < 4; k++) { const x0 = 15 + (k - 1.5) * 2; for (let q = 0; q < 26; q++) { const x = x0 + Math.sin(q * .3 + k * 2 + p * 6) * 1.8; S.set(x, cy + 2 + q, '#ff8ad8', 220); if (q % 2) S.set(x + 1, cy + 2 + q, '#ffc8f0', 200); } }
   }, false);
-  if (CREW) { CREW.reef.push(['gramma', 6.2, .75, 8], ['lion', 11.5, .22, 9]); if (DC.JELLY) CREW.jelly.push(['pelagia', 13, 1, 26]); }
+  // (· 16) нові мешканці: морська черепаха, риба-метелик, спинорог Пікассо; медузи — левова грива й синій блабер
+  Object.assign(SPR, {
+    turtle: ph => sprite(36, 20, S => {                                                 // зелена черепаха: панцир зі щитками, ласти махають, голова з оком
+      S.ell(18, 10, 13, 7, (x, y, u, v) => v > .55 ? '#8a7a4a' : ((((x + 2) / 5) | 0) + (((y + 1) / 4) | 0)) % 2 ? '#2a6a3a' : '#3a8a4a'); for (let x = 7; x < 30; x += 5) for (let y = 4; y < 15; y += 4) S.set(x, y, '#5aaa5a');
+      S.tri([[8, 8], [1, 3 + ph * 2], [6, 13]], '#4a8a4a'); S.tri([[28, 8], [34, 3 + ph * 2], [30, 13]], '#4a8a4a'); S.tri([[10, 13], [6, 18 - ph], [13, 15]], '#3a7a3a'); S.tri([[26, 13], [30, 18 - ph], [23, 15]], '#3a7a3a');
+      S.ell(32, 9, 3.4, 2.6, '#5a9a5a'); S.set(34, 8, '#101018'); S.set(33, 8, '#ffffff'); S.tri([[5, 10], [1, 9], [5, 12]], '#3a7a3a'); }),
+    butterfly: ph => sprite(16, 14, S => {                                               // риба-метелик: жовта з чорною смугою через око, видовжений ніс
+      S.tri([[3, 7], [0, 3 + ph], [0, 11 - ph]], '#ffd23a'); S.ell(8, 7, 5.5, 5.5, (x, y, u, v) => Math.abs(x - 10.5) < 1 ? '#101018' : (v < -.7 ? '#ffa03a' : '#ffd23a'));
+      S.tri([[6, 2], [8, -1], [11, 2]], '#ffa03a'); S.tri([[6, 12], [8, 15], [11, 12]], '#ffa03a'); S.line(13, 8, 15, 8, '#ffd23a'); S.set(11, 6, '#ffffff'); S.set(10, 6, '#101018'); }),
+    trigger: ph => sprite(22, 14, S => {                                                 // спинорог Пікассо: бежевий, блакитні й чорні смуги, жовті губи, «ріг»
+      S.tri([[4, 7], [0, 3 + ph], [0, 11 - ph]], '#e8d8a0'); S.ell(12, 7, 8.5, 5.5, (x, y, u, v) => (x > 13 && x < 16 && v > -.2) ? '#101018' : ((x + y) % 7 < 1.5 && u > -.5 ? '#3a8aff' : v < -.5 ? '#c8b070' : '#f0e4b8'));
+      S.line(10, 2, 13, -1, '#3a8aff'); S.line(10, 12, 12, 15, '#c8b070'); S.set(19, 8, '#ffd23a'); S.set(20, 8, '#ffd23a'); S.set(17, 5, '#101018'); S.set(16, 5, '#ffffff'); }),
+  });
+  if (DC.JELLY) {
+    DC.JELLY.lionmane = p => sprite(40, 70, S => {                                      // левова грива: помаранчево-червоний широкий дзвін, густі довгі рудi щупальця
+      const cy = 11, rx = 18 * (1 + p * .1), ry = 9 * (1 - p * .2);
+      S.ell(20, cy, rx, ry, (x, y, u, v) => v > .05 ? null : ramp(['#8a2a10', '#d8522a', '#ffa060', '#ffe0b0'], .35 - v * .45 + (hash(x, y) > .85 ? .2 : 0)), 215);
+      for (let x = Math.ceil(20 - rx); x < 20 + rx; x++) S.set(x, cy, '#ffb070', 230);
+      for (let k = 0; k < 16; k++) { const x0 = 20 + (k - 7.5) * rx / 8.2, len = 40 + (k % 4) * 6; for (let q = 0; q < len; q++) S.set(x0 + Math.sin(q * .17 + k + p * 6) * (1 + q * .04), cy + 1 + q, k % 3 ? '#d8582a' : '#ff8a4a', 140 + (q % 2) * 40); } }, false);
+    DC.JELLY.blubber = p => sprite(30, 30, S => {                                        // синій блабер: щільний синій купол, короткі товсті «руки»-губки
+      const cy = 11, rx = 13 * (1 + p * .1), ry = 10 * (1 - p * .16);
+      S.ell(15, cy, rx, ry, (x, y, u, v) => v > .1 ? null : ramp(['#1a3ab8', '#3a6ae8', '#7ab0ff', '#d0e8ff'], .4 - v * .4 + (u * u) * .15), 235);
+      for (let k = 0; k < 4; k++) { const x0 = 15 + (k - 1.5) * 5; S.ell(x0, cy + 7 + (k % 2) * 1.5, 2.6, 5 + p * .5, (x, y, u, v) => hash(x, y) > .6 ? '#6a9aff' : '#3a5ad8', 220); S.ell(x0, cy + 12 + (k % 2) * 1.5, 2, 1.5, '#a0c8ff', 200); } }, false);
+  }
+  if (CREW) { CREW.reef.push(['gramma', 6.2, .75, 8], ['lion', 11.5, .22, 9], ['turtle', 15, .3, 10], ['butterfly', 6.4, .7, 11], ['trigger', 8.6, .55, 12]); if (DC.JELLY) CREW.jelly.push(['pelagia', 13, 1, 26], ['lionmane', 17, 1, 27], ['blubber', 11, 1, 28]); }
 
   // ---------- РИФ ----------
   const R = MR && (() => {
@@ -152,6 +176,17 @@
       const [c1, c2, pat] = E.col; strand(fx, MR, pts, .62, c1);
       if (pat !== 'plain') for (let q = 1; q < 8; q++) { const p = MR.S(pts[q][0], pts[q][1]); if (pat === 'spot' ? q % 2 : true) { fx.fillStyle = c2; fx.fillRect(p[0] - .25, p[1] - (pat === 'zebra' ? .12 : .2), .5, pat === 'zebra' ? .24 : .4); } }
       const hp = MR.S(pts[8][0], pts[8][1]); dot(fx, hp, .42, c1); fx.fillStyle = '#101018'; fx.fillRect(hp[0] + .1, hp[1] - .15, .22, .22); }
+    // (· 16) водолаз: з регулятора йдуть бульбашки, ліхтар сканує рифом; скриня зі скарбом відкривається раз на 14 с (блиск, іскри);
+    //        затонула неонова N блимає
+    { const dx = REEF.diver, dy = sy(dx) - 7.5, k = sOf(MR.W(dx, dy)[2]); fx.save(); fx.globalCompositeOperation = 'lighter';
+      for (let q = 0; q < 6; q++) { const f = ((t * .55 + q / 6) % 1), p = MR.S(dx + .6 + Math.sin(f * 9 + q) * .6, dy - 1 - f * (dy - 2)), r = (.25 + f * .5) * k; fx.globalAlpha = .7 * (1 - f * .6); fx.fillStyle = '#e8fbff'; fx.beginPath(); fx.arc(p[0], p[1], r, 0, TAU); fx.fill(); }
+      const a = -.5 + .5 * Math.sin(t * .4), hx = dx + 2.6, hy = dy - 2, e = MR.S(hx + Math.cos(a) * 22, hy + Math.sin(a) * 22 * .5), h0 = MR.S(hx, hy), g = fx.createLinearGradient(h0[0], h0[1], e[0], e[1]);   // промінь ліхтаря
+      g.addColorStop(0, 'rgba(255,250,200,.4)'); g.addColorStop(1, 'rgba(255,250,200,0)'); fx.fillStyle = g; fx.beginPath(); fx.moveTo(h0[0], h0[1]); const e1 = MR.S(hx + Math.cos(a - .18) * 22, hy + Math.sin(a - .18) * 22 * .5), e2 = MR.S(hx + Math.cos(a + .18) * 22, hy + Math.sin(a + .18) * 22 * .5); fx.lineTo(e1[0], e1[1]); fx.lineTo(e2[0], e2[1]); fx.closePath(); fx.fill(); fx.restore(); }
+    { const c = (t + 5) % 14, o = c < 1 ? sm(c) : c < 5 ? 1 : c < 6 ? 1 - sm(c - 5) : 0, cx = REEF.chest, cy = sy(cx) - .4, k = sOf(MR.W(cx, cy)[2]);                       // скриня: кришка відкривається, золото світиться
+      if (o > .02) { const lid = [[cx - 3.2, cy - 3.6], [cx + 3.2, cy - 3.6], [cx + 3.2 + o * 1.2, cy - 3.6 - o * 3.2], [cx - 3.2 + o * 1.2, cy - 3.6 - o * 3.2]]; fx.fillStyle = '#6a3a1a'; fx.beginPath(); lid.forEach(([x, y], q) => { const p = MR.S(x, y, 2); q ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); }); fx.closePath(); fx.fill();
+        fx.save(); fx.globalCompositeOperation = 'lighter'; const p = MR.S(cx, cy - 3, 2), gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 7 * k); gr.addColorStop(0, `rgba(255,220,100,${.6 * o})`); gr.addColorStop(1, 'rgba(255,200,60,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - 8, p[1] - 8, 16, 16);
+        for (let q = 0; q < 6; q++) { const f = ((t * .8 + q / 6) % 1); fx.globalAlpha = o * (1 - f); fx.fillStyle = q % 2 ? '#ffe080' : '#ffffff'; fx.fillRect(p[0] + (hash(q, 3) - .5) * 6 * k, p[1] - f * 6 * k, .5, .5); } fx.restore(); } }
+    { const on = Math.sin(t * 7) > -.6 && Math.sin(t * .9) > -.8, x = REEF.neonN, y = sy(x) - 1.5, k = sOf(MR.W(x, y)[2]); if (on) { fx.save(); fx.globalCompositeOperation = 'lighter'; const p = MR.S(x, y - 3, 1); fx.globalAlpha = .35; const gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 6 * k); gr.addColorStop(0, 'rgba(90,232,255,.8)'); gr.addColorStop(1, 'rgba(90,232,255,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - 7, p[1] - 7, 14, 14); fx.restore(); } }
     // краб ходить боком по піску, зупиняється й погрожує клешнями
     { const c = t % 22, x = c < 7 ? 62 + c * 3.4 : c < 11 ? 85.8 : c < 18 ? 85.8 - (c - 11) * 3.4 : 62, walk = (c < 7 || (c >= 11 && c < 18)), S = CRAB[walk ? Math.floor(t * 6) % 2 : (c % 2 < 1 ? 1 : 0)], p = MR.S(x, R.sy(x) - .1), k = sOf(MR.W(x, 0)[2]);
       fx.drawImage(S.cv, p[0] - S.w * k / 2, p[1] - S.h * k * .9, S.w * k, S.h * k); }
