@@ -746,7 +746,8 @@ NX.arc = NX.arc || {};
   SHP['st:dc_reef'] = (G, B) => {
     const d = B.dc, w = B.w, dep = B.dep, top = d.top, bot = d.bot, lid = d.lid, base = d.base, sg = d.sgn;
     G.partF(G.sub(0, dep / 2, w + .02, dep, top - lid, top), Fc => {                        // кришка: хром, рожевий неон, «місячна» LED-лінійка над склом
-      if (Fc.k === 'bottom' || Fc.k === 'top') return null; const L = lit(Fc.n, A.centre(Fc));
+      if (Fc.k === 'top') return null; const L = lit(Fc.n, A.centre(Fc));
+      if (Fc.k === 'bottom') return (u, v, i, j) => { const x = d.s0 + u * Fc.fw, dp = v * Fc.fh; return dp > 2.5 && dp < dep - 3 && ((x % 6) + 6) % 6 < 3.2 ? E(((i + j) % 3) ? col('#7ad8ff') : col('#ffffff')) : ramp(PL.DARK, .12, i, j); };   // (· 15) спід кришки — панелі світильників (видно з-під)
       if (Fc.k === 'front') return (u, v, i, j) => { const y = v * lid, x = d.s0 + u * Fc.fw;
         if (y < .7) return ramp(PL.CHROME, .85 - y * .4, i, j); if (y > lid - .9) return E(((x * 1.3) | 0) % 4 ? col('#bfe8ff') : col('#ffffff'));
         if (Math.abs(y - 2.2) < .3) return E(N.pink[1]); return ramp(PL.MET, .4 * L + (y < 1.4 ? .1 : 0), i, j); };
@@ -812,7 +813,7 @@ NX.arc = NX.arc || {};
    *  кожному другому), ТОРЦІ — скляні стінки в рамі; табличка «ФЕРМА NEXI» (NX.t, 4 мови). Нутро — грань з текстурою farmPaint. */
   SHP['st:dc_farm'] = (G, B) => {
     const d = B.dc, sg = d.sgn, C = d.C, P = d.P, lid = d.lid, base = d.base, GR = neonX('#3bff8a'), FT = neonX('#ff4fd8'), ov = d.ov == null ? .5 : d.ov;
-    const pt = (a, ins, y) => { const rad = d.R - ins; return [C[0] + sg * rad * Math.sin(a * D2R), y, C[1] + rad * Math.cos(a * D2R)]; };
+    const pt = (a, ins, y) => { if (a < 0 && d.JZ != null) return [C[0] + sg * d.R * a * D2R, y, d.JZ - ins]; const rad = d.R - ins; return [C[0] + sg * rad * Math.sin(a * D2R), y, C[1] + rad * Math.cos(a * D2R)]; };   // a < 0 — пряма ділянка стіни біля вікна (· 15: лівий кінець рівний, не «ламаний»)
     const am = (d.sa + d.sb) / 2, nOut = [-sg * Math.sin(am * D2R), 0, -Math.cos(am * D2R)], len = Math.hypot(...sub(pt(d.sb, P, 0), pt(d.sa, P, 0)));
     const s0 = d.i * len, tot = d.n * len, dd = Object.assign({}, d, { s0, tot });            // x уздовж — з довжин сегментів у JS (усі рівні): шви сходяться точно
     const YT = d.yta, YB = d.yba, y0 = YT + lid, y1 = YB - base, H = y1 - y0;                  // y0 / y1 — низ кришки / верх тумби; H — висота нутра
@@ -854,9 +855,11 @@ NX.arc = NX.arc || {};
       (u, v, i, j) => post && Math.abs(u - .5) < .2 ? E(GR[((j * 3) | 0) % 7 ? 1 : 2]) : ramp(PL.CHROME, (v * H % 9) < .5 ? .9 : .6 - Math.abs(u - .5) * .3, i, j), nOut); };
     if (!(d.i % 2)) mull(d.sa, FARM.post, true); if (d.i === d.n - 1) mull(d.sb - FARM.post / (d.R - P) / D2R, FARM.post, true);   // камери — по два сегменти (власник: «камерки більше»)
     // ТОРЦІ — скляні стінки в рамі (видно з боку)
-    const endWall = (a, inner) => { const nrm = [-inner * sg * Math.cos(a * D2R), 0, inner * Math.sin(a * D2R)];
-      quad(G, [pt(a, P, YT), pt(a, .3, YT), pt(a, .3, YB), pt(a, P, YB)], (u, v, i, j) => { const y = v * (YB - YT), dp = (1 - u) * (P - .3), fr = y < lid || y > YB - YT - base || dp < 1.2 || dp > P - 1.5 || Math.abs(y - lid - FARM.tierY(H, 1)) < 1.2 || Math.abs(y - lid - FARM.tierY(H, 2)) < 1.2;
-        if (fr) return ramp(PL.STEEL, .3, i, j); return ((i + j * 2) % 23) < 2 ? col('#9ad8f0') : ramp(pal(['#0a2a3a', '#124454', '#1a5a6a']), .4 + v * .2, i, j); }, nrm); };
+    const endWall = (a, inner) => { const nrm = [-inner * sg * Math.cos(a * D2R), 0, inner * Math.sin(a * D2R)];                 // торець: суцільна панель (метал, ламелі, зелена неонова смужка) — без «скляного клину»
+      quad(G, [pt(a, P, YT), pt(a, .3, YT), pt(a, .3, YB), pt(a, P, YB)], (u, v, i, j) => { const y = v * (YB - YT), dp = (1 - u) * (P - .3);
+        if (dp < 1.4) return ramp(PL.CHROME, .7, i, j); if (dp > 2 && dp < 3.2 && y > lid && y < YB - YT - base) return E(GR[((j * 3) | 0) % 7 ? 1 : 2]);
+        if (y > lid + 2 && y < YB - YT - base - 2 && dp > 5 && dp < P - 3 && (y * 1.6) % 1 < .45) return ramp(PL.DARK, .12, i, j);
+        return ramp(PL.STEEL, .3 - u * .08, i, j); }, nrm); };
     if (d.i === 0) endWall(d.sa, 1); if (d.i === d.n - 1) endWall(d.sb, -1);
     const shR = Math.min(YB + 8, d.shy || YB + 8); if (shR > YB) ditherFace(G, pt(d.sa, .15, YB - 1), pt(d.sb, .15, YB - 1), pt(d.sa, .15, shR), nOut, (u, v) => .4 * Math.pow(1 - v, 1.6));   // тінь на стіні
     { const tex = A.texture({ dc: dd, w: len }, { fw: len, fh: H, k: 'front' }, 3, farmPaint), tw = tex.w, th = tex.h, td = tex.d;   // НУТРО: грань за склом між кришкою й тумбою
@@ -1008,22 +1011,36 @@ NX.arc = NX.arc || {};
   // ================= ПЛАКАТ І НЕОН (пласкі: грань-малюнок) =================
   A.STY.dc_poster = { pal: PL.DARK, q: .4, bev: .3, ins: 0 };
   /** Плакат «Nexi — ботанік»: рамка, темно-синій папір, монстера кодом, напис і підпис зі словників (4 мови). */
-  PAINT.dc_poster0 = (c, fw, fh) => {
-    const T = A.txt;
-    c.fillStyle = '#2a1830'; c.fillRect(0, 0, fw, fh); c.fillStyle = '#0c1a3a'; c.fillRect(1.2, 1.2, fw - 2.4, fh - 2.4);
+  PAINT.dc_poster0 = (c, fw, fh) => {                                                  // (· 15) плакат «Nexi — ботанік»: Nexi з лійкою поливає паросток, сонце-кільця, LED-рамка
+    const T = A.txt, px = (x, y, w, h, cc) => { c.fillStyle = cc; c.fillRect(x, y, w, h); };
+    px(0, 0, fw, fh, '#2a1830'); const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#0a1440'); g.addColorStop(.6, '#162a66'); g.addColorStop(1, '#0c1a3a'); c.fillStyle = g; c.fillRect(1.2, 1.2, fw - 2.4, fh - 2.4);
     c.strokeStyle = '#d8a030'; c.lineWidth = .5; c.strokeRect(2.2, 2.2, fw - 4.4, fh - 4.4);
-    const cx = fw / 2, cy = fh * .46, r = fw * .3;
-    c.fillStyle = 'rgba(90,232,255,.12)'; c.beginPath(); c.arc(cx, cy, r * 1.25, 0, 7); c.fill();
-    c.fillStyle = '#237e56'; c.beginPath(); c.moveTo(cx, cy + r); c.bezierCurveTo(cx - r * 1.4, cy + r * .2, cx - r * .9, cy - r * 1.1, cx, cy - r * .55); c.bezierCurveTo(cx + r * .9, cy - r * 1.1, cx + r * 1.4, cy + r * .2, cx, cy + r); c.fill();
-    c.strokeStyle = '#0c1a3a'; c.lineWidth = r * .1; for (const sg of [-1, 1]) for (let k = 0; k < 3; k++) { const y = cy - r * .25 + k * r * .38; c.beginPath(); c.moveTo(cx + sg * r * .95, y - r * .1); c.lineTo(cx + sg * r * .45, y + r * .06); c.stroke(); }
-    c.strokeStyle = '#7ae8a0'; c.lineWidth = r * .06; c.beginPath(); c.moveTo(cx, cy + r * 1.1); c.lineTo(cx, cy - r * .45); c.stroke();
-    T(c, NX.t('decor.poster.title'), cx, fh * .11, fw - 5, fh * .07, '#ffd27a', { glow: '#ff9a3a' });
-    T(c, NX.t('decor.poster.sub'), cx, fh * .86, fw - 6, fh * .045, '#9af6ff', { glow: '#3be8ff' });
+    for (let k = 0; k < 2 * (fw + fh) / 3; k++) { const t = k * 3, p = t < fw ? [t, .4] : t < fw + fh ? [fw - 1, t - fw] : t < 2 * fw + fh ? [2 * fw + fh - t, fh - 1] : [.4, 2 * (fw + fh) - t]; px(p[0], p[1], .7, .7, k % 2 ? '#3be8ff' : '#ff4fd8'); }   // LED-рамка
+    for (let k = 0; k < 40; k++) px(3 + hash(k, 1) * (fw - 6), 8 + hash(k, 2) * (fh * .4), .4, .4, k % 3 ? '#9ab8ff' : '#ffffff');   // зорі
+    const cx = fw * .6, cy = fh * .42, R = fw * .2;
+    for (let k = 3; k >= 0; k--) { c.fillStyle = `rgba(255,${150 + k * 20},60,${.1 + k * .06})`; c.beginPath(); c.arc(cx, cy, R * (1.1 + k * .35), 0, 7); c.fill(); }   // сонце-кільця
+    c.fillStyle = '#ffd27a'; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill(); c.fillStyle = '#fff0b0'; c.beginPath(); c.arc(cx - R * .25, cy - R * .25, R * .5, 0, 7); c.fill();
+    for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; px(cx + Math.cos(a) * R * 1.45 - .3, cy + Math.sin(a) * R * 1.45 - .3, .7, .7, '#ffb04a'); }
+    px(2.4, fh * .68, fw - 4.8, fh * .16, '#1a3a2a'); px(2.4, fh * .68, fw - 4.8, .6, '#3bff8a');                                 // земля
+    for (let k = 0; k < 30; k++) px(3 + hash(k, 7) * (fw - 6), fh * .7 + hash(k, 8) * fh * .13, .5, .5, k % 2 ? '#2a6a3a' : '#48bc7a');
+    { const x = fw * .62, y = fh * .68; px(x - 4, y - 5, 8, 5, '#c8542a'); px(x - 4.5, y - 6, 9, 1.2, '#e8744a'); px(x - 3, y - 4.4, 6, .6, '#ffa070');   // вазон з паростком
+      c.strokeStyle = '#48bc7a'; c.lineWidth = .9; c.beginPath(); c.moveTo(x, y - 6); c.lineTo(x, y - 13); c.stroke();
+      for (const [dx, dy, a] of [[-3, -10, -.6], [3, -11.5, .6], [0, -15, 0]]) { c.save(); c.translate(x + dx, y + dy); c.rotate(a); c.fillStyle = '#58b45c'; c.beginPath(); c.ellipse(0, 0, 3.2, 1.6, 0, 0, 7); c.fill(); c.fillStyle = '#9ae07a'; c.fillRect(-2.5, -.25, 5, .5); c.restore(); } }
+    { const x = fw * .3, y = fh * .68;                                                                                             // Nexi з лійкою
+      px(x - 5, y - 12, 10, 8, '#f0f4ff'); px(x - 5, y - 12, 10, 1, '#ffffff'); px(x - 4, y - 10.5, 8, 3.2, '#0a1230'); px(x - 2.8, y - 9.8, 1.8, 1.8, '#3be8ff'); px(x + 1, y - 9.8, 1.8, 1.8, '#3be8ff');
+      px(x - .4, y - 15, .8, 3, '#9aa8c0'); px(x - .9, y - 16, 1.8, 1.2, '#ff4fd8');                                              // антена
+      px(x - 4, y - 4, 8, 4.4, '#dce4ff'); px(x - 4, y - 4, 8, .8, '#ffffff'); px(x - 1.2, y - 3, 2.4, 2.4, '#1a2a6a'); px(x - .9, y - 2.7, .5, 1.8, '#3be8ff'); px(x + .4, y - 2.7, .5, 1.8, '#3be8ff');   // тулуб з N
+      px(x - 3.6, y + .4, 2.6, 1.4, '#9aa8c0'); px(x + 1, y + .4, 2.6, 1.4, '#9aa8c0');                                             // ноги
+      px(x - 7, y - 3.6, 3, 1.2, '#c8d0ec'); px(x + 4, y - 4.5, 3, 1.2, '#c8d0ec');                                                 // руки
+      px(x + 6, y - 7.5, 6, 4.2, '#3be8ff'); px(x + 6, y - 8.5, 6, 1, '#9af6ff'); px(x + 11.5, y - 7, 3.5, 1, '#3be8ff'); px(x + 14.5, y - 8, 1, 1.6, '#9af6ff');   // лійка
+      c.fillStyle = '#9af6ff'; for (let k = 0; k < 6; k++) { const t = k / 5, dx = 15.5 + t * (fw * .62 - x - 15.5), dy = -8 + Math.sin(t * Math.PI) * -3 + t * 2; c.fillRect(x + dx, y + dy, .6, .9); } }   // краплі до паростка
+    T(c, NX.t('decor.poster.title'), fw / 2, fh * .11, fw - 5, fh * .07, '#ffd27a', { glow: '#ff9a3a' });
+    T(c, NX.t('decor.poster.sub'), fw / 2, fh * .9, fw - 6, fh * .045, '#9af6ff', { glow: '#3be8ff' });
   };
   /** Неонова вивіска: голова Nexi (блакитний неон), паросток з неї (зелений) і сердечко (рожеве) — без слів. */
   PAINT.dc_neon = (c, fw, fh) => {
     c.fillStyle = '#0a0618'; c.fillRect(0, 0, fw, fh); c.strokeStyle = '#2a1a5a'; c.lineWidth = .5; c.strokeRect(.6, .6, fw - 1.2, fh - 1.2);
-    const s = Math.min(fw, fh) / 40, cx = fw * .46, cy = fh * .58, GRN = ['#0a5a3a', '#3bff8a', '#d0ffe4'];
+    const s = Math.min(fw, fh) / 46, cx = fw * .46, cy = fh * .5, GRN = ['#0a5a3a', '#3bff8a', '#d0ffe4'];   // (· 15) дрібніше й вище — унизу місце для літер NEXI
     const nl = (x0, y0, x1, y1, hx, w = 1) => { if (hx !== 'green') return A.neon(c, x0, y0, x1, y1, hx, w * s);
       c.lineCap = 'round'; [[w * s * 2.2, GRN[0], .55], [w * s, GRN[1], 1], [w * s * .38, GRN[2], 1]].forEach(([lw, st, a]) => { c.globalAlpha = a; c.strokeStyle = st; c.lineWidth = lw; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); }); c.globalAlpha = 1; };
     const R = (x, y, w, h, hx) => { nl(x, y, x + w, y, hx); nl(x + w, y, x + w, y + h, hx); nl(x + w, y + h, x, y + h, hx); nl(x, y + h, x, y, hx); };
@@ -1033,6 +1050,11 @@ NX.arc = NX.arc || {};
     nl(cx, cy - 7 * s, cx, cy - 13 * s, 'green');
     const leafN = sg => { for (let k = 0; k < 6; k++) { const f = t => [cx + sg * Math.sin(t * Math.PI) * 6 * s, cy - 13 * s - t * 5 * s], a = f(k / 6), b = f((k + 1) / 6); nl(a[0], a[1], b[0], b[1], 'green', .9); } };
     leafN(-1); leafN(1);
+    { const m = 2.6, r = 4; A.neonRect(c, m, m, fw - 2 * m, fh - 2 * m, '#ff4fd8', .5 * s, r); }                                   // (· 15) рожева неонова рамка
+    nl(cx - 2.2 * s, cy - 9.5 * s, cx - 2.2 * s, cy - 7 * s, '#3be8ff', .8); nl(cx + 2.2 * s, cy - 9.5 * s, cx + 2.2 * s, cy - 7 * s, '#3be8ff', .8);   // «вушка»-антенки
+    { const L = (x, pts) => { for (let k = 1; k < pts.length; k++) nl(x + pts[k - 1][0] * s, cy + 10.5 * s + pts[k - 1][1] * s, x + pts[k][0] * s, cy + 10.5 * s + pts[k][1] * s, '#3be8ff', .7); };   // NEXI — літери-трубки
+      const x0 = cx - 9.5 * s, h = 5; L(x0, [[0, h], [0, 0], [3, h], [3, 0]]); L(x0 + 5 * s, [[3, 0], [0, 0], [0, h], [3, h]]); L(x0 + 5 * s, [[0, h / 2], [2.2, h / 2]]); L(x0 + 10 * s, [[0, 0], [3, h]]); L(x0 + 10 * s, [[3, 0], [0, h]]); L(x0 + 15 * s, [[0, 0], [0, h]]); }
+    for (const [sx, sy] of [[.12, .2], [.2, .72], [.88, .62], [.7, .14]]) { const x = fw * sx, y = fh * sy; nl(x - 1.1 * s, y, x + 1.1 * s, y, '#ffd27a', .45); nl(x, y - 1.1 * s, x, y + 1.1 * s, '#ffd27a', .45); }   // зірочки
     const hx = fw * .82, hy = fh * .28, hs = 3.2 * s;
     nl(hx, hy + hs, hx - hs * 1.2, hy - hs * .1, '#ff4fd8'); nl(hx - hs * 1.2, hy - hs * .1, hx - hs * .6, hy - hs * .9, '#ff4fd8'); nl(hx - hs * .6, hy - hs * .9, hx, hy - hs * .3, '#ff4fd8');
     nl(hx, hy - hs * .3, hx + hs * .6, hy - hs * .9, '#ff4fd8'); nl(hx + hs * .6, hy - hs * .9, hx + hs * 1.2, hy - hs * .1, '#ff4fd8'); nl(hx + hs * 1.2, hy - hs * .1, hx, hy + hs, '#ff4fd8');

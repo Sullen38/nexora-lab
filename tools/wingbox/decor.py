@@ -281,7 +281,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         segs = []; acc = 0.
         for i in range(n):
             sa, sb = bounds[i], bounds[i + 1]; am = (sa + sb) / 2
-            d = dict(SH, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, noarm=1, yta=YT, ytb=YT, yba=YB, ybb=YB)
+            d = dict(SH, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, JZ=JZ, sgn=sgn, noarm=1, yta=YT, ytb=YT, yba=YB, ybb=YB)   # JZ — пряма ділянка стіни біля вікна (a < 0): JS pt() малює її прямою, як Wall.at
             it = item(W, f'dc_fm{i}', am, SH['P'], chord(W, sa, sb) + .2, YB, YT, 'dc_farm', inset=.3, dc=d); add(it); segs.append(it)
             acc += chord(W, sa, sb, SH['P'])
         tot = acc; OV = .5                                                               # tot — довжина (x малюнка 0..tot); нутро заходить за кришку й тумбу на OV (без щілин)
@@ -398,8 +398,8 @@ def decor_side(L, sgn, C, R, verbose=True):
             add(item(W, f'dc_tr{k}', am, 5.5, chord(W, a0, a1, 3.), bot, top, 'dc_trough', inset=.4, dc=dict(kind=kind, seed=151 + k, th=3.2, pot=dict(shape='trough', mat='steel', band=['lil', 'green'][k], name='trough-' + ['lil', 'green'][k]))))
         TR = out[-2:]
         # ---------- (· 3) Л7. ВИТКІ НА ЦЕГЛІ: дикий виноград угору між аналітикою й медузарієм, пасифлора — між медузарієм і плакатом
-        climb('dc_cl0', 380.3, 386.8, 4., 209., 'bivy', 111)
-        climb('dc_cl1', 429., 443., 4., 104., 'passiflora', 112)
+        climb('dc_cl0', 380., 390., 4., 209., 'bivy', 111)                       # (· 15) удвічі ширші — пишніші (власник: «рослини в три рази крутіше»)
+        climb('dc_cl1', 426.5, 446.5, 4., 104., 'passiflora', 112)
         # ---------- (· 3) Л8. НА КРИШЦІ РИФУ (дальній край, де над ним є місце): спатифілум і сингоніум
         for k, (X, kind, pot) in enumerate(((326., 'spathiphyllum', 'enamel'), (350., 'syngonium', 'terra'))):
             a = W.a_of(X, RF['P'] * .5); (x, z), _, _ = W.at(a, RF['P'] * .5); Y0 = RF['top'] - RF['lid']; h = min(17., Y0 - Yw(3., z))

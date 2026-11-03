@@ -188,7 +188,7 @@
     const rf = wins('reef'); if (rf.length) { const d = rf[0].dc; AQ.reef = { ids: rf.map(B => B.id), C: d.C, R: d.R, sgn: d.sgn, a0: Math.min(...rf.map(B => B.dc.sa)), a1: Math.max(...rf.map(B => B.dc.sb)), P: d.P, top: d.top, bot: d.bot }; }
     const vw = items.filter(B => B.st === 'dc_farm').sort((p, q) => p.dc.i - q.dc.i);     // (· 13) ферма: нутро — грань сегментів рами (між кришкою й тумбою); маска — многокутник (poly), живе — objects/decor_farm.js
     if (vw.length) { const d = vw[0].dc, ov = d.ov == null ? .5 : d.ov, segs = vw.map(B => B.dc), poly = [];
-      const pt = (q, a, ins, y) => { const rad = q.R - ins; return [q.C[0] + q.sgn * rad * Math.sin(a * D2R), y, q.C[1] + rad * Math.cos(a * D2R)]; };
+      const pt = (q, a, ins, y) => { if (a < 0 && q.JZ != null) return [q.C[0] + q.sgn * q.R * a * D2R, y, q.JZ - ins]; const rad = q.R - ins; return [q.C[0] + q.sgn * rad * Math.sin(a * D2R), y, q.C[1] + rad * Math.cos(a * D2R)]; };   // a < 0 — пряма ділянка стіни (як decor.py Wall.at)
       segs.forEach(q => poly.push(X.proj(pt(q, q.sa, q.P - .4, q.yta + q.lid - ov)), X.proj(pt(q, q.sb, q.P - .4, q.ytb + q.lid - ov))));
       [...segs].reverse().forEach(q => poly.push(X.proj(pt(q, q.sb, q.P - .4, q.ybb - q.base + ov)), X.proj(pt(q, q.sa, q.P - .4, q.yba - q.base + ov))));
       const F = NX.arc.FARM, bars = [], y0 = d.yta + d.lid, H = (d.yba - d.base) - y0, D2 = 1 / ((d.R - d.P) * D2R);                      // (· 14) що ПОПЕРЕДУ рослин: стійки-імпости й передні кромки полиць — з маски геть
