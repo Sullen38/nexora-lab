@@ -9,8 +9,13 @@
  * координатах кімнати.
  * ФОКУС УВАГИ (власник, 02.11: «коли з Рудиком якась подія — камера переходить на нього, він якийсь час у центрі уваги,
  * потім камера повертається на Nexi»): focus(x, сек) — замість Nexi камера тримає в центрі точку x() (кіт; вірус — між котом
- * і вірусом), поки не мине час; команда користувача Nexi (nexi.js: do / walkTo) — unfocus(). На комп'ютері видно всю кімнату —
+ * і вірусом), поки не мине час; команда людини Nexi — toNexi() (скасовує й фокус). На комп'ютері видно всю кімнату —
  * нічого не змінюється. Хто кличе — actors/cat/cat.js: look().
+ * ОГЛЯД КІМНАТИ (власник, 03.11: «коли вивчаємо кімнату, задовбує, що камера постійно повертається до Nexi — хай
+ * повертається, коли натискаємо на область взаємодії або на підлогу»): погортав кімнату — камера стоїть, де її лишили (free),
+ * і сама нікуди не йде — ні за Nexi, ні на фокус уваги (події Рудика), — доки людина не дасть Nexi команду: тап по Nexi, коту,
+ * зоні, предмету чи підлозі, команда в діалозі (actors/nexi/nexi.js: do від людини; ui/input.js: Nexi й підлога) — toNexi().
+ * Тапи по гостях і декору — не команда: камера стоїть. До 03.11 камера поверталась сама через 4 с після гортання.
  * iPhone / iPad: свайп від лівого чи правого краю екрана — жест браузера «назад» / «вперед»; хто гортав кімнату від краю,
  * випадав зі сторінки (власник, 02.11). Дотик біля краю канвас «забирає собі» (touchstart з preventDefault) — тоді Safari
  * (iOS 13.4+) цей жест не починає, а кімната гортається як звичайно (тапи й перетягування — pointer-події, їм це не заважає).
@@ -26,7 +31,8 @@ NX.cam = {
   front: 200,    // висота добудованої підлоги
   viewW: 1664,   // ширина видимої області (одиниці кімнати)
   mobile: false,
-  dragUntil: 0,  // до якого часу камера не слідкує за Nexi (користувач гортав)
+  free: false,   // людина гортала кімнату: камера стоїть, де її лишили, доки людина не дасть Nexi команду (toNexi)
+  dragUntil: 0,  // для інструментів знімків (tools/same.js, bench.js, wingbox/shot.js): тримати камеру до цього performance.now()
   foc: null,     // фокус уваги: { x() — центр, until — до якого часу NX.time } (подія з Рудиком)
   focEnd: -99,   // коли фокус скінчився (дрібна подія одразу після — камера не смикається туди-сюди)
 
@@ -50,10 +56,13 @@ NX.cam = {
   /** Фокус уваги на x() на sec секунд. Довший фокус, що вже йде, коротший не перебиває (force — замінити). */
   focus(x, sec, force) { const until = NX.time + sec; if (!force && this.foc && this.foc.until > until) return; this.foc = { x, until }; },
   unfocus() { if (this.foc) this.focEnd = NX.time; this.foc = null; },
-  /** Камера м'яко тримає Nexi в центрі (якщо кімната ширша за екран) — або точку фокуса уваги, поки він триває. */
+  /** Команда людини Nexi (див. шапку, «ОГЛЯД КІМНАТИ») — камера знову за Nexi: і після гортання, і замість фокуса уваги. */
+  toNexi() { this.free = false; this.unfocus(); },
+  /** Камера м'яко тримає Nexi в центрі (якщо кімната ширша за екран) — або точку фокуса уваги, поки він триває; людина
+   *  гортала (free) — стоїть, де її лишили (фокус уваги минає за часом, як і раніше). */
   follow(tx, dt) {
     const F = this.foc; if (F) { if (NX.time > F.until) this.unfocus(); else { const fx = F.x(); if (Number.isFinite(fx)) tx = fx; } }
-    if (performance.now() < this.dragUntil) return;
+    if (this.free || performance.now() < this.dragUntil) return;
     const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW);
     const want = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max);
     this.x += (want - this.x) * Math.min(1, dt * 3);
@@ -79,7 +88,7 @@ NX.cam = {
       if (down) {
         const dx = e.clientX - down.x;
         if (Math.abs(dx) > 6) down.moved = true;
-        if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(down.cx - dx / this.k, C.ROOM_X0, max); this.dragUntil = performance.now() + 4000; }
+        if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(down.cx - dx / this.k, C.ROOM_X0, max); this.free = true; }
       } else NX.input && NX.input.onHover(...this.toRoom(e.clientX, e.clientY));
     });
     canvas.addEventListener('pointerup', e => { if (down && !down.moved) NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; arm(); });

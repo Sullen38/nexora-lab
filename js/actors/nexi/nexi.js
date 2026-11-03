@@ -23,7 +23,7 @@ NX.nexi = {
   do(id, byUser = true, opt = {}) {
     const A = NX.acts[id]; if (!A) return;
     this.taskOpt = opt.task || null;   // конкретна задача зони (ui/zones.js)
-    if (byUser) { this.lastCmd = NX.time; NX.cam.unfocus(); }                       // команда користувача — камера знову на Nexi
+    if (byUser) { this.lastCmd = NX.time; NX.cam.toNexi(); }                        // команда користувача — камера знову на Nexi (і після гортання)
     this.finishTask(false);
     this.autoRun = !byUser;                                                           // сценарій знає, чи це вільний час (майстерня: без лабораторії скінів)
     this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
