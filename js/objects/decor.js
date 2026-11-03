@@ -199,6 +199,7 @@
   };
   /** Де мешканець зараз (світ) і куди дивиться: плавна «прогулянка» сумою синусоїд у межах об'єму акваріума. */
   function where(aq, A, m, k, t) {
+    const own = NX.decorAqua && NX.decorAqua.where(aq, A, m, t); if (own) return own;             // (· 5) особлива поведінка: рибка-клоун — в анемоні
     const [kind, , sp, sd] = m, h = q => hash(sd * 7 + q, 3), w = .045 * sp * (.8 + .4 * h(1)), ph = h(2) * 6.28;
     if (aq === 'jelly') {
       const yT = A.top + 9, yB = A.bot - 14, yy = yT + (yB - yT) * (.5 + .45 * Math.sin(t * (.018 + .01 * h(3)) + ph)) - 1.4 * Math.max(0, Math.sin(t * (1.3 + .4 * h(4)) * 6.28 / 6.28 * 3.14));
@@ -309,6 +310,7 @@
     if (!fresh && (M.fr & 1)) { c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore(); return; }   // риби оновлюються через кадр (30 к/с), кладуться щокадру
     const fx = M.out.getContext('2d'); fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'source-over'; fx.globalAlpha = 1; fx.clearRect(0, 0, W, H);
     fx.setTransform(Rd, 0, 0, Rd, -M.x * Rd, -M.y * Rd); fx.imageSmoothingEnabled = true;
+    const AQX = NX.decorAqua; if (AQX) { AQX.back(fx, aq, A, t); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 5) промені, каустика, ламінарія, мурена, вугри, краб… (objects/decor_aqua.js)
     // бульбашки
     for (const S of STREAMS[aq](A)) for (let k = 0; k < S.n; k++) { const f = (t * .09 + k / S.n + hash(k, aq.length) * .05) % 1, y = S.p[1] - f * S.h, x = S.p[0] + Math.sin(t * 2.2 + k * 1.9) * .7, q = X.proj([x, y, S.p[2]]), s = sOf(S.p[2]) * (.9 + .6 * hash(k, 9));
       fx.globalAlpha = .8 * (1 - f * .5); fx.drawImage(BUB.cv, q[0] - s, q[1] - s, s * 2, s * 2); }
@@ -326,12 +328,13 @@
         if (jel) { fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = .38; fx.drawImage(S.cv, q[0] - w * .58, y0 - h * .04, w * 1.16, h * 1.08); fx.globalCompositeOperation = 'source-over'; } }   // медузи світяться
     }
     fx.globalAlpha = 1;
+    if (AQX) { AQX.front(fx, aq, A, t); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 5) морський сніг, поверхня, анциструс на склі…
     if (DL) DL.aqFx(fx, aq, t);                                                         // (· 5) бульбашки від тапу
     // маска скла
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
     c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore();
   }
-  NX.decor = { droneAt, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items };            // для перевірок (tools) і живого шару · 4 (objects/decor_live.js)
+  NX.decor = { droneAt, ROUTE, MK, AQ, sprite, glowSpr, hex, byId, items, SPR, CREW, JELLY: jelly };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js) і акваріумів · 5 (objects/decor_aqua.js)
   NX.addObject({
     id: 'decorLive',
     /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */

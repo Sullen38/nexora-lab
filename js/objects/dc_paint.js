@@ -843,41 +843,76 @@ NX.arc = NX.arc || {};
     c.fillStyle = 'rgba(255,255,255,.07)'; for (let k = 0; k < 3; k++) { const x = ((37 * k + 11 - x0) % 41 + 41) % 41 - 8; c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 3, 0); c.lineTo(x + 3 - fh * .35, fh); c.lineTo(x - fh * .35, fh); c.closePath(); c.fill(); }
     if (o.top) { c.fillStyle = 'rgba(200,240,255,.55)'; c.fillRect(0, o.top, fw, .45); }
   }
-  // ---- РИФ: панорама (кожен корал — свого виду, один раз) ----
+  // ---- РИФ: панорама (кожен корал — свого виду, один раз). (Декор стін · 5, власник: «акваріуми — у два рази краще»): глибина
+  //      шарами (далекий риф у синяві, живий камінь з печерою мурени, коралові водорості), удвічі більше коралів; ламінарія,
+  //      щупальця анемони, промені, каустика, сад вугрів, мурена, краб, зграйка хроміс — живі (objects/decor_aqua.js)
+  /** Профіль рифу (спільний з objects/decor_aqua.js): верх каменю в точці x (од. від лівого краю скла), висота скла fh. */
+  const REEF = {
+    sand: fh => fh - 3.2,
+    sy: (x, fh) => fh - 3.2 - .7 * Math.sin(x * .27) - .4 * Math.sin(x * .73 + 1),
+    rock: (x, fh) => { const h = x < 50 ? 1 - Math.pow(Math.abs(x - 22) / 30, 2.2) : x < 97 ? .62 * (1 - Math.pow(Math.abs(x - 74) / 25, 2)) : .32 * (1 - Math.pow(Math.abs(x - 112) / 16, 2));
+      return Math.max(0, h) > 0 ? fh - 3.2 - Math.max(0, h) * fh * .5 - .9 * Math.sin(x * .9) - .5 * Math.sin(x * 2.3 + 1) : 1e9; },
+    cave: [40.5, .73, 4, 3],                                                                         // печера мурени: x, висота (частка fh), півосі
+    anem: 49.5, eels: [99, 101.6, 104.2],
+  };
+  NX.arc.REEF = REEF;
   function reefPaint(c, fw, fh, B) {
     const d = B.dc, s0 = d.s0, T = d.tot || 120, g = c.createLinearGradient(0, 0, 0, fh);
-    g.addColorStop(0, '#3aa8ee'); g.addColorStop(.12, '#1e72cc'); g.addColorStop(.55, '#0e2e86'); g.addColorStop(1, '#0a1658'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    g.addColorStop(0, '#4cc4f6'); g.addColorStop(.1, '#2a8ada'); g.addColorStop(.38, '#1656b4'); g.addColorStop(.7, '#0e3088'); g.addColorStop(1, '#0a1a5c'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
     c.save(); c.translate(-s0, 0);
-    c.fillStyle = 'rgba(190,240,255,.1)'; for (const x of [6, 29, 52, 77, 101]) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 6, 0); c.lineTo(x + 18, fh * .78); c.lineTo(x + 8, fh * .78); c.closePath(); c.fill(); }   // промені
-    const ridge = (y0, a, f, ph, fill) => { c.fillStyle = fill; c.beginPath(); c.moveTo(-5, fh); for (let x = -5; x <= T + 5; x += 1.5) c.lineTo(x, y0 + a * Math.sin(x * f + ph) + a * .6 * Math.sin(x * f * 2.7 + ph * 3)); c.lineTo(T + 5, fh); c.closePath(); c.fill(); };
-    ridge(fh * .64, 3.2, .11, 1, '#1c1258'); ridge(fh * .76, 2.4, .17, 2.4, '#281a6c');                                           // скелі
-    for (let k = 0; k < 40; k++) { const x = hash(k, 3) * T, y = fh * (.66 + .25 * hash(k, 5)); c.fillStyle = k % 3 ? 'rgba(90,240,255,.85)' : 'rgba(255,120,230,.85)'; c.fillRect(x, y, .45, .45); }   // біолюмінесценція
-    const sand = fh - 2.6, sy = x => sand - .6 * Math.sin(x * .3);
-    // 1 горгонарія (віяло)
-    { const x = 7, y = sy(7); c.strokeStyle = '#b04ad8'; c.lineWidth = .45; for (let k = 0; k < 9; k++) { const a = -1.25 + k * .31; LN(c, [[x, y], [x + Math.sin(a) * 7, y - Math.cos(a) * 11]], .4, '#b04ad8'); LN(c, [[x + Math.sin(a) * 4, y - Math.cos(a) * 6], [x + Math.sin(a + .25) * 6.5, y - Math.cos(a + .25) * 10]], .3, '#d88aff'); } }
-    // 2 мозковий корал
-    { const x = 19, y = sy(19); BLOB(c, x, y - 2.2, 4.6, 3.2, '#d8762a'); c.strokeStyle = '#8a3a10'; c.lineWidth = .35; for (let k = 0; k < 4; k++) { c.beginPath(); for (let t = 0; t <= 1; t += .1) c.lineTo(x - 3.8 + t * 7.6, y - 3.6 + k * 1.05 + Math.sin(t * 12 + k) * .35); c.stroke(); } }
-    // 3 оленячий ріг (рожевий, гіллястий)
-    { const br = (x, y, a, l, n) => { const e = [x + Math.sin(a) * l, y - Math.cos(a) * l]; LN(c, [[x, y], e], Math.max(.35, n * .28), n > 1 ? '#e8508a' : '#ffb0d0'); if (n > 0) { br(e[0], e[1], a - .45, l * .72, n - 1); br(e[0], e[1], a + .42, l * .7, n - 1); } }; br(31, sy(31), 0, 4.5, 3); }
-    // 4 анемона (дім рибки-клоуна): малинова ніжка, зелені щупальця зі світними кінчиками
-    { const x = 44, y = sy(44); BLOB(c, x, y - 1.5, 2.6, 1.8, '#a01a62'); for (let k = 0; k < 13; k++) { const a = -1.4 + k * .233, l = 4 + 1.5 * hash(k, 9), e = [x + Math.sin(a) * l, y - 2.4 - Math.cos(a) * l * .9]; LN(c, [[x + Math.sin(a) * 1.4, y - 2.4], [x + Math.sin(a) * l * .55 + .6, y - 2.4 - Math.cos(a) * l * .5], e], .55, '#5ad86a'); BLOB(c, e[0], e[1], .45, .45, '#d0ff8a'); } }
-    // 5 трубчастий корал (блакитні трубки)
-    { for (let k = 0; k < 7; k++) { const x = 53 + k * 1.3, h = 3 + 4.5 * hash(k, 21), y = sy(x); c.fillStyle = '#1a7a9a'; c.fillRect(x - .5, y - h, 1, h); BLOB(c, x, y - h, .62, .32, '#6af8ff'); } }
-    // 6 столовий корал (бірюзова «тарілка» на ніжці)
-    { const x = 69, y = sy(69); c.fillStyle = '#1a6a6a'; c.fillRect(x - .6, y - 5, 1.2, 5); BLOB(c, x, y - 5.3, 6.2, 1.2, '#2ab8a0'); BLOB(c, x, y - 5.7, 5.4, .6, '#7ae8d0'); }
-    // 7 м'який корал (жовто-лаймовий «гриб» з ворсом)
-    { const x = 81, y = sy(81); c.fillStyle = '#a0a020'; c.fillRect(x - .8, y - 3.4, 1.6, 3.4); BLOB(c, x, y - 4.2, 3.6, 1.8, '#d8e040'); for (let k = 0; k < 14; k++) c.fillRect(x - 3.2 + k * .48, y - 5.8 + hash(k, 2) * .6, .22, .7); }
-    // 8 тридакна (хвилясті стулки, світна мантія)
+    const sand = REEF.sand(fh), sy = x => REEF.sy(x, fh), rk = x => REEF.rock(x, fh);
+    // далекий риф у синяві: куполи й гілки, що тануть у глибині
+    for (let k = 0; k < 18; k++) { const x = hash(k, 61) * T, w = 3 + 5 * hash(k, 62), h = 5 + 9 * hash(k, 63), y = fh * .62;
+      c.fillStyle = `rgba(${60 + 30 * hash(k, 64) | 0},${80 + 40 * hash(k, 65) | 0},200,.22)`; if (k % 3) BLOB(c, x, y, w, h * .5, c.fillStyle);
+      else { for (let q = 0; q < 5; q++) LN(c, [[x, y + 3], [x + (q - 2) * 1.6, y - h * (.5 + .1 * q)]], .9, c.fillStyle); } }
+    // живий камінь: темний з підсвіченим верхом, ямки, рожеві коралові водорості
+    c.fillStyle = '#24186a'; c.beginPath(); c.moveTo(-5, fh); for (let x = -5; x <= T + 5; x += .8) c.lineTo(x, Math.min(sand + 1, rk(x))); c.lineTo(T + 5, fh); c.closePath(); c.fill();
+    for (let x = -4; x <= T + 4; x += .45) { const y = rk(x); if (y > sand) continue; c.fillStyle = hash((x * 3) | 0, 3) > .5 ? '#5a40b4' : '#4a32a0'; c.fillRect(x, y, .5, .7); if (hash((x * 2) | 0, 9) > .82) { c.fillStyle = '#c05ac8'; c.fillRect(x, y + .2, .55, .45); } }
+    for (let k = 0; k < 120; k++) { const x = hash(k, 71) * T, y0 = rk(x); if (y0 > sand) continue; const y = y0 + 1.2 + hash(k, 72) * (sand - y0 - 1); c.fillStyle = k % 5 ? 'rgba(14,8,48,.75)' : 'rgba(200,90,200,.6)'; BLOB(c, x, y, .35 + .3 * hash(k, 73), .25 + .2 * hash(k, 74), c.fillStyle); }
+    { const [cx, cyk, rx, ry] = REEF.cave, cy = fh * cyk, gg = c.createRadialGradient(cx, cy, 0, cx, cy, rx); gg.addColorStop(0, '#020108'); gg.addColorStop(.7, '#08041c'); gg.addColorStop(1, '#1a1050');   // печера мурени
+      c.fillStyle = gg; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); c.fill();
+      for (let k = 0; k < 7; k++) { const a = Math.PI * (1.05 + .9 * k / 6), x = cx + Math.cos(a) * (rx + .9), y = cy + Math.sin(a) * (ry + .8), cc = ['#ff4a3a', '#3be8ff', '#ffd23a', '#ff6ae0', '#7aff7a', '#ffffff', '#b46aff'][k];   // «ялинки» — черви на камені біля входу
+        for (let q = 0; q < 3; q++) LN(c, [[x - .55 + q * .05, y - q * .45], [x + .55 - q * .05, y - q * .45 - .15]], .22, cc); } }
+    // 1 горгонарія (віяло) на лівому камені
+    { const x = 6, y = rk(6) + .4; for (let k = 0; k < 11; k++) { const a = -1.3 + k * .26; LN(c, [[x, y], [x + Math.sin(a) * 8, y - Math.cos(a) * 12]], .42, '#b04ad8'); LN(c, [[x + Math.sin(a) * 4.5, y - Math.cos(a) * 6.5], [x + Math.sin(a + .22) * 7, y - Math.cos(a + .22) * 11]], .3, '#e09aff'); }
+      for (let k = 0; k < 40; k++) { const a = -1.3 + hash(k, 5) * 2.6, r = 3 + hash(k, 6) * 8; c.fillStyle = '#f0c8ff'; c.fillRect(x + Math.sin(a) * r * .7, y - Math.cos(a) * r, .25, .25); } }
+    // 2 зоантуси: килимок поліпів (зелені й помаранчеві «квіточки»)
+    { for (let k = 0; k < 22; k++) { const x = 11.5 + (k % 8) * .9 + (hash(k, 2) - .5) * .4, y = rk(x) + .3 + Math.floor(k / 8) * .8; BLOB(c, x, y, .45, .35, k % 3 ? '#3aff9a' : '#ff9a2a'); BLOB(c, x, y, .18, .14, k % 3 ? '#0a5a3a' : '#7a2a0a'); } }
+    // 3 мозковий корал
+    { const x = 20, y = rk(20) + .6; BLOB(c, x, y - 2, 4.4, 3, '#d8762a'); c.strokeStyle = '#8a3a10'; c.lineWidth = .32; for (let k = 0; k < 5; k++) { c.beginPath(); for (let t = 0; t <= 1; t += .08) c.lineTo(x - 3.7 + t * 7.4, y - 3.9 + k * .95 + Math.sin(t * 13 + k) * .32); c.stroke(); } BLOB(c, x - 1.6, y - 3.6, 1.4, .5, 'rgba(255,220,160,.5)'); }
+    // 4 червоні морські батоги (тонкі прути)
+    { for (let k = 0; k < 6; k++) { const x = 25.5 + k * .8, y = rk(x) + .5, h = 7 + 6 * hash(k, 31); LN(c, [[x, y], [x + Math.sin(k) * .9, y - h * .5], [x + Math.sin(k) * 1.6, y - h]], .38, k % 2 ? '#e8283a' : '#ff5a4a'); } }
+    // 5 оленячий ріг (рожевий, гіллястий)
+    { const br = (x, y, a, l, n) => { const e = [x + Math.sin(a) * l, y - Math.cos(a) * l]; LN(c, [[x, y], e], Math.max(.35, n * .3), n > 1 ? '#e8508a' : '#ffb0d0'); if (n > 0) { br(e[0], e[1], a - .45, l * .72, n - 1); br(e[0], e[1], a + .42, l * .7, n - 1); } }; br(32.5, rk(32.5) + .5, -.1, 4.8, 3); }
+    // 6 анемона: ніжка (щупальця — живі), рибка-клоун живе в ній
+    { const x = REEF.anem, y = rk(x) + .4; BLOB(c, x, y - 1.2, 2.8, 1.8, '#a01a62'); BLOB(c, x, y - 2.2, 2.4, .8, '#d8408a'); }
+    // 7 трубчастий корал (блакитні трубки)
+    { for (let k = 0; k < 8; k++) { const x = 55 + k * 1.2, h = 3 + 4.5 * hash(k, 21), y = rk(x) + .5; c.fillStyle = '#1a7a9a'; c.fillRect(x - .5, y - h, 1, h); BLOB(c, x, y - h, .62, .32, '#6af8ff'); BLOB(c, x, y - h, .3, .15, '#0a3a4a'); } }
+    // 8 грибні корали: диски на камені (сині й червоні)
+    { for (let k = 0; k < 7; k++) { const x = 62.5 + (k % 4) * 1.9 + (k > 3 ? .9 : 0), y = rk(x) + 1.6 + (k > 3 ? 2 : 0), r = .9 + .3 * hash(k, 3), cc = k % 2 ? ['#2a4aff', '#7a9aff'] : ['#d02a4a', '#ff8a9a'];
+      BLOB(c, x, y, r, r * .55, cc[0]); BLOB(c, x, y - r * .1, r * .3, r * .18, cc[1]); for (let q = 0; q < 5; q++) c.fillRect(x + Math.cos(q * 1.3) * r * .6, y + Math.sin(q * 1.3) * r * .3, .2, .2); } }
+    // 9 столовий корал
+    { const x = 71, y = rk(71) + .4; c.fillStyle = '#1a6a6a'; c.fillRect(x - .6, y - 5, 1.2, 5); BLOB(c, x, y - 5.3, 6.4, 1.2, '#2ab8a0'); BLOB(c, x, y - 5.7, 5.6, .6, '#7ae8d0'); for (let k = 0; k < 9; k++) c.fillRect(x - 5.5 + k * 1.3, y - 4.4, .3, .4); }
+    // 10 молотковий корал: зелені гілки з «молоточками»
+    { for (let k = 0; k < 6; k++) { const x = 77 + k * 1.05, y = rk(x) + .5, h = 3 + 2.4 * hash(k, 41), tx = x + (k - 2.5) * .5; LN(c, [[x, y], [tx, y - h]], .4, '#2a7a3a'); c.save(); c.translate(tx, y - h); c.rotate((k - 2.5) * .15); BLOB(c, 0, 0, 1.1, .5, '#5aff8a'); BLOB(c, 0, -.15, .6, .22, '#c8ffd8'); c.restore(); } }
+    // 11 м'який корал (жовто-лаймовий «гриб» з ворсом)
+    { const x = 85, y = rk(85) + .5; c.fillStyle = '#a0a020'; c.fillRect(x - .8, y - 3.4, 1.6, 3.4); BLOB(c, x, y - 4.2, 3.6, 1.8, '#d8e040'); for (let k = 0; k < 14; k++) c.fillRect(x - 3.2 + k * .48, y - 5.8 + hash(k, 2) * .6, .22, .7); }
+    // 12 тридакна (на піску)
     { const x = 92, y = sy(92); c.fillStyle = '#c8c0b8'; c.beginPath(); for (let t = 0; t <= 1.001; t += .1) c.lineTo(x - 4 + t * 8, y - 1.5 - Math.abs(Math.sin(t * 15)) * .8); c.lineTo(x + 4, y); c.lineTo(x - 4, y); c.closePath(); c.fill(); BLOB(c, x, y - 2.3, 3.4, .9, '#4a3aff'); BLOB(c, x, y - 2.4, 2.4, .45, '#5af8ff'); }
-    // 9 пухирчастий корал (перлові кульки)
-    { for (let k = 0; k < 11; k++) { const x = 102 + (k % 4) * 1.4 + hash(k, 8) * .6, y = sy(102) - 1 - Math.floor(k / 4) * 1.3; BLOB(c, x, y, .8, .8, '#e8e4f8'); BLOB(c, x - .25, y - .25, .3, .3, '#ffffff'); } }
-    // 10 ламінарія (довгі зелені стрічки до самого верху)
-    { for (let k = 0; k < 4; k++) { const x0 = 112 + k * 1.6; const pts = []; for (let t = 0; t <= 1; t += .05) pts.push([x0 + Math.sin(t * 6 + k) * 1.4, sy(x0) - t * fh * .86]); LN(c, pts, .9, k % 2 ? '#2a8a3a' : '#3aa84a'); } }
-    // на піску: морська зірка, їжак, мушлі
-    { const x = 49.5, y = sand + .6; c.fillStyle = '#ff7a3a'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? .6 : 1.6; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * .6); } c.closePath(); c.fill(); }
-    { const x = 86, y = sand; for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI; LN(c, [[x, y], [x - Math.cos(a) * 1.9, y - Math.sin(a) * 1.9]], .22, '#3a1a5a'); } BLOB(c, x, y, .9, .7, '#2a0a3a'); }
-    c.fillStyle = '#b8a4cc'; c.fillRect(-5, sand, T + 10, fh - sand); for (let k = 0; k < 90; k++) { c.fillStyle = k % 2 ? '#8a72a8' : '#e0d4ec'; c.fillRect(hash(k, 11) * T, sand + .4 + hash(k, 13) * (fh - sand - .5), .35, .35); }
-    for (const [x, cc] of [[24, '#f0c8e0'], [61, '#ffe0a0'], [97, '#c8e8ff']]) BLOB(c, x, sand + .9, .7, .45, cc);
+    // 13 пухирчастий корал (перлові кульки)
+    { for (let k = 0; k < 13; k++) { const x = 107 + (k % 4) * 1.4 + hash(k, 8) * .6, y = rk(108) - .2 - Math.floor(k / 4) * 1.3; BLOB(c, x, y, .8, .8, '#e8e4f8'); BLOB(c, x - .25, y - .25, .3, .3, '#ffffff'); } }
+    // 14 бочкова губка (помаранчево-червоний келих)
+    { const x = 114.5, y = rk(114.5) + .5; c.fillStyle = '#c8461a'; c.beginPath(); c.moveTo(x - 1.6, y); c.lineTo(x - 2.4, y - 6); c.lineTo(x + 2.4, y - 6); c.lineTo(x + 1.6, y); c.closePath(); c.fill(); BLOB(c, x, y - 6, 2.4, .7, '#5a1a0a'); for (let q = 0; q < 4; q++) LN(c, [[x - 2 + q * 1.3, y - .3], [x - 2.2 + q * 1.45, y - 5.6]], .2, '#ff7a3a'); }
+    // ламінарія — коріння (стрічки живі)
+    { for (let k = 0; k < 4; k++) BLOB(c, 2.5 + k * 1.4, sy(2.5 + k * 1.4) - .2, .6, .35, '#1a5a2a'); }
+    // пісок: брижі, мушлі, морська зірка, їжак; сад вугрів — нірки
+    c.fillStyle = '#b8a4cc'; c.beginPath(); c.moveTo(-5, fh); for (let x = -5; x <= T + 5; x += 1) c.lineTo(x, sy(x)); c.lineTo(T + 5, fh); c.closePath(); c.fill();
+    for (let k = 0; k < 120; k++) { c.fillStyle = k % 2 ? '#8a72a8' : '#e0d4ec'; const x = hash(k, 11) * T; c.fillRect(x, sy(x) + .4 + hash(k, 13) * (fh - sy(x) - .5), .35, .35); }
+    for (let k = 0; k < 14; k++) { const x = k * 8.7 + 2, y = sy(x) + 1.1; LN(c, [[x - 1.6, y], [x, y - .25], [x + 1.6, y]], .2, 'rgba(120,96,150,.8)'); }
+    for (const [x, cc] of [[24, '#f0c8e0'], [61, '#ffe0a0'], [96.5, '#c8e8ff']]) BLOB(c, x, sy(x) + .9, .7, .45, cc);
+    { const x = 52, y = sy(52) + .6; c.fillStyle = '#ff7a3a'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? .6 : 1.6; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * .6); } c.closePath(); c.fill(); }
+    { const x = 88, y = sy(88); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI; LN(c, [[x, y], [x - Math.cos(a) * 1.9, y - Math.sin(a) * 1.9]], .22, '#3a1a5a'); } BLOB(c, x, y, .9, .7, '#2a0a3a'); }
+    for (const x of REEF.eels) BLOB(c, x, sy(x) + .15, .55, .22, '#4a3a5a');
     c.restore();
     glassFX(c, fw, fh, s0, { top: .5 });
   }
@@ -893,32 +928,39 @@ NX.arc = NX.arc || {};
     const v = c.createLinearGradient(0, 0, fw, 0); v.addColorStop(0, 'rgba(0,0,30,.42)'); v.addColorStop(.13, 'rgba(0,0,30,0)'); v.addColorStop(.87, 'rgba(0,0,30,0)'); v.addColorStop(1, 'rgba(0,0,30,.48)'); c.fillStyle = v; c.fillRect(0, 0, fw, fh);
     c.fillStyle = 'rgba(230,248,255,.7)'; c.fillRect(fw * .18, 0, .6, fh); c.fillStyle = 'rgba(230,248,255,.22)'; c.fillRect(fw * .23, 0, 1.6, fh); c.fillStyle = 'rgba(230,248,255,.3)'; c.fillRect(fw * .8, 0, .45, fh);   // відблиски циліндра
   };
-  // ---- АКВАТРУБА: прісна вода, акваскейп (кожна рослина й прикраса — одна) ----
+  // ---- АКВАТРУБА: прісна вода, акваскейп (кожна рослина й прикраса — одна). (· 5) усе вміщено в довжину труби (раніше
+  //      частина була за її кінцем), глибина шарами (далекі стебла в бірюзовій імлі), світло згори; валіснерія, коріння
+  //      аквапоніки, каустика, коридораси, анциструс і равлик на склі — живі (objects/decor_aqua.js)
+  const TUBE = { sub: (x, fh) => fh * .8 - 1.1 * Math.sin(x * .09) - .7 * Math.sin(x * .31), vall: [51, 52.2, 53.4, 54.6] };
+  NX.arc.TUBE = TUBE;
   function tubePaint(c, fw, fh, B) {
-    const d = B.dc, s0 = d.s0, T = d.tot || 140, g = c.createLinearGradient(0, 0, 0, fh);
-    g.addColorStop(0, '#0a3a4a'); g.addColorStop(.07, '#3ad8c8'); g.addColorStop(.22, '#1aa0b0'); g.addColorStop(.6, '#0e5a84'); g.addColorStop(.9, '#0a2c56'); g.addColorStop(1, '#061a3a'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    const d = B.dc, s0 = d.s0, T = d.tot || 86, g = c.createLinearGradient(0, 0, 0, fh);
+    g.addColorStop(0, '#0a3a4a'); g.addColorStop(.07, '#46e4d0'); g.addColorStop(.22, '#1ea8b4'); g.addColorStop(.6, '#0e5a84'); g.addColorStop(.9, '#0a2c56'); g.addColorStop(1, '#061a3a'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
     c.save(); c.translate(-s0, 0);
-    const sub_ = x => fh * .8 - 1.1 * Math.sin(x * .09) - .7 * Math.sin(x * .31);
+    const sub_ = x => TUBE.sub(x, fh);
+    c.fillStyle = 'rgba(190,255,240,.09)'; for (const x of [4, 19, 33, 48, 63, 78]) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 4, 0); c.lineTo(x + 9, fh * .8); c.lineTo(x + 3, fh * .8); c.closePath(); c.fill(); }   // світло згори
+    for (let k = 0; k < 26; k++) { const x = hash(k, 81) * T, h = fh * (.3 + .35 * hash(k, 82)), y = sub_(x) + 1; LN(c, [[x, y], [x + (hash(k, 83) - .5) * 2, y - h]], .5, 'rgba(20,90,80,.45)');   // далекі стебла в імлі
+      for (let q = 1; q < 5; q++) BLOB(c, x + (hash(k, 83) - .5) * 2 * q / 5 + (q % 2 ? .6 : -.6), y - h * q / 5, .6, .25, 'rgba(30,120,100,.4)'); }
     // 1 корч з різдвяним мохом
-    { const x = 9, y = sub_(9); LN(c, [[x - 5, y], [x - 1, y - 4], [x + 2, y - 7.5]], 1.1, '#5a3420'); LN(c, [[x - 1, y - 4], [x + 4, y - 3.5], [x + 6, y - 5.5]], .8, '#6a4028'); for (let k = 0; k < 14; k++) BLOB(c, x - 3 + hash(k, 4) * 9, y - 3 - hash(k, 6) * 4.5, .7, .55, k % 2 ? '#4ac84a' : '#7ae86a'); }
+    { const x = 8, y = sub_(8); LN(c, [[x - 5, y], [x - 1, y - 4], [x + 2, y - 7.5]], 1.1, '#5a3420'); LN(c, [[x - 1, y - 4], [x + 4, y - 3.5], [x + 6, y - 5.5]], .8, '#6a4028'); for (let k = 0; k < 18; k++) BLOB(c, x - 3 + hash(k, 4) * 9.5, y - 2.6 - hash(k, 6) * 5, .7, .55, k % 2 ? '#4ac84a' : '#7ae86a'); }
     // 2 яванська папороть на камені
-    { const x = 22, y = sub_(22); BLOB(c, x, y - .6, 2.6, 1.5, '#5a5a6a'); for (let k = 0; k < 6; k++) { const a = -.9 + k * .36; c.save(); c.translate(x, y - 1.6); c.rotate(a); BLOB(c, 0, -3.2, .7, 3.2, k % 2 ? '#1a6a3a' : '#228a4a'); c.restore(); } }
+    { const x = 19, y = sub_(19); BLOB(c, x, y - .6, 2.6, 1.5, '#5a5a6a'); BLOB(c, x - .8, y - 1.2, 1, .5, '#7a7a8a'); for (let k = 0; k < 7; k++) { const a = -1 + k * .33; c.save(); c.translate(x, y - 1.6); c.rotate(a); BLOB(c, 0, -3.3, .72, 3.3, k % 2 ? '#1a6a3a' : '#228a4a'); LN(c, [[0, -.2], [0, -6.2]], .14, '#0a3a1a'); c.restore(); } }
     // 3 мариміо (три мохові кулі)
-    { for (const [dx, r] of [[-1.6, 1.3], [.8, 1.6], [2.9, 1]]) { const x = 36 + dx, y = sub_(36) - r * .8; BLOB(c, x, y, r, r, '#2a8a3a'); BLOB(c, x - r * .3, y - r * .3, r * .45, r * .45, '#5ac85a'); } }
+    { for (const [dx, r] of [[-1.6, 1.3], [.8, 1.6], [2.9, 1]]) { const x = 30 + dx, y = sub_(30) - r * .8; BLOB(c, x, y, r, r, '#2a8a3a'); BLOB(c, x - r * .3, y - r * .3, r * .45, r * .45, '#5ac85a'); } }
     // 4 червона людвігія (стебла з червоними листочками)
-    { for (let k = 0; k < 4; k++) { const x = 47 + k * 1.5, h = fh * (.4 + .12 * hash(k, 3)), y = sub_(x); LN(c, [[x, y], [x + .4, y - h]], .3, '#8a3a2a'); for (let q = 1; q < 8; q++) { const yy = y - h * q / 8; BLOB(c, x - .7, yy, .7, .3, q > 4 ? '#ff5a3a' : '#c84a2a'); BLOB(c, x + 1, yy - .3, .7, .3, q > 4 ? '#ff7a4a' : '#d85a3a'); } } }
-    // 5 затонула голова робота (як шолом Nexi): очі світяться
-    { const x = 63, y = sub_(63); BLOB(c, x, y - 2.2, 3.4, 2.8, '#8a8ab8'); c.fillStyle = '#0a1030'; c.fillRect(x - 2.4, y - 3.2, 4.8, 1.8); BLOB(c, x - 1.2, y - 2.3, .5, .5, '#5af8ff'); BLOB(c, x + 1.2, y - 2.3, .5, .5, '#5af8ff'); LN(c, [[x + 2.2, y - 4.4], [x + 3.2, y - 6]], .3, '#b0b0d8'); BLOB(c, x + 3.2, y - 6.2, .4, .4, '#ff4fd8'); c.fillStyle = '#3a2a1a'; c.fillRect(x - 4, y - .6, 8, 1.2); }
-    // 6 карликова ситняга (килим)
-    { for (let k = 0; k < 60; k++) { const x = 70 + hash(k, 17) * 24, y = sub_(x), h = 1.5 + 2 * hash(k, 19); LN(c, [[x, y], [x + (hash(k, 23) - .5), y - h]], .2, k % 3 ? '#5ad84a' : '#9af07a'); } }
-    // 7 анубіас з білою квіткою
-    { const x = 98, y = sub_(98); BLOB(c, x, y - .5, 2, 1.2, '#4a4a5a'); for (let k = 0; k < 4; k++) { c.save(); c.translate(x - 1.5 + k, y - 1.2); c.rotate(-.6 + k * .4); BLOB(c, 0, -1.6, 1, 1.6, '#0e4a2a'); c.restore(); } LN(c, [[x + .5, y - 1], [x + .8, y - 4.6]], .25, '#3a7a3a'); BLOB(c, x + .8, y - 5.1, .5, .8, '#f4f0e0'); }
-    // 8 валіснерія (стрічки до поверхні)
-    { for (let k = 0; k < 5; k++) { const x0 = 110 + k * 1.1, pts = []; for (let t = 0; t <= 1; t += .07) pts.push([x0 + Math.sin(t * 5 + k * 1.3) * .9 + t * 1.5, sub_(x0) - t * fh * .7]); LN(c, pts, .5, k % 2 ? '#3a9a3a' : '#5ab84a'); } }
-    // 9 кіберзанорід: світні фіолетові кристали
-    { const x = 124, y = sub_(124); BLOB(c, x, y - .5, 2.4, 1.2, '#2a2040'); for (const [dx, h, a] of [[-1.2, 3.4, -.3], [0, 4.6, 0], [1.2, 3, .35], [.6, 2.2, .7]]) { c.save(); c.translate(x + dx, y - .8); c.rotate(a); c.fillStyle = '#b46aff'; c.beginPath(); c.moveTo(-.55, 0); c.lineTo(.55, 0); c.lineTo(.3, -h); c.lineTo(0, -h - .7); c.lineTo(-.3, -h); c.closePath(); c.fill(); c.fillStyle = '#f0d8ff'; c.fillRect(-.1, -h, .2, h * .8); c.restore(); } }
-    // 10 криптокорина (бронзово-рожеві листки)
-    { const x = 134, y = sub_(134); for (let k = 0; k < 6; k++) { c.save(); c.translate(x, y); c.rotate(-1 + k * .4); BLOB(c, 0, -2.3, .8, 2.3, k % 2 ? '#a0605a' : '#c87a6a'); c.restore(); } }
+    { for (let k = 0; k < 4; k++) { const x = 39 + k * 1.5, h = fh * (.42 + .12 * hash(k, 3)), y = sub_(x); LN(c, [[x, y], [x + .4, y - h]], .3, '#8a3a2a'); for (let q = 1; q < 8; q++) { const yy = y - h * q / 8; BLOB(c, x - .7, yy, .7, .3, q > 4 ? '#ff5a3a' : '#c84a2a'); BLOB(c, x + 1, yy - .3, .7, .3, q > 4 ? '#ff7a4a' : '#d85a3a'); } } }
+    // 5 валіснерія — основи (стрічки живі)
+    { for (const x of TUBE.vall) BLOB(c, x, sub_(x) - .2, .5, .3, '#2a6a2a'); }
+    // 6 затонула голова робота (як шолом Nexi): очі світяться
+    { const x = 61, y = sub_(61); BLOB(c, x, y - 2.2, 3.4, 2.8, '#8a8ab8'); c.fillStyle = '#0a1030'; c.fillRect(x - 2.4, y - 3.2, 4.8, 1.8); BLOB(c, x - 1.2, y - 2.3, .5, .5, '#5af8ff'); BLOB(c, x + 1.2, y - 2.3, .5, .5, '#5af8ff'); LN(c, [[x + 2.2, y - 4.4], [x + 3.2, y - 6]], .3, '#b0b0d8'); BLOB(c, x + 3.2, y - 6.2, .4, .4, '#ff4fd8'); c.fillStyle = '#3a2a1a'; c.fillRect(x - 4, y - .6, 8, 1.2); for (let k = 0; k < 5; k++) BLOB(c, x - 3 + k * 1.4, y - 4.6 - (k % 2) * .4, .5, .4, '#3ab84a'); }
+    // 7 кіберзанорід: світні фіолетові кристали
+    { const x = 70, y = sub_(70); BLOB(c, x, y - .5, 2.4, 1.2, '#2a2040'); for (const [dx, h, a] of [[-1.2, 3.4, -.3], [0, 4.6, 0], [1.2, 3, .35], [.6, 2.2, .7]]) { c.save(); c.translate(x + dx, y - .8); c.rotate(a); c.fillStyle = '#b46aff'; c.beginPath(); c.moveTo(-.55, 0); c.lineTo(.55, 0); c.lineTo(.3, -h); c.lineTo(0, -h - .7); c.lineTo(-.3, -h); c.closePath(); c.fill(); c.fillStyle = '#f0d8ff'; c.fillRect(-.1, -h, .2, h * .8); c.restore(); } }
+    // 8 криптокорина (бронзово-рожеві листки)
+    { const x = 77, y = sub_(77); for (let k = 0; k < 6; k++) { c.save(); c.translate(x, y); c.rotate(-1 + k * .4); BLOB(c, 0, -2.3, .8, 2.3, k % 2 ? '#a0605a' : '#c87a6a'); c.restore(); } }
+    // 9 анубіас з білою квіткою
+    { const x = 83.5, y = sub_(83.5); BLOB(c, x, y - .5, 2, 1.2, '#4a4a5a'); for (let k = 0; k < 4; k++) { c.save(); c.translate(x - 1.5 + k, y - 1.2); c.rotate(-.6 + k * .4); BLOB(c, 0, -1.6, 1, 1.6, '#0e4a2a'); c.restore(); } LN(c, [[x + .5, y - 1], [x + .8, y - 4.6]], .25, '#3a7a3a'); BLOB(c, x + .8, y - 5.1, .5, .8, '#f4f0e0'); }
+    // 10 карликова ситняга (килим по всьому ґрунту)
+    { for (let k = 0; k < 120; k++) { const x = hash(k, 17) * T, y = sub_(x), h = 1.2 + 1.8 * hash(k, 19); LN(c, [[x, y], [x + (hash(k, 23) - .5), y - h]], .2, k % 3 ? '#5ad84a' : '#9af07a'); } }
     // ґрунт: темний, різнокольоровий гравій і світні камінці
     c.fillStyle = '#1a120e'; c.beginPath(); c.moveTo(-5, fh); for (let x = -5; x <= T + 5; x += 1.2) c.lineTo(x, sub_(x)); c.lineTo(T + 5, fh); c.closePath(); c.fill();
     for (let k = 0; k < 140; k++) { const x = hash(k, 41) * T, y = sub_(x) + .4 + hash(k, 43) * (fh - sub_(x) - .6); c.fillStyle = ['#6a5a4a', '#8a7a6a', '#4a3a3a', '#a08a70'][k % 4]; c.fillRect(x, y, .45, .4); }
