@@ -4,8 +4,8 @@
  * Нерухоме декору — у растрі крила (objects/dc_paint.js, розкладка tools/wingbox/decor.py). Тут — те, що рухається, і
  * його небагато (власник: «живого — небагато й вразбіг»):
  *   • два акваріуми: РИФ над аналітикою (морські риби), МЕДУЗАРІЙ між аналітикою й маркетингом (медузи) — КОЖНА ІСТОТА
- *     СВОГО ВИДУ, жодна не повторюється (власник: «щоб нічого не повторювалось»); на правій стіні за маніпулятором — (· 12)
- *     МЕДІА-СТІНА «NEXORA · LIVE» (те саме полотно й маска, що в акваріумів; малює objects/decor_wall.js);
+ *     СВОГО ВИДУ, жодна не повторюється (власник: «щоб нічого не повторювалось»); на правій стіні за маніпулятором — (· 13)
+ *     ВЕРТИКАЛЬНА ФЕРМА NEXI (те саме полотно й маска, що в акваріумів; малює objects/decor_farm.js);
  *     бульбашки від розпилювачів;
  *   • тепле мерехтіння ліхтаря й світних грибів на антресолі;
  *   • (Декор стін · 3) ДРОН-ПОЛИВАЛЬНИК облітає рослини (аквапоніка, антресоль, висячий сад під нею), зависає й розпилює воду;
@@ -186,12 +186,12 @@
   const AQ = {};
   (() => {
     const rf = wins('reef'); if (rf.length) { const d = rf[0].dc; AQ.reef = { ids: rf.map(B => B.id), C: d.C, R: d.R, sgn: d.sgn, a0: Math.min(...rf.map(B => B.dc.sa)), a1: Math.max(...rf.map(B => B.dc.sb)), P: d.P, top: d.top, bot: d.bot }; }
-    const vw = items.filter(B => B.st === 'dc_vwall').sort((p, q) => p.dc.i - q.dc.i);    // (· 12) медіа-стіна: екран — грань сегментів рами (між кришкою й тумбою); маска — многокутник екрана (poly), живе — objects/decor_wall.js
+    const vw = items.filter(B => B.st === 'dc_farm').sort((p, q) => p.dc.i - q.dc.i);     // (· 13) ферма: нутро — грань сегментів рами (між кришкою й тумбою); маска — многокутник (poly), живе — objects/decor_farm.js
     if (vw.length) { const d = vw[0].dc, ov = d.ov == null ? .5 : d.ov, segs = vw.map(B => B.dc), poly = [];
       const pt = (q, a, ins, y) => { const rad = q.R - ins; return [q.C[0] + q.sgn * rad * Math.sin(a * D2R), y, q.C[1] + rad * Math.cos(a * D2R)]; };
       segs.forEach(q => poly.push(X.proj(pt(q, q.sa, q.P - .4, q.yta + q.lid - ov)), X.proj(pt(q, q.sb, q.P - .4, q.ytb + q.lid - ov))));
       [...segs].reverse().forEach(q => poly.push(X.proj(pt(q, q.sb, q.P - .4, q.ybb - q.base + ov)), X.proj(pt(q, q.sa, q.P - .4, q.yba - q.base + ov))));
-      AQ.vwall = { ids: [], segs, poly, ov, pt }; }
+      AQ.farm = { ids: [], segs, poly, ov, pt }; }
     const jl = wins('jelly'); if (jl.length) { const d = jl[0].dc; AQ.jelly = { ids: jl.map(B => B.id), cx: d.cx, cz: d.cz, r: d.r, top: d.top, bot: d.bot }; }
     for (const aq of ['door', 'pylon']) { const w = wins(aq); if (w.length) AQ[aq] = { ids: w.map(B => B.id), B: w[0] }; }   // (· 4) вікна пілона: малює objects/decor_live.js
   })();
@@ -230,7 +230,7 @@
     const L = SD.left, R = SD.right; if (L === lastL && R === lastR) return true; lastL = L; lastR = R;
     const live = [...((L && L.live) || []), ...((R && R.live) || [])];
     for (const aq of Object.keys(AQ)) {
-      if (AQ[aq].poly) { if (!MK[aq]) { const Rm = 3, pl = AQ[aq].poly, x0 = Math.floor(Math.min(...pl.map(p => p[0]))), y0 = Math.floor(Math.min(...pl.map(p => p[1]))), x1 = Math.ceil(Math.max(...pl.map(p => p[0]))), y1 = Math.ceil(Math.max(...pl.map(p => p[1])));   // (· 12) маска з многокутника (екран медіа-стіни)
+      if (AQ[aq].poly) { if (!MK[aq]) { const Rm = 3, pl = AQ[aq].poly, x0 = Math.floor(Math.min(...pl.map(p => p[0]))), y0 = Math.floor(Math.min(...pl.map(p => p[1]))), x1 = Math.ceil(Math.max(...pl.map(p => p[0]))), y1 = Math.ceil(Math.max(...pl.map(p => p[1])));   // (· 13) маска з многокутника (нутро ферми)
           const cv = document.createElement('canvas'); cv.width = Math.ceil((x1 - x0) * Rm); cv.height = Math.ceil((y1 - y0) * Rm); const c = cv.getContext('2d'); c.scale(Rm, Rm); c.fillStyle = '#fff'; c.beginPath(); pl.forEach((p, k) => k ? c.lineTo(p[0] - x0, p[1] - y0) : c.moveTo(p[0] - x0, p[1] - y0)); c.closePath(); c.fill();
           MK[aq] = { cv, x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; } continue; }
       const es = live.filter(E => AQ[aq].ids.includes(E.id) && E.mask); if (!es.length) { delete MK[aq]; continue; }
@@ -372,7 +372,7 @@
     if (!fresh && (M.fr & 1)) { c.save(); c.imageSmoothingEnabled = true; c.drawImage(M.out, M.x, M.y, M.w, M.h); c.restore(); return; }   // риби оновлюються через кадр (30 к/с), кладуться щокадру
     const fx = M.out.getContext('2d'); fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'source-over'; fx.globalAlpha = 1; fx.clearRect(0, 0, W, H);
     fx.setTransform(Rd, 0, 0, Rd, -M.x * Rd, -M.y * Rd); fx.imageSmoothingEnabled = true;
-    if (aq === 'vwall') { if (NX.decorWall) NX.decorWall.draw(fx, A, t); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 12) медіа-стіна: екран замість води й риб — objects/decor_wall.js
+    if (aq === 'farm') { if (NX.decorFarm) NX.decorFarm.draw(fx, A, t); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 13) ферма замість води й риб — objects/decor_farm.js
     else drawLife(fx, aq, A, t);
     // маска скла
     fx.setTransform(1, 0, 0, 1, 0, 0); fx.globalCompositeOperation = 'destination-in'; fx.drawImage(M.cv, 0, 0, W, H); fx.globalCompositeOperation = 'source-over';
@@ -409,7 +409,7 @@
     drawBack(c, t) {
       if (c.isRefl || !buildMasks()) return;
       const Rd = Math.min(4, Math.round(NX.cam.k * (NX.loop.dpr || 1) * 100) / 100), vx0 = NX.cam.x - 8, vx1 = NX.cam.x + NX.cam.viewW + 8;
-      for (const aq of ['reef', 'jelly', 'vwall']) drawAq(c, aq, t, Rd, vx0, vx1);
+      for (const aq of ['reef', 'jelly', 'farm']) drawAq(c, aq, t, Rd, vx0, vx1);
       if (NX.decorLive) NX.decorLive.draw(c, t, Rd, vx0, vx1);                       // (· 4) живі рослини, пілон, плакат Рудика, штучки — objects/decor_live.js
       drawDrone(c, t, vx0, vx1); drawFlies(c, t, vx0, vx1);
       if (!GLOWS.length) return;

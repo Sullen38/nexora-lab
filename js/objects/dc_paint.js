@@ -17,9 +17,10 @@
  *   dc_reef    — РИФ (акваріум №1): кришка з «місячною» LED-лінійкою, тумба з дверцятами й неоном, хромові стійки; скло —
  *                вікна dc_rfg* (панорама рифу — малюнок; риби — живі)
  *   dc_column  — МЕДУЗАРІЙ (№2): цоколь і корона з неоновими кільцями, хромові стійки й обручі, труба в стелю; скло — dc_jellyg
- *   dc_vwall   — МЕДІА-СТІНА «NEXORA · LIVE» (· 12, замість акваріума хижаків): панорамний екран на всю стіну за маніпулятором —
- *                тонкий темно-хромовий бейзел з бірюзовим неоном, LED-лінійка, індикатори, табличка «NEXORA · LIVE» (NX.t); екран —
- *                грань сегмента по дузі з текстурою wallPaint (мапа міста, графік, журнал, статус); живе — objects/decor_wall.js
+ *   dc_farm    — ВЕРТИКАЛЬНА ФЕРМА NEXI (· 13, замість акваріума хижаків і медіа-стіни · 12): скляна оранжерея на всю стіну
+ *                за маніпулятором — кришка з фітолампами (рожевий неон), тумба-бак з водою й насосом, табличка «ФЕРМА NEXI»
+ *                (NX.t); нутро — грань сегмента по дузі з текстурою farmPaint (полиці, труби, шахти-ліфти, станція збору);
+ *                живе (лотки з рослинами їдуть по колу, ростуть, туман) — objects/decor_farm.js
  *   dc_lantern — золотий ліхтар; dc_art — штучки ботаніка (книжки, кришталева
  *                куля, тераріум, колба з паростком, мікроскоп, міні-оранжерея з орхідеєю, золота статуетка Nexi)
  *   dc_poster0 / dc_neon — плакат (напис — NX.t, 4 мови) і неонова вивіска (без слів)
@@ -795,53 +796,56 @@ NX.arc = NX.arc || {};
       G.tube([px, yt + cap - .2, pz], [px, yb - base + .2, pz], 1.1, chromeT); }
   };
 
-  // ================= МЕДІА-СТІНА «NEXORA · LIVE» (Декор стін · 12; власник: «акваріум з небезпечними рибами не подобається —
-  //                   на тому місці щось інше»; обрано «монітор-стіну»; маніпулятор майстерні — попереду) =================
-  /** Рама екрана — одне ціле по дузі (геометрія · 11: кришка й тумба — суцільні похилі смуги, кінці сегмента спільні з сусідами,
-   *  стійок немає, екран заходить за смуги). Кришка: темний хром зі скосом, щілина, LED-лінійка (бірюзові й білі цятки), знизу —
-   *  бірюзова неонова кромка над екраном. Тумба: бірюзова кромка під екраном, панель з ламелями вентиляції й індикаторами
-   *  (бірюзовий / зелений / рожевий), знизу — рожева неонова лінія. Торцеві стінки з неоном; табличка «NEXORA · LIVE» (NX.t,
-   *  4 мови) — на кришці середнього сегмента. */
-  SHP['st:dc_vwall'] = (G, B) => {
-    const d = B.dc, sg = d.sgn, C = d.C, P = d.P, lid = d.lid, base = d.base, CY = neonX('#3be8ff'), PK = neonX('#ff4fd8');
+  // ================= ВЕРТИКАЛЬНА ФЕРМА NEXI (Декор стін · 13; власник на · 12: «не подобається той екран — що ще можна туди
+  //                   придумати», обрано «вертикальну ферму»; маніпулятор майстерні — попереду) =================
+  /** Рама оранжереї — одне ціле по дузі (геометрія · 11: кришка й тумба — суцільні похилі смуги, кінці сегмента спільні з сусідами,
+   *  стійок немає, нутро заходить за смуги). Кришка: темний метал зі скосом, ламелі вентиляції, корпуси фітоламп що 9 од., знизу —
+   *  рожево-фіолетова неонова смуга (фітосвітло). Тумба — БАК: віконце рівня води (бірюза, хвилька), насос із зеленим вогником,
+   *  труба, ґратка; знизу — зелена неонова лінія. Торцеві стінки з зеленим неоном; табличка «ФЕРМА NEXI» (NX.t, 4 мови) з
+   *  листочком — на кришці двох середніх сегментів. Нутро — грань між кришкою й тумбою з текстурою farmPaint (рядки на екрані
+   *  рівні — тому без окремих пласких вікон, див. · 12). */
+  SHP['st:dc_farm'] = (G, B) => {
+    const d = B.dc, sg = d.sgn, C = d.C, P = d.P, lid = d.lid, base = d.base, GR = neonX('#3bff8a'), FT = neonX('#ff4fd8');
     const pt = (a, ins, y) => { const rad = d.R - ins; return [C[0] + sg * rad * Math.sin(a * D2R), y, C[1] + rad * Math.cos(a * D2R)]; };
     const am = (d.sa + d.sb) / 2, nOut = [-sg * Math.sin(am * D2R), 0, -Math.cos(am * D2R)], len = Math.hypot(...sub(pt(d.sb, P, 0), pt(d.sa, P, 0)));
-    const s0 = d.i * len, tot = d.n * len, dd = Object.assign({}, d, { s0, tot });            // x уздовж екрана — з довжин сегментів у JS (усі рівні), щоб малюнок на швах сходився точно
+    const s0 = d.i * len, tot = d.n * len, dd = Object.assign({}, d, { s0, tot });            // x уздовж ферми — з довжин сегментів у JS (усі рівні), щоб малюнок на швах сходився точно
     const Lf = lit(nOut, pt(am, P, (d.yta + d.yba) / 2)), Lt = lit([0, -1, 0], pt(am, P / 2, d.yta));
     const band = (y0a, y0b, h, front, top, bot) => {                                            // похила смуга: лице (front), верх (top) і низ (bot)
       quad(G, [pt(d.sa, P, y0a), pt(d.sb, P, y0b), pt(d.sb, P, y0b + h), pt(d.sa, P, y0a + h)], front, nOut);
       if (top) quad(G, [pt(d.sa, .3, y0a), pt(d.sb, .3, y0b), pt(d.sb, P, y0b), pt(d.sa, P, y0a)], top, [0, -1, 0]);
       if (bot) quad(G, [pt(d.sa, P, y0a + h), pt(d.sb, P, y0b + h), pt(d.sb, .3, y0b + h), pt(d.sa, .3, y0a + h)], bot, [0, 1, 0]);
     };
-    band(d.yta, d.ytb, lid, (u, v, i, j) => { const y = v * lid, x = s0 + u * len;                                     // кришка
-        if (y < .6) return ramp(PL.CHROME, .6 - y * .25, i, j); if (y > lid - .9) return E(CY[(i + j) % 5 ? 1 : 2]);     // бірюзова неонова кромка над екраном
-        if (y > 1 && y < 1.45) return ramp(PL.DARK, .03, i, j);                                                           // щілина
-        if (y > 2.7 && y < 3.9 && ((x % 6) + 6) % 6 < 1) return E(((x / 6) | 0) % 3 ? col('#3be8ff') : col('#ffffff'));   // LED-лінійка
-        return ramp(PL.STEEL, .22 * Lf + (y < 2.5 ? .08 : .03), i, j); },
+    band(d.yta, d.ytb, lid, (u, v, i, j) => { const y = v * lid, x = s0 + u * len, pc = ((x % 9) + 9) % 9;                // кришка
+        if (y < .6) return ramp(PL.CHROME, .6 - y * .25, i, j); if (y > lid - 1.1) return E(FT[(i + j) % 5 ? 1 : 2]);      // фітосвітло знизу
+        if (pc > 2.2 && pc < 6.8 && y > lid - 2.6) return E(j % 2 ? FT[1] : col('#ffc0f0'));                              // корпус фітолампи — світна пластина
+        if (y > 1 && y < 1.4) return ramp(PL.DARK, .03, i, j);                                                            // щілина
+        if (y > 2 && y < lid - 2.9 && (y * 2.2) % 1 < .4 && pc > .8 && pc < 8.2) return ramp(PL.DARK, .1, i, j);          // ламелі вентиляції
+        return ramp(PL.STEEL, .22 * Lf + (y < 2 ? .08 : .03), i, j); },
       (u, v, i, j) => ramp(PL.STEEL, .26 * Lt + v * .08, i, j), null);
-    band(d.yba - base, d.ybb - base, base, (u, v, i, j) => { const y = v * base, x = s0 + u * len, pc = ((x % 12) + 12) % 12;     // тумба
-        if (y < .7) return E(CY[(i + j) % 5 ? 1 : 2]); if (y < 1.2) return ramp(PL.CHROME, .55, i, j);
-        if (y > base - .7) return E(PK[(i + j) % 6 ? 1 : 2]);                                                             // рожева лінія знизу
-        if (Math.abs(pc - 1.6) < .5 && y > 2.3 && y < 3.3) return E([col('#3be8ff'), col('#3bff8a'), col('#ff4fd8')][((x / 12) | 0) % 3]);   // індикатори
-        if (pc > 3.4 && pc < 10.8 && y > 2 && y < base - 1.3 && (y * 2.4) % 1 < .42) return ramp(PL.DARK, .1, i, j);         // ламелі вентиляції
-        return ramp(PL.STEEL, .3 * Lf + (y < 2.2 ? .06 : 0), i, j); },
-      null, (u, v, i, j) => v < .18 ? E(PK[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .2 + (1 - v) * .08, i, j));
+    band(d.yba - base, d.ybb - base, base, (u, v, i, j) => { const y = v * base, x = s0 + u * len, pc = ((x % 24) + 24) % 24;   // тумба-бак
+        if (y < .5) return ramp(PL.CHROME, .6, i, j); if (y > base - .6) return E(GR[(i + j) % 6 ? 1 : 2]);                // зелена лінія знизу
+        if (y > 1.6 && y < base - 2 && pc > 2 && pc < 13) { const wl = 3.1 + .35 * Math.sin(x * .8); return y < wl ? ramp(PL.DARK, .12, i, j) : E(y < wl + .5 ? col('#9af6ff') : col(((i + j) % 7) ? '#2ac8e8' : '#5ae0ff')); }   // віконце рівня води
+        if (pc > 15 && pc < 20.5 && y > 1.6 && y < base - 1.8) { if (y > 2.4 && y < 3.4 && pc > 17 && pc < 18.2) return E(j & 1 ? col('#3bff8a') : col('#1a8a4a')); return ramp(PL.MET, .35 + (y < 2.2 ? .15 : 0), i, j); }   // насос з вогником
+        if (pc >= 20.5 && pc < 24 && y > 2 && y < base - 1.8 && (y * 2.4) % 1 < .42) return ramp(PL.DARK, .1, i, j);           // ґратка
+        return ramp(PL.STEEL, .3 * Lf + (y < 1.6 ? .06 : 0), i, j); },
+      null, (u, v, i, j) => v < .18 ? E(GR[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .2 + (1 - v) * .08, i, j));
     const nW = nOut, ybm = Math.max(d.yba, d.ybb);                                                    // тінь під тумбою на стіні
     const shR = Math.min(ybm + 8, d.shy || ybm + 8); if (shR > ybm) ditherFace(G, pt(d.sa, .15, d.yba - 1), pt(d.sb, .15, d.ybb - 1), pt(d.sa, .15, shR), nW, (u, v) => .4 * Math.pow(1 - v, 1.6));
     const endWall = (a, yt, yb, inner) => {                                                                              // торцева стінка: рама з неоном уздовж
-      const a2 = a + inner * 1.6 / (d.R * D2R); quad(G, [pt(a, P, yt), pt(a2, P, yt), pt(a2, P, yb), pt(a, P, yb)], (u, v, i, j) => Math.abs(u - .5) < .2 ? E(CY[((j * 3) | 0) % 7 ? 1 : 2]) : ramp(PL.CHROME, (v * (yb - yt) % 7) < .7 ? .9 : .5, i, j), nOut);
+      const a2 = a + inner * 1.6 / (d.R * D2R); quad(G, [pt(a, P, yt), pt(a2, P, yt), pt(a2, P, yb), pt(a, P, yb)], (u, v, i, j) => Math.abs(u - .5) < .2 ? E(GR[((j * 3) | 0) % 7 ? 1 : 2]) : ramp(PL.CHROME, (v * (yb - yt) % 7) < .7 ? .9 : .5, i, j), nOut);
       quad(G, [pt(a, P, yt), pt(a, .3, yt), pt(a, .3, yb), pt(a, P, yb)], (u, v, i, j) => ramp(PL.STEEL, .3, i, j), [-inner * sg * Math.cos(a * D2R), 0, inner * Math.sin(a * D2R)]);
     };
     if (d.i === 0) endWall(d.sa, d.yta, d.yba, 1); if (d.i === d.n - 1) endWall(d.sb, d.ytb, d.ybb, -1);
-    { const ov = d.ov == null ? .5 : d.ov, ta = d.yta + lid - ov, tb = d.ytb + lid - ov, ba = d.yba - base + ov, bb = d.ybb - base + ov, Hm = ((ba - ta) + (bb - tb)) / 2;   // ЕКРАН: грань по дузі між кришкою й тумбою (рядки на екрані рівні)
-      const tex = A.texture({ dc: dd, w: len }, { fw: len, fh: d.H0 || Hm, k: 'front' }, 4, wallPaint), tw = tex.w, th = tex.h, td = tex.d;
+    { const ov = d.ov == null ? .5 : d.ov, ta = d.yta + lid - ov, tb = d.ytb + lid - ov, ba = d.yba - base + ov, bb = d.ybb - base + ov, Hm = ((ba - ta) + (bb - tb)) / 2;   // НУТРО: грань по дузі між кришкою й тумбою
+      const tex = A.texture({ dc: dd, w: len }, { fw: len, fh: d.H0 || Hm, k: 'front' }, 4, farmPaint), tw = tex.w, th = tex.h, td = tex.d;
       quad(G, [pt(d.sa, P - .4, ta), pt(d.sb, P - .4, tb), pt(d.sb, P - .4, bb), pt(d.sa, P - .4, ba)], (u, v, i, j) => {
         const px = td[Math.min(th - 1, Math.max(0, (v * th) | 0)) * tw + Math.min(tw - 1, Math.max(0, (u * tw) | 0))], a = px >>> 24; if (!a) return ramp(PL.DARK, .03, i, j);
         const pc = (px | 0xff000000) >>> 0; if (X.lum(pc) > .5) X.SH.fl |= X.F_EMIT; return pc; }, nOut); }
-    if (d.i === 4 || d.i === 5) {                                                                                       // табличка «NEXORA · LIVE» на кришці (NX.t, 4 мови): одна текстура на два середні сегменти, у кожного — своя половина
-      const sign = (c, fw, fh) => { c.fillStyle = '#060a1e'; c.fillRect(0, 0, fw, fh); c.strokeStyle = '#3be8ff'; c.lineWidth = .3; c.strokeRect(.35, .35, fw - .7, fh - .7);
-        c.fillStyle = '#3bff8a'; c.fillRect(fw - 2.4, fh / 2 - .5, 1, 1); c.fillStyle = '#ff4fd8'; c.fillRect(1.4, fh / 2 - .5, 1, 1);
-        A.txt(c, NX.t('decor.wall.title'), fw / 2, fh / 2, fw - 6, fh * .58, '#bff8ff', { glow: '#3be8ff' }); };
+    if (d.i === 4 || d.i === 5) {                                                                                       // табличка «ФЕРМА NEXI» на кришці (NX.t, 4 мови): одна текстура на два середні сегменти
+      const sign = (c, fw, fh) => { c.fillStyle = '#06180e'; c.fillRect(0, 0, fw, fh); c.strokeStyle = '#3bff8a'; c.lineWidth = .3; c.strokeRect(.35, .35, fw - .7, fh - .7);
+        c.fillStyle = '#3bff8a'; [[2.6, 1.4], [3.3, .9], [4, 1.4], [2.9, 2.2], [3.7, 2.2], [3.3, 3]].forEach(([x, y]) => c.fillRect(x, y, .7, .7));   // листочок
+        c.fillStyle = '#ff4fd8'; c.fillRect(fw - 2.4, fh / 2 - .5, 1, 1);
+        A.txt(c, NX.t('decor.farm.title'), fw / 2 + 1.2, fh / 2, fw - 9, fh * .58, '#d8ffe8', { glow: '#3bff8a' }); };
       const u0 = d.i === 4 ? .1 : 0, u1 = d.i === 4 ? 1 : .9, sw = len * 1.8, sh = lid * .8, tex = A.texture({ dc: d }, { fw: sw, fh: sh, k: 'front' }, 6, sign), tw = tex.w, th = tex.h, td = tex.d, h0 = d.i === 4 ? 0 : .5;
       const aA = d.sa + (d.sb - d.sa) * u0, aB = d.sa + (d.sb - d.sa) * u1, yA = d.yta + (d.ytb - d.yta) * u0 + lid * .1, yB = d.yta + (d.ytb - d.yta) * u1 + lid * .1;
       quad(G, [pt(aA, P + .25, yA), pt(aB, P + .25, yB), pt(aB, P + .25, yB + sh), pt(aA, P + .25, yA + sh)], (u, v, i, j) => {
@@ -942,42 +946,42 @@ NX.arc = NX.arc || {};
     const v = c.createLinearGradient(0, 0, fw, 0); v.addColorStop(0, 'rgba(0,0,30,.42)'); v.addColorStop(.13, 'rgba(0,0,30,0)'); v.addColorStop(.87, 'rgba(0,0,30,0)'); v.addColorStop(1, 'rgba(0,0,30,.48)'); c.fillStyle = v; c.fillRect(0, 0, fw, fh);
     c.fillStyle = 'rgba(230,248,255,.7)'; c.fillRect(fw * .18, 0, .6, fh); c.fillStyle = 'rgba(230,248,255,.22)'; c.fillRect(fw * .23, 0, 1.6, fh); c.fillStyle = 'rgba(230,248,255,.3)'; c.fillRect(fw * .8, 0, .45, fh);   // відблиски циліндра
   };
-  // ---- (· 12) МЕДІА-СТІНА: статичний малюнок екрана (текстура грані сегмента, st:dc_vwall) — одна панорама вздовж усіх сегментів (x — від лівого краю, T ≈ 270): чотири
-  //      панелі з шапками (NX.t, 4 мови) — МІСТО (мапа: квартали, сітка вулиць, проспекти, річка, парк, штаб Nexora), ПРОДАЖІ (осі,
-  //      сітка, стовпчики за графіком), ЖУРНАЛ (лінійки), СТАТУС (кільце); скан-лінії й відблиск скла. Живе (кур'єри на мапі,
-  //      радар, графік біжить, рядки журналу, годинник, кільце) — objects/decor_wall.js; розкладка панелей — спільна: WALL.
-  const WALL = { pad: 2.2, tiles: T => [[.012, .33], [.345, .615], [.63, .852], [.867, .988]].map(([a, b]) => [a * T, b * T]), names: ['map', 'sales', 'log', 'status'], acc: ['#3be8ff', '#3bff8a', '#ffd27a', '#ff4fd8'] };
-  NX.arc.WALL = WALL;
-  function wallPaint(c, fw, fh, B) {
-    const d = B.dc, s0 = d.s0, T = d.tot || 270, y0 = WALL.pad, y1 = fh - WALL.pad, H = y1 - y0, tiles = WALL.tiles(T), TAU = Math.PI * 2;   // x — уздовж усього екрана (s0 — початок сегмента), y — 0..fh (висота екрана)
-    c.fillStyle = '#04060f'; c.fillRect(0, 0, fw, fh);                                                                   // бейзел між панелями
+  // ---- (· 13) ВЕРТИКАЛЬНА ФЕРМА: статичний малюнок нутра (текстура грані сегмента, st:dc_farm) — одна панорама вздовж усіх
+  //      сегментів (x — від лівого краю, T ≈ 266, y 0..fh ≈ 62): задня стінка оранжереї (бліді панелі з ребрами, труби), дві полиці
+  //      (хромові рейки з LED-профілем фітосвітла знизу), крапельні труби з форсунками над кожним рядом, ШАХТИ-ЛІФТИ на кінцях
+  //      (ліворуч лотки піднімаються після збору, праворуч опускаються; стрілки, вогники), станція збору з кошиком внизу ліворуч,
+  //      туман при підлозі, скляні відблиски. Живе (лотки з рослинами, фітосвітло, туман, краплі) — objects/decor_farm.js;
+  //      розкладка спільна: NX.arc.FARM (у од. нутра).
+  const FARM = { shaft: 11, rail1: 31, pipe1: 6.5, pipe2: 35, lamp1: 2.2, lamp2: 33.6, nozzle: 24, trayW: 19, trayH: 3.6 };
+  NX.arc.FARM = FARM;
+  function farmPaint(c, fw, fh, B) {
+    const d = B.dc, s0 = d.s0, T = d.tot || 266, SH = FARM.shaft, TAU = Math.PI * 2;
+    const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#174458'); g.addColorStop(.5, '#113446'); g.addColorStop(1, '#0c2838'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);   // задня стінка
     c.save(); c.translate(-s0, 0);
-    tiles.forEach(([x0, x1], k) => {                                                                                      // панель: темно-синій екран, тонка рамка, шапка з назвою й вогником
-      const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#0e2454'); g.addColorStop(1, '#071030'); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, H);
-      c.strokeStyle = 'rgba(59,232,255,.32)'; c.lineWidth = .35; c.strokeRect(x0 + .3, y0 + .3, x1 - x0 - .6, H - .6);
-      c.fillStyle = 'rgba(59,232,255,.14)'; c.fillRect(x0, y0, x1 - x0, 7); c.fillStyle = 'rgba(59,232,255,.35)'; c.fillRect(x0, y0 + 7, x1 - x0, .35);
-      A.txt(c, NX.t('decor.wall.' + WALL.names[k]), x0 + 2.4, y0 + 3.6, (x1 - x0) * .66, 4.4, WALL.acc[k], { align: 'left', glow: WALL.acc[k] });
-      c.fillStyle = WALL.acc[k]; c.fillRect(x1 - 4.4, y0 + 2.5, 2, 2);
-    });
-    { const [x0, x1] = tiles[0], my0 = y0 + 8, my1 = y1 - 1.2, w = x1 - x0, mh = my1 - my0;                               // 1 МІСТО
-      c.save(); c.beginPath(); c.rect(x0, my0, w, mh); c.clip();
-      for (let k = 0; k < 44; k++) { const bx = x0 + hash(k, 91) * w, by = my0 + hash(k, 92) * mh, bw = 3 + 5 * hash(k, 93), bh = 2 + 3 * hash(k, 94); c.fillStyle = k % 5 ? 'rgba(110,150,240,.3)' : 'rgba(255,79,216,.28)'; c.fillRect(bx, by, bw, bh); }   // квартали
-      c.strokeStyle = 'rgba(140,210,255,.5)'; c.lineWidth = .4; for (let x = x0 + 6; x < x1; x += 11) { c.beginPath(); c.moveTo(x, my0); c.lineTo(x, my1); c.stroke(); } for (let y = my0 + 5; y < my1; y += 8) { c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke(); }   // вулиці
-      c.strokeStyle = 'rgba(180,240,255,.75)'; c.lineWidth = .9; c.beginPath(); c.moveTo(x0, my0 + 21); c.lineTo(x1, my0 + 21); c.moveTo(x0 + 39, my0); c.lineTo(x0 + 39, my1); c.stroke();   // проспекти
-      c.strokeStyle = 'rgba(50,140,255,.7)'; c.lineWidth = 2.6; c.beginPath(); for (let x = x0; x <= x1; x += 2) c.lineTo(x, my0 + mh * .76 + Math.sin((x - x0) * .09) * 3.5); c.stroke();   // річка
-      c.fillStyle = 'rgba(60,255,138,.16)'; c.fillRect(x0 + 58, my0 + 8, 14, 9); c.fillStyle = 'rgba(60,255,138,.4)'; for (let q = 0; q < 6; q++) c.fillRect(x0 + 60 + q * 2.1, my0 + 10 + (q % 2) * 3.5, .8, .8);   // парк
-      { const nx = x0 + 39, ny = my0 + 21; c.fillStyle = '#0a1230'; c.fillRect(nx - 3.6, ny - 3.6, 7.2, 7.2); c.strokeStyle = '#ff4fd8'; c.lineWidth = .4; c.strokeRect(nx - 3.6, ny - 3.6, 7.2, 7.2);   // штаб Nexora — піксельна N
-        c.fillStyle = '#9af6ff'; ['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'].forEach((r, j) => [...r].forEach((ch, i) => { if (ch === 'X') c.fillRect(nx - 2.5 + i, ny - 2.5 + j, 1.02, 1.02); })); }
-      c.restore(); }
-    { const [x0, x1] = tiles[1], gy0 = y0 + 17, gy1 = y1 - 3.2;                                                            // 2 ПРОДАЖІ: сітка, осі, стовпчики
-      c.strokeStyle = 'rgba(59,232,255,.14)'; c.lineWidth = .3; for (let k = 0; k < 5; k++) { const y = gy0 + (gy1 - gy0) * k / 4; c.beginPath(); c.moveTo(x0 + 3, y); c.lineTo(x1 - 3, y); c.stroke(); }
-      for (let k = 0; k < 14; k++) { const bw = (x1 - x0 - 8) / 14, bx = x0 + 4 + k * bw, h = (gy1 - gy0) * (.2 + .5 * hash(k, 97)); c.fillStyle = 'rgba(59,255,138,.2)'; c.fillRect(bx + .4, gy1 - h, bw - 1.2, h); c.fillStyle = 'rgba(59,255,138,.5)'; c.fillRect(bx + .4, gy1 - h, bw - 1.2, .4); }
-      c.fillStyle = 'rgba(59,232,255,.5)'; c.fillRect(x0 + 3, gy1, x1 - x0 - 6, .35); c.fillRect(x0 + 3, gy0, .35, gy1 - gy0); }
-    { const [x0, x1] = tiles[2]; for (let k = 0; k < 3; k++) { const y = y0 + 9 + (k + 1) * ((y1 - y0 - 10) / 3); c.fillStyle = 'rgba(255,210,122,.12)'; c.fillRect(x0 + 2, y - .8, x1 - x0 - 4, .35); } }   // 3 ЖУРНАЛ: лінійки
-    { const [x0, x1] = tiles[3], cx = x0 + (x1 - x0) * .3, cy = y0 + 9 + (y1 - y0 - 9) * .56; c.strokeStyle = 'rgba(255,79,216,.25)'; c.lineWidth = 1.8; c.beginPath(); c.arc(cx, cy, 8.2, 0, TAU); c.stroke(); }   // 4 СТАТУС: кільце
+    for (let x = SH + 10; x < T - SH; x += 20) { c.fillStyle = 'rgba(200,236,250,.22)'; c.fillRect(x, 0, 1.4, fh); c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(x + 1.4, 0, 7, fh); }   // ребра й панелі
+    for (let k = 0; k < 60; k++) { const x = SH + hash(k, 31) * (T - 2 * SH), y = hash(k, 32) * fh; c.fillStyle = 'rgba(200,240,255,.08)'; c.fillRect(x, y, .5, .5); }            // крапельки конденсату на стінці
+    for (const [y, py] of [[FARM.pipe1, 1], [FARM.pipe2, 1]]) {                                                                                                                  // крапельні труби з форсунками
+      c.fillStyle = '#1a6a7a'; c.fillRect(SH - 2, y, T - 2 * SH + 4, py); c.fillStyle = '#5ae0ff'; c.fillRect(SH - 2, y, T - 2 * SH + 4, .3);
+      for (let x = SH + FARM.nozzle / 2; x < T - SH; x += FARM.nozzle) { c.fillStyle = '#9ab0c0'; c.fillRect(x - .6, y + py, 1.2, 1.1); c.fillStyle = '#e8f8ff'; c.fillRect(x - .25, y + py + 1.1, .5, .4); } }
+    { const y = FARM.rail1; c.fillStyle = '#34465a'; c.fillRect(SH - 1, y, T - 2 * SH + 2, 2.6); c.fillStyle = '#e0ecf8'; c.fillRect(SH - 1, y, T - 2 * SH + 2, .7); c.fillStyle = '#8a9ab0'; c.fillRect(SH - 1, y + .7, T - 2 * SH + 2, .4);   // верхня полиця (хром + корпус)
+      for (let x = SH + 6; x < T - SH; x += 24) { c.fillStyle = '#4a5a6a'; c.fillRect(x, y + 2.2, 1.2, 2.2); }                                                                 // кронштейни
+      c.fillStyle = '#5a1a5a'; c.fillRect(SH + 1, y + 2.6, T - 2 * SH - 2, .7); c.fillStyle = '#ff8af0'; c.fillRect(SH + 1, y + 3.3, T - 2 * SH - 2, .4); }                       // профіль фітоламп під полицею
+    { c.fillStyle = '#5a1a5a'; c.fillRect(SH + 1, FARM.lamp1 - .8, T - 2 * SH - 2, .7); c.fillStyle = '#ff8af0'; c.fillRect(SH + 1, FARM.lamp1, T - 2 * SH - 2, .35); }             // профіль фітоламп під кришкою
+    { c.fillStyle = '#34465a'; c.fillRect(SH - 1, fh - 1.6, T - 2 * SH + 2, 1.6); c.fillStyle = '#c0ccd8'; c.fillRect(SH - 1, fh - 1.6, T - 2 * SH + 2, .5); }                      // нижня рейка (на баку)
+    for (const [x0, up] of [[0, 1], [T - SH, 0]]) {                                                                                                                              // шахти-ліфти
+      c.fillStyle = '#060e16'; c.fillRect(x0, 0, SH, fh); c.strokeStyle = '#7a8a9a'; c.lineWidth = .6; c.strokeRect(x0 + .4, .4, SH - .8, fh - .8);
+      c.fillStyle = 'rgba(59,255,138,.12)'; c.fillRect(x0 + 1.2, 1.2, SH - 2.4, fh - 2.4);
+      for (let k = 0; k < 4; k++) { const y = 8 + k * 13, dy = up ? -1 : 1; c.fillStyle = k % 2 ? '#3bff8a' : '#1a8a4a'; for (let q = 0; q < 3; q++) c.fillRect(x0 + SH / 2 - 2.4 + q * 1.6, y + dy * Math.abs(q - 1) * 1.1, 1.1, 1.1); }   // стрілки вгору / вниз
+      for (let y = 4; y < fh - 3; y += 6) { c.fillStyle = y % 12 < 6 ? '#ffd27a' : '#3be8ff'; c.fillRect(x0 + (up ? SH - 2.2 : 1.2), y, .9, .9); }                                   // вогники
+      c.fillStyle = '#4a5a6a'; c.fillRect(x0 + 1.2, FARM.rail1 + .4, SH - 2.4, 1); c.fillRect(x0 + 1.2, fh - 2.4, SH - 2.4, 1); }                                                   // площадки
+    { const x = 1.6, y = fh - 9; c.fillStyle = '#6a4a2a'; c.beginPath(); c.moveTo(x, y); c.lineTo(x + SH - 3.2, y); c.lineTo(x + SH - 4.4, y + 5); c.lineTo(x + 1.2, y + 5); c.closePath(); c.fill();   // кошик збору ліворуч унизу
+      c.strokeStyle = '#a07a4a'; c.lineWidth = .35; for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(x + .6, y + q); c.lineTo(x + SH - 3.8, y + q); c.stroke(); }
+      for (let q = 0; q < 6; q++) { c.fillStyle = q % 2 ? '#3bff8a' : '#9aff6a'; c.fillRect(x + 1 + q * 1.3, y - 1.1 + (q % 3) * .4, 1.1, 1.1); } }                              // зелень у кошику
+    { const x = T - SH + 1.6, y = 3; c.fillStyle = '#3a4a5a'; c.fillRect(x, y, SH - 3.2, 5); c.fillStyle = '#1a2a3a'; c.fillRect(x + .6, y + .6, SH - 4.4, 3.8);                       // блок керування ліфтом праворуч угорі
+      c.fillStyle = '#3bff8a'; c.fillRect(x + 1.2, y + 1.2, 1, 1); c.fillStyle = '#ff4fd8'; c.fillRect(x + 2.8, y + 1.2, 1, 1); c.fillStyle = '#3be8ff'; c.fillRect(x + 1.2, y + 2.8, 4, .5); }
     c.restore();
-    c.fillStyle = 'rgba(0,0,0,.16)'; for (let y = 0; y < fh; y += 1.6) c.fillRect(0, y, fw, .5);                            // скан-лінії
-    c.fillStyle = 'rgba(230,255,255,.08)'; c.fillRect(0, fh * .03, fw, fh * .04);                                             // тонкий блік під кришкою
+    const fg = c.createLinearGradient(0, fh - 9, 0, fh); fg.addColorStop(0, 'rgba(200,240,255,0)'); fg.addColorStop(1, 'rgba(200,240,255,.16)'); c.fillStyle = fg; c.fillRect(0, fh - 9, fw, 9);   // туман при підлозі
+    c.fillStyle = 'rgba(230,255,255,.07)'; for (let k = 0; k < 2; k++) { const x = ((41 * k + 17 - s0) % 53 + 53) % 53 - 10; c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 2.5, 0); c.lineTo(x + 2.5 - fh * .3, fh); c.lineTo(x - fh * .3, fh); c.closePath(); c.fill(); }   // скло: відблиски
   }
 
   // ================= ПЛАКАТ І НЕОН (пласкі: грань-малюнок) =================

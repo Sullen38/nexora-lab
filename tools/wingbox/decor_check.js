@@ -52,7 +52,7 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html'), 
     // не зона: у його межах (поза самою лампою, r 9) зайнятим вважаємо лише дуже сильну зміну (> 150), світло на склі акваріума — ні
     const bc = NX.arc.zone && NX.arc.zone('tools') && NX.arc.zone('tools').anchor('tlBeacon'), bp = bc && NX.px3d.proj(bc);
     const light = (X, Y) => bp && (Math.hypot(X - bp[0], Y - bp[1]) < 36 || (Math.abs(X - bp[0]) < 64 && Math.abs(Y - (bp[1] - 7)) < 16)) && Math.hypot(X - bp[0], Y - bp[1]) > 9;
-    // (· 10, · 12) маніпулятор майстерні — ПЕРЕД медіа-стіною (власник: «палка зі скінів — попереду, акваріум — на задньому фоні»):
+    // (· 10, · 13) маніпулятор майстерні — ПЕРЕД фермою (власник: «палка зі скінів — попереду, акваріум — на задньому фоні»):
     // його прямокутник руху (як у decor.py zone_mask: armRig ± запас) не рахуємо зайнятим
     const AR = NX.arcLayout.right.armRig, ap = AR && AR.pts.map(p => NX.px3d.proj(p)), ax0 = ap && Math.min(...ap.map(p => p[0])) - 14, ax1 = ap && Math.max(...ap.map(p => p[0])) + 16, ay0 = ap && Math.min(...ap.map(p => p[1])) - 22, ay1 = ap && Math.max(...ap.map(p => p[1])) + 14;
     const arm = (X, Y) => ap && X >= ax0 && X <= ax1 && Y >= ay0 && Y <= ay1;

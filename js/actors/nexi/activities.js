@@ -157,7 +157,7 @@
       return L; } },
 
     feedFish: { color: '#3be8ff', route() {
-      const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер медіа-стіна)
+      const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер ферма)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
       ['reef', 'jelly'].forEach(aq => { const e = A.feederAt(aq); if (!e) return; const h = hoverBeside(e);
         L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverPress', dur: .9, end: () => A.feed(aq, NX.time) } },
