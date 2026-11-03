@@ -6,7 +6,7 @@
  *   СЯЙВО: вихор світить на колони, балку й сходинки (м'яке фіолетово-блакитне, дихає);
  *   ІСКРИ: дрібні вогники кружляють біля отвору й затягуються у вихор.
  *   ЛЕТЮЧІ РУНИ (крок 14: «портал з рунами — трохи магічний і міфічний»): золоті знаки футарку повільно здіймаються обабіч
- *     брами й тануть (NX.arc.runeG — pt_paint.js); коли з порталу хтось виходить (гості — actors/guests/), їх більше.
+ *     брами й тануть (NX.arc.runeG — pt_paint.js; крок 18 — наполовину голо-біти в рамках); коли з порталу хтось виходить (гості — actors/guests/), їх більше.
  * Крок 13 — перший крок зони (брама й вихор); подорож Nexi крізь портал (куди летимо: проєкти / команда / клієнти —
  * тексти portal.* у словниках) — наступний крок, після «так» власника. active — Nexi подорожує (вихор крутиться швидше).
  * ========================================================================== */
@@ -35,9 +35,14 @@
         const r = 1.25 - ph * .95, x = H.cx + Math.cos(a) * H.rx * r, y = H.cy + Math.sin(a) * H.ry * r * .9, s = (1 - ph * .5) * Math.max(.8, H.k * .9);
         c.globalAlpha = Math.sin(ph * Math.PI) * .9; c.fillStyle = k % 3 ? '#e8d4ff' : '#9af6ff'; c.fillRect(x - s / 2, y - s / 2, s, s);
       }
+      { const z = zone(), a = z.S(10, 316, 2), b2 = z.S(190, 316, 2), d = z.S(100, 328, 64), cx = (a[0] + b2[0]) / 2, cy = (a[1] + d[1]) / 2 + (d[1] - a[1]) * .05, rx = (b2[0] - a[0]) / 2 * .78, ry = Math.abs(d[1] - a[1]) * .42, an = t * (act ? 3 : 1.2);   // промінь сканера по майданчику (техно, крок 18)
+        c.globalAlpha = .55; c.strokeStyle = '#bff8ff'; c.lineWidth = Math.max(.6, H.k); c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(an) * rx, cy + Math.sin(an) * ry); c.stroke();
+        for (let i = 1; i <= 6; i++) { const q = an - i * .12; c.globalAlpha = .3 * (1 - i / 7); c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(q) * rx, cy + Math.sin(q) * ry); c.stroke(); } }
       if (NX.arc.runeG) for (let k = 0; k < (act ? 10 : 6); k++) {                                            // летючі руни: здіймаються й тануть
         const ph = (t * (.07 + hash(k, 21) * .05) + hash(k, 23)) % 1, side = k % 2 ? 1 : -1, x = H.cx + side * H.rx * (1.25 + .35 * hash(k, 25)) + Math.sin(t * .8 + k) * H.k * 3;
-        const y = H.cy + H.ry * (.9 - ph * 2.1); c.globalAlpha = Math.sin(ph * Math.PI) * .8; NX.arc.runeG(c, k * 3 + 1, x, y, H.k * 7, k % 3 ? '#ffd27a' : '#e2c4ff', Math.max(.6, H.k * .9));
+        const y = H.cy + H.ry * (.9 - ph * 2.1); c.globalAlpha = Math.sin(ph * Math.PI) * .8;
+        if (k % 2) NX.arc.runeG(c, k * 3 + 1, x, y, H.k * 7, '#ffd27a', Math.max(.6, H.k * .9));                               // руна (магія)
+        else { const s = H.k * 2.2; c.fillStyle = k % 4 ? '#9af6ff' : '#ff9af0'; c.fillRect(x - s / 2, y - s / 2, s, s); c.strokeStyle = c.fillStyle; c.lineWidth = Math.max(.4, H.k * .5); c.strokeRect(x - s * 1.3, y - s * 1.3, s * 2.6, s * 2.6); }   // голо-біт (техно, крок 18)
       }
       c.restore();
     },
