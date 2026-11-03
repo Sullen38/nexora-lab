@@ -313,6 +313,20 @@ def decor_side(L, sgn, C, R, verbose=True):
             KK.append(under(f'dc_kk{k}', X, kind, 8.6, ln, frm='string', seed=131 + k, pot=pot_of(pot, 6., 6.)))
         hangR = under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('macrame', 7, 7))
         under('dc_hp3', 1567., 'columnea', 10., 44., frm='ring', seed=171, pot=dict(shape='ring', mat='chrome', band='pink', name='ring-neon', pw=5.5, ph=4))
+        # ---------- (· 5) СВІТЛО Й ПОВІТРЯ: конуси світла з точкових світильників на споді антресолі (кожні 23 од. уздовж фасаду, за
+        # 4.6 од. від краю — як у objects/dc_paint.js) — униз, поки не дійдуть до поля над зонами (живе: objects/decor_live.js)
+        cones = []
+        for sg_ in segs:
+            d = sg_['dc']; sa, sb = d['sa'], d['sb']; Lf = chord(W, sa, sb, MZ['P']); s0 = d['s0']
+            for k in range(math.ceil((s0 - 5.75) / 23.), math.ceil((s0 + Lf - 5.75) / 23.)):
+                u = (23. * k + 5.75 - s0) / Lf; v = 4.6 / (MZ['P'] - .3)
+                (f0, _, _), (f1, _, _), (w0, _, _) = W.at(sa, MZ['P']), W.at(sb, MZ['P']), W.at(sa, .3)
+                x = f0[0] + u * (f1[0] - f0[0]) + v * (w0[0] - f0[0]); z = f0[1] + u * (f1[1] - f0[1]) + v * (w0[1] - f0[1])
+                sx, sy = VX + (x - VX) * s(z), ys(MZ['bot'], z); hw = 6. * s(z)
+                if sy < 3 or sx > 1598: continue
+                yb = min(free_y(X) for X in (sx - hw, sx - hw / 2, sx, sx + hw / 2, sx + hw)) - 5.   # світло згасає ще до поля (живе сяйво зон — вище за їхні грані)
+                if yb - sy >= 6: cones.append([round(x, 2), MZ['bot'], round(z, 2), round(Yw(yb, z), 2)])
+        segs[0]['dc']['cones'] = cones
         # ---------- (· 3) ОБ'ЄМ: тіні на стіні й світло
         wshadow(rud, dy=3.)
         for o in [hangR] + KK: wshadow(o, dy=5., rnd=1, top=.3 if o is hangR else .55)
@@ -474,6 +488,14 @@ def decor_side(L, sgn, C, R, verbose=True):
             if cut - it['yt'] > 3: d['sway'] = dict(cut=round(cut, 2), amp=round(min(1.6, (cut - it['yt']) * .05), 2), per=round(per + 1, 2))
         elif st == 'dc_pot' and str(it.get('on', '')).startswith(('dc_tb', 'dc_rf')): d['sway'] = dict(amp=.45, per=per)
         elif st == 'dc_pot' and str(it.get('on', '')).startswith('dc_drift'): d['sway'] = dict(amp=.5, per=per)
+    # (· 5) ПИЛ І ПИЛОК у повітрі біля стін: прямокутники екрана над зонами (з полем) — порошинки живуть у них (objects/decor_live.js)
+    air = []; XA, XB = (1190., 1598.) if sgn > 0 else (-60., 500.)
+    X = XA
+    while X < XB - 8:
+        X1 = min(XB, X + 34.); y1 = min(free_y(q) for q in [X - 7 + 2 * k for k in range(int((X1 - X + 14) / 2) + 1)]) - 4.   # з запасом на дрейф (±3) і сусідні стовпчики
+        if y1 - 4. >= 10: air.append([round(X, 1), round(X1, 1), 4., round(min(y1, 120.), 1)])
+        X = X1
+    if out: (out[0].setdefault('dc', {}))['air'] = air
     if verbose: report(L, out, 'right' if sgn > 0 else 'left')
     return out
 

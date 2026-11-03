@@ -263,15 +263,20 @@
   /** Де дрон у час t: зависає над рослиною (spray), потім летить до наступної (плавно, дугою вгору). */
   function droneAt(t) {
     const tt = t % LEGS.T; let L = LEGS[LEGS.length - 1]; for (const g of LEGS) if (tt >= g.t0) L = g;
-    const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1 };
-    const u = (lt - L.hover) / L.fly, e = u * u * (3 - 2 * u); return { x: L.a[0] + (L.b[0] - L.a[0]) * e, y: L.a[1] + (L.b[1] - L.a[1]) * e - Math.sin(u * Math.PI) * Math.min(10, Math.abs(L.b[0] - L.a[0]) * .12), spray: false, dir: L.b[0] >= L.a[0] ? 1 : -1 };
+    const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt > L.hover - .3 ? lt - L.hover + .3 : null, wx: L.a[0], wy: L.a[1] + 8 };
+    const u = (lt - L.hover) / L.fly, e = u * u * (3 - 2 * u); return { x: L.a[0] + (L.b[0] - L.a[0]) * e, y: L.a[1] + (L.b[1] - L.a[1]) * e - Math.sin(u * Math.PI) * Math.min(10, Math.abs(L.b[0] - L.a[0]) * .12), spray: false, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt - L.hover + .3, wx: L.a[0], wy: L.a[1] + 8 };
   }
-  const droneY = D => Math.max(10, D.y);
+  const droneY = D => Math.max(10, D.y), MIST = glowSpr('#d8f4ff', 5);
   function drawDrone(c, t, vx0, vx1) {
     if (!ROUTE.length) return; const D = droneAt(t); if (D.x < vx0 - 10 || D.x > vx1 + 10) return;
     const w = 10, h = w * DRONE.h / DRONE.w, x = D.x, y = droneY(D);
     c.save(); c.imageSmoothingEnabled = true;
     if (D.spray) { c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const f = (t * 1.6 + k / 14) % 1, a = (hash(k, 3) - .5) * .9; c.globalAlpha = .75 * (1 - f); c.fillStyle = k % 3 ? '#9af6ff' : '#ffffff'; c.fillRect(x + Math.sin(a) * f * 6 - .3, y + h * .45 + f * 9, .6, .6); } c.globalCompositeOperation = 'source-over'; }
+    if (D.wet != null && D.wet < 1.8) { const k = D.wet / 1.8, px = D.wx, py = D.wy;                                  // (· 5) після поливу: хмаринка туману над листям і краплі стікають
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .26 * (1 - k); const gm = MIST.r * (1 + k * .8); c.drawImage(MIST.cv, px - gm, py - gm * .6, gm * 2, gm * 1.2);
+      for (let q = 0; q < 6; q++) { const d0 = hash(q, 17) * .5, f = Math.max(0, (D.wet - d0) / 1.3); if (f <= 0 || f >= 1) continue; const dx = (hash(q, 19) - .5) * 7, yy = py + 1 + f * f * 7;
+        c.globalAlpha = .9 * (1 - f); c.fillStyle = '#c8f4ff'; c.fillRect(px + dx - .2, yy - .35, .4, .7); c.fillStyle = '#ffffff'; c.fillRect(px + dx - .1, yy - .35, .2, .2); }
+      c.globalCompositeOperation = 'source-over'; }
     const spin = NX.decorLive ? NX.decorLive.droneSpin(t) : 0;                          // (· 5) тап — «бочка»
     c.globalAlpha = 1; c.translate(x, y); if (D.dir < 0) c.scale(-1, 1); if (spin) c.rotate(spin); c.drawImage(DRONE.cv, -w / 2, -h / 2, w, h);
     c.globalAlpha = .55; c.fillStyle = '#e8f0ff'; const r = (t * 40) % 2 < 1; for (const hx of [-w * .4, w * .4]) c.fillRect(hx - (r ? 2.2 : 1.6), -h * .38, r ? 4.4 : 3.2, .35);   // гвинти (миготять)

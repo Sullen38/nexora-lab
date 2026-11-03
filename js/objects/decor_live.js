@@ -202,6 +202,31 @@
     c.restore();
   }
 
+  // =============================== (· 5) СВІТЛО Й ПОВІТРЯ ===============================
+  /** Конуси світла з точкових світильників на споді антресолі (decor.py: dc.cones — точка й низ у світі; низ — над полем зон):
+   *  тепле світло згасає донизу, у ньому повільно кружляють порошинки. ПИЛ І ПИЛОК біля стін (dc.air — прямокутники екрана над
+   *  зонами): ледь помітні цятки дрейфують і мерехтять. */
+  const CONES = [], MOTES = [];
+  (() => {
+    for (const B of items) { const d = B.dc; if (!d) continue;
+      if (d.cones) d.cones.forEach(([x, Y, z, Ye]) => { const a = proj([x, Y, z]), b = proj([x, Ye, z]), s = 520 / (520 + z); CONES.push({ x: a[0], y0: a[1], y1: b[1], w0: .8 * s, w1: 5.6 * s, sd: CONES.length }); });
+      if (d.air) d.air.forEach(([x0, x1, y0, y1]) => { const k = MOTES.length + 1, n = Math.max(1, Math.round((x1 - x0) * (y1 - y0) / 330));
+        for (let q = 0; q < n; q++) MOTES.push({ x: x0 + 3 + (x1 - x0 - 6) * hash(k, q), y: y0 + 3 + (y1 - y0 - 6) * hash(q, k + 7), sd: k * 31 + q }); }); }
+  })();
+  const moteAt = (m, t) => [m.x + Math.sin(t * (.11 + .07 * hash(m.sd, 1)) + m.sd) * 2.6, m.y + Math.sin(t * (.09 + .05 * hash(m.sd, 2)) + m.sd * 1.7) * 2.2];
+  function drawAir(c, t, vx0, vx1) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (const C of CONES) { if (C.x < vx0 - 12 || C.x > vx1 + 12) continue; const fl = .85 + .15 * Math.sin(t * .7 + C.sd * 1.7);
+      const g = c.createLinearGradient(0, C.y0, 0, C.y1); g.addColorStop(0, `rgba(255,228,175,${.34 * fl})`); g.addColorStop(.45, `rgba(255,214,150,${.13 * fl})`); g.addColorStop(1, 'rgba(255,200,140,0)');
+      c.globalAlpha = 1; c.fillStyle = g; c.beginPath(); c.moveTo(C.x - C.w0, C.y0); c.lineTo(C.x + C.w0, C.y0); c.lineTo(C.x + C.w1, C.y1); c.lineTo(C.x - C.w1, C.y1); c.closePath(); c.fill();
+      const gs = glow('#ffe2a8'); c.globalAlpha = .5 * fl; c.drawImage(gs.cv, C.x - 2.4, C.y0 - 1.4, 4.8, 2.8);                    // сам світильник
+      for (let q = 0; q < 6; q++) { const f = (t * (.04 + .03 * hash(q, C.sd)) + hash(C.sd, q)) % 1, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f, x = C.x + Math.sin(t * .4 + q * 2.3) * hw * .7;
+        c.globalAlpha = Math.sin(f * Math.PI) * .85; c.fillStyle = '#fff2d0'; c.fillRect(x - .2, y - .2, .4, .4); } }
+    for (const m of MOTES) { const [x, y] = moteAt(m, t); if (x < vx0 || x > vx1) continue;
+      const b = .5 + .5 * Math.sin(t * (.8 + hash(m.sd, 3)) + m.sd); c.globalAlpha = .14 + .4 * b * b; c.fillStyle = hash(m.sd, 4) > .5 ? '#fff4d8' : '#d8fff0'; c.fillRect(x - .22, y - .22, .44, .44); }
+    c.restore();
+  }
+
   // =============================== (· 5) РАВЛИК НА МОХОВОМУ КОРЧІ ===============================
   const DRS = items.filter(B => B.st === 'dc_drift').sort((a, b) => a.dc.i - b.dc.i);
   /** Точка корча на довжині s (від лівого кінця): сегмент і NX.arc.driftAt (objects/dc_paint.js). */
@@ -344,7 +369,15 @@
       }
     }
     if (GREEN) { const { P } = basis(GREEN), p = proj(P(0, GREEN.dep / 2, GREEN.yb - (GREEN.yb - GREEN.yt) * .4)), dg = t - TP.green, tg = dg >= 0 && dg < 1.5 ? Math.exp(-dg / .5) : 0, r = GREEN.w * .45 * (1 + .5 * tg);   // міні-оранжерея: фітолампа «дихає» (тап — спалах)
-      if (p[0] > vx0 - 20 && p[0] < vx1 + 20) { c.globalAlpha = Math.min(1, .12 + .1 * Math.sin(t * 1.1) + .6 * tg); const g = glow('#ff6ae0'); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2); } }
+      if (p[0] > vx0 - 20 && p[0] < vx1 + 20) { c.globalAlpha = Math.min(1, .12 + .1 * Math.sin(t * 1.1) + .6 * tg); const g = glow('#ff6ae0'); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2);
+        const H = GREEN.yb - GREEN.yt, yP = GREEN.yb - 3.2, eave = GREEN.yt + H * .3, hw = GREEN.w / 2, a = proj(P(-hw, 0, eave)), b = proj(P(hw, 0, yP));   // (· 5) туман і конденсат під склом
+        c.save(); c.beginPath(); c.rect(Math.min(a[0], b[0]) + .4, a[1] + .3, Math.abs(b[0] - a[0]) - .8, b[1] - a[1] - .6); c.clip(); c.globalCompositeOperation = 'source-over';
+        const gw = glow('#eef8ff'), ww = Math.abs(b[0] - a[0]);
+        for (let q = 0; q < 4; q++) { const f = ((t * (.05 + .02 * q) + q * .27) % 1), x = Math.min(a[0], b[0]) + ww * (.1 + .8 * ((q * .37 + f) % 1)), y = b[1] - (b[1] - a[1]) * (.25 + .2 * Math.sin(t * .3 + q * 2)), rr = ww * (.22 + .08 * Math.sin(t * .5 + q));
+          c.globalAlpha = .1 + .06 * Math.sin(t * .7 + q * 1.3); c.drawImage(gw.cv, x - rr, y - rr * .6, rr * 2, rr * 1.2); }
+        for (let q = 0; q < 3; q++) { const f = ((t * .12 + hash(q, 5)) % 1), x = Math.min(a[0], b[0]) + ww * (.15 + .7 * hash(q, Math.floor(t * .12 + hash(q, 5)))), y = a[1] + (b[1] - a[1]) * f * f;
+          c.globalAlpha = .7 * (1 - f); c.fillStyle = '#e8f8ff'; c.fillRect(x - .18, y - .3, .36, .6); }
+        c.restore(); c.globalCompositeOperation = 'lighter'; } }
     const LN = byId.dc_lantern, dl = t - TP.lamp;                                       // ліхтар: тап — спалахує й мерехтить
     if (LN && dl >= 0 && dl < 1.4) { const { P } = basis(LN), p = proj(P(0, LN.dep / 2, LN.yt + (LN.yb - LN.yt) * .62)), r = 9 + 6 * Math.exp(-dl / .4);
       c.globalAlpha = Math.min(1, .9 * Math.exp(-dl / .5) * (.7 + .3 * Math.sin(dl * 40))); const g = glow('#ffd27a'); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2); }
@@ -457,6 +490,8 @@
       for (let k = 0; k < 2400; k++) { const t = k * .05;
         for (const L of LP) if (L.e.sp.kind === 'flytrap' && L.meta) { const st = trapAt(L, t); if (st.fly) { const p = plantPt(L, st.fly[0], st.fly[1]); c.fillRect(p[0] - 1, p[1] - .7, 2, 1.4); } }
         if (k % 8 === 0) { const S = snailAt(t * 4); if (S) c.fillRect(S.x - 1.8 * S.s, S.y - 2.3 * S.s, 3.6 * S.s, 2.4 * S.s); }
+        if (k < 120) for (const C of CONES) { const f = k / 119, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f; c.fillRect(C.x - hw, y - .3, hw * 2, .6); }
+        if (k % 4 === 0) for (const m of MOTES) { const [x, y] = moteAt(m, t * 2); c.fillRect(x - .2, y - .2, .4, .4); }
         if (PYL && PYL.dc.fungi && k < 200) { const { P } = basis(PYL); for (const [fu, fY, fr] of PYL.dc.fungi) { const f = k / 200, pp = proj(P(fu + Math.sin(f * 7) * (fr * .75 + .7), -.4 - f * 1.6, fY + fr * .35 - f * 14)); c.fillRect(pp[0] - .3, pp[1] - .3, .6, .6); } }
         for (let v = 0; v < ROUTES.length; v++) { const B = butterflyAt(v, t); if (B) c.fillRect(B.x - 2.2, B.y - 1.6, 4.4, 3.2); }
         for (const f of FLY2) { const x = f.x + Math.sin(t * (.27 + hash(f.sd, 1) * .2) + f.sd) * f.ax, y = f.y + Math.sin(t * (.39 + hash(f.sd, 2) * .2) + f.sd * 2) * f.ay; c.fillRect(x - .6, y - .6, 1.2, 1.2); }
@@ -475,6 +510,7 @@
       drawRudik(c, t, vx0, vx1);
       drawPlants(c, t, vx0, vx1);
       drawSnail(c, t, vx0, vx1);
+      drawAir(c, t, vx0, vx1);
       drawLeaves(c, t, vx0, vx1);
       drawButterflies(c, t, vx0, vx1);
       drawFlies2(c, t, vx0, vx1);
