@@ -801,42 +801,42 @@ NX.arc = NX.arc || {};
    *  вентиляцією, червоні вогники-індикатори, жовто-чорна смуга), стійка між модулями, торцеві стінки з неоном на кінцях;
    *  на полиці (мілка частина) — сходинка рами. Табло «НЕБЕЗПЕЧНО» — на кришці середнього модуля (NX.t('decor.danger')). */
   SHP['st:dc_shark'] = (G, B) => {
-    const d = B.dc, w = B.w, dep = B.dep, lid = d.lid, base = d.base, sg = d.sgn, yt = B.yt, yb = B.yb, RED = neonX('#ff3a3a');
-    G.partF(G.sub(0, dep / 2, w + .02, dep, yt, yt + lid), Fc => {                               // кришка
-      if (Fc.k === 'bottom') return null; const L = lit(Fc.n, A.centre(Fc));
-      if (Fc.k === 'front') return (u, v, i, j) => { const y = v * lid, x = d.s0 + u * Fc.fw;
-        if (y < .6) return ramp(PL.CHROME, .5 - y * .2, i, j); if (y > lid - .7) return E(RED[(i + j) % 5 ? 1 : 2]);          // червона неонова кромка над склом
-        if (y > 1.1 && y < 2.3) return (((x + y) / 1.6) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);                 // аварійна смуга
-        if (y > 2.9 && y < lid - 1.1 && ((x % 9) + 9) % 9 < 1.1) return E(((x / 9) | 0) % 2 ? col('#9af6ff') : col('#ffffff'));   // LED прожектора
-        return ramp(PL.STEEL, .3 * L + (y < 1 ? .1 : 0), i, j); };
-      if (Fc.k === 'top') return (u, v, i, j) => { const x = d.s0 + u * Fc.fw; return v > .3 && v < .7 && ((x % 9) + 9) % 9 < 2 ? ramp(PL.CHROME, .7, i, j) : ramp(PL.STEEL, .26 + v * .08, i, j); };
-      return (u, v, i, j) => ramp(PL.STEEL, .28 * L, i, j);
-    });
-    G.partF(G.sub(0, dep / 2, w + .02, dep, yb - base, yb), Fc => {                               // тумба
-      if (Fc.k === 'top') return null; const L = lit(Fc.n, A.centre(Fc));
-      if (Fc.k === 'front') return (u, v, i, j) => { const y = v * base, x = d.s0 + u * Fc.fw, pc = ((x % 11) + 11) % 11;
-        if (y < .5) return E(RED[1]); if (y < 1.1) return ramp(PL.CHROME, .55, i, j);                                              // червона кромка під склом
-        if (y > base - .9) return (((x) / 1.6) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);                            // аварійна смуга знизу
-        if (pc < .5) return ramp(PL.STEEL, .06, i, j);
-        if (Math.abs(pc - 2.2) < .45 && y > 2 && y < 3) return E((((x / 11) | 0) + (j >> 1)) % 3 ? col('#ff3a3a') : col('#3bff8a'));   // індикатори
-        if (pc > 4 && pc < 9.5 && y > 1.9 && y < base - 1.3 && (y * 2.2) % 1 < .4) return ramp(PL.DARK, .1, i, j);                  // вентиляція
-        return ramp(PL.STEEL, .3 * L + (y < 2 ? .06 : 0), i, j); };
-      if (Fc.k === 'bottom') return (u, v, i, j) => v < .16 ? E(RED[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .2 + (1 - v) * .08, i, j);
-      return (u, v, i, j) => ramp(PL.STEEL, .26 * L, i, j);
-    });
-    const nW = sub(G.P(0, 0, 0), G.P(0, 1, 0));                                                     // тінь під тумбою на стіні
-    const shR = Math.min(yb + 8, d.shy || yb + 8); if (shR > yb) ditherFace(G, G.P(-w / 2 - .1, dep + .15, yb - 1), G.P(w / 2 + .1, dep + .15, yb - 1), G.P(-w / 2 - .1, dep + .15, shR), nW, (u, v) => .4 * Math.pow(1 - v, 1.6));
-    const post = u => G.partF(G.sub(u, dep / 2, 1.3, dep + .3, yt + lid - .2, yb - base + .2), Fc => { const L = lit(Fc.n, A.centre(Fc));   // стійка між модулями / торець
-      return (uu, v, i, j) => { const y = v * Fc.fh; return Fc.k === 'front' && Math.abs(uu - .5) < .16 ? E(RED[((j * 3) | 0) % 7 ? 1 : 2]) : Fc.k === 'front' ? ramp(PL.CHROME, (y % 6) < .6 ? .9 : .55 - Math.abs(uu - .5) * .4, i, j) : ramp(PL.STEEL, .3 * L + .04, i, j); }; });
-    post(-sg * (w / 2 - .6)); if (d.i === d.n - 1) post(sg * (w / 2 - .6));
-    if (d.i === 7) {                                                                                 // сходинка рами на межі глибокої частини й полиці: тумба полиці спирається на вертикальну панель
-      const pr = B.yb - d.base; G.partF(G.sub(-sg * (w / 2 - 1.2), dep / 2, 2.4, dep, yb, yb + 1.2), Fc => (u, v, i, j) => ramp(PL.STEEL, .22, i, j)); void pr;
-    }
-    if (d.i === 3) {                                                                                 // табло «НЕБЕЗПЕЧНО» на кришці: панель лицем до глядача (NX.t, 4 мови)
+    // ОДНЕ ЦІЛЕ (· 11): кришка й тумба — суцільні похилі смуги по дузі (кінці сегмента спільні з сусідами: d.yta/ytb, yba/ybb),
+    // без стійок між сегментами; торцеві стінки — лише на кінцях. Скло (вікна) — за смугами, тож краї скла сховані.
+    const d = B.dc, sg = d.sgn, C = d.C, P = d.P, lid = d.lid, base = d.base, RED = neonX('#ff3a3a');
+    const pt = (a, ins, y) => { const rad = d.R - ins; return [C[0] + sg * rad * Math.sin(a * D2R), y, C[1] + rad * Math.cos(a * D2R)]; };
+    const am = (d.sa + d.sb) / 2, nOut = [-sg * Math.sin(am * D2R), 0, -Math.cos(am * D2R)], len = Math.hypot(...sub(pt(d.sb, P, 0), pt(d.sa, P, 0)));
+    const Lf = lit(nOut, pt(am, P, (d.yta + d.yba) / 2)), Lt = lit([0, -1, 0], pt(am, P / 2, d.yta));
+    const band = (y0a, y0b, h, front, top, bot) => {                                            // похила смуга: лице (front), верх (top) і низ (bot)
+      quad(G, [pt(d.sa, P, y0a), pt(d.sb, P, y0b), pt(d.sb, P, y0b + h), pt(d.sa, P, y0a + h)], front, nOut);
+      if (top) quad(G, [pt(d.sa, .3, y0a), pt(d.sb, .3, y0b), pt(d.sb, P, y0b), pt(d.sa, P, y0a)], top, [0, -1, 0]);
+      if (bot) quad(G, [pt(d.sa, P, y0a + h), pt(d.sb, P, y0b + h), pt(d.sb, .3, y0b + h), pt(d.sa, .3, y0a + h)], bot, [0, 1, 0]);
+    };
+    band(d.yta, d.ytb, lid, (u, v, i, j) => { const y = v * lid, x = d.s0 + u * len;                                   // кришка
+        if (y < .7) return ramp(PL.CHROME, .55 - y * .2, i, j); if (y > lid - .8) return E(RED[(i + j) % 5 ? 1 : 2]);     // червона неонова кромка над склом
+        if (y > 1.3 && y < 2.6) return (((x + y) / 1.8) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);           // аварійна смуга
+        if (y > 3.3 && y < lid - 1.3 && ((x % 9) + 9) % 9 < 1.2) return E(((x / 9) | 0) % 2 ? col('#9af6ff') : col('#ffffff'));   // LED прожекторів
+        return ramp(PL.STEEL, .3 * Lf + (y < 1.1 ? .1 : 0), i, j); },
+      (u, v, i, j) => { const x = d.s0 + u * len; return v > .3 && v < .7 && ((x % 9) + 9) % 9 < 2 ? ramp(PL.CHROME, .7, i, j) : ramp(PL.STEEL, .26 * Lt + v * .08, i, j); }, null);
+    band(d.yba - base, d.ybb - base, base, (u, v, i, j) => { const y = v * base, x = d.s0 + u * len, pc = ((x % 11) + 11) % 11;   // тумба
+        if (y < .6) return E(RED[1]); if (y < 1.2) return ramp(PL.CHROME, .55, i, j);
+        if (y > base - 1) return (((x) / 1.8) | 0) % 2 ? E(col('#ffcc1a')) : ramp(PL.DARK, .06, i, j);
+        if (Math.abs(pc - 2.2) < .45 && y > 2.2 && y < 3.2) return E((((x / 11) | 0) + (j >> 1)) % 3 ? col('#ff3a3a') : col('#3bff8a'));   // індикатори
+        if (pc > 4 && pc < 9.5 && y > 2 && y < base - 1.4 && (y * 2.2) % 1 < .4) return ramp(PL.DARK, .1, i, j);                 // вентиляція
+        return ramp(PL.STEEL, .3 * Lf + (y < 2.2 ? .06 : 0), i, j); },
+      null, (u, v, i, j) => v < .16 ? E(RED[(i + j) % 4 ? 1 : 2]) : ramp(PL.STEEL, .2 + (1 - v) * .08, i, j));
+    const nW = nOut, ybm = Math.max(d.yba, d.ybb);                                                    // тінь під тумбою на стіні
+    const shR = Math.min(ybm + 8, d.shy || ybm + 8); if (shR > ybm) ditherFace(G, pt(d.sa, .15, d.yba - 1), pt(d.sb, .15, d.ybb - 1), pt(d.sa, .15, shR), nW, (u, v) => .4 * Math.pow(1 - v, 1.6));
+    const endWall = (a, yt, yb, inner) => {                                                                              // торцева стінка: товста рама з неоном уздовж
+      const a2 = a + inner * 1.6 / (d.R * D2R); quad(G, [pt(a, P, yt), pt(a2, P, yt), pt(a2, P, yb), pt(a, P, yb)], (u, v, i, j) => Math.abs(u - .5) < .2 ? E(RED[((j * 3) | 0) % 7 ? 1 : 2]) : ramp(PL.CHROME, (v * (yb - yt) % 7) < .7 ? .9 : .5, i, j), nOut);
+      quad(G, [pt(a, P, yt), pt(a, .3, yt), pt(a, .3, yb), pt(a, P, yb)], (u, v, i, j) => ramp(PL.STEEL, .3, i, j), [-inner * sg * Math.cos(a * D2R), 0, inner * Math.sin(a * D2R)]);
+    };
+    if (d.i === 0) endWall(d.sa, d.yta, d.yba, 1); if (d.i === d.n - 1) endWall(d.sb, d.ytb, d.ybb, -1);
+    if (d.i === 4) {                                                                                                     // табло «НЕБЕЗПЕЧНО» на кришці (NX.t, 4 мови)
       const sign = (c, fw, fh) => { c.fillStyle = '#1a0608'; c.fillRect(0, 0, fw, fh); c.strokeStyle = '#ff3a3a'; c.lineWidth = .35; c.strokeRect(.4, .4, fw - .8, fh - .8);
         for (let k = 0; k < 3; k++) { c.fillStyle = k % 2 ? '#ffcc1a' : '#3a1010'; c.fillRect(1 + k * .7, 1, .5, fh - 2); c.fillRect(fw - 1.5 - k * .7, 1, .5, fh - 2); }
         A.txt(c, NX.t('decor.danger'), fw / 2, fh / 2, fw - 7, fh * .5, '#ff5a4a', { glow: '#ff2a1a' }); };
-      G.partF(G.sub(0, dep + .05, w * .9, .4, yt + lid * .1, yt + lid * .9), Fc => Fc.k === 'front' ? A.shader('frame', Fc, B, { tex: A.texture(B, Fc, 6, sign), pal: PL.DARK, q: .1, bev: 0, ins: 0 }) : (u, v, i, j) => ramp(PL.DARK, .1, i, j));
+      const ym = (d.yta + d.ytb) / 2; G.partF(G.sub(0, P + .05, B.w * .9, .4, ym + lid * .1, ym + lid * .9), Fc => Fc.k === 'front' ? A.shader('frame', Fc, B, { tex: A.texture(B, Fc, 6, sign), pal: PL.DARK, q: .1, bev: 0, ins: 0 }) : (u, v, i, j) => ramp(PL.DARK, .1, i, j));
     }
   };
   // ================= СКЛО АКВАРІУМІВ: вікна (рушій дає маску видимих пікселів — риби живуть за склом: objects/decor.js) =================
@@ -940,7 +940,7 @@ NX.arc = NX.arc || {};
   //      частина (x < xS, вікна deep) — вулканічне дно з лавою в тріщинах, затонулий бойовий мех (ребра, шолом з червоним оком),
   //      ланцюги, клітка для корму; полиця (x ≥ xS) — мілке дно з «кістками» робота; усе в темно-синій товщі з променями
   //      прожекторів; попередження на склі. Профіль дна — SHARK.fl (спільний з живим: objects/decor_aqua.js).
-  const SHARK = { fl: (x, fh, fhS, xS) => 4 + 1.3 * Math.sin(x * .21) + .6 * Math.sin(x * .77 + 2) };
+  const SHARK = { fl: (x, fh, fhS, xS) => 7.5 + 1.3 * Math.sin(x * .21) + .6 * Math.sin(x * .77 + 2) };
   NX.arc.SHARK = SHARK;
   function sharkPaint(c, fw, fh, B) {
     const d = B.dc, s0 = d.s0, T = d.tot || 270, deep = d.deep, g = c.createLinearGradient(0, 0, 0, fh);

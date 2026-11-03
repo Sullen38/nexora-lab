@@ -258,45 +258,48 @@ def decor_side(L, sgn, C, R, verbose=True):
         # ---------- П2. АКВАРІУМ ХИЖАКІВ (акваріум №3; Декор стін · 10; власник: «перемалюй на всю ту площину, зовсім інший
         # дизайн, супер-акваріум з небезпечними рибами, футуристичний; палка зі скінів (маніпулятор) — попереду, акваріум —
         # на задньому фоні»): панорамна скляна стінка на всю стіну від вікна до плаката Рудика (X 1050..1316), від стелі до поля
-        # над зонами; низ — двома рівнями: глибока частина (ліворуч, за маніпулятором, над капсулою скінів) і мілка полиця
-        # праворуч (над маячком інструментів — його лампа лишається вільною). Маніпулятор майстерні — ПЕРЕД акваріумом (рушій
+        # над зонами (лампа маячка інструментів — вільна, його сяйво — світло поверх). Маніпулятор майстерні — ПЕРЕД акваріумом (рушій
         # малює зони після растра крил; маска зон для цих речей — без маніпулятора: noarm). Рама — «контейнер утримання»:
         # темний хром, аварійні смуги, червоні неонові кромки, прожектори, табло «НЕБЕЗПЕЧНО» (NX.t, 4 мови) — objects/dc_paint.js
         # st:dc_shark; скло — вікна dc_shg* (маска), малюнок sharkPaint; хижаки — objects/decor_aqua.js (shark).
-        SH = dict(P=16., lid=7., base=7., Xm=1238.)
+        SH = dict(P=16., lid=8., base=8.)
         zm2, _ = zone_mask(L, arm=False); zpx2 = zm2.load()
         def free_y2(X, margin=MARGIN):
             i0 = int((X - MX0) * MS)
             for j in range(int((0 - MY0) * MS), ZH):
                 if any(0 <= i < ZW and zpx2[i, j] for i in (i0 - 2, i0, i0 + 2)): return MY0 + j / MS - margin
             return 400.
-        a0, am_, a1 = W.a_of(1058., SH['P']), W.a_of(SH['Xm'], SH['P']), W.a_of(1316., SH['P'])
-        # верх і низ — РІВНІ НА ЕКРАНІ (у світі — похилі: стіна йде вглиб ліворуч), щоб акваріум був на всю площину: у кожного
-        # сегмента свій верх / низ (yt_a, yt_b, yb_a, yb_b — на його кінцях; коробка й скло — за гіршим з двох)
-        rowD = min(free_y2(X) for X in range(1058, 1239)) - 1.; rowS = min(free_y2(X) for X in range(1238, 1317)) - 1.   # рядки низу: глибока частина / полиця
-        SH.update(rowD=round(rowD, 1), rowS=round(rowS, 1))
-        # кожен сегмент — «модуль» зі своєю рамою (сходинки між модулями — на стійках); коробка модуля підганяється по справжніх
-        # кутах на екрані: верх кришки — рядок ≥ 1.5, низ тумби — рядок ≤ row (глибока частина / полиця)
-        bounds = [a0 + (am_ - a0) * k / 7 for k in range(8)] + [am_ + (a1 - am_) * k / 3 for k in range(1, 4)]
-        segs = []; acc = 0.
-        for i in range(10):
-            sa, sb = bounds[i], bounds[i + 1]; am = (sa + sb) / 2; deep = 1 if i < 7 else 0; row = rowD if deep else rowS
-            (x_, z_), _, _ = W.at(am, SH['P'] / 2); yt = Yw(1.5, z_); yb = Yw(row, z_)
-            d = dict(SH, i=i, n=10, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, deep=deep, noarm=1)
-            mk = lambda yt, yb: item(W, f'dc_sh{i}', am, SH['P'], chord(W, sa, sb) + .2, round(yb, 2), round(yt, 2), 'dc_shark', inset=.3, dc=d)
-            for _ in range(60):
-                pts = hull(screen_poly(mk(yt, yb))); miny, maxy = min(p[1] for p in pts), max(p[1] for p in pts); ok = True
-                if miny < 1.5: yt += .4; ok = False
-                if maxy > row: yb -= .4; ok = False
+        a0, a1 = W.a_of(1058., SH['P']), W.a_of(1316., SH['P'])
+        # ОДНЕ ЦІЛЕ (власник, · 11: «хай буде щось одне ціле»): верх і низ — дві рівні лінії на екрані по всій довжині (у світі
+        # похилі: стіна йде вглиб ліворуч), кришка й тумба — суцільні похилі смуги (у кожного сегмента верх/низ на кінцях: yta/ytb,
+        # yba/ybb — спільні з сусідом, тож без сходинок), скло заходить за смуги (нижче рядка кришки / вище рядка тумби) — краї скла
+        # ховаються за рамою. Низ — над лампою маячка (рядок row по всій довжині; сяйво маячка — світло поверх, не зона)
+        row = min(free_y2(X) for X in range(1058, 1317)) - 1.; SH['row'] = round(row, 1)
+        def Yt(a): return round(max(Yw(1.5, W.at(a, ins)[0][1]) for ins in (0., SH['P'] + .3)), 2)                       # верх кришки — рядок 1.5
+        def Yb(a): return round(min(Yw(row, W.at(a, ins)[0][1]) for ins in (0., SH['P'] + .3)), 2)                      # низ тумби — рядок row
+        def fit(mk, yt, yb, r0, r1):
+            """коробка (для перевірок) — підігнана по справжніх кутах на екрані: верх ≥ рядка r0, низ ≤ рядка r1 (смуги рами малюються по дузі — їх це не рухає)"""
+            for _ in range(80):
+                pts = hull(screen_poly(mk(round(yt, 2), round(yb, 2)))); miny, maxy = min(p[1] for p in pts), max(p[1] for p in pts); ok = True
+                if miny < r0: yt += .4; ok = False
+                if maxy > r1: yb -= .4; ok = False
                 if ok: break
-            it = mk(yt, yb); add(it); segs.append(it)
+            return mk(round(yt, 2), round(yb, 2))
+        n = 10; bounds = [a0 + (a1 - a0) * k / n for k in range(n + 1)]
+        segs = []; acc = 0.
+        for i in range(n):
+            sa, sb = bounds[i], bounds[i + 1]; am = (sa + sb) / 2
+            yta, ytb, yba, ybb = Yt(sa), Yt(sb), Yb(sa), Yb(sb)
+            d = dict(SH, i=i, n=n, sa=round(sa, 4), sb=round(sb, 4), s0=round(acc, 2), C=[round(C[0], 2), round(C[1], 2)], R=R, sgn=sgn, noarm=1, yta=yta, ytb=ytb, yba=yba, ybb=ybb)
+            it = fit(lambda yt, yb: item(W, f'dc_sh{i}', am, SH['P'], chord(W, sa, sb) + .2, yb, yt, 'dc_shark', inset=.3, dc=d), min(yta, ytb), max(yba, ybb), 1.5, row); add(it); segs.append(it)
             acc += chord(W, sa, sb, SH['P'])
         tot = acc; acc = 0.
         for sg in segs:
-            d = sg['dc']; d['tot'] = round(tot, 2); sa, sb = d['sa'], d['sb']; wc = chord(W, sa, sb, SH['P'] + .1); d['shy'] = shy(sa, sb)
-            gt, gb = round(sg['yt'] + SH['lid'], 2), round(sg['yb'] - SH['base'], 2)   # скло — між кришкою й тумбою модуля
-            add(item(W, sg['id'].replace('dc_sh', 'dc_shg'), (sa + sb) / 2, .3, wc + .12, gb, gt, 'dc_win', inset=SH['P'] + .1 - .3, on=sg['id'],
-                     dc=dict(aq='shark', i=d['i'], n=10, s0=round(acc, 2), sa=sa, sb=sb, C=d['C'], R=R, sgn=sgn, ins=SH['P'] + .1, P=SH['P'], top=gt, bot=gb, deep=d['deep'], tot=round(tot, 2), noarm=1)))
+            d = sg['dc']; d['tot'] = round(tot, 2); sa, sb = d['sa'], d['sb']; wc = chord(W, sa, sb, SH['P'] - .5); d['shy'] = shy(sa, sb)
+            gt, gb = round(min(d['yta'], d['ytb']) + SH['lid'] - 3.5, 2), round(max(d['yba'], d['ybb']) - SH['base'] + 3.5, 2)   # скло — за смугами рами (на 3.5 од. заходить під них)
+            dg = dict(aq='shark', i=d['i'], n=n, s0=round(acc, 2), sa=sa, sb=sb, C=d['C'], R=R, sgn=sgn, ins=SH['P'] - .5, P=SH['P'], tot=round(tot, 2), noarm=1)
+            g_ = fit(lambda yt, yb: item(W, sg['id'].replace('dc_sh', 'dc_shg'), (sa + sb) / 2, .3, wc + .12, yb, yt, 'dc_win', inset=SH['P'] - .5 - .3, on=sg['id'], dc=dg), gt, gb, 1.5, row)   # скло — за смугами (кришка й тумба попереду ховають краї)
+            dg['top'] = g_['yt']; dg['bot'] = g_['yb']; add(g_)
             acc += wc
         shX1 = 1316.
         # ---------- П3. ПЛАКАТ РУДИКА (Декор стін · 4; власник: «плакат Рудика — прикольний, піксельний») — між акватрубою й
@@ -531,8 +534,8 @@ def zone_mask(L, S=2, X0=-90, Y0=-20, X1=1630, Y1=500, arm=True):
                                                                                     # декору, що навмисно ЗА ним — акваріум хижаків · 10, власник: «палка зі скінів — попереду»)
         P = [P3(*p) for p in L['armRig']['pts']]; xs = [p[0] for p in P]; yy = [p[1] for p in P]
         d.rectangle([T((min(xs) - 14, min(yy) - 22)), T((max(xs) + 16, max(yy) + 14))], fill=255)
-    if 'tlBeacon' in A:                                                             # маячок інструментів з ближнім сяйвом (лампа ~r 5; ореол спалаху — до 20)
-        x, y = P3(*A["tlBeacon"]); d.ellipse([T((x - 20, y - 20)), T((x + 20, y + 20))], fill=255)
+    if 'tlBeacon' in A:                                                             # маячок інструментів: лампа з ядром спалаху (r 14); решта сяйва й промені — світло поверх декору
+        x, y = P3(*A["tlBeacon"]); d.ellipse([T((x - 14, y - 14)), T((x + 14, y + 14))], fill=255)
         # (· 8) Далі ореол спалаху (до r ≈ 36) і промені (вліво-вправо на ~60 од., tools.js: beam) — це світло, що лягає поверх
         # декору (малюється після растра крил, 'lighter'): по склу акваріума воно ковзає як промінь — не заважає (власник
         # 03.11: «акваріум утричі більший — місця достатньо»). decor_check.js так само не рахує слабке світло маячка за зону.

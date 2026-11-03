@@ -226,7 +226,7 @@
     for (const [lx, w] of [[22, 9], [58, 7], [96, 12], [140, 8], [172, 10]]) { const g = .35 + .3 * Math.sin(t * 1.1 + lx), p = MS.S(lx, floor(lx) + 1.2, A.P - 2), k = sOf(MS.W(lx, 0)[2]);   // лава в тріщинах дна пульсує
       const gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], w * k); gr.addColorStop(0, `rgba(255,120,40,${.35 * g})`); gr.addColorStop(1, 'rgba(255,60,20,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - w * k, p[1] - w * k, w * k * 2, w * k * 2); }
     for (const m of MUD) { const y = ((m.y + t * .012 * m.sp) % 1) * fh * .9, x = m.x + Math.sin(t * .4 + m.sd) * 1.5, p = MS.S(x, y, 2 + (m.sd % 5)); fx.globalAlpha = .25 + .25 * Math.sin(t * 2 + m.sd); fx.fillStyle = '#9ab0c8'; fx.fillRect(p[0] - .2, p[1] - .2, .4, .4); }   // мул
-    { const on = (t % 5) < 4.4; for (let k = 0; k < 9; k++) { const y = fh * .06 + k * (fh * .88) / 8, p = MS.S(xS + .3, y, 1), q = MS.S(xS + .3, y, A.P - 1), ph = (t * 1.6 + k * .4) % 1;   // захисна сітка-лазер на межі з полицею
+    if (xS < T - 1) { const on = (t % 5) < 4.4; for (let k = 0; k < 9; k++) { const y = fh * .06 + k * (fh * .88) / 8, p = MS.S(xS + .3, y, 1), q = MS.S(xS + .3, y, A.P - 1), ph = (t * 1.6 + k * .4) % 1;   // захисна сітка-лазер на межі з полицею (якщо вона є)
       fx.globalAlpha = on ? .18 + .3 * Math.max(0, Math.sin(ph * 6.28)) : .05; fx.strokeStyle = '#3be8ff'; fx.lineWidth = .3; fx.beginPath(); fx.moveTo(p[0], p[1]); fx.lineTo(q[0], q[1]); fx.stroke(); } }
     fx.restore();
     { const ang = 1 - Math.pow(Math.max(0, Math.sin(t * .09)), 3), x = 14 + ang * 10, y = fh - 12 + Math.sin(t * .6) * 1.2, p = MS.S(x, y, A.P - 5), k = sOf(MS.W(x, 0)[2]) * 9 / ANGLER[0].w;   // вудильник чатує в темному куті
@@ -237,7 +237,7 @@
       if (z < .7) { fx.save(); fx.globalCompositeOperation = 'lighter'; fx.globalAlpha = (1 - z / .7) * .9; fx.strokeStyle = '#bff8ff'; fx.lineWidth = .35;   // розряд: спалах і блискавки
         const gr = fx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 14 * k * 2); gr.addColorStop(0, 'rgba(120,240,255,.55)'); gr.addColorStop(1, 'rgba(120,240,255,0)'); fx.fillStyle = gr; fx.fillRect(p[0] - 30, p[1] - 30, 60, 60);
         for (let q = 0; q < 5; q++) { fx.beginPath(); let bx = p[0] + (hash(q, 21) - .5) * 8 * k, by = p[1]; fx.moveTo(bx, by); for (let s_ = 0; s_ < 5; s_++) { bx += (hash(q * 7 + s_ + Math.floor(t * 20), 23) - .5) * 5; by -= 2 + hash(q, s_) * 3; fx.lineTo(bx, by); } fx.stroke(); } fx.restore(); } }
-    { const c = (t * .07 + .5) % 2, u = c < 1 ? c : 2 - c, x = xS + 10 + u * (T - xS - 22), dir = c < 1 ? 1 : -1, y = floor(x) - 3 + Math.sin(t * .9) * .8, p = MS.S(x, y, A.P - 3), k = sOf(MS.W(x, 0)[2]) * 14 / RAY[0].w;   // скат ковзає по полиці
+    { const x0 = Math.min(xS, T * .55), c = (t * .07 + .5) % 2, u = c < 1 ? c : 2 - c, x = x0 + 10 + u * (T - x0 - 22), dir = c < 1 ? 1 : -1, y = floor(x) - 3 + Math.sin(t * .9) * .8, p = MS.S(x, y, A.P - 3), k = sOf(MS.W(x, 0)[2]) * 14 / RAY[0].w;   // скат ковзає по правій половині дна
       spr(fx, RAY[Math.floor(t * 2.2) % 2], p, k, dir); }
   }
   function sharkFront(fx, A, t, list) {
