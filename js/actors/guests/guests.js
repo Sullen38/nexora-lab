@@ -16,7 +16,10 @@
  *   Крок 15.1: погоня за Чеширським котом і Колобком, поклон Кота в чоботях, Змій — камера на Рудику (NX.cat.look).
  *   Крок 16: спрайти — HD (guest_art.js, сітка 48×58 × .75); кадр гостя береться щонайбільше 12 разів на секунду з кешу
  *     готових кадрів (guest_art.js: frame — поза, крок, фаза анімації, ніс, черевичок), речі перемальовуються 8 разів.
- * Тап по гостю — він повторює репліку; наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
+ * Крок 17 (власник, 03.11): ТАП ПО БРАМІ кличе випадкового гостя (разом — не більше трьох); підказки «з порталу: …» немає —
+ *   гості просто з'являються; ТАП ПО ГОСТЮ — своя репліка (guests.<id>.t, по черзі) і своя дія (TAP: Яга мете, Піноккіо бреше —
+ *   ніс росте, Дон Кіхот атакує й падає, Чеширський кіт тане, Горинич чхає…), після якої гість продовжує свою сценку.
+ * Наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
  * ========================================================================== */
 NX.guests = (() => {
   const IDS = ['babaYaga', 'snowWhite', 'cheshire', 'redHood', 'whiteRabbit', 'kolobok', 'pinocchio', 'pussBoots', 'quixote', 'sherlock',
@@ -89,8 +92,7 @@ NX.guests = (() => {
     const back = sc.flyer ? [] : sc.rollBack ? [{ run: front(), pose: 'roll' }, { hop: p }] : [{ [sc.runBack ? 'run' : 'go']: front() }, { hop: p }];   // назад: до брами, на майданчик
     g.q = [{ appear: .7 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, { vanish: .7 }];
     S.portalT = NX.time + 2; if (nexiFree()) NX.nexi.emote(['surprise', 'happy', 'idea'][Math.random() * 3 | 0], 2);
-    NX.ui.hud.toast && NX.ui.hud.toast(t_('guests.arrive', { name: t_(`guests.${id}.n`) }));
-    return g;
+    return g;                                                                                                             // підказки «з порталу: …» немає (власник, 03.11): гостя просто видно
   }
   /** Наступний гість із мішка (20 героїв без повторів; скінчились — нове перемішування). */
   function pick() {
@@ -100,6 +102,39 @@ NX.guests = (() => {
     return S.last = id;
   }
   const say = (g, k) => { const L = k === 'p' ? t_(`guests.${g.id}.p`) : (NX.t(`guests.${g.id}.s`) || [])[k]; if (L) g.bub = { text: L, until: NX.time + 2.6, parrot: k === 'p' }; };
+  /** Репліка на тап (guests.<id>.t — по черзі, без повторів поспіль). */
+  const sayTap = g => { const L = NX.t(`guests.${g.id}.t`) || NX.t(`guests.${g.id}.s`) || []; if (!L.length) return; g.ti = ((g.ti == null ? Math.random() * L.length | 0 : g.ti + 1)) % L.length; g.bub = { text: L[g.ti], until: NX.time + 2.8 }; };
+  // ---------- ТАП ПО ГОСТЮ (крок 17): своя дія кожного — вставляється в чергу перед поточним кроком ----------
+  const sparks = (g, n, col, dy = 40) => { for (let i = 0; i < n; i++) NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - dy - rnd() * 20, { col: typeof col === 'function' ? col() : col }); };
+  const TAP = {
+    babaYaga: g => [{ act: 'sweep', dur: 1.6, tick: dust(g) }],
+    snowWhite: g => [{ act: 'cheer', dur: 1.2, start: () => { NX.fx.emit('heart', g.x, g.y - 44); if (g.comp && !g.comp.hidden) g.comp.pose = 'cheer'; } }],
+    cheshire: g => [{ act: 'sit', dur: 2.4, start: () => { g.fade = .7; }, end: () => { g.fade = 0; } }],                   // тане й повертається
+    redHood: g => [{ act: 'give', dur: 1.4, start: () => NX.fx.emit('heart', g.x + g.dir * 16, g.y - 40) }],
+    whiteRabbit: g => [{ act: 'watch', dur: 1.3 }, { act: 'run', dur: .5 }],
+    kolobok: g => [{ act: 'roll', dur: 1.2, tick: () => rnd() < .2 && NX.fx.emit('note', g.x, g.y - 22) }],
+    pinocchio: g => [{ act: 'stand', dur: 1.8, tick: dt => { g.nose = Math.min(9, (g.nose || 0) + dt * 5); }, end: () => { g.nose = 0; } }],
+    pussBoots: g => [{ act: 'bow', dur: 1.6 }],
+    quixote: g => [{ act: 'charge', dur: .9 }, { act: 'fall', dur: 1.4, start: () => sparks(g, 6, '#ffe27a', 30) }, { act: 'stand', dur: .3 }],
+    sherlock: g => [{ act: 'inspect', dur: 1.8, tick: dust(g) }],
+    robinHood: g => [{ act: 'aim', dur: 1.3, end: () => { S.fx.push({ type: 'arrow', x0: g.x + g.dir * 22, y0: g.y - 38, x1: g.x + g.dir * 140, y1: g.y - 60, t0: NX.time, dur: .3 }); } }],
+    munchausen: g => [{ act: 'ride', dur: 1.6, alt: 22, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('steam', g.x - g.dir * 12, g.y - 6); } }, { act: 'stand', dur: .2, alt: 0 }],
+    firebird: g => [{ act: 'fly', dur: 1.4, alt: g.alt, tick: () => rnd() < .6 && NX.fx.emit('fire', g.x - g.dir * 16, g.y - g.alt - 20) }],
+    stNicholas: g => [{ act: 'give', dur: 1.5, start: () => { for (let i = 0; i < 5; i++) NX.fx.emit('snow', g.x + (rnd() - .5) * 40, g.y - 70); } }],
+    cinderella: g => [{ act: 'twirl', dur: 1.6, tick: () => rnd() < .3 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#ffffff' }) }],
+    merlin: g => [{ act: 'cast', dur: 1.6, tick: () => rnd() < .4 && NX.fx.emit('spark', g.x + g.dir * 14 + (rnd() - .5) * 20, g.y - 60 - rnd() * 20, { col: rnd() < .5 ? '#9af6ff' : '#e2c4ff', vy: 20 }) }],
+    genie: g => [{ act: 'cast', dur: 1.5, alt: g.alt, start: () => sparks(g, 10, () => rnd() < .5 ? '#ffe27a' : '#d4b8ff', 60) }],
+    tinMan: g => [{ act: 'rust', dur: 1.4, start: () => { for (let i = 0; i < 4; i++) NX.fx.emit('bubble', g.x - g.dir * 6, g.y - 34 + i * 3, { col: '#ffd27a' }); } }, { act: 'cheer', dur: .8 }],
+    silver: g => [{ act: 'dig', dur: 1.6, tick: dust(g) }],
+    gorynych: g => [{ act: 'sneeze', dur: 1.2, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }],
+  };
+  function tap(g) {
+    sayTap(g); NX.fx.emit('heart', g.x, g.y - g.alt - 50);
+    if (g.busy || !TAP[g.id] || !g.cur || g.cur.appear || g.cur.vanish || g.cur.hop || (g.cur.act && g.cur.start && !g.cur.st)) return;   // під час появи / стрибка — лише репліка
+    g.busy = true; const was = g.cur; if (was.go || was.run || was.fly) was.path = null;                                          // хода триває з того ж місця (шлях перерахується)
+    const q = TAP[g.id](g).map(a => Object.assign({}, a)); q.push({ do: () => { g.busy = false; } });
+    g.q.unshift(was); g.q.unshift(...q); g.cur = null;
+  }
   const atPad = g => { const p = pad(); return Math.hypot(g.x - p[0], g.y - p[1]) < 3; };
   /** Крок черги: повертає true, коли зроблено. */
   function step(g, a, dt) {
@@ -191,11 +226,18 @@ NX.guests = (() => {
   /** Гість під точкою (тап, наведення): межі спрайта. */
   function hitTest(x, y) {
     for (const g of S.list) { const [W, H, K] = A.size(g.id), s = NX.room.scaleAt(g.y) * K * .98 * g.zoom, w = W * s * .6, h = H * s, top = g.y - g.alt - h;
-      if (g.alpha > .5 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 3) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => { say(g, 0); NX.fx.emit('heart', g.x, top); } }; }
+      if (g.alpha > .5 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 3) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => tap(g) }; }
     return null;
   }
-  NX.addObject({ id: 'guests', update, layers });
-  return { spawn, hitTest, IDS, S,
+  /** Тап по брамі порталу (крок 17): кличе випадкового гостя з мішка — якщо в кімнаті менше трьох. Інакше — лише спалах. */
+  function summon() {
+    const po = NX.objects.portal; if (S.list.length >= MAX || S.list.some(g => g.cur && g.cur.appear)) { S.portalT = NX.time + 1; return false; }
+    S.on = true; spawn(); S.next = NX.time + 20 + Math.random() * 20; po && (po.active = true); return true;
+  }
+  NX.addObject({ id: 'guests', update, layers,
+    tapFirst(x, y) { const z = zone(); if (!z || !z.box) return false; const [x0, x1, y0, y1] = z.box; if (x < x0 || x > x1 || y < y0 || y > y1 - 6) return false;
+      const p = pad(); for (let i = 0; i < 12; i++) NX.fx.emit('portal', p[0] + (Math.random() - .5) * 60, p[1] - 20 - Math.random() * 90); summon(); return true; } });
+  return { spawn, summon, hitTest, IDS, S,
     /** Для перевірки й знімків: усі 20 рядами перед брамою (поза stand), без сценок. */
     demo(ids = IDS) { S.on = false; S.list = []; const B = NX.room.walkBounds(); ids.forEach((id, i) => { const g = { id, x: 140 + (i % 10) * 132, y: B.minY + 40 + Math.floor(i / 10) * 70, dir: 1, pose: i === 2 ? 'sit' : 'stand', fr: 0, ft: 0, alt: 0, alpha: 1, zoom: 1, g: {}, cv: null, q: [{ hold: 1 }], cur: null, speed: 1 }; S.list.push(g); }); },
   };
