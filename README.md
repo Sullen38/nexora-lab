@@ -5,6 +5,14 @@
 керуємо ззовні — Playwright, наявні функції гри (`NX.ui.chat.go`, `NX.guests.spawn`, `NX.virus.spawn`, `NX.cam`…) і час.
 
 ## Стан
+- **Чат «Реклама · 1» закрито власником (04.11).** Репозиторію `Sullen38/nexora-promo` ще немає, тож цей код **тимчасово —
+  у гілці `promo` репозиторію `Sullen38/nexora-lab`** (окрема історія; у `main` гри нічого не додано). Коли `nexora-promo`
+  з'явиться: `git clone --branch promo https://github.com/Sullen38/nexora-lab nexora-promo && cd nexora-promo &&
+  git push https://github.com/Sullen38/nexora-promo promo:main`, далі працювати там, а гілку `promo` у грі видалити
+  (`git push https://github.com/Sullen38/nexora-lab --delete promo`). **Чекає «так»:** план нижче і вибір стилю A / B / C
+  (або мікс). Ще не зроблено — кроки 2–8 плану. Підсумок для інших чатів — `docs/HISTORY.md` гри, «Реклама · 1».
+  Ескізи знято з гри `fa0c620` (02.11); кімната відтоді змінилась — перед кроком 2 перезняти (`bash tools/setup.sh`,
+  `node shots/sketch_raw.js <мова>`, `node shots/sketch.js uk,en,pl,nl`, `node shots/overview.js`).
 - **Реклама · 1 — огляд, план, стенд зйомки, 3 ескізи стилю (02.11) — чекає «так» і вибору стилю A / B / C.**
   Ескізи (uk) — `out/sketches/uk/shot_{a,b,c}.png` (App Store 1320×2868), `gp_{a,b,c}.png` (Google Play 1080×1920),
   `banner_{a,b,c}.png` (Google Play 1024×500); аркуші огляду — `out/sketches/overview_{uk,gp,langs,banners}.png`
