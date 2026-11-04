@@ -192,6 +192,21 @@
         { fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } }];
     } },
 
+    // ---------- ВЕЧІРКА В ПОРТАЛІ (власник, 04.11: «паті-кімната з'явиться, коли Nexi відправиться в портал»): тап по брамі (guests.js:
+    // tapFirst) — Nexi йде до брами, стрибає на майданчик, тане у вихорі (fade зі спіном, як у подорожі порталом до 29.10) —
+    // відкривається кімната вечірки (actors/guests/party.js: спіймані гості танцюють, Nexi — DJ); «← У КІМНАТУ» закриває її —
+    // Nexi з'являється на майданчику, зіскакує й радіє. Поки вечірка триває, крок «stand» чекає (party.on). ----------
+    party: { color: '#d94bff', route() {
+      const z = NX.arc && NX.arc.zone && NX.arc.zone('portal'), n = NX.nexi, po = NX.objects.portal; if (!z || !NX.party) return [line('party')];
+      const pad = z.S(100, 316, 30), front = NX.room.clampWalk(...z.S(100, 352, -30), 'nexi'), P2 = [pad[0], pad[1]];
+      return [{ walk: front }, { face: 1 }, line('party'), { work: { pose: 'cheer', dur: .9 } }, { work: { pose: 'crouch', dur: .14 } }, { hop: P2, hi: 18 }, { loc: 'portalPad' }, { face: 1 },
+        { work: { pose: 'crouch', dur: .3, start: () => { if (po) po.active = true; } } },
+        { fade: { alpha: 0, zoom: .25, y: pad[1] - 26, dur: 1.1, spin: true } }, { do: () => NX.party.open() },
+        { work: { pose: 'stand', dur: 1e6, tick: () => { const c = n.cur; if (c && !NX.party.on) c._t = 1e7; } } },   // чекає, поки людина не повернеться з вечірки
+        { do: () => { n.y = pad[1]; } }, { fade: { alpha: 1, zoom: 1, y: pad[1], dur: .8, spin: true } },
+        { do: () => { if (po) po.active = false; NX.nexiPhys.land(3); n.emote('happy', 2.5); n.say(NX.pick('act.party.back')); } },
+        { work: { pose: 'cheer', dur: 1.2 } }, { work: { pose: 'crouch', dur: .14 } }, { hop: front, hi: 18 }, { loc: 'floor' }, { face: 1 }, { spin: .5 }]; } },
+
     wander: { color: '#3be8ff', route() { const b = NX.room.walkBounds(); return [{ walk: NX.room.clampWalk(80 + Math.random() * 1380, b.minY + Math.random() * (b.maxY - b.minY)) }, { work: { pose: 'look', dur: 3 } }]; } },
 
     window: { color: '#7a5cff', route() { return [{ walk: P().window }, { face: 1 }, line('window'), { do: () => NX.city.fireworks(7) }, { work: { pose: 'gaze', dur: 7, back: true } }, { do: () => NX.nexi.emote('happy') }]; } },

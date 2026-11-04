@@ -44,7 +44,8 @@ NX.i18n.add('pl', {
   portal: { choose: 'DOKĄD LECIMY?', dest: { projects: 'Projekty', team: 'Zespół', clients: 'Klienci' },
     go: { projects: 'Lecę do projektów! Sprawdzę terminy.', team: 'Zajrzę do zespołu — kto co robi.', clients: 'Lecę do klientów po nowe wiadomości.' },
     res: { projects: 'Projekty: 3 aktywne, jeden termin jutro. Wszystko zapisałem.', team: 'Zespół: 4 osoby online, dwie czekają na Twoją odpowiedź.', clients: 'Klienci: 3 nowe zgłoszenia, na dwa już odpowiedziałem.' } },
-  guests: {   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
+  party: { sign: 'IMPREZA NEXI', dj: 'DJ NEXI', guests: 'GOŚCIE', back: '← DO POKOJU', empty: 'Jeszcze nikogo. Stuknij gościa w pokoju — przyjdzie na imprezę!', bar: 'BAR', cake: 'TORT' },
+  guests: { badge: 'W KOLEKCJI ✓',   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
     babaYaga: { n: 'Baba Jaga', s: ['Ojej, ile tu kurzu!', 'Odlatuję na miotle!'], t: ['Fe-fe, robotem pachnie!', 'Chatko, odwróć się tyłem do lasu!', 'W moździerzu latam, miotłą ślady zamiatam.'] },
     snowWhite: { n: 'Królewna Śnieżka', s: ['Krasnoludku, gdzie jesteś?', 'Tu jesteś!'], t: ['Siedmiu krasnali, a szukam jednego!', 'Jabłuszko? Nie, dziękuję, już próbowałam.', 'Lustereczko, kto tu najmilszy? Rudy!'] },
     cheshire: { n: 'Kot z Cheshire', s: ['Mrr… tu wszyscy są trochę szaleni.', 'Już mnie tu nie ma!'], t: ['Wszyscy tu jesteśmy trochę szaleni.', 'Uśmiech bez kota — zdarza się.', 'Którędy? Zależy, dokąd chcesz dojść.'] },
@@ -79,6 +80,7 @@ NX.i18n.add('pl', {
     upstairs: { title: 'Antresola: zatankować drona', steps: ['Wzlatuję na antresolę', 'Wołam drona-podlewacza', 'Dolewam mu wody ✓'], lines: ['Lecę na górę — dron-podlewacz pewnie nie ma już wody!', 'Zajrzę na antresolę i zatankuję drona.', 'Dronie, do mnie! Pora dolać wody.'] },
     feedCat: { title: 'Nakarmić kota', steps: ['Idę do Rudego', 'Daję smakołyk ✓'], lines: ['Rudy jest głodny! Dam mu smakołyk.'] },
     dance: { title: 'Taniec na dywanie', steps: ['Muzyka!', 'Tańczę ♪'], lines: ['Chwila tańca dla humoru!'] },
+    party: { title: 'Impreza w portalu', steps: ['Idę do bramy', 'Skaczę w wir', 'Impreza ♪', 'Wróciłem ✓'], lines: ['Czas na imprezę! Przyjaciele już czekają w portalu.', 'Lecimy na imprezę — są tam wszyscy zebrani goście!'], back: ['Uff, wytańczyłem się! Co dalej?', 'Impreza była super! Wracam do pracy.'] },
     wander: { title: 'Spacer po pokoju', steps: ['Spaceruję'], lines: ['Przejdę się i pomyślę.'] },
     window: { title: 'Popatrzeć na miasto', steps: ['Idę do okna', 'Podziwiam miasto'], lines: ['Zobacz, jakie dziś miasto! Odpalę mały pokaz fajerwerków.', 'Kocham ten widok. Ile firm tam teraz pracuje...'] },
     kickBall: { title: 'Gra w piłkę', steps: ['Biegnę do piłki', 'Podanie do Rudego!'], lines: ['Rudy, łap!', 'Podanie! Kto szybszy?'] },

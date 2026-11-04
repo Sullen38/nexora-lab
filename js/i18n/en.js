@@ -44,7 +44,8 @@ NX.i18n.add('en', {
   portal: { choose: 'WHERE TO?', dest: { projects: 'Projects', team: 'Team', clients: 'Clients' },
     go: { projects: 'Off to the projects! I will check the deadlines.', team: "I'll drop by the team and see who's doing what.", clients: 'Flying to the clients to collect new messages.' },
     res: { projects: 'Projects: 3 active, one deadline tomorrow. Noted everything.', team: 'Team: 4 people online, two are waiting for your reply.', clients: 'Clients: 3 new requests, I already answered two.' } },
-  guests: {   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
+  party: { sign: 'NEXI PARTY', dj: 'DJ NEXI', guests: 'GUESTS', back: '← BACK TO THE ROOM', empty: 'Nobody yet. Tap a guest in the room — and they will come to the party!', bar: 'BAR', cake: 'CAKE' },
+  guests: { badge: 'COLLECTED ✓',   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
     babaYaga: { n: 'Baba Yaga', s: ['Oh, so much dust here!', 'Off I fly on my broom!'], t: ['Fee-fi, I smell a robot!', 'Hut, hut, turn your back to the forest!', 'I fly in a mortar and sweep my tracks with a broom.'] },
     snowWhite: { n: 'Snow White', s: ['Little dwarf, where are you?', 'There you are!'], t: ['Seven dwarfs, and I\'m looking for one!', 'An apple? No thanks, I\'ve tried one.', 'Mirror, who\'s the cutest here? Ginger!'] },
     cheshire: { n: 'Cheshire Cat', s: ['Purr… we\'re all a little mad here.', 'I\'m not here anymore!'], t: ['We\'re all mad here.', 'A grin without a cat — it happens.', 'Which way? Depends where you want to get to.'] },
@@ -79,6 +80,7 @@ NX.i18n.add('en', {
     upstairs: { title: 'Second floor: refill the drone', steps: ['Fly up to the second floor', 'Call the watering drone', 'Top up its water ✓'], lines: ['Up to the second floor — the watering drone must be running dry!', "I'll check on the second floor and refill the drone.", 'Drone, over here! Time for a top-up.'] },
     feedCat: { title: 'Feed the cat', steps: ['Going to Ginger', 'Giving a treat ✓'], lines: ["Ginger is hungry! I'll give him a treat."] },
     dance: { title: 'Dance on the rug', steps: ['Music!', 'Dancing ♪'], lines: ['A little dance for the mood!'] },
+    party: { title: 'Party in the portal', steps: ['Heading to the gate', 'Jumping into the vortex', 'Party ♪', 'Back ✓'], lines: ['Party time! My friends are already waiting in the portal.', 'Off to the party — every collected guest is there!'], back: ['Phew, I danced my circuits off! What next?', 'That party was fire! Back to business.'] },
     wander: { title: 'Walk around', steps: ['Walking'], lines: ["I'll take a walk and think."] },
     window: { title: 'Look at the city', steps: ['Going to the window', 'Enjoying the view'], lines: ['Look at the city today! Let me set off some fireworks.', 'I love this view. So many businesses working out there...'] },
     kickBall: { title: 'Play with the ball', steps: ['Running to the ball', 'Pass to Ginger!'], lines: ['Ginger, catch!', "Pass! Who's faster?"] },

@@ -43,6 +43,8 @@ NX.nexi = {
       tlHover: tl ? [up, { fly: tl.stand() }] : [],
       aiDesk: ai ? [up, { do: () => ai.finish() }, { fly: ai.front() }] : [],
       wallHover: [up, { fly: this.wallFloor || NX.room.clampWalk(this.x, 440, 'nexi') }],                    // (· 6) біля стіни на ранці — спершу вниз
+      portalPad: [up, { do: () => { this.alpha = 1; this.zoom = 1; if (NX.party) NX.party.close(); if (NX.objects.portal) NX.objects.portal.active = false; } },   // (вечірка) з майданчика брами — вниз
+        { hop: NX.room.clampWalk(...((NX.arc && NX.arc.zone && NX.arc.zone('portal')) ? NX.arc.zone('portal').S(100, 352, -30) : [this.x, 400]), 'nexi') }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);
   },
   finishTask(done) {

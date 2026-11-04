@@ -22,12 +22,30 @@
  * Крок 19 (власник: «появу та зникнення героїв — більш красиво»): ТЕЛЕПОРТ — спалах з променями у вихорі, кільце енергії
  *   на майданчику (розходиться / сходиться), гість матеріалізується рядками знизу вгору (верхній фронт тремтить, кольоровий
  *   зсув, світна лінія сканера, світний силует), іскри злітаються до тіла; зникнення — те саме навпаки й спалах у кінці.
- * Наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo().
+ * КОЛЕКЦІЯ Й ВЕЧІРКА (власник, 04.11: «прийшов гість, ми на нього натиснули — і він з'явився в колекції; коли він уже пішов,
+ *   він з'являється в нас на вечірці; паті-кімната, де вони всі танцюють, з'явиться, коли Nexi відправиться в портал»):
+ *   ТАП ПО ГОСТЮ, крім репліки й дії, кладе його в колекцію (localStorage nx.guests; значок «У КОЛЕКЦІЇ ✓» злітає над ним —
+ *   лише першого разу); ТАП ПО БРАМІ тепер — Nexi йде у вихор на вечірку (activities.js: party → party.js), а не кличе гостя
+ *   (summon лишився для коду: NX.guests.summon()). На вечірці — спіймані гості, яких зараз немає в кімнаті (atParty()).
+ * Наведення — ім'я (ui/input.js). Для перевірки: NX.guests.spawn(id), NX.guests.demo(), NX.guests.collectAll().
  * ========================================================================== */
 NX.guests = (() => {
   const IDS = ['babaYaga', 'snowWhite', 'cheshire', 'redHood', 'whiteRabbit', 'kolobok', 'pinocchio', 'pussBoots', 'quixote', 'sherlock',
     'robinHood', 'munchausen', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'silver', 'gorynych'];
   const MAX = 3, S = { list: [], bag: [], last: null, next: 25, props: [], fx: [], on: true };
+  // ---------- КОЛЕКЦІЯ (хто вже спійманий тапом) — у цьому браузері ----------
+  const KEY = 'nx.guests'; let COL = []; try { COL = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).filter(id => IDS.includes(id)); } catch (e) {}
+  const saveCol = () => { try { localStorage.setItem(KEY, JSON.stringify(COL)); } catch (e) {} };
+  /** Спіймати гостя (тап): новий — у колекцію, значок і феєрверк іскор над ним. */
+  function collect(g) {
+    if (COL.includes(g.id)) return false; COL.push(g.id); saveCol();
+    S.fx.push({ type: 'badge', x: g.x, y: g.y - g.alt - 58, t0: NX.time, dur: 2.2 });
+    for (let i = 0; i < 14; i++) NX.fx.emit('spark', g.x + (rnd() - .5) * 36, g.y - g.alt - 20 - rnd() * 40, { col: i % 3 ? '#ffe27a' : '#9af6ff', vy: 30 });
+    return true;
+  }
+  const collection = () => COL.slice();
+  /** Хто зараз на вечірці: спіймані, яких немає в кімнаті (пішли назад у портал). */
+  const atParty = () => COL.filter(id => !S.list.some(g => g.id === id));
   const P = NX.px, A = NX.guestArt, t_ = (k, o) => NX.t(k, o), rnd = Math.random;
   const zone = () => NX.arc && NX.arc.zone && NX.arc.zone('portal');
   /** Точки порталу на екрані: майданчик під аркою (де з'являються) і підлога перед брамою. */
@@ -132,7 +150,7 @@ NX.guests = (() => {
     gorynych: g => [{ act: 'sneeze', dur: 1.2, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }],
   };
   function tap(g) {
-    sayTap(g); NX.fx.emit('heart', g.x, g.y - g.alt - 50);
+    sayTap(g); NX.fx.emit('heart', g.x, g.y - g.alt - 50); collect(g);
     if (g.busy || !TAP[g.id] || !g.cur || g.cur.appear || g.cur.vanish || g.cur.hop || (g.cur.act && g.cur.start && !g.cur.st)) return;   // під час появи / стрибка — лише репліка
     g.busy = true; const was = g.cur; if (was.go || was.run || was.fly) was.path = null;                                          // хода триває з того ж місця (шлях перерахується)
     const q = TAP[g.id](g).map(a => Object.assign({}, a)); q.push({ do: () => { g.busy = false; } });
@@ -244,6 +262,9 @@ NX.guests = (() => {
         c.imageSmoothingEnabled = false; c.drawImage(pr, p.x - w / 2, p.y - h - (p.alt || 0), w, h); c.restore(); } }); });
     S.fx.forEach(f => { if (f.type !== 'arrow') return; out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), xx = P.lerp(f.x0, f.x1, k), yy = P.lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 10, ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
       c.save(); c.strokeStyle = '#e8d0a0'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xx - Math.cos(ang) * 12, yy - Math.sin(ang) * 12); c.lineTo(xx, yy); c.stroke(); c.fillStyle = '#d02a2a'; c.fillRect(xx - Math.cos(ang) * 12 - 1.5, yy - Math.sin(ang) * 12 - 1.5, 3, 3); c.restore(); } }); });
+    S.fx.forEach(f => { if (f.type !== 'badge') return; out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), y = f.y - k * 26, a = k < .15 ? k / .15 : k > .7 ? (1 - k) / .3 : 1;   // значок «У КОЛЕКЦІЇ ✓» злітає й тане
+      c.save(); c.globalAlpha = a; c.font = '6px "Press Start 2P", monospace'; const s = NX.t('guests.badge'), w = c.measureText(s).width + 10, x0 = P.clamp(f.x - w / 2, NX.cam.x + 4, NX.cam.x + NX.cam.viewW - w - 4);
+      c.fillStyle = '#0a0626ee'; c.fillRect(x0, y - 9, w, 13); c.strokeStyle = '#ffe27a'; c.lineWidth = 1; c.strokeRect(x0 + .5, y - 8.5, w - 1, 12); c.fillStyle = '#ffe27a'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s, x0 + w / 2, y - 2.5); c.restore(); } }); });
     S.fx.forEach(f => { if (f.type !== 'flash' && f.type !== 'ring') return; const k = Math.min(1, (NX.time - f.t0) / f.dur), sc = NX.room.scaleAt(f.y) * .98;
       if (f.type === 'flash') out.push({ y: 998, draw: c => { const a = Math.sin(k * Math.PI), r = (18 + 30 * k) * sc; P.glow(c, f.x, f.y, r, 'rgba(200,240,255,.95)', a); P.glow(c, f.x, f.y, r * .45, '#ffffff', a * .9);   // спалах
           c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.strokeStyle = '#e8f8ff'; c.lineWidth = 1; for (let i = 0; i < 6; i++) { const an = i * 1.047 + k * 2, L = r * (.7 + i % 2 * .25); c.beginPath(); c.moveTo(f.x, f.y); c.lineTo(f.x + Math.cos(an) * L, f.y + Math.sin(an) * L * .6); c.stroke(); } c.restore(); } });
@@ -260,15 +281,17 @@ NX.guests = (() => {
       if (g.alpha > .5 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 3) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => tap(g) }; }
     return null;
   }
-  /** Тап по брамі порталу (крок 17): кличе випадкового гостя з мішка — якщо в кімнаті менше трьох. Інакше — лише спалах. */
+  /** Кликати гостя з мішка (до 04.11 — тап по брамі; тепер — для коду й перевірок): якщо в кімнаті менше трьох. Інакше — лише спалах. */
   function summon() {
     const po = NX.objects.portal; if (S.list.length >= MAX || S.list.some(g => g.cur && g.cur.appear)) { S.portalT = NX.time + 1; return false; }
     S.on = true; spawn(); S.next = NX.time + 20 + Math.random() * 20; po && (po.active = true); return true;
   }
   NX.addObject({ id: 'guests', update, layers,
     tapFirst(x, y) { const z = zone(); if (!z || !z.box) return false; const [x0, x1, y0, y1] = z.box; if (x < x0 || x > x1 || y < y0 || y > y1 - 6) return false;
-      const p = pad(); for (let i = 0; i < 12; i++) NX.fx.emit('portal', p[0] + (Math.random() - .5) * 60, p[1] - 20 - Math.random() * 90); summon(); return true; } });
-  return { spawn, summon, hitTest, IDS, S,
+      const p = pad(); for (let i = 0; i < 12; i++) NX.fx.emit('portal', p[0] + (Math.random() - .5) * 60, p[1] - 20 - Math.random() * 90);
+      if (NX.party && !NX.party.on && NX.acts.party) NX.nexi.do('party'); return true; } });   // тап по брамі — Nexi на вечірку (власник, 04.11)
+  return { spawn, summon, hitTest, IDS, S, collect, collection, atParty,
+    collectAll() { COL = IDS.slice(); saveCol(); }, forget() { COL = []; saveCol(); },
     /** Для перевірки й знімків: усі 20 рядами перед брамою (поза stand), без сценок. */
     demo(ids = IDS) { S.on = false; S.list = []; const B = NX.room.walkBounds(); ids.forEach((id, i) => { const g = { id, x: 140 + (i % 10) * 132, y: B.minY + 40 + Math.floor(i / 10) * 70, dir: 1, pose: i === 2 ? 'sit' : 'stand', fr: 0, ft: 0, alt: 0, alpha: 1, zoom: 1, g: {}, cv: null, q: [{ hold: 1 }], cur: null, speed: 1 }; S.list.push(g); }); },
   };

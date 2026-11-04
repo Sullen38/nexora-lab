@@ -9,6 +9,7 @@
  *        -> СОРТУВАННЯ ЗА ГЛИБИНОЮ: персонажі + drawFront об'єктів
  *           (хто нижче на екрані — той ближче і малюється пізніше)
  *        -> частинки -> підсвітка наведення
+ *   Поки відкрита вечірка в порталі (NX.party.on — actors/guests/party.js), логіка кімнати йде далі, а кадр малює вечірка.
  * Об'єкт може віддати кілька "шарів" через layers(): [{y, draw}], тоді
  * частини одного меблю (сидіння і спинка крісла) правильно перекривають Nexi.
  * ========================================================================== */
@@ -57,6 +58,7 @@ NX.loop = {
     Object.values(NX.objects).forEach(o => o.update && o.update(dt, t));
     NX.fx.update(dt); NX.ui.hud.update(dt, t);
     NX.cam.follow(NX.nexi.x, dt);
+    if (NX.party && NX.party.on) { NX.party.frame(c, dt, t); requestAnimationFrame(() => this.frame()); return; }   // вечірка в порталі (actors/guests/party.js): кімната живе, кадр — її
     // ---- 2. малювання
     const k = NX.cam.k * this.dpr;
     c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#050818'; c.fillRect(0, 0, this.canvas.width, this.canvas.height);

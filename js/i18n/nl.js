@@ -44,7 +44,8 @@ NX.i18n.add('nl', {
   portal: { choose: 'WAARHEEN?', dest: { projects: 'Projecten', team: 'Team', clients: 'Klanten' },
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },
     res: { projects: 'Projecten: 3 actief, één deadline morgen. Alles genoteerd.', team: 'Team: 4 mensen online, twee wachten op je antwoord.', clients: 'Klanten: 3 nieuwe aanvragen, twee heb ik al beantwoord.' } },
-  guests: {   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
+  party: { sign: 'NEXI FEEST', dj: 'DJ NEXI', guests: 'GASTEN', back: '← TERUG NAAR DE KAMER', empty: 'Nog niemand. Tik op een gast in de kamer — dan komt die naar het feest!', bar: 'BAR', cake: 'TAART' },
+  guests: { badge: 'VERZAMELD ✓',   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
     babaYaga: { n: 'Baba Jaga', s: ['Oei, wat een stof hier!', 'Ik vlieg weg op mijn bezem!'], t: ['Foei, het ruikt hier naar robot!', 'Hutje, draai je rug naar het bos!', 'Ik vlieg in een vijzel en veeg mijn sporen met de bezem.'] },
     snowWhite: { n: 'Sneeuwwitje', s: ['Dwergje, waar ben je?', 'Daar ben je!'], t: ['Zeven dwergen, en ik zoek er één!', 'Een appel? Nee dank je, al geproefd.', 'Spiegeltje, wie is hier het liefst? Gember!'] },
     cheshire: { n: 'Cheshire-kat', s: ['Prr… we zijn hier allemaal een beetje gek.', 'Ik ben hier al niet meer!'], t: ['We zijn hier allemaal een beetje gek.', 'Een grijns zonder kat — het komt voor.', 'Welke kant op? Hangt ervan af waar je heen wilt.'] },
@@ -79,6 +80,7 @@ NX.i18n.add('nl', {
     upstairs: { title: 'Bovenverdieping: drone bijvullen', steps: ['Naar de bovenverdieping vliegen', 'De sproeidrone roepen', 'Water bijvullen ✓'], lines: ['Naar boven — de sproeidrone heeft vast geen water meer!', 'Ik kijk even boven en vul de drone bij.', 'Drone, hierheen! Tijd om bij te vullen.'] },
     feedCat: { title: 'De kat voeren', steps: ['Naar Gember', 'Snoepje gegeven ✓'], lines: ['Gember heeft honger! Ik geef hem een snoepje.'] },
     dance: { title: 'Dansen op het kleed', steps: ['Muziek!', 'Dansen ♪'], lines: ['Even dansen voor de stemming!'] },
+    party: { title: 'Feest in het portaal', steps: ['Naar de poort', 'Ik spring in de draaikolk', 'Feest ♪', 'Terug ✓'], lines: ['Feesttijd! Mijn vrienden wachten al in het portaal.', 'Op naar het feest — alle verzamelde gasten zijn daar!'], back: ['Poeh, lekker gedanst! Wat nu?', 'Dat feest was top! Terug aan het werk.'] },
     wander: { title: 'Rondje door de kamer', steps: ['Wandelen'], lines: ['Even rondlopen en nadenken.'] },
     window: { title: 'Naar de stad kijken', steps: ['Naar het raam', 'Genieten van het uitzicht'], lines: ['Kijk eens naar de stad vandaag! Ik steek wat vuurwerk af.', 'Ik hou van dit uitzicht. Zoveel bedrijven aan het werk daar...'] },
     kickBall: { title: 'Spelen met de bal', steps: ['Naar de bal rennen', 'Pass naar Gember!'], lines: ['Gember, vangen!', 'Pass! Wie is sneller?'] },
