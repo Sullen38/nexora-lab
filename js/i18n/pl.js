@@ -74,6 +74,7 @@ NX.i18n.add('pl', {
     petCat: { title: 'Pogłaskać kota', steps: ['Idę do Rudego', 'Głaszczę ♥'], lines: ['Rudy, chodź tu! Kto jest najlepszym kotem?', 'Kocia przerwa: pogłaszczę Rudego.'] },
     garden: { title: 'Podlać rośliny na ścianach', steps: ['Biorę konewkę', 'Lecę do roślin', 'Podlewam każdą ✓'], lines: ['Jestem botanikiem — czas podlać zieleń na ścianach!', 'Roślinki chcą pić. Startuję z konewką!', 'Trochę wody i liście znów błyszczą.'] },
     feedFish: { title: 'Nakarmić ryby', steps: ['Lecę do akwariów', 'Naciskam karmnik', 'Patrzę, jak jedzą ✓'], lines: ['Pora obiadu w akwariach!', 'Rybki czekają na karmę — lecę!', 'Nakarmię rybki i meduzy.'] },
+    census: { title: 'Inwentaryzacja uratowanych gatunków', steps: ['Biorę skaner', 'Czytam etykietki', 'Wszystkie na miejscu ✓'], lines: ['Czas sprawdzić etykietki — czy wszystkie uratowane gatunki są na miejscu!', 'Skaner w ręce — sprawdzam numery gatunków.', 'Każdy gatunek ma numer. Sprawdzam!'] },
     upstairs: { title: 'Antresola: zatankować drona', steps: ['Wzlatuję na antresolę', 'Wołam drona-podlewacza', 'Dolewam mu wody ✓'], lines: ['Lecę na górę — dron-podlewacz pewnie nie ma już wody!', 'Zajrzę na antresolę i zatankuję drona.', 'Dronie, do mnie! Pora dolać wody.'] },
     feedCat: { title: 'Nakarmić kota', steps: ['Idę do Rudego', 'Daję smakołyk ✓'], lines: ['Rudy jest głodny! Dam mu smakołyk.'] },
     dance: { title: 'Taniec na dywanie', steps: ['Muzyka!', 'Tańczę ♪'], lines: ['Chwila tańca dla humoru!'] },

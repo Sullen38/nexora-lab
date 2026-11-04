@@ -10,6 +10,10 @@
  * антресолі, орхідея в оранжереї, платицеріум) — коробки предметів розкладки з dc.kind / dc.plant (tapStatic); теплиця —
  * NX.decorFarm.nearTray; акваріуми — NX.decor.crewAt (риби й медузи) і NX.decorAqua.residents (нерухомі).
  * Реєстр видів — зі словника (порядок: стіни, ферма, риф, медузарій); номер виду — його місце в реєстрі.
+ * (· 19) БИРКИ: біля кожної рослини на стіні — маленька табличка з її номером (9 × 7 од., у лівому нижньому куті коробки рослини,
+ * тож на зони не заходить; цифри — піксельний шрифт 3 × 5, це числа, не текст). Тап по виду й сканування підсвічують бирку.
+ * ІНВЕНТАРИЗАЦІЯ: Nexi (actors/nexi/activities.js census) на ранці підлітає до бирок і читає їх ручним сканером — зелений промінь
+ * від сканера до бирки (scanFrom), бирка спалахує, картка виду відкривається сама (як від тапу).
  * Камера на картку не реагує (тап по декору — не команда Nexi). Картка сама ховається за HIDE с; тап по ній — закрити.
  * ========================================================================== */
 (() => {
@@ -33,8 +37,41 @@
     for (const B of DC.items) { const d = B.dc; if (!d) continue; const kind = d.plant || d.kind; if (!kind || !find('wall', kind) || live[B.id] || B.st === 'dc_pylon') continue;
       const { P } = NX.arc.kit.basis(B); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
       for (const u of [-B.w / 2, B.w / 2]) for (const v of [0, B.dep]) for (const y of [B.yt, B.yb]) { const q = X.proj(P(u, v, y)); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }
-      STAT.push({ kind, x0, x1, y0, y1, a: (x1 - x0) * (y1 - y0) }); }
+      STAT.push({ kind, x0, x1, y0, y1, a: (x1 - x0) * (y1 - y0), z: P(0, B.dep / 2, B.yb)[2] }); }
     return STAT;
+  }
+
+  // ---------- (· 19) бирки з номерами ----------
+  const TW = 9, TH = 7, TR = 4;                                                                                 // плата (од.) і px на од. у кеші
+  const DIG = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+  const TAGS = { list: [], n: -1, cv: {}, flash: {} }; let SCAN = null;
+  function tagSprite(no) {
+    if (TAGS.cv[no]) return TAGS.cv[no]; const cv = document.createElement('canvas'); cv.width = TW * TR; cv.height = TH * TR; const c = cv.getContext('2d'); c.scale(TR, TR);
+    c.fillStyle = '#0a1030'; c.fillRect(0, .5, TW, TH - .5); c.fillStyle = '#3be8ff'; c.fillRect(0, .5, TW, .5); c.fillRect(0, TH - .5, TW, .5); c.fillRect(0, .5, .5, TH - .5); c.fillRect(TW - .5, .5, .5, TH - .5);
+    c.fillStyle = '#9af6ff'; c.fillRect(TW / 2 - .5, 0, 1, .5); c.fillStyle = '#060a24'; c.fillRect(TW / 2 - .25, 1, .5, .5);                         // вушко й дірочка
+    const s = String(no).padStart(2, '0'); c.fillStyle = '#9af6ff';
+    for (let i = 0; i < 2; i++) { const d = DIG[+s[i]], ox = 1 + i * 4; for (let q = 0; q < 15; q++) if (d[q] === '1') c.fillRect(ox + q % 3, 1.5 + Math.floor(q / 3), 1, 1); }
+    return TAGS.cv[no] = cv;
+  }
+  /** Усі бирки рослин стін (живі LP + нерухомі): [{kind, no, x, y, z, cx, cy}] — x, y — лівий верхній кут плати (екран), cx, cy — центр. */
+  function tags() {
+    const DL = NX.decorLive, LP = DL ? DL.LP : []; if (LP.length === TAGS.n) return TAGS.list; TAGS.n = LP.length; const out = [], seen = {};
+    const put = (kind, x0, y1, z) => { const e = find('wall', kind); if (!e || seen[kind]) return; seen[kind] = 1; const x = x0 + 1, y = y1 - TH - .5; out.push({ kind, no: e.no, x, y, z, cx: x + TW / 2, cy: y + TH / 2 }); };
+    for (const L of LP) if (L.e && L.e.sp) put(L.e.sp.kind, L.x0, L.y1, L.e.P3 ? L.e.P3[2] : 100);
+    for (const S of statics()) put(S.kind, S.x0, S.y1, S.z);
+    return TAGS.list = out;
+  }
+  function flashTag(kind, t) { TAGS.flash[kind] = t; }
+  function drawTags(c, t, vx0, vx1) {
+    for (const g of tags()) { if (g.x + TW < vx0 || g.x > vx1) continue; c.drawImage(tagSprite(g.no), g.x, g.y, TW, TH);
+      const f = TAGS.flash[g.kind]; if (f != null && t - f < 1.6) { const a = 1 - (t - f) / 1.6; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .7 * a; c.fillStyle = '#3bff8a'; c.fillRect(g.x - .5, g.y - .5, TW + 1, TH + 1);
+        c.globalAlpha = a; c.strokeStyle = '#b8ffc8'; c.lineWidth = .6; c.strokeRect(g.x - 1.5 - (1 - a) * 3, g.y - 1.5 - (1 - a) * 3, TW + 3 + (1 - a) * 6, TH + 3 + (1 - a) * 6); c.restore(); } }
+    if (SCAN && t - SCAN.t0 < SCAN.dur) {                                                                         // промінь сканера: пунктир від руки до бирки, біжить до бирки
+      const k = Math.min(1, (t - SCAN.t0) / .35), dx = SCAN.x1 - SCAN.x0, dy = SCAN.y1 - SCAN.y0, L = Math.hypot(dx, dy); c.save(); c.globalCompositeOperation = 'lighter';
+      for (let s = (t * 40) % 3; s < L * k; s += 3) { const u = s / L; c.globalAlpha = .95 - u * .3; c.fillStyle = '#8affc0'; c.fillRect(SCAN.x0 + dx * u - .7, SCAN.y0 + dy * u - .7, 1.4, 1.4); }
+      c.globalAlpha = .4 + .25 * Math.sin(t * 30); c.strokeStyle = '#3bff8a'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(SCAN.x0, SCAN.y0); c.lineTo(SCAN.x0 + dx * k, SCAN.y0 + dy * k); c.stroke();
+      if (k >= 1) { const r = 3 + 2 * Math.sin(t * 9); c.globalAlpha = .6; c.beginPath(); c.arc(SCAN.x1, SCAN.y1, r, 0, 6.2832); c.stroke(); }
+      c.restore(); }
   }
 
   // ---------- спрайт виду на полотно картки ----------
@@ -69,7 +106,7 @@
     drawSprite(e, info);
   }
   function show(e, info) {
-    const el = $('guide'); if (!el || !e) return; cur = { e, info }; render(); el.classList.add('show');
+    const el = $('guide'); if (!el || !e) return; cur = { e, info }; render(); el.classList.add('show'); if (e.grp === 'wall') flashTag(e.kind, NX.time);
     clearTimeout(timer); timer = setTimeout(hide, HIDE * 1000);
   }
   function hide() { const el = $('guide'); if (el) el.classList.remove('show'); cur = null; }
@@ -77,7 +114,17 @@
   NX.i18n.onLang(() => { REG = null; if (cur) render(); });
 
   NX.decorGuide = {
-    reg, statics, show, hide,
+    reg, statics, show, hide, tags, TW, TH,
+    /** (· 19) Бирки й промінь сканера на живий шар (objects/decor_live.js draw). */
+    draw: drawTags,
+    /** Для decor_check.js: плати бирок (нерухомі, усередині коробок рослин). */
+    extentTo(c) { c.fillStyle = '#fff'; for (const g of tags()) c.fillRect(g.x, g.y, TW, TH); },
+    /** Куди летіти Nexi читати бирки на стіні side: [{kind, x, y, z}] (центр бирки; z — глибина рослини), 3 випадкові, зліва направо. */
+    scanSpots(side, n = 3) { const all = tags().filter(g => side === 'left' ? g.cx < 774 : g.cx >= 774), pick = []; while (all.length && pick.length < n) pick.push(all.splice(Math.random() * all.length | 0, 1)[0]); return pick.sort((a, b) => a.cx - b.cx).map(g => ({ kind: g.kind, x: g.cx, y: g.cy, z: g.z })); },
+    /** Nexi сканує: промінь від руки (hx, hy) до бирки виду kind, dur с; на половині — бирка спалахує й картка виду відкривається. */
+    scanFrom(hx, hy, kind, t, dur = 1.6) { const g = tags().find(q => q.kind === kind); if (!g) return; SCAN = { x0: hx, y0: hy, x1: g.cx, y1: g.cy, t0: t, dur, kind }; },
+    scanTick(hx, hy, t, k) { if (!SCAN) return; SCAN.x0 = hx; SCAN.y0 = hy; if (k > .45 && !SCAN.done) { SCAN.done = 1; show(find('wall', SCAN.kind)); } },
+    scanEnd() { SCAN = null; },
     /** Тап, який уже влучив у декор (objects/decor_live.js tap): hit — що саме, L — рослина LP (hit 'plant'). */
     tap(hit, x, y, t, L) {
       if (hit === 'plant' && L && L.e && L.e.sp) return show(find('wall', L.e.sp.kind));

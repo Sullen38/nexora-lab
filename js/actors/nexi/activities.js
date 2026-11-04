@@ -165,6 +165,18 @@
       L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } });
       return L; } },
 
+    // ---------- (Декор стін · 19) ІНВЕНТАРИЗАЦІЯ: на ранці підлітає до бирок рослин на ближчій стіні (objects/decor_guide.js: бирки з номерами
+    // врятованих видів) і читає три з них ручним сканером — промінь до бирки, бирка спалахує, картка виду відкривається сама. ----------
+    census: { color: '#3bff8a', route() {
+      const G = NX.decorGuide, n = NX.nexi, side = n.x < 774 ? 'left' : 'right', S = G && G.scanSpots ? G.scanSpots(side) : []; if (!S.length) return [line('census')];
+      const f = wallFloor(side), hand = () => { const s = sprK(n.depthY()), d = sideOf(1); return [n.x + d * 25 * s, n.y - 20 * s]; };
+      const L = [{ walk: f }, { face: 1 }, line('census'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      S.forEach(sp => { const h = hoverAt({ x: sp.x - 14, y: sp.y - 10, z: sp.z, dir: 1 });   // трохи збоку — видно промінь від сканера до бирки
+        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { do: () => { const [hx, hy] = hand(); G.scanFrom(hx, hy, sp.kind, NX.time, 1.9); } },
+          { work: { pose: 'hoverScan', dur: 1.9, tick: (dt, k) => { const [hx, hy] = hand(); G.scanTick(hx, hy, NX.time, k); } } }, { do: () => { G.scanEnd(); n.emote('happy', 1.2); } }, { work: { pose: 'hoverLook', dur: .7 } }); });
+      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } });
+      return L; } },
+
     // ---------- (Декор стін · 7) ДРУГИЙ ПОВЕРХ: на ранці злітає до антресолі — двері пілона відчиняються, ліхтар спалахує (вітають);
     // кличе дрона-поливальника (махає лійкою) і доливає йому води; дрон — «бочка», серце, і летить щедро поливати рослини антресолі.
     // Стати на саму антресоль Nexi не може: він вищий (≈ 60 од.), ніж від плити до стелі (≈ 50), а двері пілона — йому до пояса;
