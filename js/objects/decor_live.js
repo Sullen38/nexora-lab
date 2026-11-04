@@ -510,7 +510,7 @@
     spots(side) { return (CARE[side] || []).map(([id, kind, dir]) => { const B = byId[id]; return B ? Object.assign(careTarget(B, kind), { id, dir }) : null; }).filter(Boolean); },
     /** Полили: рослина потрушується (якщо жива), свіже сяйво, іскорки вгору, краплі стікають униз (над зонами — недалеко). */
     water(id, t = NX.time) {
-      const B = byId[id]; if (!B) return; const L = LP.find(q => q.key === id); if (L) L.shake = t;
+      const B = byId[id]; if (!B) return; const L = LP.find(q => q.key === id); if (L) L.shake = t; if (NX.decorGrow) NX.decorGrow.water(id, t);   // (· 22) паростки й квіти
       const { P } = basis(B), a = proj(P(-B.w / 2, B.dep / 2, B.yt)), b = proj(P(B.w / 2, B.dep / 2, B.yb));
       WFX.push({ t0: t, x0: Math.min(a[0], b[0]), x1: Math.max(a[0], b[0]), y0: a[1], y1: b[1] });
     },
@@ -567,7 +567,7 @@
 
   // =============================== КАДР ===============================
   NX.decorLive = {
-    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care, greet, butterflyAt,
+    LP, LED, TP, tap, fishPush, aqFx, droneSpin, trapAt, snailAt, care, greet, butterflyAt, plantPt,
     /** Для tools/wingbox/decor_check.js: усе живе цього файлу в крайніх положеннях — на контекст у координатах кімнати
      *  (рослини — обидва крайні нахили з поривом; метелики, листочки, світлячки — точки за 2 хвилини). */
     extentTo(c) {
@@ -595,7 +595,7 @@
       T('art', () => drawArt(c, t, vx0, vx1));
       T('rudik', () => drawRudik(c, t, vx0, vx1));
       T('plants', () => drawPlants(c, t, vx0, vx1));
-      T('guide', () => { if (NX.decorGuide) NX.decorGuide.draw(c, t); if (NX.decorVault) NX.decorVault.draw(c, t, vx0, vx1); });   // (· 19) промінь сканера Nexi; (· 20) сховище насіння: сяйво капсул, насінини                              // (· 19) бирки видів і промінь сканера
+      T('guide', () => { if (NX.decorGrow) NX.decorGrow.draw(c, t, vx0, vx1); if (NX.decorGuide) NX.decorGuide.draw(c, t); if (NX.decorVault) NX.decorVault.draw(c, t, vx0, vx1); });   // (· 22) паростки й квіти після поливу;   // (· 19) промінь сканера Nexi; (· 20) сховище насіння: сяйво капсул, насінини                              // (· 19) бирки видів і промінь сканера
       T('snail', () => drawSnail(c, t, vx0, vx1));
       T('air', () => drawAir(c, t, vx0, vx1));
       T('care', () => { drawCare(c, t); if (NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, t, vx0, vx1); });   // (· 6) полив і годівнички

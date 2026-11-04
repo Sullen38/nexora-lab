@@ -268,7 +268,7 @@
   const ROUTE_ID = ['dc_mzp0', 'dc_mzp1', 'dc_mzp2', 'dc_green', 'dc_mzp3', 'dc_mzp4', 'dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3'].filter(id => byId[id]);
   const ROUTE = ROUTE_ID.map(id => byId[id]).map(B => { const { P } = NX.arc.kit.basis(B), y = B.st === 'dc_hang' ? B.yt + (B.yb - B.yt) * .32 : B.yt, q = X.proj(P(0, B.dep / 2, y)); return [q[0], Math.max(11, q[1] - 7)]; });
   const LEGS = []; (() => { let tt = 0; for (let k = 0; k < ROUTE.length; k++) { const a = ROUTE[k], b = ROUTE[(k + 1) % ROUTE.length], d = Math.hypot(b[0] - a[0], b[1] - a[1]), fly = Math.max(1.2, d / 26);
-    LEGS.push({ a, b, t0: tt, hover: 2.4, fly }); tt += 2.4 + fly; } LEGS.T = tt; })();
+    LEGS.push({ a, b, t0: tt, hover: 2.4, fly, id: ROUTE_ID[k] }); tt += 2.4 + fly; } LEGS.T = tt; })();   // id — рослина, над якою зависає (· 22: ріст після поливу)
   // (· 7) ВИКЛИК ДО NEXI (власник: «Nexi на другому поверсі»): Nexi на ранці перед антресоллю кличе дрона й доливає йому води з
   // лійки. CALL — куди й коли дрон прилітає (FIN с, дугою), коли бачок повний (t1: «бочка» — тап-обертання з decor_live — і
   // серце) і коли летить далі (tg); маршрут продовжується з монстери на антресолі — праворуч від Nexi, тож видно, як дрон одразу
@@ -279,7 +279,7 @@
   /** Де дрон у час t на маршруті: зависає над рослиною (spray), потім летить до наступної (плавно, дугою вгору). */
   function routeAt(t) {
     const tt = (((t + OFF) % LEGS.T) + LEGS.T) % LEGS.T; let L = LEGS[LEGS.length - 1]; for (const g of LEGS) if (tt >= g.t0) L = g;
-    const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt > L.hover - .3 ? lt - L.hover + .3 : null, wx: L.a[0], wy: L.a[1] + 8 };
+    const lt = tt - L.t0; if (lt < L.hover) return { x: L.a[0], y: L.a[1] + Math.sin(t * 3.1) * .6, spray: lt > .4 && lt < L.hover - .3, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt > L.hover - .3 ? lt - L.hover + .3 : null, wx: L.a[0], wy: L.a[1] + 8, id: L.id };
     const u = (lt - L.hover) / L.fly, e = u * u * (3 - 2 * u); return { x: L.a[0] + (L.b[0] - L.a[0]) * e, y: L.a[1] + (L.b[1] - L.a[1]) * e - Math.sin(u * Math.PI) * Math.min(10, Math.abs(L.b[0] - L.a[0]) * .12), spray: false, dir: L.b[0] >= L.a[0] ? 1 : -1, wet: lt - L.hover + .3, wx: L.a[0], wy: L.a[1] + 8 };
   }
   /** Де дрон у час t: маршрут або (· 7) політ до Nexi / зависання біля лійки (fill — скільки води долито, 0..1) / повернення. */

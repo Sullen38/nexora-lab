@@ -84,8 +84,8 @@
     el.querySelector('b').textContent = T('decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
     const lat = T('decor.guide.latin.' + e.kind); el.querySelector('small').textContent = lat.startsWith('decor.') ? '' : lat;
-    const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : 'plant';
-    el.querySelector('.gw').textContent = T('decor.guide.kind.' + kindT) + ' · ' + T('decor.guide.where.' + e.grp) + (e.grp === 'farm' && info && info.s != null ? ' · ' + T('decor.guide.stage', { s: Math.min(6, Math.floor(info.s * 6) + 1) }) : '');
+    const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : 'plant', gs = e.grp === 'wall' && NX.decorGrow ? NX.decorGrow.state(e.kind) : null;   // (· 22) росте / цвіте
+    el.querySelector('.gw').textContent = T('decor.guide.kind.' + kindT) + ' · ' + T('decor.guide.where.' + e.grp) + (e.grp === 'farm' && info && info.s != null ? ' · ' + T('decor.guide.stage', { s: Math.min(6, Math.floor(info.s * 6) + 1) }) : '') + (gs ? ' · ' + T('decor.guide.grow.' + gs) : '');
     el.querySelector('.gc').textContent = T('decor.guide.count', { n: R.n });
     el.style.borderColor = { wall: '#3bff8a', farm: '#b8ff3a', reef: '#3be8ff', jelly: '#d94bff' }[e.grp];
     drawSprite(e, info);
