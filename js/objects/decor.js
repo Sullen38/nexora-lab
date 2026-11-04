@@ -425,7 +425,7 @@
       drawDrone(c, t, vx0, vx1); drawFlies(c, t, vx0, vx1);
       if (!GLOWS.length) return;
       c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
-      for (const g of GLOWS) { if (g.p[0] < vx0 || g.p[0] > vx1) continue; c.globalAlpha = Math.max(0, Math.min(1, g.a(t))); c.drawImage(g.s.cv, g.p[0] - g.s.r, g.p[1] - g.s.r, g.s.r * 2, g.s.r * 2); }
+      for (const g of GLOWS) { if (g.p[0] < vx0 || g.p[0] > vx1) continue; c.globalAlpha = Math.max(0, Math.min(1, g.a(t) * (NX.decorLight ? NX.decorLight.k(t) : 1))); c.drawImage(g.s.cv, g.p[0] - g.s.r, g.p[1] - g.s.r, g.s.r * 2, g.s.r * 2); }
       c.restore();
     },
   });

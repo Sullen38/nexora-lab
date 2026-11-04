@@ -222,15 +222,15 @@
   })();
   const moteAt = (m, t) => [m.x + Math.sin(t * (.11 + .07 * hash(m.sd, 1)) + m.sd) * 2.6, m.y + Math.sin(t * (.09 + .05 * hash(m.sd, 2)) + m.sd * 1.7) * 2.2];
   function drawAir(c, t, vx0, vx1) {
-    c.save(); c.globalCompositeOperation = 'lighter';
-    for (const C of CONES) { if (C.x < vx0 - 12 || C.x > vx1 + 12) continue; const fl = .85 + .15 * Math.sin(t * .7 + C.sd * 1.7);
+    c.save(); c.globalCompositeOperation = 'lighter'; const LK = NX.decorLight ? NX.decorLight.k(t) : 1;   // (· 23) увечері світильники й світлячки яскравіші
+    for (const C of CONES) { if (C.x < vx0 - 12 || C.x > vx1 + 12) continue; const fl = (.85 + .15 * Math.sin(t * .7 + C.sd * 1.7)) * LK;
       const g = c.createLinearGradient(0, C.y0, 0, C.y1); g.addColorStop(0, `rgba(255,228,175,${.34 * fl})`); g.addColorStop(.45, `rgba(255,214,150,${.13 * fl})`); g.addColorStop(1, 'rgba(255,200,140,0)');
       c.globalAlpha = 1; c.fillStyle = g; c.beginPath(); c.moveTo(C.x - C.w0, C.y0); c.lineTo(C.x + C.w0, C.y0); c.lineTo(C.x + C.w1, C.y1); c.lineTo(C.x - C.w1, C.y1); c.closePath(); c.fill();
       const gs = glow('#ffe2a8'); c.globalAlpha = .5 * fl; c.drawImage(gs.cv, C.x - 2.4, C.y0 - 1.4, 4.8, 2.8);                    // сам світильник
       for (let q = 0; q < 6; q++) { const f = (t * (.04 + .03 * hash(q, C.sd)) + hash(C.sd, q)) % 1, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f, x = C.x + Math.sin(t * .4 + q * 2.3) * hw * .7;
         c.globalAlpha = Math.sin(f * Math.PI) * .85; c.fillStyle = '#fff2d0'; c.fillRect(x - .2, y - .2, .4, .4); } }
     for (const m of MOTES) { const [x, y] = moteAt(m, t); if (x < vx0 || x > vx1) continue;
-      const b = .5 + .5 * Math.sin(t * (.8 + hash(m.sd, 3)) + m.sd); c.globalAlpha = .14 + .4 * b * b; c.fillStyle = hash(m.sd, 4) > .5 ? '#fff4d8' : '#d8fff0'; c.fillRect(x - .22, y - .22, .44, .44); }
+      const b = .5 + .5 * Math.sin(t * (.8 + hash(m.sd, 3)) + m.sd); c.globalAlpha = Math.min(1, (.14 + .4 * b * b) * LK); c.fillStyle = hash(m.sd, 4) > .5 ? '#fff4d8' : '#d8fff0'; c.fillRect(x - .22, y - .22, .44, .44); }
     c.restore();
   }
 
@@ -600,6 +600,7 @@
       T('air', () => drawAir(c, t, vx0, vx1));
       T('care', () => { drawCare(c, t); if (NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, t, vx0, vx1); });   // (· 6) полив і годівнички
       T('fx', () => { drawLeaves(c, t, vx0, vx1); drawButterflies(c, t, vx0, vx1); drawFlies2(c, t, vx0, vx1); drawTapFx(c, t); });
+      T('light', () => { if (NX.decorLight) NX.decorLight.draw(c, t, vx0, vx1); });                                 // (· 23) ореоли джерел світла на стінах, коли темніє
     },
   };
 })();
