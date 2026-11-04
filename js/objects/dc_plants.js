@@ -104,7 +104,8 @@ NX.arc = NX.arc || {};
   const CACHE = new Map(), SPEC = NX.arc.dcSpec = {};                                  // (· 18) spec кожного виду (objects/decor_guide.js)
   /** spec: {kind, w, h, seed, pal, hang, leaves}. Основа — посередині внизу спрайта (hang — угорі: ліана, непентес). */
   function dcPlant(sp) {
-    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap].join('|'); if (!sp.snap) SPEC[sp.kind] = sp;   // (· 18) спрайт виду для довідника ботаніка
+    if (!sp.snap) SPEC[sp.kind] = sp;                                                  // (· 18) спрайт виду для довідника ботаніка
+    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap, sp.lit || 1, sp.hz || 0].join('|');   // (· 24) lit — бік світла, hz — серпанок за глибиною
     let r = CACHE.get(key); if (r) return r;
     const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, S = F.Sheet(0, 0, W, H, U);
     if (OWN[k0]) OWN[k0](S, W, H, seed, sp);
@@ -124,13 +125,17 @@ NX.arc = NX.arc || {};
     for (let k = 1; k <= 5; k++) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (dist[i] !== 5) continue;
       const e = (x === 0 || dist[i - 1] < k) || (x === w - 1 || dist[i + 1] < k) || (y === 0 || dist[i - w] < k) || (y === h - 1 || dist[i + w] < k); if (e) dist[i] = k; }
     const hang = sp.hang || /ivy|passiflora|dichondra|muehlenbeckia|lysimachia|pearls|ceropegia|rhipsalis|tradescantia|dischidia|aeschynanthus|hoya|wisteria|columnea/.test(sp.kind);
+    const lit = sp.lit || 1, hz = sp.hz || 0, rim = 1.22 - hz * .5, HZ = [7, 5, 22];                                       // (· 24) єдине світло від вікна; далі від глядача — серпанок (як у px3d shader) і м'якший рім-лайт
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (!op[i]) continue; const q = i * 4, dd = dist[i];
       let m = dd >= 5 ? .78 : dd >= 4 ? .86 : dd >= 3 ? .94 : 1;                                                             // глибина: всередині темніше
-      const up = y > 0 ? op[i - w] : 0, lf = x > 0 ? op[i - 1] : 0, dn = y < h - 1 ? op[i + w] : 0, up2 = y > 1 ? op[i - 2 * w] : 0;
-      if (!up || !up2 || !lf) m *= 1.22;                                                                                      // рім-лайт зверху й зліва
+      const up = y > 0 ? op[i - w] : 0, lf = lit > 0 ? (x > 0 ? op[i - 1] : 0) : (x < w - 1 ? op[i + 1] : 0), dn = y < h - 1 ? op[i + w] : 0, up2 = y > 1 ? op[i - 2 * w] : 0;
+      const sh = lit > 0 ? (x < w - 1 ? op[i + 1] : 0) : (x > 0 ? op[i - 1] : 0);
+      if (!up || !up2 || !lf) m *= rim;                                                                                       // (· 24) рім-лайт зверху й з боку вікна (lit: +1 — світло зліва, −1 — справа)
       else if (!dn) m *= .88;                                                                                                 // нижній край — у тіні
+      else if (!sh) m *= .9;                                                                                                  // край від вікна — у тіні
       if (!hang) m *= 1 - .14 * Math.max(0, (y / h - .62) / .38);                                                             // тінь під кроною
-      if (m !== 1) { d[q] = Math.min(255, d[q] * m); d[q + 1] = Math.min(255, d[q + 1] * m); d[q + 2] = Math.min(255, d[q + 2] * m); } }
+      if (m !== 1) { d[q] = Math.min(255, d[q] * m); d[q + 1] = Math.min(255, d[q + 1] * m); d[q + 2] = Math.min(255, d[q + 2] * m); }
+      if (hz) { d[q] += (HZ[0] - d[q]) * hz; d[q + 1] += (HZ[1] - d[q + 1]) * hz; d[q + 2] += (HZ[2] - d[q + 2]) * hz; } }
   }
 
   // ---------- рослини v3 (28.10): монстера, папороть, арека, сансев'єра, ліана, неонова, бонсай ----------

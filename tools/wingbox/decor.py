@@ -150,7 +150,7 @@ def decor_side(L, sgn, C, R, verbose=True):
     def wshadow(owner, dy=4., pad=1.5, k=.34, soft=3., rnd=0, top=0.):
         """ТІНЬ речі на стіні (дизеринг — у стилі кімнати): за річчю на екрані (ті самі X), у світі — ті самі висоти, зсунуті
         вниз на dy (top — частка висоти речі згори без тіні: ланцюжки, шнури); низ — не нижче вільного місця (на зони не лягає)"""
-        P = hull(screen_poly(owner)); xs = [p[0] for p in P]; X0_, X1_ = min(xs) - pad, max(xs) + pad
+        P = hull(screen_poly(owner)); xs = [p[0] for p in P]; dxs = 1.8 * sgn; X0_, X1_ = min(xs) - pad + dxs, max(xs) + pad + dxs   # (· 24) єдине світло від вікна: тінь трохи вбік від нього
         a0, a1 = W.a_of(X0_, .35), W.a_of(X1_, .35); am = (a0 + a1) / 2; w = chord(W, a0, a1, .35); zs = [W.at(a, .35)[0][1] for a in (a0, am, a1)]
         yt = owner['yt'] + (owner['yb'] - owner['yt']) * top + dy - pad; yb = owner['yb'] + dy + pad
         yb = min(yb, min(Yw(free_y(X) - 2.5, W.at(W.a_of(X, .35), .35)[0][1]) for X in (X0_ - 2 + (X1_ - X0_ + 4) * q / 16 for q in range(17)))); yt = max(yt, max(Yw(2., z) for z in zs))

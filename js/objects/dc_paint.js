@@ -144,7 +144,7 @@ NX.arc = NX.arc || {};
     return dir === 'up' ? v => v < cut : v => v > cut;
   }
   const plantFace = (G, spec, cx, cz, yt, yb, w, glow, lv) => {
-    const sp = Object.assign({ w: Math.round(w * 2) / 2, h: Math.round((yb - yt) * 2) / 2 }, spec);
+    const sp = Object.assign({ w: Math.round(w * 2) / 2, h: Math.round((yb - yt) * 2) / 2, lit: cx < 774 ? -1 : 1, hz: Math.round(Math.max(0, Math.min(.22, (cz - 40) / 700)) * 20) / 20 }, spec);   // (· 24) світло від вікна (ліве крило — справа), серпанок за z
     const skip = lv ? liveReg(lv, sp, [cx - w / 2, yt, cz], [cx + w / 2, yt, cz], [cx - w / 2, yb, cz], yt, yb, glow) : null;
     spriteFace(G, () => NX.arc.dcPlant(sp), cx, cz, yt, yb, w, glow, skip);
   };
@@ -339,7 +339,7 @@ NX.arc = NX.arc || {};
   /** Пласка рослина у площині предмета (виткá на цеглі, звиси з антресолі на фасаді): спрайт на передній грані, прозоре — дірка. */
   SHP['st:dc_climb'] = SHP['st:dc_spill'] = (G, B) => {
     const d = B.dc, hw = B.w / 2, nF = sub(G.P(0, 0, 0), G.P(0, 1, 0)); let S = null;
-    const sp = { kind: d.kind, seed: d.seed, w: Math.round(B.w * 2) / 2, h: Math.round((B.yb - B.yt) * 2) / 2 }, lv = swayOf(B);
+    const sp = { kind: d.kind, seed: d.seed, w: Math.round(B.w * 2) / 2, h: Math.round((B.yb - B.yt) * 2) / 2, lit: B.x < 774 ? -1 : 1, hz: Math.round(Math.max(0, Math.min(.22, (B.z - 40) / 700)) * 20) / 20 }, lv = swayOf(B);   // (· 24)
     const skip = lv ? liveReg(Object.assign(lv, { cut: B.yt + 1.2 }), sp, G.P(-hw, 0, B.yt), G.P(hw, 0, B.yt), G.P(-hw, 0, B.yb), B.yt, B.yb, false) : null;   // (· 4) звиси гойдаються
     quad(G, [G.P(-hw, 0, B.yt), G.P(hw, 0, B.yt), G.P(hw, 0, B.yb), G.P(-hw, 0, B.yb)], (u, v) => {
       if (skip && skip(v)) return 0;
