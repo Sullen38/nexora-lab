@@ -76,6 +76,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .result b{font:400 7px var(--f-d);color:var(--gold)}
 .result span{font:500 13px/1.4 var(--f-b)}
 @media(prefers-reduced-motion:reduce){.result{transition:none}}
+/* (· 18) довідник ботаніка — картка врятованого виду (js/objects/decor_guide.js); там само, де картка результату, поверх неї */
+.guide{position:fixed;z-index:8;left:max(14px,env(safe-area-inset-left,0px));top:76px;max-width:min(360px,86vw);background:#060a24f0;border:2px solid var(--cyan);padding:9px 11px;display:flex;gap:10px;align-items:center;cursor:pointer;transform:translateX(-120%);visibility:hidden;transition:transform .3s,visibility 0s .3s}
+.guide.show{transform:none;visibility:visible;transition:transform .3s}
+.guide canvas{flex:none;width:64px;height:64px;background:#0a1030;border:1px solid #2a4ab8;image-rendering:pixelated}
+.guide>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.guide b{font:400 6px var(--f-d);color:var(--gold);letter-spacing:.5px}
+.guide .gn{font:600 14px/1.2 var(--f-b);color:var(--text)}
+.guide small{font:italic 400 11px/1.2 var(--f-b);color:var(--mute)}
+.guide .gw{font:400 6px var(--f-d);color:var(--cyan);margin-top:2px}
+.guide .gc{font:400 6px var(--f-d);color:#3bff8a}
+@media(prefers-reduced-motion:reduce){.guide{transition:none}}
 
 /* персональні Nexi (02.11; ui/skinlab.js, ui/shop.js): рядок стану під прев'ю, кнопка купівлі, вкладка власників, аркуш з
    карткою NFT. Колір рядка: готовий скін — блакитний, унікальний (можна купити) і свій — золотий, зайнятий — червоний */

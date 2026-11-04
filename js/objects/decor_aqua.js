@@ -269,7 +269,15 @@
       c.fillStyle = '#060313'; c.globalAlpha = .9; c.fillRect(p[0] - w / 2, p[1] - h, w, .22); c.fillRect(p[0] - w / 2, p[1] - .22, w, .22); c.restore(); }
   }
 
+  /** (· 18) Нерухомі мешканці (мурена, креветка, вугри, анемона, ламінарія, краб; кассіопея) — де вони зараз на екрані: [{kind, x, y, r}]. */
+  function residents(aq, t) {
+    if (aq === 'reef' && R) { const { rk, sy } = R, c = t % 22, cx = c < 7 ? 62 + c * 3.4 : c < 11 ? 85.8 : c < 18 ? 85.8 - (c - 11) * 3.4 : 62, at = (k, x, y, r) => { const p = MR.S(x, y); return { kind: k, x: p[0], y: p[1], r }; };
+      return [at('moray', R.cvx - 1.5, R.cvy, 5), at('cleaner', R.cvx + R.cvr + 1.4, rk(R.cvx + R.cvr + 1.4) - 1.2, 3), ...R.EEL.map((E, k) => at('eel' + k, E.x, sy(E.x) - E.h * .5, 3)), at('anemone', R.ax, R.ay - 2, 4), at('kelp', 4.6, sy(4.6) - R.fh * .4, 4), at('crab', cx, sy(cx) - 1, 3.5)]; }
+    if (aq === 'jelly' && JL) { const p = proj([JL.cx - JL.r * .3, JL.bot - 2.5, JL.cz - JL.r * .5]); return [{ kind: 'cassio', x: p[0], y: p[1], r: 4 }]; }
+    return [];
+  }
   NX.decorAqua = {
+    residents,
     /** До риб (objects/decor.js drawAq). */
     back(fx, aq, A, t) { if (aq === 'reef' && R) reefBack(fx, A, t); else if (aq === 'jelly') jellyBack(fx, A, t); },
     /** Після риб (list — риби кадру: корм, до якого риба доплила, з'їдено). */

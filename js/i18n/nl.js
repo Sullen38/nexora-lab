@@ -17,7 +17,18 @@ NX.i18n.add('nl', {
     tools: { crm: { t: 'CRM koppelen', r: 'CRM gekoppeld: {n} contacten gesynchroniseerd.' }, calendar: { t: 'Agenda synchroniseren', r: 'Agenda gesynchroniseerd: {n} afspraken deze week, herinneringen aan.' }, auto: { t: 'Automatisering instellen', r: 'Aanvragen via de site gaan nu vanzelf naar het CRM. Bespaart {n} uur per week.' } },
   },
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
-  decor: { poster: { title: 'NEXI • BOTANICUS', sub: 'GIET MET LIEFDE' }, farm: { title: 'NEXI-KWEKERIJ' }, rudik: { title: 'GEMBER', sub: 'VIRUSJAGER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+  decor: {   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+    guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      head: 'GEREDDE SOORT', no: 'nr.', count: 'Geredde soorten: {n}', stage: 'Groeifase {s} van 6', where: { wall: 'MUURGROEN', farm: 'NEXI-FARM', reef: 'RIF', jelly: 'KWALLENTANK' }, kind: { plant: 'PLANT', fish: 'RIFBEWONER', jel: 'KWALLENTANKBEWONER' },
+      sp: {
+        wall: { bonsai: 'Bonsai (ficus)', succ: 'Echeveria', cactus2: 'Egelcactus', sansevieria: 'Vrouwentong', bostonfern: 'Krulvaren', dichondra: 'Zilveren dichondra', muehlenbeckia: 'Muehlenbeckia', bivy: 'Wilde wingerd', passiflora: 'Passiebloem', spathiphyllum: 'Lepelplant', syngonium: 'Syngonium', bananas: 'Bananenplantje', adansonii: 'Kleine gatenplant', dolphins: 'Dolfijnenplant', lysimachia: 'Penningkruid', davallia: 'Hazenpootvaren', flytrap: 'Venusvliegenvanger', staghorn: 'Hertshoornvaren', shroom: 'Lichtgevende paddenstoel', strelitzia: 'Paradijsvogelbloem', palm: 'Kamerpalm', monstera: 'Gatenplant', orchid: 'Vlinderorchidee', ivy: 'Klimop', ceropegia: 'Chinees lantaarnplantje', rhipsalis: 'Koraalcactus', aeschynanthus: 'Lipstickplant', pearls: 'Erwtenplant', tradescantia: 'Vaderplant', wisteria: 'Blauweregen', hoya: 'Wasbloem', asplenium: 'Nestvaren', peperomia: 'Peperomia', fittonia: 'Mozaïekplant', pothos: 'Scindapsus', columnea: 'Goudvisplant' },
+        farm: { micro: 'Microgroenten', mint: 'Munt', basil: 'Basilicum', radish: 'Radijs', pea: 'Erwt', dill: 'Dille', parsley: 'Peterselie', lettuce: 'Sla', kale: 'Boerenkool', carrot: 'Wortel', strawberry: 'Aardbei', cucumber: 'Komkommer', spinach: 'Spinazie', arugula: 'Rucola', tomato: 'Cherrytomaat', chili: 'Chilipeper', sunflower: 'Zonnebloem', blueberry: 'Blauwe bes', eggplant: 'Aubergine', melon: 'Meloen', lavender: 'Lavendel' },
+        reef: { clown: 'Clownvis', tang: 'Blauwe doktersvis', ytang: 'Gele doktersvis', mandarin: 'Mandarijnvis', idol: 'Moorse afgod', puffer: 'Kogelvis', seahorse: 'Zeepaardje', gramma: 'Koningsgramma', lion: 'Koraalduivel', turtle: 'Soepschildpad', butterfly: 'Koraalvlinder', trigger: 'Picassotrekkervis', moray: 'Murene', cleaner: 'Poetsgarnaal', eel0: 'Gevlekte tuinaal', eel1: 'Oranje tuinaal', eel2: 'Zebratuinaal', anemone: 'Zeeanemoon', kelp: 'Kelp', crab: 'Rode rifkrab' },
+        jelly: { moon: 'Oorkwal', nettle: 'Zeenetel', comb: 'Ribkwal', crystal: 'Kristalkwal', flower: 'Bloemhoedkwal', pelagia: 'Parelkwal', lionmane: 'Haarkwal', blubber: 'Blauwe kwal', cassio: 'Omgekeerde kwal' },
+      },
+    },
+    poster: { title: 'NEXI • BOTANICUS', sub: 'GIET MET LIEFDE' }, farm: { title: 'NEXI-KWEKERIJ' }, rudik: { title: 'GEMBER', sub: 'VIRUSJAGER' },
+  },
   city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI-ASSISTENT VOOR BEDRIJVEN · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {

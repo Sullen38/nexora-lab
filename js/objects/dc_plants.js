@@ -101,10 +101,11 @@ NX.arc = NX.arc || {};
   }
 
   // ---------- рослина -> спрайт ----------
-  const CACHE = new Map();
+  const CACHE = new Map(), SPEC = NX.arc.dcSpec = {};                                  // (· 18) spec кожного виду (objects/decor_guide.js)
   /** spec: {kind, w, h, seed, pal, hang, leaves}. Основа — посередині внизу спрайта (hang — угорі: ліана, непентес). */
   function dcPlant(sp) {
-    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap].join('|'); let r = CACHE.get(key); if (r) return r;
+    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap].join('|'); if (!sp.snap) SPEC[sp.kind] = sp;   // (· 18) спрайт виду для довідника ботаніка
+    let r = CACHE.get(key); if (r) return r;
     const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, S = F.Sheet(0, 0, W, H, U);
     if (OWN[k0]) OWN[k0](S, W, H, seed, sp);
     else v3(S, W, H, seed, sp);

@@ -436,6 +436,7 @@
   const boxOf = F => { const xs = [F.S0[0], F.S1[0], F.S3[0], F.S1[0] + F.S3[0] - F.S0[0]], ys = [F.S0[1], F.S1[1], F.S3[1], F.S1[1] + F.S3[1] - F.S0[1]]; return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
   const inB = (x, y, b, pad = 0) => x >= b[0] - pad && x <= b[2] + pad && y >= b[1] - pad && y <= b[3] + pad;
   function tap(x, y) {
+    let LPhit = null;                                                                   // (· 18) яку рослину зачепили (для довідника)
     if (NX.input && NX.input.objectAt(x, y)) return false;
     const t = NX.time; let hit = null;
     for (const B of HEX) { const { P } = basis(B), c0 = proj(P(0, B.dep * .2, (B.yt + B.yb) / 2)), r = B.w * .48 * (520 / (520 + P(0, 0, 0)[2])); if (Math.hypot(x - c0[0], y - c0[1]) < r) { TP.hex[B.id] = t; hit = 'hex'; break; } }
@@ -449,13 +450,14 @@
     if (!hit) { const S = snailAt(t); if (S && Math.hypot(x - S.x, y - S.y + 1) < 3.5) { TP.snail = t; hit = 'snail'; } }
     if (!hit) { let best = null, ar = 1e9; for (const L of LP) if (x >= L.x0 + 4 && x <= L.x1 - 4 && y >= L.y0 - 1 && y <= L.y1 + 1) { const a = (L.x1 - L.x0) * (L.y1 - L.y0); if (a < ar) { ar = a; best = L; } }
       if (best && best.e.sp.kind === 'flytrap') { const ph = (((t + 5 + FT.off) % 15) + 15) % 15; if (ph < 9.6) FT.off += 9.6 - ph; }   // мухоловка: муха одразу летить до пастки
-      if (best) { best.shake = t; for (let q = 0; q < 2 + (best.e.amp > 1.5 ? 1 : 0); q++) TP.fall.push({ x: x + (Math.random() - .5) * 6, y, y1: Math.min(best.y1 - 2, y + 22), t0: t + q * .15, s: Math.random() }); hit = 'plant'; } }
+      if (best) { LPhit = best; best.shake = t; for (let q = 0; q < 2 + (best.e.amp > 1.5 ? 1 : 0); q++) TP.fall.push({ x: x + (Math.random() - .5) * 6, y, y1: Math.min(best.y1 - 2, y + 22), t0: t + q * .15, s: Math.random() }); hit = 'plant'; } }
     if (!hit && MK.farm && NX.decorFarm && inB(x, y, [MK.farm.x, MK.farm.y, MK.farm.x + MK.farm.w, MK.farm.y + MK.farm.h]) && NX.decorFarm.tap(x, y, t)) hit = 'farm';   // (· 13) тап по фермі — туман, рослини трусяться
     if (!hit) for (const aq of ['reef', 'jelly']) { const M = MK[aq]; if (!M || !inB(x, y, [M.x, M.y, M.x + M.w, M.y + M.h])) continue;
       if (!M.px) M.px = M.cv.getContext('2d').getImageData(0, 0, M.cv.width, M.cv.height);
       const i = Math.floor((x - M.x) / M.w * M.cv.width), j = Math.floor((y - M.y) / M.h * M.cv.height); if (i < 0 || j < 0 || i >= M.cv.width || j >= M.cv.height || M.px.data[(j * M.cv.width + i) * 4 + 3] < 128) continue;
       TP.aq = { aq, x, y, t0: t }; hit = 'aq'; break; }
-    if (hit) TP.marks.push({ x, y, t0: t });
+    if (!hit && NX.decorGuide && NX.decorGuide.tapStatic(x, y, t)) hit = 'guide';     // (· 18) нерухомі рослини (соти, витки, корч…) — лише картка довідника
+    if (hit) { TP.marks.push({ x, y, t0: t }); if (NX.decorGuide) NX.decorGuide.tap(hit, x, y, t, hit === 'plant' ? LPhit : null); }   // (· 18) картка врятованого виду
     return !!hit;
   }
   /** Риби від тапу (кличе objects/decor.js: drawAq): зсув на екрані від пальця, що гасне, і куди дивитись. */

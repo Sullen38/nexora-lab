@@ -406,7 +406,13 @@
     if (AQX) { AQX.front(fx, aq, A, t, list); fx.globalAlpha = 1; fx.globalCompositeOperation = 'source-over'; }   // (· 5) морський сніг, поверхня, анциструс на склі… (· 6: корм — риби його з'їдають)
     if (DL) DL.aqFx(fx, aq, t);                                                         // (· 5) бульбашки від тапу
   }
-  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, ramp, byId, items, SPR, CREW, JELLY: jelly };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
+  /** (· 18) Де мешканці акваріума зараз на екрані (для довідника ботаніка — objects/decor_guide.js): [{kind, x, y, w, h}]. */
+  function crewAt(aq, t) {
+    const A = AQ[aq]; if (!A || !CREW[aq] || !MK[aq]) return []; const AQX = NX.decorAqua, DL = NX.decorLive;
+    return CREW[aq].map((m, k) => { const e = AQX && AQX.adjust ? AQX.adjust(aq, A, m, k, t, where(aq, A, m, k, t)) : where(aq, A, m, k, t), [kind, size] = m, S = frame(kind, 0), q = X.proj(e.p), s = sOf(e.p[2]), w = size * s, h = w * S.h / S.w;
+      const pu = DL && DL.fishPush(aq, q, t); if (pu) { q[0] += pu[0]; q[1] += pu[1]; } return { kind, x: q[0], y: q[1] + (aq === 'jelly' ? h * .3 : 0), w, h }; });
+  }
+  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, ramp, byId, items, SPR, CREW, JELLY: jelly, frame, crewAt };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
   NX.addObject({
     id: 'decorLive',
     /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */

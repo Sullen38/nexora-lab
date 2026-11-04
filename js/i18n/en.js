@@ -17,7 +17,18 @@ NX.i18n.add('en', {
     tools: { crm: { t: 'Connect CRM', r: 'CRM connected: {n} contacts synced.' }, calendar: { t: 'Sync calendar', r: 'Calendar synced: {n} meetings this week, reminders on.' }, auto: { t: 'Set up automation', r: 'Website leads now go straight to CRM. Saves {n} h a week.' } },
   },
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
-  decor: { poster: { title: 'NEXI • BOTANIST', sub: 'WATER WITH LOVE' }, farm: { title: 'NEXI FARM' }, rudik: { title: 'GINGER', sub: 'VIRUS HUNTER' } },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+  decor: {   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+    guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      head: 'RESCUED SPECIES', no: 'No.', count: 'Species rescued: {n}', stage: 'Growth stage {s} of 6', where: { wall: 'WALL GREENERY', farm: 'NEXI FARM', reef: 'REEF', jelly: 'JELLY TANK' }, kind: { plant: 'PLANT', fish: 'REEF RESIDENT', jel: 'JELLY TANK RESIDENT' },
+      sp: {
+        wall: { bonsai: 'Bonsai (ficus)', succ: 'Echeveria', cactus2: 'Hedgehog cactus', sansevieria: 'Snake plant', bostonfern: 'Boston fern', dichondra: 'Silver falls dichondra', muehlenbeckia: 'Maidenhair vine', bivy: 'Virginia creeper', passiflora: 'Passion flower', spathiphyllum: 'Peace lily', syngonium: 'Arrowhead vine', bananas: 'String of bananas', adansonii: 'Swiss cheese vine', dolphins: 'String of dolphins', lysimachia: 'Creeping Jenny', davallia: 'Rabbit\'s-foot fern', flytrap: 'Venus flytrap', staghorn: 'Staghorn fern', shroom: 'Glowing mushroom', strelitzia: 'Bird of paradise', palm: 'Parlor palm', monstera: 'Monstera', orchid: 'Moth orchid', ivy: 'Ivy', ceropegia: 'String of hearts', rhipsalis: 'Mistletoe cactus', aeschynanthus: 'Lipstick plant', pearls: 'String of pearls', tradescantia: 'Inch plant', wisteria: 'Wisteria', hoya: 'Wax plant', asplenium: 'Bird\'s nest fern', peperomia: 'Peperomia', fittonia: 'Nerve plant', pothos: 'Pothos', columnea: 'Goldfish plant' },
+        farm: { micro: 'Microgreens', mint: 'Mint', basil: 'Basil', radish: 'Radish', pea: 'Pea', dill: 'Dill', parsley: 'Parsley', lettuce: 'Lettuce', kale: 'Kale', carrot: 'Carrot', strawberry: 'Strawberry', cucumber: 'Cucumber', spinach: 'Spinach', arugula: 'Arugula', tomato: 'Cherry tomato', chili: 'Chili pepper', sunflower: 'Sunflower', blueberry: 'Blueberry', eggplant: 'Eggplant', melon: 'Melon', lavender: 'Lavender' },
+        reef: { clown: 'Clownfish', tang: 'Blue tang', ytang: 'Yellow tang', mandarin: 'Mandarinfish', idol: 'Moorish idol', puffer: 'Pufferfish', seahorse: 'Seahorse', gramma: 'Royal gramma', lion: 'Lionfish', turtle: 'Green sea turtle', butterfly: 'Butterflyfish', trigger: 'Picasso triggerfish', moray: 'Moray eel', cleaner: 'Cleaner shrimp', eel0: 'Spotted garden eel', eel1: 'Splendid garden eel', eel2: 'Zebra garden eel', anemone: 'Sea anemone', kelp: 'Kelp', crab: 'Red reef crab' },
+        jelly: { moon: 'Moon jelly', nettle: 'Sea nettle', comb: 'Comb jelly', crystal: 'Crystal jelly', flower: 'Flower hat jelly', pelagia: 'Mauve stinger', lionmane: 'Lion\'s mane jelly', blubber: 'Blue blubber', cassio: 'Upside-down jelly' },
+      },
+    },
+    poster: { title: 'NEXI • BOTANIST', sub: 'WATER WITH LOVE' }, farm: { title: 'NEXI FARM' }, rudik: { title: 'GINGER', sub: 'VIRUS HUNTER' },
+  },
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
     ad: 'NEXORA AI · AI ASSISTANT FOR BUSINESS · NEXI ♥ · ', zep: 'NEXORA AI ♥ ' },
   scene: {
