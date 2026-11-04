@@ -584,7 +584,6 @@
         for (let v = 0; v < ROUTES.length; v++) { const B = butterflyAt(v, t); if (B) c.fillRect(B.x - 2.2, B.y - 1.6, 4.4, 3.2); }
         for (const f of FLY2) { const x = f.x + Math.sin(t * (.27 + hash(f.sd, 1) * .2) + f.sd) * f.ax, y = f.y + Math.sin(t * (.39 + hash(f.sd, 2) * .2) + f.sd * 2) * f.ay; c.fillRect(x - .6, y - .6, 1.2, 1.2); }
       }
-      if (NX.decorGuide) NX.decorGuide.extentTo(c);                                                              // (· 19) бирки
       c.restore(); LP.forEach(L => { L.q = -1; });
     },
     draw(c, t, Rd, vx0, vx1) {
@@ -596,7 +595,7 @@
       T('art', () => drawArt(c, t, vx0, vx1));
       T('rudik', () => drawRudik(c, t, vx0, vx1));
       T('plants', () => drawPlants(c, t, vx0, vx1));
-      T('tags', () => { if (NX.decorGuide) NX.decorGuide.draw(c, t, vx0, vx1); if (NX.decorVault) NX.decorVault.draw(c, t, vx0, vx1); });   // (· 20) сховище насіння: сяйво капсул, насінини                              // (· 19) бирки видів і промінь сканера
+      T('guide', () => { if (NX.decorGuide) NX.decorGuide.draw(c, t); if (NX.decorVault) NX.decorVault.draw(c, t, vx0, vx1); });   // (· 19) промінь сканера Nexi; (· 20) сховище насіння: сяйво капсул, насінини                              // (· 19) бирки видів і промінь сканера
       T('snail', () => drawSnail(c, t, vx0, vx1));
       T('air', () => drawAir(c, t, vx0, vx1));
       T('care', () => { drawCare(c, t); if (NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, t, vx0, vx1); });   // (· 6) полив і годівнички
