@@ -1071,4 +1071,40 @@ NX.arc = NX.arc || {};
     nl(hx, hy + hs, hx - hs * 1.2, hy - hs * .1, '#ff4fd8'); nl(hx - hs * 1.2, hy - hs * .1, hx - hs * .6, hy - hs * .9, '#ff4fd8'); nl(hx - hs * .6, hy - hs * .9, hx, hy - hs * .3, '#ff4fd8');
     nl(hx, hy - hs * .3, hx + hs * .6, hy - hs * .9, '#ff4fd8'); nl(hx + hs * .6, hy - hs * .9, hx + hs * 1.2, hy - hs * .1, '#ff4fd8'); nl(hx + hs * 1.2, hy - hs * .1, hx, hy + hs, '#ff4fd8');
   };
+
+  // ================= (Декор стін · 20) СХОВИЩЕ НАСІННЯ — настінна шафа з кріокапсулами під далеким кінцем теплиці =================
+  /** 21 капсула = 21 вид ферми (ряди — як яруси теплиці: верх / середина / низ; objects/decor_farm.js ROWS); колір вмісту — свій на
+   *  вид. Геометрія комірок — VAULT.cell (і для живого шару objects/decor_vault.js: сяйво, насінина в сівалку, тап). Напис — NX.t. */
+  const VAULT = NX.arc.VAULT = {
+    rows: [['micro', 'mint', 'basil', 'radish', 'pea', 'dill', 'parsley'], ['lettuce', 'kale', 'carrot', 'strawberry', 'cucumber', 'spinach', 'arugula'], ['tomato', 'chili', 'sunflower', 'blueberry', 'eggplant', 'melon', 'lavender']],
+    col: { micro: '#9aff6a', mint: '#5ae8a0', basil: '#3ac85a', radish: '#ff5a7a', pea: '#7ad84a', dill: '#b8ff5a', parsley: '#4ab85a', lettuce: '#8ae860', kale: '#9a5ad8', carrot: '#ff9a3a', strawberry: '#ff4a5a', cucumber: '#3aa84a', spinach: '#2a8a4a', arugula: '#6ad87a',
+      tomato: '#ff6a3a', chili: '#ff3a2a', sunflower: '#ffd23a', blueberry: '#5a6aff', eggplant: '#8a3aa8', melon: '#ffe08a', lavender: '#b89aff' },
+    /** Комірка капсули (одиниці грані fw × fh): {x, y, w, h} — сама капсула (скло), r — ряд 0..2, k — стовпчик 0..6. */
+    cell(fw, fh, r, k) { const top = fh * .2, bot = fh * .9, rh = (bot - top) / 3, cw = (fw - 8) / 7, h = rh * .72, w = Math.min(cw * .5, h * .6); return { x: 4 + cw * (k + .5) - w / 2, y: top + rh * r + (rh - h) * .55, w, h }; },
+  };
+  A.STY.dc_vault = { pal: PL.STEEL, q: .46, bev: .5, ins: 0 };
+  PAINT.dc_vault = (c, fw, fh) => {
+    const px = (x, y, w, h, cc) => { c.fillStyle = cc; c.fillRect(x, y, w, h); };
+    const g = c.createLinearGradient(0, 0, 0, fh); g.addColorStop(0, '#141a3a'); g.addColorStop(.5, '#0c1230'); g.addColorStop(1, '#070a22'); c.fillStyle = g; c.fillRect(0, 0, fw, fh);
+    px(0, 0, fw, .6, '#555f8c'); px(0, fh - .6, fw, .6, '#22264e'); px(0, 0, .6, fh, '#555f8c'); px(fw - .6, 0, .6, fh, '#22264e');               // хромова рама
+    const th = fh * .17; px(1, 1, fw - 2, th, '#0a0e28'); px(1, th + .6, fw - 2, .5, '#3be8ff');                                               // табличка зверху + бірюзова лінія
+    for (let k = 0; k < 6; k++) px(2.5 + k * 1.6, th * .5 - .35, .7, .7, k % 2 ? '#3bff8a' : '#1a6a3a');                                       // індикатори
+    px(fw - 6.5, th * .35, 4, .5, '#ff4fd8'); px(fw - 6.5, th * .62, 2.6, .5, '#3be8ff');
+    A.txt(c, NX.t('decor.vault.title'), fw / 2 + 1, th * .5 + .3, fw - 22, th * .62, '#d8f8ff', { glow: '#3be8ff' });
+    const top = fh * .2, bot = fh * .9, rh = (bot - top) / 3;
+    for (let r = 0; r < 3; r++) {
+      px(1.2, top + rh * r, fw - 2.4, rh - .3, '#090c22'); px(1.2, top + rh * (r + 1) - .9, fw - 2.4, .6, '#1e2450');                            // полиця-ряд, нижня кромка
+      for (let k = 0; k < 7; k++) { const kind = VAULT.rows[r][k], C = VAULT.col[kind], q = VAULT.cell(fw, fh, r, k);
+        px(q.x - 1.4, q.y - 1.2, q.w + 2.8, q.h + 2.2, '#060818');                                                                               // гніздо
+        px(q.x - .5, q.y - .9, q.w + 1, .9, '#848db4'); px(q.x - .3, q.y - 1.3, q.w + .6, .5, '#bcc5e6');                                        // хромова кришка
+        c.fillStyle = 'rgba(160,220,255,.22)'; c.fillRect(q.x, q.y, q.w, q.h);                                                                   // скло
+        const lv = .55 + .35 * hash(r * 7 + k, 3); c.fillStyle = C; c.globalAlpha = .85; c.fillRect(q.x + .3, q.y + q.h * (1 - lv), q.w - .6, q.h * lv); c.globalAlpha = 1;   // вміст (насіння)
+        for (let s = 0; s < 6; s++) px(q.x + .5 + hash(s, r * 9 + k) * (q.w - 1.2), q.y + q.h * (1 - lv) + .4 + hash(s + 3, r * 9 + k) * (q.h * lv - 1), .45, .45, s % 2 ? '#ffffff' : '#000000');
+        px(q.x + .35, q.y + .3, .45, q.h - .6, 'rgba(255,255,255,.45)');                                                                          // блік
+        px(q.x - .5, q.y + q.h, q.w + 1, .7, '#2a3060'); px(q.x + q.w / 2 - .35, q.y + q.h + .1, .7, .4, '#3bff8a');                               // підніжжя, LED
+        px(q.x - 1.2, q.y + q.h + 1.1, q.w + 2.4, .5, '#3a4a7a'); }                                                                               // етикетка
+    }
+    for (let x = 3; x < fw - 3; x += 2.2) px(x, bot + (fh - bot) * .45, 1.2, .5, '#1e2450');                                                     // вентиляція внизу
+    const fg = c.createLinearGradient(0, bot - 4, 0, fh); fg.addColorStop(0, 'rgba(200,240,255,0)'); fg.addColorStop(1, 'rgba(200,240,255,.28)'); c.fillStyle = fg; c.fillRect(1, bot - 4, fw - 2, fh - bot + 3);   // іній
+  };
 })();

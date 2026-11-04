@@ -168,6 +168,8 @@
     tap(x, y, t) { let best = null, bd = 1e9; for (let fx_ = 0; fx_ <= T; fx_ += 4) for (let k = 0; k < FARM.tiers; k++) { const fy = FARM.rowY(H, k) - 8, p = S(fx_, fy, MID), d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = [fx_, fy]; } }
       TAP = { fx: best[0], fy: best[1], t0: t }; return true; },
     trayAt, TR, T, H, plantSpr,
+    /** (· 20) Де шахта ярусу row на екрані (ліва — сівалка, права — різак): [x, y] для сховища насіння (objects/decor_vault.js). */
+    shaft(row, side) { return S(side === 'left' ? SH * .5 : T - SH * .5, FARM.rowY(H, row) - 6, MID); },
     /** (· 18) Найближчий до точки екрана лоток (для довідника ботаніка): {kind, s, d} або null. */
     nearTray(x, y, t) { let best = null; for (const tr of TR) { const A = trayAt(tr, t); if (A.hide) continue; const p = S(A.x, A.y - FARM.trayH - 7, MID), d = Math.hypot(p[0] - x, p[1] - y); if (!best || d < best.d) best = { kind: tr.kind, s: A.s, d }; } return best; },
   };

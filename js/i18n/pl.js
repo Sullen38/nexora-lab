@@ -27,6 +27,7 @@ NX.i18n.add('pl', {
         jelly: { moon: 'Chełbia modra', nettle: 'Pokrzywa morska', comb: 'Żebropław', crystal: 'Meduza kryształowa', flower: 'Meduza kwiatowa', pelagia: 'Pelagia', lionmane: 'Bełtwa festonowa', blubber: 'Meduza niebieska', cassio: 'Kasjopea' },
       },
     },
+    vault: { title: 'BANK NASION' },
     poster: { title: 'NEXI • BOTANIK', sub: 'PODLEWAJ Z MIŁOŚCIĄ' }, farm: { title: 'FARMA NEXI' }, rudik: { title: 'RUDY', sub: 'POGROMCA WIRUSÓW' },
   },
   city: { signs: { coffee: 'KAWA', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'KINO', pharmacy: 'APTEKA', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SKLEP', club: 'KLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GRY', spa: 'SPA', open: '24/7' },

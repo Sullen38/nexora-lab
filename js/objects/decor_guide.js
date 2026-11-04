@@ -129,7 +129,8 @@
     tap(hit, x, y, t, L) {
       if (hit === 'plant' && L && L.e && L.e.sp) return show(find('wall', L.e.sp.kind));
       if (WALL_ALIAS[hit]) return show(find('wall', WALL_ALIAS[hit]));
-      if (hit === 'hex') return void this.tapStatic(x, y);                                                   // рослина в соті (бонсай, ехеверія, кактус, сансев'єрія)
+      if (hit === 'hex') return void this.tapStatic(x, y);
+      if (hit === 'vault' && NX.decorVault) return show(find('farm', NX.decorVault.lastKind));                   // (· 20) капсула сховища насіння                                                   // рослина в соті (бонсай, ехеверія, кактус, сансев'єрія)
       if (hit === 'farm' && NX.decorFarm && NX.decorFarm.nearTray) { const tr = NX.decorFarm.nearTray(x, y, t); if (tr && tr.d < 30) return show(find('farm', tr.kind), tr); return; }
       if (hit === 'aq') { const TP = NX.decorLive && NX.decorLive.TP, aq = TP && TP.aq && TP.aq.aq; if (!aq) return;
         let best = null, bd = 1e9;

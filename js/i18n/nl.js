@@ -27,6 +27,7 @@ NX.i18n.add('nl', {
         jelly: { moon: 'Oorkwal', nettle: 'Zeenetel', comb: 'Ribkwal', crystal: 'Kristalkwal', flower: 'Bloemhoedkwal', pelagia: 'Parelkwal', lionmane: 'Haarkwal', blubber: 'Blauwe kwal', cassio: 'Omgekeerde kwal' },
       },
     },
+    vault: { title: 'ZADENKLUIS' },
     poster: { title: 'NEXI • BOTANICUS', sub: 'GIET MET LIEFDE' }, farm: { title: 'NEXI-KWEKERIJ' }, rudik: { title: 'GEMBER', sub: 'VIRUSJAGER' },
   },
   city: { signs: { coffee: 'KOFFIE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'BIOSCOOP', pharmacy: 'APOTHEEK', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'WINKEL', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },

@@ -296,6 +296,16 @@ def decor_side(L, sgn, C, R, verbose=True):
         pyt = max(Yw(5.5, W.at(a, ins)[0][1]) for a in (pa0, pa1) for ins in (1.2, 4.6))
         add(item(W, 'dc_poster1', pam, 2.6, chord(W, pa0, pa1), round(pyb, 2), round(pyt, 2), 'dc_poster', inset=1.6, dc=dict(kind='rudik')))
         rud = out[-1]
+        # ---------- П5. СХОВИЩЕ НАСІННЯ (Декор стін · 20; власник: «мало місця» -> «сховище під теплицею, колбу відкласти»): пласка
+        # настінна шафа під далеким кінцем теплиці, над зоною СКІНИ (єдина вільна стіна правого крила: між низом теплиці й полем зон);
+        # маніпулятор майстерні — попереду (noarm, як у теплиці). 21 кріокапсула = 21 вид ферми (3 ряди × 7, як лотки); напис — NX.t.
+        # Малюнок — objects/dc_paint.js PAINT.dc_vault; живе (сяйво капсул, насінина летить у сівалку, капсула поповнюється зі збору,
+        # тап — картка виду) — objects/decor_vault.js.
+        VX0, VX1 = 1092., 1160.                                                           # між куполом капсули СКІНИв (X ≤ 1072, y 83) і балкою козлового підйомника (X ≥ 1174, y 71)
+        vtop = max(max(p[1] for p in screen_poly(sg)) for sg in segs if max(p[0] for p in screen_poly(sg)) >= VX0 - 4 and min(p[0] for p in screen_poly(sg)) <= VX1 + 4) + 2.5   # під низом теплиці
+        vbot = min(free_y2(X) for X in range(int(VX0) - 2, int(VX1) + 3)) - 1.5
+        flat('dc_vault', VX0, VX1, round(vtop, 2), round(vbot, 2), 'dc_vault', d=3.4, dc=dict(noarm=1, rows=3, cols=7)); vault = out[-1]
+        wshadow(vault, dy=3.)
         # ---------- П4. ВИСЯЧИЙ САД ПІД АНТРЕСОЛЛЮ (· 4): ліани з краю плити, кокедами на шнурах, макраме з потосом, колумнея в
         # неоновому кільці — кожна своя (усе живе: гойдається)
         def under(id, X, kind, w, ln, frm='edge', **kw):
@@ -611,7 +621,7 @@ def report(L, items, name):
 
 # ===================================== ПЛАН ЗВЕРХУ (картинка для власника) =====================================
 GROUPS = [('dc_pylon', 'П0 ПІЛОН'), ('dc_door', 'П0'), ('dc_pyg', 'П0'), ('dc_mz', 'П1 АНТРЕСОЛЬ (2-й поверх)'), ('dc_lantern', 'П1'), ('dc_green', 'П1'), ('dc_fm', 'П2 ВЕРТИКАЛЬНА ФЕРМА NEXI'),
-          ('dc_poster1', 'П3 ПЛАКАТ РУДИКА'), ('dc_hangR', 'П4 ВИСЯЧИЙ САД'), ('dc_kk', 'П4'),
+          ('dc_poster1', 'П3 ПЛАКАТ РУДИКА'), ('dc_vault', 'П5 СХОВИЩЕ НАСІННЯ'), ('dc_hangR', 'П4 ВИСЯЧИЙ САД'), ('dc_kk', 'П4'),
           ('dc_hx', 'Л1 СОТИ-ПОЛИЦІ'), ('dc_neon', 'Л1 НЕОН'), ('dc_rf', 'Л2 РИФ (акваріум №1)'), ('dc_jelly', 'Л3 МЕДУЗАРІЙ (акваріум №2)'), ('dc_poster', 'Л4 ПЛАКАТ')]
 def group_of(id):
     for k, v in GROUPS:

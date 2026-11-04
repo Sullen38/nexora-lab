@@ -27,6 +27,7 @@ NX.i18n.add('en', {
         jelly: { moon: 'Moon jelly', nettle: 'Sea nettle', comb: 'Comb jelly', crystal: 'Crystal jelly', flower: 'Flower hat jelly', pelagia: 'Mauve stinger', lionmane: 'Lion\'s mane jelly', blubber: 'Blue blubber', cassio: 'Upside-down jelly' },
       },
     },
+    vault: { title: 'SEED VAULT' },
     poster: { title: 'NEXI • BOTANIST', sub: 'WATER WITH LOVE' }, farm: { title: 'NEXI FARM' }, rudik: { title: 'GINGER', sub: 'VIRUS HUNTER' },
   },
   city: { signs: { coffee: 'COFFEE', taxi: 'TAXI', hotel: 'HOTEL', cinema: 'CINEMA', pharmacy: 'PHARMACY', metro: 'METRO', pizza: 'PIZZA', sushi: 'SUSHI', bar: 'BAR', shop: 'SHOP', club: 'CLUB', ramen: 'RAMEN', neon: 'NEON', games: 'GAMES', spa: 'SPA', open: '24/7' },
