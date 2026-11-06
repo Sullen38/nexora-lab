@@ -95,15 +95,17 @@ NX.partyRoom = (() => {
     dance: { x0: 774 - 270, x1: 774 + 270, z0: -70, z1: 170, cols: 8, rows: 4 },
     booth: { x0: 774 - 120, x1: 774 + 120, y0: 300, z0: 200, z1: 262, led: { y0: 318, y1: 352 } }, podium: { y: 318, z: 282 },   // Nexi стоїть на подіумі за пультом
     speakers: [{ x: 774 - 200, z: 250 }, { x: 774 + 200, z: 250 }],                                   // стек: 52 завширшки, 150 заввишки
-    ball: { x: 774, y: 196, z: 260, r: 26 }, sign: { x0: 774 - 210, x1: 774 + 210, y0: 64, y1: 128, z: ZB - 6 },
+    ball: { x: 774, y: 206, z: 260, r: 26 }, sign: { x0: 774 - 210, x1: 774 + 210, y0: 64, y1: 128, z: ZB - 6 },
     lamps: [774 - 420, 774 - 140, 774 + 140, 774 + 420].map(x => ({ x, y: CEIL + 14, z: 150 })),      // прожектори на рейці
     bar: { x0: 1060, x1: 1380, z0: 186, z1: 236, y0: 332, back: { z0: 296, z1: 332, y0: 140 }, shelf: { y: [190, 240, 290], z0: 268, z1: 296 } }, barman: { x: 1220, y: 346, z: 252 }, snack: { x0: 200, x1: 480, z0: 196, z1: 256, y0: 338 },
-    crowd: [], rail: { z: -210, y0: 330 }, screen: { x0: 774 - 210, x1: 774 + 210, y0: 70, y1: 262, z: ZB - 5 }, foam: [{ x: 774 - 360, z: -200 }, { x: 774 + 360, z: -200 }], smoke: [{ x: 774 - 200, z: 190 }, { x: 774 + 200, z: 190 }],                   // VJ-екран за пультом (живе — party.js: drawScreen)
+    crowd: [], rail: { z: -210, y0: 330 }, screen: { x0: 774 - 210, x1: 774 + 210, y0: 104, y1: 262, z: ZB - 5 }, foam: [{ x: 774 - 360, z: -200 }, { x: 774 + 360, z: -200 }], smoke: [{ x: 774 - 200, z: 190 }, { x: 774 + 200, z: 190 }],                   // VJ-екран за пультом (живе — party.js: drawScreen)
     neonArt: [{ z: 60, y: 150, side: -1 }, { z: 60, y: 150, side: 1 }], gobos: [774 - 250, 774, 774 + 250],         // неонове панно на бічних частинах стіни; обертові прожектори-гобо
-    table: { x: 1250, z: 0 }, sofa: { x0: 1300, x1: 1410, z0: -60, z1: 50 }, balcony: { y: 120, z0: ZB - 70, left: [XL, 774 - 310], right: [774 + 310, XR] }, lounge: { z: -170 }, poster: { x0: 774 - 560, x1: 774 - 300, y0: 78, y1: 212 }, cat: { x: 774 - 200, y: FLY - 152, z: 280 },   // афіша колекції на задній стіні; Рудик на лівій колонці
+    table: { x: 1250, z: 0 }, sofa: { x0: 1300, x1: 1410, z0: -60, z1: 50 }, balcony: { y: 90, z0: ZB - 90, z1: ZB, rail: 44 }, stairs: [{ x0: XL, x1: XL + 72, z0: 130, side: -1 }, { x0: XR - 72, x1: XR, z0: 130, side: 1 }], lounge: { z: -170 },
+    poufs: [], sideTables: [{ x: XL + 44, z: 55 }, { x: XR - 44, z: 55 }], poster: { x0: 774 - 560, x1: 774 - 300, y0: 78, y1: 212 }, cat: { x: 774 - 200, y: FLY - 152, z: 280 },   // афіша колекції на задній стіні; Рудик на лівій колонці
     bulbs: [], balloons: [[214, 150, 60, 'pink'], [240, 128, 90, 'cyan'], [268, 158, 40, 'gold'], [1330, 146, 60, 'green'], [1300, 124, 100, 'orange'], [1272, 154, 40, 'lil'], [560, 118, 420, 'pink'], [990, 120, 420, 'cyan']],
   };
   for (let i = 0; i < 10; i++) { const side = i < 5 ? -1 : 1, k = i % 5; GEO.crowd.push({ x: 774 + side * (120 + k * 26 + (k % 2) * 8), z: 176 + (k % 3) * 9, h: 44 + hash(i, 5) * 14, ph: hash(i, 9) * 6, w: 20 + hash(i, 2) * 8 }); }   // натовп-тло обабіч пульта
+  [[XL + 40, 0, 'pink'], [XL + 40, 110, 'cyan'], [XL + 100, 55, 'gold'], [XR - 40, 0, 'green'], [XR - 40, 110, 'lil'], [XR - 100, 55, 'orange']].forEach(([x, z, c]) => GEO.poufs.push({ x, z, c, r: 16, h: 22 }));   // пуфи обабіч
   (() => { for (let w = 0; w < 2; w++) for (let i = 0; i <= 11; i++) { const u = i / 11, xa = w ? XR - 10 : XL + 10, xb = w ? 774 + 230 : 774 - 230, x = xa + (xb - xa) * u, y = CEIL + 14 + Math.sin(u * Math.PI) * 34 + u * 8, z = ZB - 60 + (1 - u) * -120; GEO.bulbs.push([x, y, z]); } })();
 
   // ============================ СВІТЛО КІМНАТИ (06.11: «світло пласке — гості наклеєні») ============================
@@ -120,7 +122,8 @@ NX.partyRoom = (() => {
     { p: [1250, 318, 0], c: [1, .6, .25], r: 160, k: .6 },                                                                     // лампа лаунжу
     ...[XL + 150, 774 - 300, 774 + 300, XR - 150].map(x => ({ p: [x, 130, -120], c: [1, .85, .5], r: 300, k: .5 })),              // підвісні лампи спереду (прапорці, лаунж)
     { p: [774 - 380 + 40, 320, -170], c: [1, .8, .4], r: 140, k: .5 }, { p: [774 + 380 - 40, 320, -170], c: [1, .8, .4], r: 140, k: .5 },   // свічки лаунжу
-    { p: [XL + 40, 70, 416], c: [.3, .9, 1], r: 260, k: .5 }, { p: [XR - 40, 70, 416], c: [1, .35, .85], r: 260, k: .5 },                 // прожектори балконів
+    { p: [XL + 60, 30, 416], c: [.3, .9, 1], r: 260, k: .5 }, { p: [XR - 60, 30, 416], c: [1, .35, .85], r: 260, k: .5 }, { p: [774, 30, 416], c: [1, .9, .5], r: 260, k: .5 },   // прожектори другого поверху
+    { p: [774, 46, 352], c: [.4, .9, 1], r: 700, k: .25 }, { p: [XL + 44, 320, 55], c: [1, .8, .4], r: 150, k: .5 }, { p: [XR - 44, 320, 55], c: [1, .8, .4], r: 150, k: .5 },   // LED балюстради, столики збоку
     { p: [XL + 10, 200, 100], c: [1, .5, .9], r: 200, k: .45 }, { p: [XL + 10, 170, 60], c: [1, .5, .9], r: 180, k: .4 }, { p: [XR - 10, 170, 60], c: [.4, .9, 1], r: 180, k: .4 }, { p: [XL + 10, 160, 200], c: [1, .8, .4], r: 140, k: .4 }, { p: [XR - 10, 160, 200], c: [1, .8, .4], r: 140, k: .4 },   // графіті, бра
   ];
   /** Світло в точці світу: [r, g, b] множники (ambient + сума джерел; 1 — як намальовано). */
@@ -304,20 +307,27 @@ NX.partyRoom = (() => {
     // передній план: низьке огородження лаунжу обабіч (темне, з тонким неоном зверху) — три плани: огорожа → танцпол → стіна
     { const Rl = GEO.rail; [[XL + 40, 774 - 330], [774 + 330, XR - 40]].forEach(([x0, x1]) => { ++id; box(L, id, x0, x1, Rl.y0, Rl.y0 + 4, Rl.z - 3, Rl.z + 3, { all: mBevel(PAL.STEEL, 1), top: mNeon(NEONC.lil, .5) });
       for (let x = x0; x <= x1; x += (x1 - x0) / 3) { ++id; box(L, id, x - 4, x + 4, Rl.y0 + 4, FLY, Rl.z - 4, Rl.z + 4, { all: mBevel(PAL.STEEL, 1) }); } }); }
-    // ============ КОМПОЗИЦІЯ (06.11, план «сире» 3): балкони над задньою стіною, сходи, лаунж на передньому плані ============
-    // балкони обабіч (центр лишається VJ-екрану й кулі): плита, перила зі стовпчиками й неоновою трубкою, темні силуети глядачів
-    { const Bc = GEO.balcony; [Bc.left, Bc.right].forEach(([x0, x1], side) => { ++id; box(L, id, x0, x1, Bc.y, Bc.y + 10, Bc.z0, ZB, { front: mBevel(PAL.MET, 2, { seam: 60 }), bottom: mFlat(PAL.STEEL, .25), top: mFlat(PAL.STEEL, .5) });
-        box(L, id, x0, x1, Bc.y - 2, Bc.y, Bc.z0 - 1, Bc.z0 + 6, { front: mNeon(NEONC.lil, .7), top: mFlat(PAL.STEEL, .4) });                                                              // неонова кромка
-        for (let x = x0 + 12; x <= x1 - 8; x += 44) X.tube(L, [x, Bc.y, Bc.z0 + 2], [x, Bc.y - 40, Bc.z0 + 2], 2.5, (u) => ramp(PAL.CHROME, .4 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id });   // стовпчики
-        X.tube(L, [x0 + 4, Bc.y - 40, Bc.z0 + 2], [x1 - 4, Bc.y - 40, Bc.z0 + 2], 3, (u) => ramp(PAL.CHROME, .55, 0, 0), { id }); X.tube(L, [x0 + 4, Bc.y - 22, Bc.z0 + 2], [x1 - 4, Bc.y - 22, Bc.z0 + 2], 1.5, () => ramp(PAL.CHROME, .45, 0, 0), { id });   // поручні
-        const n = 6; for (let k = 0; k < n; k++) { const x = x0 + 30 + k * (x1 - x0 - 60) / (n - 1) + hash(k, side + 11) * 14, h = 40 + hash(k, side + 3) * 14, z = ZB - 30 + hash(k, 5) * 20; ++id;   // силуети глядачів за перилами
-          box(L, id, x - 11, x + 11, Bc.y - h, Bc.y, z - 6, z + 6, { all: mFlat(PAL.DARK, .35) }); X.disc(L, [x, Bc.y - h - 7, z - 6.5], 7, (u, v) => Math.hypot(u - .5, v - .5) > .5 ? 0 : ramp(PAL.DARK, .35, 0, 0), { id });
-          if (hash(k, side + 7) > .5) X.tube(L, [x + 9, Bc.y - h + 6, z - 6], [x + 16, Bc.y - h - 18, z - 6], 4, () => ramp(PAL.DARK, .35, 0, 0), { id }); }
-        ++id; const lx = side ? x1 - 40 : x0 + 40; box(L, id, lx - 10, lx + 10, Bc.y - 70, Bc.y - 50, ZB - 24, ZB - 4, { all: mBevel(PAL.STEEL, 2) }); X.disc(L, [lx, Bc.y - 50, ZB - 24.5], 7, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .3 ? NEONC.white : side ? NEONC.pink : NEONC.cyan; }, { id }); });   // прожектор на балконі
-      // сходи на лівий балкон уздовж лівої стіни (від підлоги біля дивана вгору до плити)
-      const n = 9; for (let k = 0; k < n; k++) { const y1 = FLY - k * (FLY - Bc.y) / n, y0 = y1 - (FLY - Bc.y) / n, z = Bc.z0 - 180 + k * 20; ++id; box(L, id, XL, XL + 60, y0, FLY, z, z + 20, { front: mBevel(PAL.STEEL, 1), top: (q, w, h) => (u, v, i, j) => v < .12 ? mixc(NEONC.cyan, NEONC.white, .3) : ramp(PAL.MET, .55 - v * .2, i, j), right: mBevel(PAL.STEEL, 1) }); }
-      X.tube(L, [XL + 62, FLY - 30, Bc.z0 - 180], [XL + 62, Bc.y - 30, Bc.z0], 2.5, (u) => ramp(PAL.CHROME, .5 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id });   // поручень сходів
-    }
+    // ============ ДРУГИЙ ПОВЕРХ (06.11, власник: «на всю довжину, щоб гості могли виходити нагору й сходити; пропрацюй сходи») ============
+    // плита на всю ширину над задньою стіною, скляна балюстрада з LED-верхом і хромованими стійками (гості за нею — party.js
+    // домальовує її поверх напівпрозоро), прожектори, бра; СХОДИ з обох боків уздовж бічних стін: 14 сходинок із LED-кромкою,
+    // поручень, світильники під сходами
+    { const Bc = GEO.balcony; ++id; box(L, id, XL, XR, Bc.y, Bc.y + 12, Bc.z0, Bc.z1, { front: (q, w, h) => (u, v, i, j) => v < .2 ? (() => { X.SH.fl = F_EMIT; return mixc(NEONC.lil, NEONC.white, .3); })() : bevel(PAL.MET, q, w, h, 2, { seam: 80 })(u, v, i, j), bottom: (q, w, h) => (u, v, i, j) => ramp(PAL.STEEL, .3 + ((Math.floor(u * w / 40) + Math.floor(v * h / 40)) % 2 ? .06 : 0), i, j), top: (q, w, h) => (u, v, i, j) => ramp(PAL.STEEL, .5 + (Math.floor(u * w / 60) % 2 ? .05 : 0) - v * .1, i, j) });
+      X.face(L, [[XL, Bc.y - Bc.rail, Bc.z0 + 1], [XR, Bc.y - Bc.rail, Bc.z0 + 1], [XR, Bc.y, Bc.z0 + 1], [XL, Bc.y, Bc.z0 + 1]], [XL, Bc.y - Bc.rail, Bc.z0 + 1], [XR - XL, 0, 0], [0, Bc.rail, 0], (u, v, i, j) => v < .08 ? (() => { X.SH.fl = F_EMIT; return mixc(NEONC.cyan, NEONC.white, .3); })() : rgb(120, 150, 220, 70 + (Math.sin(u * 40) > .9 ? 40 : 0)), { id, n: [0, 0, -1] });   // скляна балюстрада з LED-верхом
+      for (let x = XL + 6; x <= XR - 6; x += 64) X.tube(L, [x, Bc.y, Bc.z0 + 2], [x, Bc.y - Bc.rail - 2, Bc.z0 + 2], 2.5, (u) => ramp(PAL.CHROME, .4 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id });
+      X.tube(L, [XL, Bc.y - Bc.rail - 2, Bc.z0 + 2], [XR, Bc.y - Bc.rail - 2, Bc.z0 + 2], 3, (u) => ramp(PAL.CHROME, .55, 0, 0), { id });   // поручень
+      for (const [lx, cn] of [[XL + 60, 'cyan'], [774, 'gold'], [XR - 60, 'pink']]) { ++id; box(L, id, lx - 10, lx + 10, Bc.y - 80, Bc.y - 60, ZB - 24, ZB - 4, { all: mBevel(PAL.STEEL, 2) }); X.disc(L, [lx, Bc.y - 60, ZB - 24.5], 7, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .3 ? NEONC.white : NEONC[cn]; }, { id }); }   // прожектори на балконі
+      for (const x of [XL + 200, 774 - 300, 774 + 300, XR - 200]) { ++id; box(L, id, x - 8, x + 8, Bc.y - 110, Bc.y - 96, ZB - 6, ZB, { all: mBevel(PAL.MET, 1) }); X.disc(L, [x, Bc.y - 103, ZB - 6.5], 4, (u, v) => { X.SH.fl = F_EMIT; return NEONC.gold; }, { id }); }   // бра на стіні другого поверху
+      GEO.stairs.forEach(St => { const n = 14, dz = (Bc.z0 - St.z0) / n, dy = (FLY - Bc.y) / n, inner = St.side < 0 ? St.x1 : St.x0;
+        for (let k = 0; k < n; k++) { const z0 = St.z0 + k * dz, y1 = FLY - k * dy, y0 = y1 - dy; ++id; box(L, id, St.x0, St.x1, y0, FLY, z0, z0 + dz, { front: (q, w, h) => (u, v, i, j) => v < .1 ? (() => { X.SH.fl = F_EMIT; return mixc(NEONC.cyan, NEONC.white, .35); })() : bevel(PAL.STEEL, q, w, h, 1)(u, v, i, j), top: (q, w, h) => (u, v, i, j) => ramp(PAL.MET, .55 - v * .15 + (u * w % 12 < 1 ? -.1 : 0), i, j), left: mBevel(PAL.STEEL, 1), right: mBevel(PAL.STEEL, 1) });
+          if (k % 2 === 0) X.disc(L, [inner + St.side * -4, y1 - 4, z0 + dz / 2], 2, () => { X.SH.fl = F_EMIT; return NEONC.lil; }, { id }); }   // сходинки з LED-кромкою й світильниками збоку
+        ++id; for (let k = 0; k <= n; k += 2) X.tube(L, [inner, FLY - k * dy, St.z0 + k * dz], [inner, FLY - k * dy - 36, St.z0 + k * dz], 2, () => ramp(PAL.CHROME, .5, 0, 0), { id });
+        X.tube(L, [inner, FLY - 36, St.z0], [inner, Bc.y - 36, Bc.z0], 3, (u) => ramp(PAL.CHROME, .5 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id });   // поручень
+        X.tube(L, [St.side < 0 ? St.x0 + 2 : St.x1 - 2, FLY - 36, St.z0], [St.side < 0 ? St.x0 + 2 : St.x1 - 2, Bc.y - 36, Bc.z0], 3, (u) => ramp(PAL.CHROME, .5 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id }); }); }
+    // ============ БІЧНІ СТОРОНИ (06.11, власник: «пуфики, столики — щоб гості сідали») ============
+    GEO.poufs.forEach(({ x, z, c, r, h }) => { ++id; const cc = NEONC[c]; box(L, id, x - r, x + r, FLY - h, FLY, z - r, z + r, { all: (q, w, h2) => (u, v, i, j) => { const d = Math.abs(u - .5) * 2; if (d > .96) return 0; return mixc(dim(cc, .4 + .35 * (1 - d) + (v < .18 ? .2 : 0)), col('#1a1030'), v > .85 ? .5 : 0); } });
+      X.disc(L, [x, FLY - h, z], r, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 2.2) * 2; return d > 1 ? 0 : mixc(dim(cc, .75 + (d < .3 ? .2 : 0) - d * .2), NEONC.white, .1); }, { id }); });
+    GEO.sideTables.forEach(({ x, z }) => { ++id; X.tube(L, [x, FLY - 40, z], [x, FLY, z], 3, (u) => ramp(PAL.CHROME, .45 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id }); X.disc(L, [x, FLY - 40, z - .5], 18, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 3); return d > .5 ? 0 : ramp(PAL.TOP, .5 + (d < .15 ? .3 : 0), 0, 0); }, { id });
+      [[-8, 'gold'], [8, 'cyan']].forEach(([dx, cn]) => { box(L, id, x + dx - 3, x + dx + 3, FLY - 52, FLY - 40, z - 3, z + 3, { all: (q) => (u, v, i, j) => { X.SH.fl = F_EMIT; return v < .5 ? mixc(NEONC[cn], NEONC.white, .3) : ramp(PAL.CHROME, .6, i, j); } }); }); X.tube(L, [x, FLY - 40, z - 4], [x, FLY - 52, z - 4], 3, () => rgb(240, 230, 210), { id }); X.disc(L, [x, FLY - 55, z - 5], 2.5, () => { X.SH.fl = F_EMIT; return NEONC.gold; }, { id }); });
     // лаунж на передньому плані: низькі дивани обабіч, круглі столики зі свічками, силуети тих, хто сидить (великі — близько)
     { const z = GEO.lounge.z; [[XL + 60, 774 - 380], [774 + 380, XR - 60]].forEach(([x0, x1], side) => { ++id;
         box(L, id, x0, x1, FLY - 34, FLY, z - 24, z + 24, { front: mBevel(PAL.PLUM, 3, { seam: 48 }), top: mBevel(PAL.PLUM, 2), left: mBevel(PAL.PLUM, 2), right: mBevel(PAL.PLUM, 2) });
