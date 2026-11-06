@@ -161,24 +161,52 @@
 
   // ---------- МОНІТОРИ НА СТОЛІ ----------
   /** Рамка монітора, скло; вміст — чат з клієнтом (kind 0) або лист (kind 1); вогник живлення. */
+  /** Правки зон · 5 (06.11, власник: «монітори старомодні — зроби новішими»): ультратонка безрамкова панель — скло майже до
+   *  країв (кант .5), зрізані кути, камера-крапка вгорі, знизу — блакитна світлова планка; на екрані — сучасний інтерфейс
+   *  (темне скло з відблиском, рядок стану, картки з м'яким сяйвом): kind 0 — чат з клієнтом (аватари, бульки, «друкує…», поле
+   *  вводу), 1 — лист (картка з шапкою, тема, рядки, вкладення, світна кнопка «надіслати»). Нерухомий (fg — поверх голо-екрана). */
   function monitor(c, fw, fh, kind) {
-    c.fillStyle = '#05041a'; rr(c, 0, 0, fw, fh, 1.2); c.fill(); c.strokeStyle = 'rgba(200,190,255,.55)'; c.lineWidth = .4; rr(c, .25, .25, fw - .5, fh - .5, 1); c.stroke();
-    const x0 = fw * .05, y0 = fh * .07, w = fw * .9, h = fh * .8, g = c.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, '#12307a'); g.addColorStop(1, '#0a1a4e');
-    c.fillStyle = g; c.fillRect(x0, y0, w, h); c.fillStyle = 'rgba(160,220,255,.12)'; c.fillRect(x0, y0, w, h * .14);
-    if (!kind) {                                                                                             // чат: запит клієнта, відповідь Nexi, «друкує»
-      c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 2, y0 + h * .07, 1, 0, 7); c.fill(); dash(c, x0 + 3.6, y0 + h * .05, w * .3, .7, 'rgba(220,240,255,.8)');
-      c.fillStyle = 'rgba(160,140,255,.35)'; rr(c, x0 + 1.5, y0 + h * .22, w * .58, h * .26, 1.2); c.fill(); [.29, .38].forEach((v, k) => dash(c, x0 + 3, y0 + h * v, w * (k ? .32 : .46), .55, 'rgba(230,230,255,.85)'));
-      c.fillStyle = 'rgba(59,232,255,.42)'; rr(c, x0 + w * .38, y0 + h * .54, w * .58, h * .24, 1.2); c.fill(); [.6, .69].forEach((v, k) => dash(c, x0 + w * .42, y0 + h * v, w * (k ? .3 : .48), .55, '#e8feff'));
-      [0, 1, 2].forEach(k => { c.fillStyle = 'rgba(200,240,255,.8)'; c.beginPath(); c.arc(x0 + 3 + k * 1.6, y0 + h * .88, .45, 0, 7); c.fill(); });
-    } else {                                                                                                 // лист: конверт, рядки, кнопка «надіслати»
-      icon(c, 'mail', x0 + 3, y0 + h * .1, 2.6, '#9af6ff'); dash(c, x0 + 5.4, y0 + h * .07, w * .36, .7, 'rgba(220,240,255,.8)');
-      for (let k = 0; k < 5; k++) dash(c, x0 + 1.6, y0 + h * (.28 + k * .11), w * (.82 - (k === 4 ? .38 : hash(k, 9) * .2)), .5, 'rgba(200,225,255,.6)');
-      c.fillStyle = '#ff4fd8'; rr(c, x0 + w * .64, y0 + h * .82, w * .3, h * .13, .8); c.fill(); c.fillStyle = '#ffe0f6'; c.fillRect(x0 + w * .69, y0 + h * .875, w * .2, .45);
-      c.strokeStyle = GR; c.lineWidth = .5; c.beginPath(); c.moveTo(x0 + 1.6, y0 + h * .86); c.lineTo(x0 + 2.4, y0 + h * .92); c.lineTo(x0 + 3.8, y0 + h * .8); c.stroke();
+    const bz = .5, x0 = bz, y0 = bz + .9, w = fw - bz * 2, h = fh - bz * 2 - 2.1;                        // корпус — тонкий кант; зверху місце для камери, знизу — планка
+    c.fillStyle = '#07061c'; rr(c, 0, 0, fw, fh, 1.6); c.fill();
+    c.strokeStyle = 'rgba(190,200,255,.4)'; c.lineWidth = .3; rr(c, .15, .15, fw - .3, fh - .3, 1.5); c.stroke();   // металева крайка
+    const g = c.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, '#0d1d58'); g.addColorStop(.5, '#0a1544'); g.addColorStop(1, '#070d30');
+    c.fillStyle = g; rr(c, x0, y0, w, h, .8); c.fill();
+    const d = c.createLinearGradient(x0, y0, x0 + w, y0 + h); d.addColorStop(0, 'rgba(120,200,255,.14)'); d.addColorStop(.45, 'rgba(120,200,255,0)'); d.addColorStop(1, 'rgba(255,120,230,.07)');
+    c.fillStyle = d; rr(c, x0, y0, w, h, .8); c.fill();                                                   // відблиск на склі навскіс
+    c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(x0, y0, w, .25);
+    c.fillStyle = '#1a1a3a'; c.beginPath(); c.arc(fw / 2, .55, .32, 0, 7); c.fill(); c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw / 2, .55, .14, 0, 7); c.fill();   // камера
+    // рядок стану: вогник, час-риски, сигнал
+    const sy = y0 + 1.1; c.fillStyle = kind ? GR : CY; c.beginPath(); c.arc(x0 + 1.3, sy, .35, 0, 7); c.fill(); dash(c, x0 + 2.2, sy - .25, w * .18, .5, 'rgba(200,220,255,.55)');
+    [0, 1, 2, 3].forEach(k => { c.fillStyle = k < 3 ? 'rgba(200,230,255,.8)' : 'rgba(200,230,255,.3)'; c.fillRect(x0 + w - 3.6 + k * .8, sy + .4 - (k + 1) * .3, .5, (k + 1) * .3); });
+    const card = (x, y, cw, ch, col, a) => { c.fillStyle = col.replace('A', String(a * .5)); rr(c, x - .4, y - .4, cw + .8, ch + .8, 1.4); c.fill(); c.fillStyle = col.replace('A', String(a)); rr(c, x, y, cw, ch, 1.1); c.fill(); };
+    if (!kind) {                                                                                             // ЧАТ: запит клієнта (ліворуч), відповідь Nexi (праворуч), «друкує…», поле вводу
+      const cy = y0 + h * .22; c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 2.4, cy + .9, 1.3, 0, 7); c.fill(); c.fillStyle = '#ffd6f2'; c.fillRect(x0 + 1.9, cy + .5, 1, 1);   // аватар клієнта
+      card(x0 + 4.6, cy - .6, w * .5, h * .24, 'rgba(150,140,255,A)', .5); [.02, .11].forEach((v, k) => dash(c, x0 + 6, cy + .4 + h * v, w * (k ? .3 : .42), .55, 'rgba(240,240,255,.9)'));
+      const ny = y0 + h * .55; c.fillStyle = '#0a0624'; c.beginPath(); c.arc(x0 + w - 2.4, ny + .9, 1.3, 0, 7); c.fill(); icon(c, 'ai', x0 + w - 2.4, ny + .9, 1.5, '#9af6ff');    // аватар Nexi
+      card(x0 + w * .36, ny - .6, w * .55, h * .22, 'rgba(59,232,255,A)', .55); [.02, .1].forEach((v, k) => dash(c, x0 + w * .39, ny + .4 + h * v, w * (k ? .28 : .46), .55, '#e8feff'));
+      [0, 1, 2].forEach(k => { c.fillStyle = `rgba(180,240,255,${.9 - k * .25})`; c.beginPath(); c.arc(x0 + w * .4 + k * 1.5, y0 + h * .82, .45, 0, 7); c.fill(); });   // «друкує…»
+      c.fillStyle = 'rgba(255,255,255,.08)'; rr(c, x0 + 1.2, y0 + h * .86, w - 2.4, h * .11, 1.2); c.fill(); dash(c, x0 + 2.4, y0 + h * .905, w * .3, .45, 'rgba(200,220,255,.4)');   // поле вводу
+      c.fillStyle = CY; c.beginPath(); c.arc(x0 + w - 2.6, y0 + h * .915, .9, 0, 7); c.fill(); c.fillStyle = '#04101e'; c.beginPath(); c.moveTo(x0 + w - 3, y0 + h * .915 - .4); c.lineTo(x0 + w - 2.2, y0 + h * .915); c.lineTo(x0 + w - 3, y0 + h * .915 + .4); c.fill();   // кнопка-стрілка
+    } else {                                                                                                 // ЛИСТ: картка з шапкою, тема, рядки, вкладення, кнопка «надіслати»
+      const ky = y0 + h * .17, kh = h * .78; card(x0 + 1.2, ky, w - 2.4, kh, 'rgba(120,150,255,A)', .16);
+      c.fillStyle = 'rgba(59,232,255,.22)'; rr(c, x0 + 1.2, ky, w - 2.4, h * .15, 1.1); c.fill(); c.fillRect(x0 + 1.2, ky + h * .1, w - 2.4, h * .05);
+      icon(c, 'mail', x0 + 3.2, ky + h * .075, 2.2, '#bff8ff'); dash(c, x0 + 5.2, ky + h * .05, w * .38, .6, 'rgba(230,245,255,.9)');
+      c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 3.2, ky + h * .27, 1.1, 0, 7); c.fill(); dash(c, x0 + 5, ky + h * .24, w * .3, .5, 'rgba(230,240,255,.8)'); dash(c, x0 + 5, ky + h * .31, w * .2, .4, 'rgba(200,220,255,.45)');
+      for (let k = 0; k < 3; k++) dash(c, x0 + 2.4, ky + h * (.42 + k * .08), w * (.78 - (k === 2 ? .3 : hash(k, 9) * .15)), .45, 'rgba(210,225,255,.6)');
+      c.fillStyle = 'rgba(255,255,255,.1)'; rr(c, x0 + 2.4, ky + h * .64, w * .32, h * .09, .9); c.fill(); c.fillStyle = VI; c.fillRect(x0 + 3.2, ky + h * .665, 1, h * .04); dash(c, x0 + 4.8, ky + h * .675, w * .18, .4, 'rgba(230,240,255,.7)');   // вкладення
+      const bx = x0 + w * .58, by = ky + h * .62, bw = w * .34, bh = h * .13; c.fillStyle = 'rgba(255,79,216,.35)'; rr(c, bx - .6, by - .6, bw + 1.2, bh + 1.2, 1.6); c.fill();
+      const bg = c.createLinearGradient(bx, by, bx + bw, by); bg.addColorStop(0, '#ff4fd8'); bg.addColorStop(1, '#9a6cff'); c.fillStyle = bg; rr(c, bx, by, bw, bh, bh / 2); c.fill();   // кнопка «надіслати»
+      dash(c, bx + bw * .18, by + bh * .42, bw * .42, .45, '#ffe8fb'); c.fillStyle = '#fff'; c.beginPath(); c.moveTo(bx + bw * .7, by + bh * .22); c.lineTo(bx + bw * .86, by + bh * .5); c.lineTo(bx + bw * .7, by + bh * .78); c.lineTo(bx + bw * .74, by + bh * .5); c.fill();
+      c.strokeStyle = GR; c.lineWidth = .45; c.beginPath(); c.moveTo(x0 + 2.4, ky + h * .86); c.lineTo(x0 + 3.1, ky + h * .92); c.lineTo(x0 + 4.4, ky + h * .8); c.stroke(); dash(c, x0 + 5.4, ky + h * .85, w * .22, .4, 'rgba(120,255,160,.6)');
     }
-    c.fillStyle = 'rgba(255,255,255,.07)'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 + w * .3, y0); c.lineTo(x0 + w * .12, y0 + h); c.lineTo(x0, y0 + h); c.fill();   // відблиск на склі
-    c.fillStyle = kind ? GR : CY; c.fillRect(fw / 2 - .5, fh * .92, 1, .5);
+    A.neon(c, x0 + 1, fh - .9, x0 + w - 1, fh - .9, kind ? GR : CY, .5);                                     // світлова планка знизу
+    c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(fw / 2 - 1, fh - .55, 2, .3);                             // логотип-риска
   }
+  /** Диск-основа монітора: зверху — неонове кільце. */
+  const discTop = col => (c, fw, fh) => { c.fillStyle = 'rgba(10,8,30,.6)'; c.beginPath(); c.ellipse(fw / 2, fh / 2, fw * .5, fh * .5, 0, 0, 7); c.fill();
+    c.strokeStyle = col; c.lineWidth = .5; c.beginPath(); c.ellipse(fw / 2, fh / 2, fw * .38, fh * .38, 0, 0, 7); c.stroke(); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(fw * .3, fh * .2, fw * .4, .3); };
+  const discFront = (c, fw, fh) => { c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(0, 0, fw, .3); };
+  PAINT.ai_monLb = discFront; PAINT.ai_monLb.sides = { top: discTop(CY) }; PAINT.ai_monRb = (c, fw, fh) => discFront(c, fw, fh); PAINT.ai_monRb.sides = { top: discTop(GR) };
   PAINT.ai_monL = (c, fw, fh) => monitor(c, fw, fh, 0);
   PAINT.ai_monR = (c, fw, fh) => monitor(c, fw, fh, 1);
 
