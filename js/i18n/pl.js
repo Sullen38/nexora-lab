@@ -86,6 +86,7 @@ NX.i18n.add('pl', {
     kickBall: { title: 'Gra w piłkę', steps: ['Biegnę do piłki', 'Podanie do Rudego!'], lines: ['Rudy, łap!', 'Podanie! Kto szybszy?'] },
     selfie: { title: 'Selfie z Rudym', steps: ['Wołam Rudego', 'Cheese! 📸'], lines: ['Rudy, robimy selfie!', 'Zdjęcie na social media Nexora!'] },
     cuddle: { title: 'Przytulasy z Rudym', steps: ['Wołam Rudego', 'Mrr ♥'], lines: ['Rudy, chodź do mnie na kanapę!', 'Czas na kocie przytulasy.'] },
+    decorReact: { fish: ['Cześć, rybki! Jak dziś woda?', 'Żółw znów śpi na korzeniu…', 'Błazenek chowa się w ukwiale — jak zawsze.'], jelly: ['Meduzy świecą — cudo!', 'Bełtwa dziś wyjątkowo puszysta.'], mint: ['Mmm, mięta! Od razu lżej oddychać.', 'Bazylia pachnie na cały pokój.'], trap: ['Ojej! Muchołówka kłapnęła!', 'Spokojnie, to nie mnie łapiesz.'], vault: ['Nasiona bezpieczne. Każdy gatunek pod kluczem.', 'Bank pełny — farmie nasion nie zabraknie.'] },
     sofaWork: { title: 'Praca z kanapy', steps: ['Biorę tablet', 'Pracuję wygodnie 😎'], lines: ['Popracuję z kanapy — tak nawet wydajniej.', 'Tablet w ręce i sprawy idą.'] },
     bounce: { title: 'Trampolina na kanapie', steps: ['Wskakuję', 'Boing!'], lines: ['Nikt nie patrzy? To trampolina!', 'Kanapa to najlepsza trampolina!'] },
     fluff: { title: 'Wytrzepać poduszki', steps: ['Biorę poduszki', 'Puf-puf!'], lines: ['Zrobię przytulnie — wytrzepię poduszki.', 'Poduszki muszą być puszyste!'] },

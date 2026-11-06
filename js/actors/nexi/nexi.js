@@ -83,7 +83,7 @@ NX.nexi = {
     if (!this.cur && !this.queue.length && this.task) { this.finishTask(true); }
     if (this.speak) { this.speak.t += dt; this.talking = this.speak.t < this.speak.text.length / 40; if (this.speak.t > this.speak.text.length / 40 + 3.2) { this.speak = null; this.talking = false; NX.ui.hud.bubble(null); } }
     this.autolife(t);
-    this.moodLife(t);
+    this.moodLife(t); this.decorLife(t);                                                 // (Декор стін · 25) зиркає на рибок, нюхає м'яту, здригається від мухоловки
     NX.nexiPhys.update(this, dt);
     if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie') { this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
     if (this.cur && (this.cur.fly || this.pose === 'fly' || (this.cur.work && /hover/.test(this.cur.work.pose))) && Math.random() < .7) NX.fx.emit('flame', this.x + (Math.random() < .5 ? -9 : 9) * NX.room.scaleAt(this.depthY()) / 1.45 * (this.dir), this.y + 2);
@@ -161,6 +161,24 @@ NX.nexi = {
       this.fxNow = fx; this.fxUntil = t + 6 + Math.random() * 3;
       const react = { rain: 'sad', snow: 'happy', fire: 'surprise', sparks: 'love', aura: 'cool', water: 'happy', neon: 'cool', energy: 'idea' }[fx]; if (react) setTimeout(() => this.emote(react, 2.5), 400);
     }
+  },
+  /* ---------------- (Декор стін · 25) РЕАКЦІЇ НА ДЕКОР ----------------
+   * Проходячи чи стоячи без діла біля декору стін, Nexi реагує сам: риф і медузарій — обертається до стіни (back) і милується, під
+   * теплицею — нюхає м'яту, мухоловка клацнула поруч — здригається, біля сховища насіння — задоволений. Репліки — act.decorReact.*
+   * (4 мови), не частіше ніж раз на 20 с, одна й та сама річ — раз на 90 с. Під час задач, вечірки й на дивані — ні. */
+  decorLife(t) {
+    if (this.backUntil && t > this.backUntil) { this.back = false; this.backUntil = 0; }
+    const DC = NX.decor; if (!DC || !DC.MK || this.loc === 'sofaLie' || this.talking || (NX.party && NX.party.on) || t < (this.nextDecor || 0)) return;
+    const walking = !!(this.cur && this.cur.walk), idle = !this.cur && !this.queue.length; if ((!walking && !idle) || this.y > 480 || this.dy != null) return;                 // лише ближче до стіни (y ≤ 480)
+    const seen = this.decorSeen || (this.decorSeen = {}), MK = DC.MK, nearX = (x0, x1, pad = 24) => this.x > x0 - pad && this.x < x1 + pad;
+    const fire = (id, mood, back) => { seen[id] = t; this.nextDecor = t + 20 + Math.random() * 10; this.emote(mood, 2.6); this.say(NX.pick('act.decorReact.' + id)); if (back && idle) { this.back = true; this.backUntil = t + 1.8; } };
+    const ok = id => !(seen[id] > t - 90);
+    const trap = NX.decorLive && NX.decorLive.LP.find(L => L.e && L.e.sp && L.e.sp.kind === 'flytrap');
+    if (trap && ok('trap') && nearX(trap.x0, trap.x1, 60)) { const st = NX.decorLive.trapAt(trap, t); if (st.snap >= 0 && st.snap < .6) return fire('trap', 'surprise'); }
+    if (MK.reef && ok('fish') && nearX(MK.reef.x, MK.reef.x + MK.reef.w)) return fire('fish', Math.random() < .6 ? 'love' : 'happy', true);
+    if (MK.jelly && ok('jelly') && nearX(MK.jelly.x, MK.jelly.x + MK.jelly.w, 30)) return fire('jelly', 'cool', true);
+    const V = DC.byId.dc_vault; if (V && ok('vault') && NX.decorVault && NX.decorVault.caps().length && Math.random() < .5) { const C = NX.decorVault.caps(); if (nearX(C[0].x, C[C.length - 1].x + C[C.length - 1].w, 20)) return fire('vault', 'idea'); }
+    if (MK.farm && ok('mint') && nearX(MK.farm.x, MK.farm.x + MK.farm.w, 10)) return fire('mint', 'happy');
   },
   /* ---------------- ВІЛЬНИЙ ЧАС ---------------- */
   autolife(t) {

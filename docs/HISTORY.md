@@ -2144,3 +2144,16 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 - `decor.py wshadow`: `dxs = 1.8·sgn` до X0_/X1_ — тінь убік від вікна; перегенеровано, DECOR OVER ZONES / OVERLAP — none.
 - Перевірки: `dcSpec` lit/hz правильні; знімок кошика ×6 до/після (`git stash`) — рім перейшов на бік вікна, тінь зсунулась; тапи
   4 мовами, `decor_check.js` — none; fps без змін (18 на знімку ×6 — це dpr 6, не регрес).
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 25: ідл-реакції Nexi на декор
+
+> Власник: «Продовжуємо» (після паузи: «Ліміт кінчився?» — ні, був конфлікт у HANDOFF/HISTORY з чатом «Персонажі» (крок 20), злито).
+
+- `nexi.js decorLife(t)`: `backUntil` знімає `back`; умови — `!cur || cur.walk`, нема черги, `y ≤ 480`, `dy == null`, не `talking`,
+  не `sofaLie`, не `NX.party.on`; `nearX(x0, x1, pad)` по `NX.decor.MK.{reef, jelly, farm}` і капсулах `NX.decorVault.caps()`;
+  мухоловка — LP flytrap, `trapAt(L, t).snap` у (0, .6); `fire(id, mood, back)`: `seen[id] = t`, `nextDecor = t + 20..30`, `emote`,
+  `say(NX.pick('act.decorReact.' + id))`, `back` 1.8 с стоячи. Порядок: мухоловка → риф → медузарій → сховище (50 %) → м'ята.
+- Тексти `act.decorReact` у 4 словниках (fish 3, jelly 2, mint 2, trap 2, vault 2).
+- Перевірки: `/tmp/react_test.js` (телепорт у точки, y 400) — jelly cool + back, farm happy «М-м, м'ята!», vault idea, друга проба під
+  фермою — mint; перша проба (риф) збіглася з вітанням (`talking`) — за задумом; мухоловка (`/tmp/trap_test.js`, x 110, nl) —
+  «Rustig, rustig — mij vang je niet.» surprise; `roam.js 10` — bad []; консоль чиста (комп'ютер, телефон en).

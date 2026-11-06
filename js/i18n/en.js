@@ -86,6 +86,7 @@ NX.i18n.add('en', {
     kickBall: { title: 'Play with the ball', steps: ['Running to the ball', 'Pass to Ginger!'], lines: ['Ginger, catch!', "Pass! Who's faster?"] },
     selfie: { title: 'Selfie with Ginger', steps: ['Calling Ginger', 'Cheese! 📸'], lines: ['Ginger, selfie time!', 'A photo for Nexora socials!'] },
     cuddle: { title: 'Cuddle with Ginger', steps: ['Calling Ginger', 'Purr ♥'], lines: ['Ginger, come sit with me!', 'Cat cuddle time.'] },
+    decorReact: { fish: ['Hi, fish! How\'s the water today?', 'The turtle is asleep on the driftwood again…', 'The clownfish is hiding in the anemone — as always.'], jelly: ['The jellies are glowing — gorgeous!', 'The lion\'s mane is extra fluffy today.'], mint: ['Mmm, mint! Breathing feels fresher already.', 'The basil scents the whole room.'], trap: ['Whoa! The flytrap snapped!', 'Easy, easy — not me you\'re catching.'], vault: ['Seeds are safe. Every species under lock.', 'Vault is full — the farm will never run out of seed.'] },
     sofaWork: { title: 'Work from the sofa', steps: ['Grabbing the tablet', 'Working comfy 😎'], lines: ['Working from the sofa — even more productive.', 'Tablet in hand, tasks done.'] },
     bounce: { title: 'Sofa trampoline', steps: ['Jumping on', 'Boing!'], lines: ["Nobody's watching? Trampoline time!", 'The sofa is the best trampoline!'] },
     fluff: { title: 'Fluff the pillows', steps: ['Grabbing pillows', 'Poof-poof!'], lines: ["Let's make it cozy — fluffing pillows.", 'Pillows must be fluffy!'] },

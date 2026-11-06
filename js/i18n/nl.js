@@ -86,6 +86,7 @@ NX.i18n.add('nl', {
     kickBall: { title: 'Spelen met de bal', steps: ['Naar de bal rennen', 'Pass naar Gember!'], lines: ['Gember, vangen!', 'Pass! Wie is sneller?'] },
     selfie: { title: 'Selfie met Gember', steps: ['Gember roepen', 'Cheese! 📸'], lines: ['Gember, selfie-tijd!', 'Een foto voor Nexora-socials!'] },
     cuddle: { title: 'Knuffelen met Gember', steps: ['Gember roepen', 'Spin ♥'], lines: ['Gember, kom bij me op de bank!', 'Tijd om de kat te knuffelen.'] },
+    decorReact: { fish: ['Hoi vissen! Hoe is het water vandaag?', 'De schildpad slaapt weer op het drijfhout…', 'De clownvis verstopt zich in de anemoon — zoals altijd.'], jelly: ['De kwallen gloeien — prachtig!', 'De haarkwal is vandaag extra weelderig.'], mint: ['Mmm, munt! Ademen voelt meteen frisser.', 'De basilicum geurt door de hele kamer.'], trap: ['Oei! De vliegenvanger klapte dicht!', 'Rustig, rustig — mij vang je niet.'], vault: ['Zaden veilig. Elke soort achter slot.', 'Kluis vol — de farm komt nooit zonder zaad te zitten.'] },
     sofaWork: { title: 'Werken vanaf de bank', steps: ['Tablet pakken', 'Lekker werken 😎'], lines: ['Even werken vanaf de bank — nog productiever.', 'Tablet in de hand, taken gedaan.'] },
     bounce: { title: 'Bank-trampoline', steps: ['Erop springen', 'Boing!'], lines: ['Niemand kijkt? Trampolinetijd!', 'De bank is de beste trampoline!'] },
     fluff: { title: 'Kussens opschudden', steps: ['Kussens pakken', 'Poef-poef!'], lines: ['Gezellig maken — kussens opschudden.', 'Kussens moeten pluizig zijn!'] },
