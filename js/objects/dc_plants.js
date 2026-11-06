@@ -121,26 +121,31 @@ NX.arc = NX.arc || {};
   function volume(r, sp) {
     const { w, h, d } = r, n = w * h, op = new Uint8Array(n), dist = new Uint8Array(n);
     for (let i = 0; i < n; i++) op[i] = d[i * 4 + 3] > 40 && !(d[i * 4] === OUTC[0] && d[i * 4 + 1] === OUTC[1] && d[i * 4 + 2] === OUTC[2]) ? 1 : 0;
+    const tr = new Uint8Array(n); for (let i = 0; i < n; i++) tr[i] = d[i * 4 + 3] <= 40 ? 1 : 0;                             // (· 26) прозоре (не контур OUT) — для графічного краю
     for (let i = 0; i < n; i++) dist[i] = op[i] ? 5 : 0;                                   // ерозія: 1..5 — на стільки пікселів від краю
     for (let k = 1; k <= 5; k++) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (dist[i] !== 5) continue;
       const e = (x === 0 || dist[i - 1] < k) || (x === w - 1 || dist[i + 1] < k) || (y === 0 || dist[i - w] < k) || (y === h - 1 || dist[i + w] < k); if (e) dist[i] = k; }
     const hang = sp.hang || /ivy|passiflora|dichondra|muehlenbeckia|lysimachia|pearls|ceropegia|rhipsalis|tradescantia|dischidia|aeschynanthus|hoya|wisteria|columnea/.test(sp.kind);
     const lit = sp.lit || 1, hz = sp.hz || 0, rim = 1.22 - hz * .5, HZ = [7, 5, 22];                                       // (· 24) єдине світло від вікна; далі від глядача — серпанок (як у px3d shader) і м'якший рім-лайт
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (!op[i]) continue; const q = i * 4, dd = dist[i];
-      let m = dd >= 5 ? .78 : dd >= 4 ? .86 : dd >= 3 ? .94 : 1;                                                             // глибина: всередині темніше
+      let m = dd >= 5 ? .7 : dd >= 4 ? .8 : dd >= 3 ? .9 : dd >= 2 ? .97 : 1;                                                 // (· 26) три шари: задній (усередині) темніший і холодніший, передній (край) світліший
+      const cool = dd >= 4 ? (dd - 3) * .05 : 0;
       const up = y > 0 ? op[i - w] : 0, lf = lit > 0 ? (x > 0 ? op[i - 1] : 0) : (x < w - 1 ? op[i + 1] : 0), dn = y < h - 1 ? op[i + w] : 0, up2 = y > 1 ? op[i - 2 * w] : 0;
       const sh = lit > 0 ? (x < w - 1 ? op[i + 1] : 0) : (x > 0 ? op[i - 1] : 0);
-      if (!up || !up2 || !lf) m *= rim;                                                                                       // (· 24) рім-лайт зверху й з боку вікна (lit: +1 — світло зліва, −1 — справа)
-      else if (!dn) m *= .88;                                                                                                 // нижній край — у тіні
-      else if (!sh) m *= .9;                                                                                                  // край від вікна — у тіні
+      const edgeT = (y > 0 && tr[i - w]) || (y < h - 1 && tr[i + w]) || (x > 0 && tr[i - 1]) || (x < w - 1 && tr[i + 1]);      // край на прозорому (без намальованого контуру)
+      let sun = 0;
+      if (!up || !up2 || !lf) { m *= rim; sun = 1; }                                                                          // (· 24) рім-лайт зверху й з боку вікна (lit: +1 — світло зліва, −1 — справа)
+      else if (!dn) m *= edgeT ? .5 : .88;                                                                                    // (· 26) нижній край — графічний темний контур (у тіні, якщо контур уже є)
+      else if (!sh) m *= edgeT ? .55 : .9;                                                                                    // край від вікна — так само
       if (!hang) m *= 1 - .14 * Math.max(0, (y / h - .62) / .38);                                                             // тінь під кроною
-      if (m !== 1) { d[q] = Math.min(255, d[q] * m); d[q + 1] = Math.min(255, d[q + 1] * m); d[q + 2] = Math.min(255, d[q + 2] * m); }
+      if (m !== 1) { d[q] = Math.min(255, d[q] * m * (sun ? 1.06 : 1)); d[q + 1] = Math.min(255, d[q + 1] * m * (sun ? 1.03 : 1)); d[q + 2] = Math.min(255, d[q + 2] * m * (sun ? .9 : 1)); }   // (· 26) сонячні кінчики — тепліші
+      if (cool) { d[q] = Math.max(0, d[q] * (1 - cool)); d[q + 2] = Math.min(255, d[q + 2] + 60 * cool); }
       if (hz) { d[q] += (HZ[0] - d[q]) * hz; d[q + 1] += (HZ[1] - d[q + 1]) * hz; d[q + 2] += (HZ[2] - d[q + 2]) * hz; } }
   }
 
   // ---------- рослини v3 (28.10): монстера, папороть, арека, сансев'єра, ліана, неонова, бонсай ----------
   function v3(S, W, H, seed, sp) {
-    const k0 = sp.kind === 'pothos' ? 'vine' : sp.kind, pal = PALS[sp.pal] || (k0 === 'neon' ? PALS.neon : GREEN), n = Math.round((sp.leaves || ({ monstera: 9, fern: 16, palm: 13, vine: 8, bonsai: 4 }[k0] || 7)) * 1.35);   // (· 17) на третину густіше
+    const k0 = sp.kind === 'pothos' ? 'vine' : sp.kind, pal = PALS[sp.pal] || (k0 === 'neon' ? PALS.neon : GREEN), n = Math.round((sp.leaves || ({ monstera: 9, fern: 16, palm: 13, vine: 8, bonsai: 4 }[k0] || 7)) * 1.6);    // (· 17) на третину густіше; (· 26) ще густіше — пишніше
     const potTop = sp.hang ? 0 : H - .4, cx = W / 2, pw = W * .4, ops = [], up = potTop - 1.5, asp = (W - 2.8) / Math.max(1, sp.hang ? H : up), hw = W / 2 - 1.4;
     const reach = (len, a, curl, k = 1.2) => Math.min(len, hw * k / Math.max(.35, Math.sin(Math.min(1.57, Math.abs(a) + .9 * Math.abs(curl)))));
     const leafOp = (base, ang, len, w, curl, kind, sd, lp, o, z) => ops.push({ t: 'leaf', base, ang, len, w, curl, kind, sd, pal: lp, o, z });
@@ -228,8 +233,8 @@ NX.arc = NX.arc || {};
     if (sp.hang) dy = .4 - Math.min(0, y0) * ky;
     const M = { kx, ky, ax, ay, dy }, P2 = ([x, y]) => [ax + (x - ax) * kx, ay + (y - ay) * ky + dy], k = Math.sqrt(kx * ky);
     const drawOp = op => {
-      if (op.t === 'leaf') return fillLeaf(S, mapLeaf(leaf(op.base, op.ang, op.len, op.w, op.curl, op.kind, op.sd), M), op.pal, op.o);
-      const pts = op.pts.map(P2), w = Math.max(.35, op.w * k);
+      if (op.t === 'leaf') return fillLeaf(S, mapLeaf(leaf(op.base, op.ang, op.len, op.w * 1.15, op.curl, op.kind, op.sd), M), op.pal, op.o);   // (· 26) листки на 15 % ширші
+      const pts = op.pts.map(P2), w = Math.max(.8, op.w * k * 1.25);                                                            // (· 26) пагони товщі (мін. .8 од.) — не зникають на цеглі
       if (op.out) for (let q = 1; q < pts.length; q++) line(S, pts[q - 1], pts[q], OUT, w + .8);
       for (let q = 1; q < pts.length; q++) line(S, pts[q - 1], pts[q], op.col, w);
     };

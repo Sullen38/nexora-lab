@@ -312,13 +312,13 @@ def decor_side(L, sgn, C, R, verbose=True):
             y0 = fb(X) + (.6 if frm == 'edge' else 0.); y1 = min(y0 + ln, min(free_y(X + dx) for dx in (-w / 2 - 5, -w / 2, -w / 4, 0, w / 4, w / 2, w / 2 + 5)) - 1.5)
             a = W.a_of(X, MZ['P'] - 1.5); (x, z), _, _ = W.at(a, MZ['P'] - 1.5)
             hang(id, X, y0 - (1.2 if frm != 'edge' else 0.), y1, kind, w=w, inset=MZ['P'] - 1.5, frm=frm, anch=round(MZ['bot'], 2), **kw); out[-1]['on'] = mz(a)['id']; return out[-1]
-        for k, (X, kind, ln, w) in enumerate(((1426., 'pearls', 20, 11), (1587., 'tradescantia', 46, 11), (1466., 'wisteria', 14, 11), (1480., 'hoya', 16, 11))):
+        for k, (X, kind, ln, w) in enumerate(((1426., 'pearls', 30, 15), (1587., 'tradescantia', 46, 15), (1466., 'wisteria', 22, 13), (1480., 'hoya', 24, 13))):
             under(f'dc_mzv{k}', X, kind, w, ln, seed=41 + k)
         KK = []
-        for k, (X, ln, kind, pot) in enumerate(((1495., 25., 'asplenium', 'koke-pink'), (1508., 33., 'peperomia', 'koke-gold'), (1523., 30., 'fittonia', 'koke-cyan'))):
-            KK.append(under(f'dc_kk{k}', X, kind, 8.6, ln, frm='string', seed=131 + k, pot=pot_of(pot, 6., 6.)))
+        for k, (X, ln, kind, pot) in enumerate(((1495., 31., 'asplenium', 'koke-pink'), (1508., 39., 'peperomia', 'koke-gold'), (1523., 36., 'fittonia', 'koke-cyan'))):
+            KK.append(under(f'dc_kk{k}', X, kind, 11., ln, frm='string', seed=131 + k, pot=pot_of(pot, 7.5, 7.5)))   # (· 26) кокедами більші (8.6 -> 11)
         hangR = under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('macrame', 7, 7))
-        under('dc_hp3', 1567., 'columnea', 10., 44., frm='ring', seed=171, pot=dict(shape='ring', mat='chrome', band='pink', name='ring-neon', pw=5.5, ph=4))
+        under('dc_hp3', 1567., 'columnea', 12., 44., frm='ring', seed=171, pot=dict(shape='ring', mat='chrome', band='pink', name='ring-neon', pw=5.5, ph=4))
         # ---------- (· 5) СВІТЛО Й ПОВІТРЯ: конуси світла з точкових світильників на споді антресолі (кожні 23 од. уздовж фасаду, за
         # 4.6 од. від краю — як у objects/dc_paint.js) — униз, поки не дійдуть до поля над зонами (живе: objects/decor_live.js)
         cones = []
