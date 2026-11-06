@@ -166,6 +166,16 @@
       L.push({ work: { pose: 'hoverLook', dur: 1.1 } }, { fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.2 } });
       return L; } },
 
+    // ---------- (Декор стін · 41) ПРИБИРАННЯ ЛИСТЯ в саду за диваном: пожовклий або опалий листок — Nexi з кошиком, зриває,
+    // кладе в кошик; рослина випускає новий листок (planters.js prune). ----------
+    prune: { color: '#c8e85a', route() {
+      const PL = NX.planters, n = NX.nexi; if (!PL || !PL.pruneSpot) return [line('prune')];
+      const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.pruneSpot(), h = hoverAt(sp); let done = false;
+      return [{ walk: f }, { face: 1 }, line('prune'), { do: () => { n.basket = 0; } }, { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
+        { fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.6, tick: (dt, k) => { if (!done && k > .45) { done = true; n.basket = PL.prune(NX.time); for (let i = 0; i < 4; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 14, { ttl: .6 }); n.emote('happy', 1.5); } } } },
+        { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.prune.done') }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
+    } },
+
     feedFish: { color: '#3be8ff', route() {
       const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер ферма)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];

@@ -2970,3 +2970,9 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 - `decor_farm.js`: `DUP` (по 3 дублі на ярус → 30 лотків), масштаб рослин 21–33 од., `CRATE`/`PRODUCE`, `crateTick` (один раз на коло
   лотка), `drawCrate` (ящик під правою шахтою, плоди купкою, індикатор «повний»), `NX.decorFarm.crateCount / takeCrate`.
 - `activities.js` harvest: наприкінці `takeCrate()`. Перевірки: shot.js теплиця / harvest, телефон — чисто.
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 41: життя листя, гекон, гроу-лампа, роса
+
+- `planters.js`: якорі `young/old` → `youngA/oldA`; `LEAFY`, `FALLEN`, `LIFE`; `youngLeaf`, `oldLeaf`, `lifeTick`, `drawLife`; `GK`/`GECKO`/
+  `drawGecko`; `drawGrowLamp` + рожевий градієнт на героях уночі; `drawDew`; API `needsPrune / pruneSpot / prune`, `water` → young.
+- `activities.js`: `prune`; `nexi.js`: автожиття — `prune` при `needsPrune`; `i18n/*`: `act.prune`.
