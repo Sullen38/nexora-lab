@@ -20,7 +20,7 @@ NX.cards = (() => {
   const S = { on: false, mode: 'grid', id: null, t0: 0, from: 'grid', flip: {}, hero: null, boxes: [], tapN: 0 };
   const P = () => NX.px, A = () => NX.guestArt, NEON = ['#ff4fd8', '#3be8ff', '#ffe27a', '#3bff8a', '#ff7a2a', '#b48aff'];
   const R = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
-  const COLS = { babaYaga: '#9ad83a', snowWhite: '#ff5a7a', cheshire: '#c88aff', redHood: '#ff4a4a', whiteRabbit: '#9af6ff', kolobok: '#ffd23a', pinocchio: '#ff9a3a', pussBoots: '#ffb05a', quixote: '#c8c8e0', sherlock: '#8ab4ff', robinHood: '#5ad86a', mavka: '#5ae0a0', firebird: '#ffb02a', stNicholas: '#ff6a6a', cinderella: '#7ac8ff', merlin: '#b48aff', genie: '#3be8ff', tinMan: '#b0c4d8', silver: '#ff8a5a', gorynych: '#5ae07a' };
+  const COLS = { babaYaga: '#9ad83a', snowWhite: '#ff5a7a', cheshire: '#c88aff', redHood: '#ff4a4a', whiteRabbit: '#9af6ff', kolobok: '#ffd23a', pinocchio: '#ff9a3a', pussBoots: '#ffb05a', quixote: '#c8c8e0', sherlock: '#8ab4ff', robinHood: '#5ad86a', mavka: '#5ae0a0', firebird: '#ffb02a', stNicholas: '#ff6a6a', cinderella: '#7ac8ff', merlin: '#b48aff', genie: '#3be8ff', tinMan: '#b0c4d8', snegurka: '#8ad8ff', gorynych: '#5ae07a' };
   const col = id => COLS[id] || '#ff4fd8';
   const hexA = (h, a) => h + Math.round(a * 255).toString(16).padStart(2, '0');
 

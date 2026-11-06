@@ -31,7 +31,7 @@
  * ========================================================================== */
 NX.guests = (() => {
   const IDS = ['babaYaga', 'snowWhite', 'cheshire', 'redHood', 'whiteRabbit', 'kolobok', 'pinocchio', 'pussBoots', 'quixote', 'sherlock',
-    'robinHood', 'mavka', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'silver', 'gorynych'];
+    'robinHood', 'mavka', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'snegurka', 'gorynych'];
   const MAX = 3, S = { list: [], bag: [], last: null, next: 25, props: [], fx: [], on: true };
   // ---------- КОЛЕКЦІЯ (хто вже спійманий тапом) — у цьому браузері ----------
   const KEY = 'nx.guests'; let COL = []; try { COL = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).filter(id => IDS.includes(id)); } catch (e) {}
@@ -111,8 +111,8 @@ NX.guests = (() => {
       { until: () => !g.helped || (!NX.nexi.cur && !NX.nexi.queue.length), max: 7, pose: 'rust' },
       { act: 'rust', dur: 1.2, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('bubble', g.x - g.dir * 6, g.y - 34 + i * 3, { col: '#ffd27a' }); if (g.helped) NX.nexi.emote('happy', 2); } },
       { act: 'cheer', dur: 1.6 }, { say: 1 }] },
-    silver: { steps: g => [{ go: anyPt() }, { act: 'dig', dur: 3, tick: dust(g) }, { do: () => { nexiRe(g, 'surprise', 2.2)(); g.carry = { type: 'chest', x: g.x + g.dir * 18, y: g.y + 1, until: Infinity }; S.props.push(g.carry); } },
-      { say: 0 }, { act: 'cheer', dur: 1.2 }, { say: 'p' }, { do: () => { if (g.carry) g.carry.follow = g; } }] },
+    snegurka: { steps: g => [{ go: free(NX.objects.rug.home[0] + (rnd() - .5) * 200, NX.objects.rug.home[1]) }, { say: 0 }, { act: 'frost', dur: 2.6, start: nexiRe(g, 'surprise', 2.6), tick: () => rnd() < .35 && NX.fx.emit('spark', g.x + g.dir * (16 + rnd() * 30), g.y - 20 - rnd() * 24, { col: '#ffffff' }) },
+      { act: 'stand', dur: .8 }, { say: 1 }, { go: free(NX.cfg.SOFA.x - 40, NX.cfg.SOFA.y + 70) }, { act: 'cheer', dur: 1.4, tick: () => rnd() < .2 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 30 - rnd() * 20, { col: '#bfe6ff' }) }] },   // Снігуронька: до килима, дмухає снігом на Nexi (здивований), до дивана
     gorynych: { steps: g => [{ go: anyPt() }, { act: 'stand', dur: 1 }, { act: 'sneeze', dur: 1.3, start: () => { for (let i = 0; i < 10; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); nexiRe(g, 'surprise', 2)(); } }, { say: 0 },
       { do: () => { const c = NX.cat; if (Math.abs(c.x - g.x) < 260 && c.alt === 0 && c.free()) { c.grr(1.6); c.look(3.6); c.goTo(...free(c.x + (c.x > g.x ? 160 : -160), c.y + 20), () => c.set('sit', 2), null, true); } } }, { act: 'stand', dur: .8 }] },   // сердито тікає
   };
@@ -157,7 +157,7 @@ NX.guests = (() => {
     merlin: g => [{ act: 'cast', dur: 1.6, tick: () => rnd() < .4 && NX.fx.emit('spark', g.x + g.dir * 14 + (rnd() - .5) * 20, g.y - 60 - rnd() * 20, { col: rnd() < .5 ? '#9af6ff' : '#e2c4ff', vy: 20 }) }],
     genie: g => [{ act: 'cast', dur: 1.5, alt: g.alt, start: () => sparks(g, 10, () => rnd() < .5 ? '#ffe27a' : '#d4b8ff', 60) }],
     tinMan: g => [{ act: 'rust', dur: 1.4, start: () => { for (let i = 0; i < 4; i++) NX.fx.emit('bubble', g.x - g.dir * 6, g.y - 34 + i * 3, { col: '#ffd27a' }); } }, { act: 'cheer', dur: .8 }],
-    silver: g => [{ act: 'dig', dur: 1.6, tick: dust(g) }],
+    snegurka: g => [{ act: 'frost', dur: 1.4, tick: () => rnd() < .4 && NX.fx.emit('spark', g.x + g.dir * (16 + rnd() * 24), g.y - 24 - rnd() * 16, { col: '#ffffff' }) }],
     gorynych: g => [{ act: 'sneeze', dur: 1.2, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }],
   };
   function tap(g) {

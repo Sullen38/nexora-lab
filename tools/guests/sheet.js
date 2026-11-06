@@ -15,7 +15,7 @@ const POSES = {   // пози сценки кожного (SCENES / TAP у guest
   babaYaga: ['sweep', 'ride'], snowWhite: ['search', 'cheer'], cheshire: ['sit'], redHood: ['give', 'cheer'], whiteRabbit: ['watch', 'run'],
   kolobok: ['roll'], pinocchio: [['stand', { nose: 9 }], 'cheer'], pussBoots: ['bow'], quixote: ['charge', 'fall'], sherlock: ['inspect'],
   robinHood: ['aim', 'cheer'], firebird: ['fly'], stNicholas: ['give', 'cheer'], cinderella: ['twirl', ['stand', { lostShoe: 1 }]],
-  merlin: ['cast'], genie: ['float', 'cast'], tinMan: ['rust', 'cheer'], silver: ['dig', 'cheer'], gorynych: ['sneeze'], dwarf: ['cheer'] };
+  merlin: ['cast'], genie: ['float', 'cast'], tinMan: ['rust', 'cheer'], snegurka: ['frost', 'cheer'], gorynych: ['sneeze'], dwarf: ['cheer'] };
 (async () => {
   fs.mkdirSync(dir, { recursive: true });
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}).catch(() => chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }));
