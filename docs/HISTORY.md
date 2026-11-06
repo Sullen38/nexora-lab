@@ -2940,3 +2940,10 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 **Зроблено:** `camera.js hold(dur)` — поки Nexi тане (0,25 с), камера стоїть; `glide` вмикається завжди (і коли їхати нікуди — просто
 тримає). Перевірка: тап по зоні СКІНИ й AI-центру після гортання — камера нерухома весь телепорт; з доку без гортання — плавно їде
 з кометою; `roam.js` — nbad 0.
+## Чат «декор стін · 3» 06.11 — Декор стін · 39: висячий сад над вікном
+
+> Власник: «Давай на твій розсуд».
+
+- `planters.js`: `RAIL`, `HOOK_Y`, `HANG` (chlorophytum 686, scindapsus 738, tillandsia 828, sedum 866), `DRAW._pot / chlorophytum /
+  scindapsus / tillandsia / sedum`, `spriteOf` — основа для `p.hang` у верхній точці, `drawHanging` (рейка, LED, гачки, гойдання від
+  гачка), `NX.planters.tapHang`, `PL = HEROES ∪ HANG`. `decor_live.js`: `tapHang` перед `objectAt`. `i18n/*`: 4 назви, латина.

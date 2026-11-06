@@ -27,8 +27,16 @@
     { kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
     { kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
   ];
+  // (· 39) висячий сад над вікном: гачок на стельовій рейці (y HOOK_Y), рослина звисає вниз; x — центр, w/h — од.
+  const RAIL = { x0: 662, x1: 892, y: 1 }, HOOK_Y = 4;
+  const HANG = [
+    { kind: 'chlorophytum', x: 686, w: 52, h: 84, seed: 31, hang: 1 },
+    { kind: 'scindapsus', x: 738, w: 38, h: 108, seed: 32, hang: 1 },
+    { kind: 'tillandsia', x: 828, w: 34, h: 72, seed: 33, hang: 1 },
+    { kind: 'sedum', x: 866, w: 30, h: 94, seed: 34, hang: 1 },
+  ];
   // ---------- палітри ----------
-  const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0' };
+  const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0', silver: '#b8c8d8', sage: '#7aa890', dusty: '#6a9a98', gray: '#98ac9c', grayD: '#5a7064', moss: '#3a6a30' };
   const HEX = Object.values(PAL).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
   const FLOWERS = ['saintpaulia', 'kalanchoe', 'anthurium', 'viola', 'primula'], STAGES = 4, PERIOD = 170;              // цвітіння: 4 стадії спрайта, цикл 170 с
   /** Бутон замість квітки на ранній стадії: зелена крапля з кольоровим кінчиком. Повертає true, якщо намалював бутон. */
@@ -148,6 +156,41 @@
       c.strokeStyle = PAL.out; c.lineWidth = 3.4; c.beginPath(); c.moveTo(cx, by - 4); c.lineTo(cx, by - H * .6); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.4; c.stroke();
       const m = .5 + .5 * st; for (const pass of [0, 1]) for (let f = 0; f < 6; f++) { const a = f / 6 * TAU + .3, fx = cx + Math.cos(a) * 6.5, fy = by - H * .66 + Math.sin(a) * 3.5; if (st < .3) { if (pass) bud(c, fx, fy, st, f % 2 ? PAL.pink : PAL.cream); continue; } for (let k = 0; k < 5; k++) { const b = k / 5 * TAU + f; c.fillStyle = pass ? (f % 2 ? PAL.pink : PAL.cream) : PAL.out; c.beginPath(); c.arc(fx + Math.cos(b) * 1.9 * m, fy + Math.sin(b) * 1.9 * m, 1.5 * m + (pass ? 0 : 1), 0, TAU); c.fill(); } if (pass) { c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.1, 0, TAU); c.fill(); pt(c, fx, fy, f % 2 ? PAL.pink : PAL.cream); } }
     },
+    // ---------- (· 39) висячі: малюються від ГОРИ (y 0 — гачок), кашпо зверху, рослина звисає ----------
+    /** Кашпо на тросах: конус/куля з неоновою смугою, 3 троси до точки гачка. Повертає y низу кашпо. */
+    _pot(c, W, seed, style) { const cx = W / 2, pw = Math.min(W * .5, 16), ph = 11, y0 = 10; c.lineCap = 'round';
+      c.strokeStyle = PAL.out; c.lineWidth = 2.2; for (const k of [-1, 0, 1]) { c.beginPath(); c.moveTo(cx, 0); c.lineTo(cx + k * pw * .42, y0 + 1); c.stroke(); } c.strokeStyle = PAL.silver; c.lineWidth = .9; for (const k of [-1, 0, 1]) { c.beginPath(); c.moveTo(cx, 0); c.lineTo(cx + k * pw * .42, y0 + 1); c.stroke(); }
+      c.fillStyle = PAL.out; c.beginPath(); c.moveTo(cx - pw / 2 - 1.5, y0 - 1); c.lineTo(cx + pw / 2 + 1.5, y0 - 1); c.lineTo(cx + pw * .33 + 1.5, y0 + ph + 1.5); c.lineTo(cx - pw * .33 - 1.5, y0 + ph + 1.5); c.closePath(); c.fill();
+      c.fillStyle = style === 'chrome' ? PAL.silver : '#1a2048'; c.beginPath(); c.moveTo(cx - pw / 2, y0); c.lineTo(cx + pw / 2, y0); c.lineTo(cx + pw * .33, y0 + ph); c.lineTo(cx - pw * .33, y0 + ph); c.closePath(); c.fill();
+      c.fillStyle = style === 'chrome' ? PAL.white : PAL.rimL; c.fillRect(cx - pw / 2 + 1, y0 + 2.5, pw - 2, 1.2); c.fillStyle = style === 'chrome' ? PAL.gray : '#2a3468'; c.fillRect(cx - pw * .36, y0 + ph - 3, pw * .72, 1);
+      return y0 + ph; },
+    /** Хлорофітум: розетка дугастих смугастих листків (зелений з кремовою серединою) з кашпо, 3 вуси з дитинками нижче. */
+    chlorophytum(c, W, H, seed) { const cx = W / 2, pb = DRAW._pot(c, W, seed, 'chrome'), py = pb - 4; c.lineCap = 'round';
+      const blade = (x0, y0, a, len, w, col, mid, pass) => { const pts = []; for (let i = 0; i <= 8; i++) { const t = i / 8, ang = a + t * t * 1.3 * Math.sign(Math.sin(a) || 1); pts.push([x0 + Math.sin(ang) * len * t, y0 - Math.cos(ang) * len * t + t * t * len * .25]); }
+        c.strokeStyle = pass ? col : PAL.out; c.lineWidth = pass ? w : w + 2.2; c.beginPath(); pts.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); if (pass && mid) { c.strokeStyle = mid; c.lineWidth = w * .35; c.stroke(); } };
+      const bl = []; for (let i = 0; i < 15; i++) { const a = (i / 14 - .5) * 3.6 + (hash(seed, i) - .5) * .2; bl.push({ a, len: 22 + 12 * hash(seed, i + 3), back: i % 2 }); } bl.sort((p, q) => q.back - p.back);
+      for (const pass of [0, 1]) for (const B of bl) blade(cx, py, B.a, B.len, 3, B.back ? PAL.d2 : PAL.d3, B.back ? null : PAL.cream, pass);
+      for (const [k, dx, len] of [[0, -.7, .95], [1, .15, 1], [2, .8, .85]]) { const ex = cx + dx * W * .42, ey = py + (H - py) * len - 10, mx = (cx + ex) / 2 + dx * 4; c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); c.moveTo(cx, py + 2); c.quadraticCurveTo(mx, py + (ey - py) * .4, ex, ey); c.stroke(); c.strokeStyle = PAL.cream; c.lineWidth = 1.1; c.stroke();   // вус
+        for (const pass of [0, 1]) for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3.2 + .1 * hash(seed, i + k); blade(ex, ey, a, 7 + 5 * hash(seed, i * 3 + k), 1.8, i % 2 ? PAL.d2 : PAL.d3, i % 2 ? null : PAL.cream, pass); }   // дитинка
+        c.fillStyle = PAL.white; c.fillRect(ex - 1, ey - 1, 2, 2); } },
+    /** Сциндапсус (атласний потос): 5 лоз із серцеподібними темно-зеленими листками в срібних плямах. */
+    scindapsus(c, W, H, seed) { const cx = W / 2, pb = DRAW._pot(c, W, seed, 'navy'); c.lineCap = 'round'; c.lineJoin = 'round';
+      const vines = []; for (let v = 0; v < 5; v++) { const dx = (v / 4 - .5) * W * .8, len = (H - pb) * (.55 + .45 * hash(seed, v)), pts = []; for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push([cx + dx * Math.min(1, t * 2.5) + Math.sin(t * 5 + v) * 2.5, pb - 2 + len * t]); } vines.push({ pts, back: v % 2 === 0, v }); }
+      vines.sort((p, q) => q.back - p.back);
+      for (const V of vines) { c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); V.pts.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); c.strokeStyle = V.back ? PAL.stem : PAL.stemHi; c.lineWidth = 1.2; c.stroke();
+        for (let i = 1; i <= 10; i += 1) { if (i % 2 !== V.v % 2) continue; const [x, y] = V.pts[i], sd = (i % 4 < 2 ? -1 : 1), R = 4.2 + 1.2 * hash(seed, i + V.v * 7), ang = sd * .9 + .3;
+          for (const pass of [0, 1]) { c.save(); c.translate(x + sd * 1.5, y + 1); c.rotate(ang); c.fillStyle = pass ? (V.back ? PAL.d1 : PAL.d2) : PAL.out; const e = pass ? 0 : 1.4; c.beginPath(); c.moveTo(0, R + e); c.bezierCurveTo(-R * 1.1 - e, R * .3, -R * 1.1 - e, -R * .8 - e, 0, -R * .35); c.bezierCurveTo(R * 1.1 + e, -R * .8 - e, R * 1.1 + e, R * .3, 0, R + e); c.fill();
+            if (pass) { c.fillStyle = PAL.silver; for (let k = 0; k < 4; k++) { const a = hash(seed, i * 11 + k + V.v) * TAU, r = R * .55 * hash(seed, i + k * 5); c.beginPath(); c.arc(Math.cos(a) * r, Math.sin(a) * r * .8, 1 + .5 * hash(seed, k + i), 0, TAU); c.fill(); } } c.restore(); } } } },
+    /** Тіландсія вусата («іспанський мох»): без кашпо — моховий кулька на тросі, з якого звисають сіро-зелені кучеряві нитки. */
+    tillandsia(c, W, H, seed) { const cx = W / 2; c.lineCap = 'round';
+      c.strokeStyle = PAL.out; c.lineWidth = 2.2; c.beginPath(); c.moveTo(cx, 0); c.lineTo(cx, 10); c.stroke(); c.strokeStyle = PAL.silver; c.lineWidth = .9; c.stroke();
+      c.fillStyle = PAL.out; c.beginPath(); c.arc(cx, 16, 7.5, 0, TAU); c.fill(); c.fillStyle = PAL.moss; c.beginPath(); c.arc(cx, 16, 6, 0, TAU); c.fill(); c.fillStyle = PAL.d3; for (let k = 0; k < 7; k++) { const a = hash(seed, k) * TAU, r = 5 * hash(seed, k + 9); c.fillRect(cx + Math.cos(a) * r - .6, 16 + Math.sin(a) * r - .6, 1.2, 1.2); }
+      const st = []; for (let i = 0; i < 16; i++) { const dx = (i / 15 - .5) * W * .85, len = (H - 20) * (.45 + .55 * hash(seed, i + 2)), pts = []; for (let k = 0; k <= 12; k++) { const t = k / 12; pts.push([cx + dx * Math.min(1, t * 3) + Math.sin(t * 9 + i * 1.7) * 2.2 * (1 - t * .3), 18 + len * t]); } st.push({ pts, back: i % 3 !== 1 }); }
+      st.sort((p, q) => q.back - p.back); for (const pass of [0, 1]) for (const S of st) { c.strokeStyle = pass ? (S.back ? PAL.grayD : PAL.gray) : PAL.out; c.lineWidth = pass ? 1.3 : 3; c.beginPath(); S.pts.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); } },
+    /** Седум Моргана («ослячий хвіст»): 6 товстих джгутів із пухких сизо-зелених намистин. */
+    sedum(c, W, H, seed) { const cx = W / 2, pb = DRAW._pot(c, W, seed, 'navy');
+      const ropes = []; for (let v = 0; v < 6; v++) { const dx = (v / 5 - .5) * W * .7, len = (H - pb) * (.6 + .4 * hash(seed, v)); ropes.push({ dx, len, back: v % 2 === 0, v }); } ropes.sort((p, q) => q.back - p.back);
+      for (const pass of [0, 1]) for (const R of ropes) { const n = Math.floor(R.len / 2.6); for (let i = 0; i < n; i++) { const t = i / n, x = cx + R.dx * Math.min(1, t * 3) + Math.sin(t * 4 + R.v) * 1.5, y = pb - 2 + R.len * t, r = 2.1 - t * .5 + (i % 2) * .3; c.fillStyle = pass ? (R.back ? PAL.dusty : (i % 3 ? PAL.sage : PAL.d3)) : PAL.out; c.beginPath(); c.ellipse(x + (i % 2 ? 1 : -1) * .9, y, r + (pass ? 0 : 1.1), r * .8 + (pass ? 0 : 1.1), 0, 0, TAU); c.fill(); if (pass && !R.back && i % 3 === 0) { c.fillStyle = PAL.cream; c.fillRect(x + (i % 2 ? 1 : -1) * .9 - .6, y - .9, 1, .8); } } } },
     /** Цереус: ребристий стовп з двома бічними пагонами, ребра — світлі смуги, ареоли з колючками-крапками. */
     cereus(c, W, H, seed) {
       const cx = W / 2, by = H - 2, col = (x, y0, w, h, r) => { c.fillStyle = PAL.out; c.beginPath(); c.roundRect(x - w / 2 - 1.5, y0 - 1.5, w + 3, h + 3, r + 1.5); c.fill();
@@ -185,7 +228,7 @@
     pixelize(big); const im = c.getImageData(0, 0, big.width, big.height).data; let x0 = big.width, y0 = big.height, x1 = -1, y1 = -1;
     for (let y = 0; y < big.height; y++) for (let x = 0; x < big.width; x++) if (im[(y * big.width + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     if (x1 < 0) { x0 = y0 = 0; x1 = y1 = 1; } const cv = document.createElement('canvas'); cv.width = x1 - x0 + 1; cv.height = y1 - y0 + 1; cv.getContext('2d').drawImage(big, -x0, -y0);
-    cv.base = [(P + p.w / 2) * S - x0, (P + p.h) * S - y0]; cv.S = S; cv.pts = pts;                                        // точка основи (центр низу) у пікселях спрайта
+    cv.base = [(P + p.w / 2) * S - x0, (P + (p.hang ? 0 : p.h)) * S - y0]; cv.S = S; cv.pts = pts;                        // висячі: основа — точка гачка (центр верху)                                        // точка основи (центр низу) у пікселях спрайта
     return SPR[key] = cv;
   }
   const px = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
@@ -250,12 +293,22 @@
       c.globalAlpha = night; c.translate(x, y); if (Math.cos(a) < 0) c.scale(-1, 1); const k = Math.floor(t * 12) % 2 ? .6 : 1; c.drawImage(bug('moth'), -6.5 * k, -4, 13 * k, 7.8); }
     c.restore();
   }
+  /** (· 39) Стельова рейка з LED і гачками, висячі рослини: гойдаються від гачка (зсув низу), вночі LED ярче. */
+  function drawHanging(c, t, LK, night) {
+    const { x0, x1, y } = RAIL; px(c, x0, y, x1 - x0, 3, '#0c1026'); px(c, x0, y + 3, x1 - x0, .8, '#2a3468');
+    c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .6 + .4 * night; for (let x = x0 + 6; x < x1 - 4; x += 11) px(c, x, y + 1.2, 2, .8, Math.floor(x / 11 + t * 2) % 7 === 0 ? '#ffffff' : '#3be8ff'); c.restore();
+    for (const p of HANG) { const cv = spriteOf(p), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, by = cv.base[1] / S, sh = Math.sin(t * .55 + p.seed) * .022 + Math.sin(t * 1.7 + p.seed * 3) * .006;
+      px(c, p.x - 1.5, y + 2, 3, 3, '#0c1026'); px(c, p.x - .8, y + 3, 1.6, 2, PAL.silver);                                                             // гачок
+      c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, HOOK_Y); c.transform(1, 0, sh, 1, 0, 0); c.drawImage(cv, -bx, -by, w, h);
+      if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-bx, -by, w, h); } c.restore(); }
+  }
   let lastT = 0;
   NX.planters = {
-    JAR, HEROES, PL: HEROES, FLOWERS,
+    JAR, HEROES, HANG, RAIL, PL: HEROES.concat(HANG), FLOWERS,
     tap(x, y) { let best = null; for (const p of HEROES) { const top = TOP(); if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= top - p.h && y <= top) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } }
       if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; if (FLOWERS.includes(hit)) shed(best.p, NX.time, 3); return true; },
     get lastKind() { return hit; },
+    tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= HOOK_Y && y <= HOOK_Y + p.h) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; return true; },
     sprite: spriteOf,
     /** Полив (Nexi, activities.js jardin): вологість повна, бутони, що чекали, одразу йдуть у розкривання; квіти «кивають» пелюстками. */
     water(t = NX.time) { HUM.v = 1; HUM.drip = 0; for (const p of FL) { const u = ((t - p.t0) % PERIOD + PERIOD) % PERIOD / PERIOD; if (u < .15 || u >= .8) p.t0 = t - PERIOD * .15; shed(p, t, 2); } },
@@ -286,6 +339,7 @@
       drawPetals(c, t); drawVisitors(c, t, night);
       if (night > .05) for (let i = 0; i < 7; i++) { const ph = t * (.25 + .08 * (i % 3)) + i * 1.7, x = JAR.x0 + 14 + ((i * 37 + Math.sin(ph) * 22 + 400) % (JAR.x1 - JAR.x0 - 28)), y = top - 24 - (i % 4) * 16 + Math.sin(ph * 1.6) * 9, a = night * (.35 + .65 * Math.max(0, Math.sin(ph * 3 + i)));   // світлячки над жардиньєром уночі
         c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.fillStyle = '#c8ff6a'; c.fillRect(x, y, 1.4, 1.4); c.globalAlpha = a * .35; c.beginPath(); c.arc(x + .7, y + .7, 3.5, 0, TAU); c.fill(); c.restore(); }
+      drawHanging(c, t, LK, night);
     },
     /** Відблиск неону жардиньєра на спинці дивана (шар одразу після тіла дивана) — зв'язує рослини з кімнатою. */
     layers(t) { const SF = NX.cfg.SOFA || { y: 414, k: 1.13 }; return [{ y: SF.y - 24 + .5, draw: c => { const LK = NX.decorLight ? NX.decorLight.k(t) : 1, y0 = SF.y - 126 * SF.k + 2, x0 = Math.max(JAR.x0, 650), x1 = Math.min(JAR.x1, 900);

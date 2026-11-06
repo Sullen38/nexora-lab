@@ -437,8 +437,9 @@
   const inB = (x, y, b, pad = 0) => x >= b[0] - pad && x <= b[2] + pad && y >= b[1] - pad && y <= b[3] + pad;
   function tap(x, y) {
     let LPhit = null;                                                                   // (· 18) яку рослину зачепили (для довідника)
-    if (NX.input && NX.input.objectAt(x, y)) return false;
-    const t = NX.time; let hit = null;
+    const pre = NX.planters && NX.planters.tapHang && NX.planters.tapHang(x, y);                                   // (· 39) висячий сад над вікном — раніше за вікно
+    if (!pre && NX.input && NX.input.objectAt(x, y)) return false;
+    const t = NX.time; let hit = pre ? 'planter' : null;
     for (const B of HEX) { const { P } = basis(B), c0 = proj(P(0, B.dep * .2, (B.yt + B.yb) / 2)), r = B.w * .48 * (520 / (520 + P(0, 0, 0)[2])); if (Math.hypot(x - c0[0], y - c0[1]) < r) { TP.hex[B.id] = t; hit = 'hex'; break; } }
     if (!hit && NX.decor.droneAt) { const D = NX.decor.droneAt(t); if (Math.hypot(x - D.x, y - Math.max(10, D.y)) < 7) { TP.drone = t; hit = 'drone'; } }
     if (!hit) for (let v = 0; v < ROUTES.length; v++) { const B = butterflyAt(v, t); if (B && Math.hypot(x - B.x, y - B.y) < 6) { TP.fly[v].push(t); hit = 'fly'; break; } }
