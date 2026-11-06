@@ -74,7 +74,8 @@
   // ---------- лотки: три конвеєри від сівби (ліва шахта) до збору (права) ----------
   const X0 = SH + FARM.trayW / 2 + 1, X1 = T - SH - FARM.trayW / 2 - 1, RUN = X1 - X0, HID = 46;                           // HID — сховано в ліфті (од. шляху)
   const SPEED = [1.9, 1.5, 1.25], LOOP = RUN + HID;
-  const TR = []; ROWS.forEach((kinds, row) => kinds.forEach((kind, j) => TR.push({ kind, row, k: TR.length, off: j / kinds.length * LOOP + hash(row, 2) * 9, sway: hash(TR.length, 9) * TAU })));
+  const DUP = [['micro', 'basil', 'mint'], ['lettuce', 'strawberry', 'spinach'], ['tomato', 'chili', 'blueberry']];                 // (· 40) по 2 лотки найходовіших — конвеєри повніші (10 на ярус)
+  const TR = []; ROWS.forEach((kinds, row) => { const all = kinds.concat(DUP[row]); all.forEach((kind, j) => TR.push({ kind, row, k: TR.length, off: j / all.length * LOOP + hash(row, 2) * 9, sway: hash(TR.length, 9) * TAU })); });
   /** Де лоток у час t: { x, y (низ лотка), row, s — стадія, hide, sow — фаза сівби (0..1), harv — фаза збору (0..1) }. */
   function trayAt(tr, t) {
     const p = (((tr.off + t * SPEED[tr.row]) % LOOP) + LOOP) % LOOP, y = FARM.rowY(H, tr.row);
@@ -88,7 +89,7 @@
     quadF(fx, [[x - w / 2 + 1, y - hh], [x + w / 2 - 1, y - hh], [x + w / 2 - 1.2, y - hh + 1.2], [x - w / 2 + 1.2, y - hh + 1.2]], '#5a3a22', e, MID);   // субстрат
     quadF(fx, [[x - w / 2, y - hh], [x + w / 2, y - hh], [x + w / 2, y - hh + .45], [x - w / 2, y - hh + .45]], '#7a8a9a', e, MID);
     quadF(fx, [[x - w / 2 + 2, y - .9], [x + w / 2 - 2, y - .9], [x + w / 2 - 2.2, y - .4], [x - w / 2 + 2.2, y - .4]], '#3bff8a', e * .8, MID);   // смужка-індикатор лотка
-    const sp = plantSpr(tr.kind, A.s), p = S(x, y - hh + .7, MID), k = kAt(x, y, MID), sc = (18 + 10 * Math.min(1, A.s + .25)) * k / 32;   // рослина: ширина 18–28 од.
+    const sp = plantSpr(tr.kind, A.s), p = S(x, y - hh + .7, MID), k = kAt(x, y, MID), sc = (21 + 12 * Math.min(1, A.s + .25)) * k / 32;   // рослина: ширина 21–33 од. (· 40: ×1.2)
     const boost = TAP && Math.abs(TAP.fx - x) < 34 && t - TAP.t0 < 1.6 ? 1 - (t - TAP.t0) / 1.6 : 0, sw = Math.sin(t * 1.7 + tr.sway) * .03 + boost * Math.sin(t * 22) * .12;
     fx.save(); fx.globalAlpha = e; fx.translate(p[0], p[1]); fx.rotate(sw); fx.drawImage(sp.cv, -16 * sc, -29 * sc, 32 * sc, 30 * sc); fx.restore();
     return A;
@@ -158,9 +159,24 @@
       quadF(fx, [[cx - w / 2 + 2, cy + h / 2 - 3], [cx + w / 2 - 2, cy + h / 2 - 3], [cx + w / 2 - 2.2, cy + h / 2 - 2], [cx - w / 2 + 2.2, cy + h / 2 - 2]], dn > 0 ? '#6a8a3a' : '#5a3a22', 1, MID + 2);
       fx.fillStyle = Math.floor(t * 3) % 2 ? '#3bff8a' : '#14602e'; fx.fillRect(a[0] + 1 * k, a[1] + 1 * k, .8 * k, .8 * k); fx.restore(); }
   }
+  // ---------- (· 40) ВИДИМИЙ ВРОЖАЙ: ящик під правою шахтою — зібране з лотків складається купкою; Nexi забирає (harvest) ----------
+  const CRATE = { items: [], max: 14, seen: new Set() }, PRODUCE = { micro: '#7adf5a', mint: '#4ac84a', basil: '#2a8a3a', radish: '#e83a7a', pea: '#5ad84a', dill: '#c8f080', parsley: '#5ad85a', lettuce: '#9aff6a', kale: '#7a3aa8', carrot: '#ff8a2a', strawberry: '#ff3a4a', cucumber: '#2a9a3a', spinach: '#1a7a3a', arugula: '#3a9a4a', tomato: '#ff4a2a', chili: '#ff3a2a', sunflower: '#ffd23a', blueberry: '#3a4ad8', eggplant: '#5a2a7a', melon: '#4ab84a', lavender: '#b08ae8' };
+  function crateTick(t) { for (const tr of TR) { const hv = trayAt(tr, t).harv, key = tr.k + ':' + Math.floor((tr.off + t * SPEED[tr.row]) / LOOP);   // один раз на коло
+      if (hv >= .5 && !CRATE.seen.has(key)) { CRATE.seen.add(key); if (CRATE.seen.size > 200) CRATE.seen.clear(); if (CRATE.items.length < CRATE.max) CRATE.items.push({ kind: tr.kind, t0: t, sd: hash(tr.k, CRATE.items.length) }); } } }
+  function drawCrate(fx, t) {
+    const cx = T - SH / 2, cy = H - 1, w = SH - 2, h = 7.5, e = 1, z = MID + 2;
+    quadF(fx, [[cx - w / 2, cy - h], [cx + w / 2, cy - h], [cx + w / 2, cy], [cx - w / 2, cy]], '#3a2a1a', e, z); quadF(fx, [[cx - w / 2 + .6, cy - h + .6], [cx + w / 2 - .6, cy - h + .6], [cx + w / 2 - .6, cy - .6], [cx - w / 2 + .6, cy - .6]], '#1a1208', e, z);   // ящик
+    for (const yy of [cy - h + 2, cy - 2]) quadF(fx, [[cx - w / 2, yy], [cx + w / 2, yy], [cx + w / 2, yy + .5], [cx - w / 2, yy + .5]], '#6a4a2a', e, z);
+    CRATE.items.forEach((it, i) => { const col = i % 4, row = Math.floor(i / 4), x = cx - w / 2 + 1.6 + col * (w - 3.2) / 3 + (it.sd - .5) * .8, y = cy - 1.6 - row * 1.9, pop = Math.min(1, (t - it.t0) / .4), r = (1.3 + .1 * (i % 3)) * pop;
+      const p = S(x, y, z), k = kAt(x, y, z); fx.fillStyle = PRODUCE[it.kind] || '#8aff8a'; fx.beginPath(); fx.arc(p[0], p[1], r * k, 0, TAU); fx.fill(); fx.fillStyle = 'rgba(255,255,255,.55)'; fx.fillRect(p[0] - r * k * .5, p[1] - r * k * .6, .6 * k, .6 * k); });
+    if (CRATE.items.length >= CRATE.max) { const p = S(cx, cy - h - 2, z), k = kAt(cx, cy, z); fx.fillStyle = Math.floor(t * 2) % 2 ? '#ffd23a' : '#7a5a10'; fx.fillRect(p[0] - .7 * k, p[1] - .7 * k, 1.4 * k, 1.4 * k); }   // повний — блимає
+  }
   NX.decorFarm = {
+    /** (· 40) Ящик зібраного: скільки лежить; Nexi забирає все (activities.js harvest) — повертає кількість. */
+    crateCount() { return CRATE.items.length; },
+    takeCrate() { const n = CRATE.items.length; CRATE.items.length = 0; return n; },
     /** Кадр теплиці на полотно fx (координати кімнати; маску нутра без рами накладає objects/decor.js). */
-    draw(fx, A, t) { void A; fx.save(); fx.imageSmoothingEnabled = true; lampsLive(fx, t); liftsLive(fx, t);
+    draw(fx, A, t) { void A; fx.save(); fx.imageSmoothingEnabled = true; lampsLive(fx, t); crateTick(t); drawCrate(fx, t); liftsLive(fx, t);
       fx.save(); fx.beginPath(); [[SH, -2], [T - SH, -2], [T - SH, H + 2], [SH, H + 2]].forEach(([x, y], k) => { const p = S(x, y, MID); k ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); }); fx.closePath(); fx.clip();   // лотки — лише між шахтами
       for (let row = 0; row < FARM.tiers; row++) for (const tr of TR) if (tr.row === row) { const a = drawTray(fx, tr, t); stationFx(fx, a, t, tr); }
       drawBot(fx, t); drawBees(fx, t); fx.restore(); mistLive(fx, t); fx.restore(); },

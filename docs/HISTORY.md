@@ -2947,3 +2947,9 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 - `planters.js`: `RAIL`, `HOOK_Y`, `HANG` (chlorophytum 686, scindapsus 738, tillandsia 828, sedum 866), `DRAW._pot / chlorophytum /
   scindapsus / tillandsia / sedum`, `spriteOf` — основа для `p.hang` у верхній точці, `drawHanging` (рейка, LED, гачки, гойдання від
   гачка), `NX.planters.tapHang`, `PL = HEROES ∪ HANG`. `decor_live.js`: `tapHang` перед `objectAt`. `i18n/*`: 4 назви, латина.
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 40: ферма повніша, рослини більші, ящик зібраного
+
+- `decor_farm.js`: `DUP` (по 3 дублі на ярус → 30 лотків), масштаб рослин 21–33 од., `CRATE`/`PRODUCE`, `crateTick` (один раз на коло
+  лотка), `drawCrate` (ящик під правою шахтою, плоди купкою, індикатор «повний»), `NX.decorFarm.crateCount / takeCrate`.
+- `activities.js` harvest: наприкінці `takeCrate()`. Перевірки: shot.js теплиця / harvest, телефон — чисто.

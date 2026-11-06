@@ -189,7 +189,7 @@
           if (W.doneAt && NX.time > W.doneAt) W.dur = 0; };                                                                   // спіймав — крок завершено
         L.push({ do: () => { const h = goRow(); flyS.fly = h.p; flyS.dy = h.dy; faceS.face = h.d; } }, flyS, faceS, { work: W });
       }
-      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.harvest.done') }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } }, { do: () => { n.basket = 0; } });
+      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.harvest.done') }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } }, { do: () => { n.basket = 0; if (F.takeCrate) F.takeCrate(); } });   // (· 40) забирає і ящик зібраного
       return L; } },
 
     // ---------- (Декор стін · 19, · 21) ІНВЕНТАРИЗАЦІЯ: на ранці підлітає до рослин на ближчій стіні (objects/decor_guide.js: врятовані види)
