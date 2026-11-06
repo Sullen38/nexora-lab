@@ -115,7 +115,7 @@ NX.i18n.add('nl', {
     taken: 'Deze look staat al op kaart {no} ({name}) — dragen mag, een kaart ermee niet', mine: 'Jouw kaart {no} · NFT 1/1',
     card: 'KAART {no} · {price}', cardTaken: 'LOOK STAAT AL OP KAART {no}', cardMine: 'JOUW KAART {no}', takenToast: 'VERANDER MINSTENS ÉÉN DING EN DE KAART IS VAN JOU',
     cardWith: 'Kaart {no} met de look "{name}"', cardOwn: 'Kaart {no} met jouw eigen look', perkNo: 'Nummer {no} — de volgende op rij (vastgelegd bij betaling)',
-    price: '€\u00a0{v}', title: 'NEXI-KAART', yours: 'JOUW',
+    price: '€\u00a0{v}', title: 'NEXI-KAART', yours: 'JOUW', namesOn: 'NAMEN OP KAART: JA', namesOff: 'NAMEN OP KAART: NEE',
     perks: ['Een kaart met nummer — NFT 1/1 op Base, in je wallet (aangemaakt met je e-mail)', 'De look op de kaart is alleen van jou: geen tweede kaart krijgt dezelfde look', 'Je kunt elke look dragen, ook zonder kaart', 'Doorverkoopbaar; één kaart per persoon'],
     soon: 'VERKOOP BINNENKORT', soonNote: 'Betalen met kaart komt in de volgende stap — dan wordt kaart {no} jouw NFT 1/1.', haveOne: 'JE HEBT AL KAART {no}', wear: 'DRAGEN',
     copy: 'CODE KOPIËREN', copied: 'CODE GEKOPIEERD', owner: 'Eigenaar: {name}', since: 'sinds {date}', founder: 'Oprichter', you: 'JIJ', none: 'Nog geen eigenaren — wees de eerste!', demoName: 'Voorbeeld {n}',

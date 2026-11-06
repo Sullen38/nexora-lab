@@ -115,7 +115,7 @@ NX.i18n.add('pl', {
     taken: 'Ten wygląd jest już na karcie {no} ({name}) — nosić można, karty z nim — nie', mine: 'Twoja karta {no} · NFT 1/1',
     card: 'KARTA {no} · {price}', cardTaken: 'WYGLĄD JUŻ NA KARCIE {no}', cardMine: 'TWOJA KARTA {no}', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ — I KARTA BĘDZIE TWOJA',
     cardWith: 'Karta {no} z wyglądem „{name}”', cardOwn: 'Karta {no} z twoim wyglądem', perkNo: 'Numer {no} — następny w kolejce (rezerwowany przy płatności)',
-    price: '{v}\u00a0€', title: 'KARTA NEXI', yours: 'TWOJA',
+    price: '{v}\u00a0€', title: 'KARTA NEXI', yours: 'TWOJA', namesOn: 'NAZWY NA KARCIE: TAK', namesOff: 'NAZWY NA KARCIE: NIE',
     perks: ['Karta z numerem — NFT 1/1 w sieci Base, w twoim portfelu (tworzonym na e-mail)', 'Wygląd na karcie jest tylko twój: drugiej karty z takim samym wyglądem nie będzie', 'Nosić dowolny wygląd można też bez karty', 'Można odsprzedać; jedna karta na osobę'],
     soon: 'SPRZEDAŻ WKRÓTCE', soonNote: 'Płatności kartą podłączymy w następnym kroku — wtedy karta {no} stanie się twoim NFT 1/1.', haveOne: 'MASZ JUŻ KARTĘ {no}', wear: 'ZAŁÓŻ',
     copy: 'KOPIUJ KOD', copied: 'KOD SKOPIOWANY', owner: 'Właściciel: {name}', since: 'od {date}', founder: 'Założyciel', you: 'TY', none: 'Na razie brak właścicieli — bądź pierwszy!', demoName: 'Przykład {n}',

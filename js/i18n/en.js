@@ -115,7 +115,7 @@ NX.i18n.add('en', {
     taken: 'This look is already on card {no} ({name}) — you can wear it, but not card it', mine: 'Your card {no} · NFT 1/1',
     card: 'CARD {no} · {price}', cardTaken: 'LOOK ALREADY ON CARD {no}', cardMine: 'YOUR CARD {no}', takenToast: 'CHANGE AT LEAST ONE THING AND THE CARD IS YOURS',
     cardWith: 'Card {no} with the “{name}” look', cardOwn: 'Card {no} with your own look', perkNo: 'Number {no} — next in line (locked in at payment)',
-    price: '€{v}', title: 'NEXI CARD', yours: 'YOUR',
+    price: '€{v}', title: 'NEXI CARD', yours: 'YOUR', namesOn: 'NAMES ON CARD: YES', namesOff: 'NAMES ON CARD: NO',
     perks: ['A numbered card — NFT 1/1 on Base, in your wallet (created from your email)', 'The look on the card is yours alone: no second card will carry the same look', 'You can wear any look without a card', 'Resellable; one card per person'],
     soon: 'SALE OPENS SOON', soonNote: 'Card payments come in the next step — then card {no} becomes your NFT 1/1.', haveOne: 'YOU ALREADY OWN CARD {no}', wear: 'WEAR',
     copy: 'COPY CODE', copied: 'CODE COPIED', owner: 'Owner: {name}', since: 'since {date}', founder: 'Founder', you: 'YOU', none: 'No owners yet — be the first!', demoName: 'Example {n}',

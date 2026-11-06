@@ -9,15 +9,18 @@
  * золотий відблиск оббігає рамку (на кутиках — іскра); по табличці з номером проходить блиск. Цикл — LOOP = 4 с, і все в ньому
  * кратне циклу (поза «стоїть» і кліпання Nexi — теж 4 с), тож кадри зациклюються без шва: це й майбутня анімація NFT
  * (docs/NFT.md, крок 4). Випадковості немає — кадр залежить лише від образу, номера й часу.
- * Написи — лише назви й коди, які не перекладаються (NEXORA, 1/1, NEXI #001, код NX-…, BASE): це майбутня КАРТИНКА NFT —
+ * НАЗВИ СКІНА Й РЕЛІКВІЇ (власник, 06.11; крок С2): на табличці — назва скіна (готовий — його, своє поєднання — назва кольорової
+ * теми) і під нею «+ назва реліквії», кожна своїм стилем напису (card_names.js: цукерковий, громовий, лазерний, золотий, лід…),
+ * лише англійською; назви можна прибрати за бажанням (o.names === false — табличка як була: лише NEXI #001). Код NX-… тоді в шапці.
+ * Написи — лише назви й коди, які не перекладаються (NEXORA, 1/1, NEXI #001, код NX-…, BASE, назви): це майбутня КАРТИНКА NFT —
  * вона не залежить від мови сайту й не має імені власника (NFT можна перепродати). Шрифт — піксельний 3×5 міста
  * (NX.ckit.glyph), тож картку можна однаково намалювати й на сервері.
- *   NX.nftCard(look, { no }, canvas?, t?) -> canvas (no — номер; немає — «#---»; t — секунди, за замовчуванням .5)
+ *   NX.nftCard(look, { no, names }, canvas?, t?) -> canvas (no — номер; немає — «#---»; names — чи писати назви (так, якщо не false); t — секунди, за замовчуванням .5)
  *   NX.nftCard.play(look, { no }, canvas) / stop() — жива картка в аркуші (ui/shop.js): ~12 кадрів/с, поки аркуш відкритий;
  *     «менше руху» в системі (prefers-reduced-motion) — один нерухомий кадр
  * ========================================================================== */
 NX.nftCard = (() => {
-  const W = 96, H = 128, S = 4, HOR = 90, LOOP = 4, TAU = Math.PI * 2;                 // розмір у пікселях арту, масштаб, обрій, цикл (с)
+  const W = 96, H = 128, S = 4, HOR0 = 90, LOOP = 4, TAU = Math.PI * 2;                 // розмір у пікселях арту, масштаб, обрій, цикл (с)
   const BAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const rgbOf = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const mixRGB = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
@@ -37,7 +40,7 @@ NX.nftCard = (() => {
     // небо: перелив зверху вниз (темно-синій -> колір теми -> ніч), 8-bit дизеринг Байєра
     const C = [rgbOf('#0a0d36'), mixRGB(acc, rgbOf('#140a3c'), .66), rgbOf('#07051e')], sky = new Uint8ClampedArray(W * H * 4);
     for (let y = 0; y < H; y++) for (let i = 0; i < W; i++) {
-      const f = Math.min(1.999, y / HOR * 1.25), b = Math.floor(f), on = (f - b) * 16 > BAY[(y & 3) * 4 + (i & 3)], c3 = on ? C[Math.min(2, b + 1)] : C[b], q = (y * W + i) * 4;
+      const f = Math.min(1.999, y / HOR0 * 1.25), b = Math.floor(f), on = (f - b) * 16 > BAY[(y & 3) * 4 + (i & 3)], c3 = on ? C[Math.min(2, b + 1)] : C[b], q = (y * W + i) * 4;
       sky[q] = c3[0]; sky[q + 1] = c3[1]; sky[q + 2] = c3[2]; sky[q + 3] = 255;
     }
     // зорі (свої в кожного образу): місце, яскравість, фаза й швидкість мерехтіння (ціле — разів за цикл)
@@ -48,6 +51,7 @@ NX.nftCard = (() => {
   function card(look, o = {}, cv, t = .5) {
     cv = cv || document.createElement('canvas'); if (cv.width !== W * S) { cv.width = W * S; cv.height = H * S; }
     const m = prep(look), x = art.getContext('2d'), ck = K(), acc = m.acc, tl = ((t % LOOP) + LOOP) % LOOP, u = tl / LOOP;   // u — фаза циклу 0..1
+    const NM = o.names === false ? null : NX.cardNames.names(look), lines = NM ? (NM.relic ? 2 : 1) : 0, HOR = lines === 2 ? 86 : HOR0;   // назви на табличці: з двома — обрій вище
     // 1) небо + сяйво за Nexi, що «дихає» (кільця дизерингу кольору теми)
     const im = x.createImageData(W, H), d = im.data; d.set(m.sky);
     const R = 36 + 3 * Math.sin(TAU * u * 2), G = 15 + 5 * wave(u, 2, .25);
@@ -92,17 +96,24 @@ NX.nftCard = (() => {
     const [hx2, hy2] = at(gp), near = CN.map(([cx, cy]) => Math.hypot(cx - hx2, cy - hy2)).reduce((a, b) => Math.min(a, b), 99);
     if (near < 7) { const c = CN.find(([cx, cy]) => Math.hypot(cx - hx2, cy - hy2) === near), k = 1 - near / 7; x.fillStyle = `rgba(255,255,255,${(.5 + .5 * k).toFixed(3)})`;
       x.fillRect(c[0] - 2, c[1], 5, 1); x.fillRect(c[0], c[1] - 2, 1, 5); if (k > .5) { x.fillRect(c[0] - 3, c[1], 7, 1); x.fillRect(c[0], c[1] - 3, 1, 7); } }
-    // 7) шапка: NEXORA ліворуч, 1/1 праворуч (іноді спалахує); риска кольору теми
-    ck.glyph(x, 'NEXORA', 8, 7, 1, '#7af4ff'); ck.glyph(x, '1/1', W - 8 - ck.glyphW('1/1'), 7, 1, u > .3 && u < .36 ? '#fff3c4' : '#ffc94d');
+    // 7) шапка: NEXORA ліворуч, код NX-… посередині, 1/1 праворуч (іноді спалахує); риска кольору теми
+    const code = NX.owners.code(look);
+    ck.glyph(x, 'NEXORA', 8, 7, 1, '#7af4ff'); ck.glyph(x, code, 36, 7, 1, '#9aa6e0');
+    ck.glyph(x, '1/1', W - 8 - ck.glyphW('1/1'), 7, 1, u > .3 && u < .36 ? '#fff3c4' : '#ffc94d');
     for (let i = 8; i < W - 8; i += 2) { x.fillStyle = css(acc); x.fillRect(i, 14, 1, 1); }
-    // 8) табличка: NEXI #001 (або #--- — ще не куплено), код і мережа BASE; по ній проходить блиск
-    x.fillStyle = 'rgba(5,3,20,.88)'; x.fillRect(7, 104, W - 14, 18); x.fillStyle = css(acc); x.fillRect(7, 104, W - 14, 1); x.fillStyle = 'rgba(255,201,77,.6)'; x.fillRect(7, 121, W - 14, 1);
+    // 8) табличка: назви скіна й реліквії (кожна своїм стилем; якщо не прибрано), NEXI #001 (або #--- — ще не куплено) і мережа BASE;
+    //    по табличці проходить блиск
+    const top = lines === 2 ? 94 : lines === 1 ? 102 : 104;
+    x.fillStyle = 'rgba(5,3,20,.88)'; x.fillRect(7, top, W - 14, 122 - top); x.fillStyle = css(acc); x.fillRect(7, top, W - 14, 1); x.fillStyle = 'rgba(255,201,77,.6)'; x.fillRect(7, 121, W - 14, 1);
     const title = 'NEXI ' + (o.no ? '#' + String(o.no).padStart(3, '0') : '#---');
-    ck.glyph(x, title, Math.round((W - ck.glyphW(title)) / 2), 107, 1, '#ffffff');
-    const code = NX.owners.code(look); ck.glyph(x, code, 10, 114, 1, '#9aa6e0');
+    if (NM) {
+      const CN2 = NX.cardNames, t1 = NM.skin.t; CN2.draw(x, t1, Math.round((W - CN2.width(t1)) / 2), top + 3, NM.skin.st, u);
+      if (NM.relic) { let t2 = '+ ' + NM.relic.t; if (CN2.width(t2) > W - 16) t2 = NM.relic.t; CN2.draw(x, t2, Math.round((W - CN2.width(t2)) / 2), top + 11, NM.relic.st, u); }
+      ck.glyph(x, title, 10, 115, 1, '#ffffff');
+    } else ck.glyph(x, title, Math.round((W - ck.glyphW(title)) / 2), 107, 1, '#ffffff');
     const bw = ck.glyphW('BASE') + 4; x.fillStyle = '#0052ff'; x.fillRect(W - 10 - bw, 113, bw, 7); ck.glyph(x, 'BASE', W - 8 - bw, 114, 1, '#ffffff');
     if (u > .06 && u < .3) { const sx = Math.round(-4 + (u - .06) / .24 * (W + 8)); x.fillStyle = 'rgba(255,255,255,.28)';
-      for (let y = 105; y < 121; y++) { const xx = sx + Math.round((121 - y) * .5); if (xx >= 7 && xx < W - 8) x.fillRect(xx, y, 2, 1); } }
+      for (let y = top + 1; y < 121; y++) { const xx = sx + Math.round((121 - y) * .5); if (xx >= 7 && xx < W - 8) x.fillRect(xx, y, 2, 1); } }
     // ×4 у полотно картки (без розмиття)
     const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; c.clearRect(0, 0, cv.width, cv.height); c.drawImage(art, 0, 0, W * S, H * S);
     return cv;

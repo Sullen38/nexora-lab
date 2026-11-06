@@ -125,6 +125,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 .shbuy .buy:disabled{background:#3a3218;color:#d8c080;cursor:default}
 .shbuy .buy.wear{background:var(--cyan);color:#041030}
 .shnote{color:var(--mute);font:500 11px/1.4 var(--f-b)}
+.shnames{display:block;margin:0 auto;background:#0a1236;border:2px solid #1b2a66;color:var(--cyan);padding:8px 12px;font:400 7px var(--f-d);cursor:pointer}
+.shnames.off{color:var(--mute)}
+.shnames[hidden]{display:none}
 .shcode{display:flex;align-items:center;gap:8px;border-top:2px solid #17235c;padding-top:10px}
 .shcode code{flex:1;min-width:0;font:400 10px/1.4 var(--f-m);color:var(--mute);word-break:break-all;user-select:all;-webkit-user-select:all}
 .shcode button{flex:none;background:#0a1236;border:2px solid #1b2a66;color:var(--cyan);padding:8px 10px;font:400 7px var(--f-d);cursor:pointer}

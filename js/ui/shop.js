@@ -8,12 +8,14 @@
  *                         що дає покупка, ціна, кнопка;
  *   show('view', owner) — картка з вкладки «Власники»: номер, власник і з якого часу; своя — «Вдягнути».
  * Правила й список власників — actors/nexi/owners.js, картка — actors/nexi/nft_card.js, план NFT — docs/NFT.md.
+ * НАЗВИ НА КАРТЦІ (06.11, С2): кнопка «НАЗВИ НА КАРТЦІ: ТАК / НІ» під карткою — за бажанням (localStorage nexi-card-names);
+ * на купленій картці — як було обрано при покупці (o.names). Самі назви й стилі — actors/nexi/card_names.js.
  * КРОК 1 (02.11): справжньої оплати немає — кнопка «ПРОДАЖ СКОРО» неактивна, нічого не списується й не резервується.
  * «Скопіювати код» — код і ключ образу (так власник проєкту надсилає свого Nexi: запишемо його #001 «Засновник»).
  * Крок 3 — тут з'явиться оплата: email (він же гаманець) -> checkout -> NFT. Усі тексти — словники (own.*), 4 мови.
  * ========================================================================== */
 NX.ui.shop = {
-  open: false, mode: null, look: null, owner: null,
+  open: false, mode: null, look: null, owner: null, names: true,
   $: id => document.getElementById(id),
   // з якої категорії словника брати назву частини (голова, спина й реліквія — це аксесуари skin.acc)
   CAT: { theme: 'theme', body: 'body', arms: 'arms', legs: 'legs', ant: 'ant', head: 'acc', back: 'acc', hand: 'acc' },
@@ -21,6 +23,8 @@ NX.ui.shop = {
     this.$('shx').onclick = () => this.hide();
     this.$('shcopy').onclick = () => this.copy();
     this.$('shbuy').onclick = () => this.act();
+    this.$('shnames').onclick = () => { this.names = !this.names; try { localStorage.setItem('nexi-card-names', this.names ? '1' : '0'); } catch (e) {} this.render(); };   // назви на картці — за бажанням
+    try { this.names = localStorage.getItem('nexi-card-names') !== '0'; } catch (e) { this.names = true; }
     this.relabel();
   },
   relabel() { this.$('shx').setAttribute('aria-label', NX.t('ui.close')); this.$('shcopy').textContent = NX.t('own.copy'); if (this.open) this.render(); },
@@ -32,7 +36,9 @@ NX.ui.shop = {
   render() {
     const O = NX.owners, L = this.look, o = this.owner, $ = this.$, buy = this.mode === 'buy', st = O.status(L), next = { no: O.nextNo() };
     $('shtitle').textContent = o ? (o.mine ? NX.t('own.yours') + ' ' : '') + 'NEXI ' + O.noText(o) : NX.t('own.title') + ' ' + O.noText(next);
-    NX.nftCard.play(L, { no: o ? o.no : next.no }, $('nftcv'));                           // жива картка: скін + номер (покупка — наступний за чергою)
+    const names = o ? o.names !== false : this.names;                                     // назви на картці: своя картка — як купили; покупка — вибір (кнопка нижче)
+    NX.nftCard.play(L, { no: o ? o.no : next.no, names }, $('nftcv'));                    // жива картка: образ + назви + номер (покупка — наступний за чергою)
+    const nb = $('shnames'); nb.hidden = !buy; nb.className = 'shnames' + (names ? '' : ' off'); nb.textContent = NX.t(names ? 'own.namesOn' : 'own.namesOff');
     $('shstat').textContent = o ? [NX.t('own.owner', { name: O.nameOf(o) + (o.founder ? ' · ' + NX.t('own.founder') : '') }), o.since ? NX.t('own.since', { date: O.dateText(o) }) : '', 'NFT 1/1 · Base'].filter(Boolean).join(' · ')
       : st.preset ? NX.t('own.cardWith', { no: O.noText(next), name: NX.t('skin.skin.' + st.preset) }) : NX.t('own.cardOwn', { no: O.noText(next) });
     const dl = $('shattr'); dl.innerHTML = '';                                          // атрибути — 8 частин образу (вони ж атрибути NFT)
