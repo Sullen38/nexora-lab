@@ -2859,3 +2859,12 @@ fps 50 у контейнері); `texts.js` — suspicious: [] у 4 мовах; 
 - `planters.js`: `HEROES` + areca 792/92×98, strelitzia 836/64×116, cereus 880/24×84; `DRAW.areca / strelitzia / cereus`; `PADU` 24; у
   `PAL` + bark, barkHi, spine, white, blue.
 - `i18n/*`: `floor.areca / strelitzia / cereus`, латина в uk. Перевірки: shot.js десктоп / телефон — помилок немає; тапи 4/4.
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 36: жардиньєр ×3 — нічого не різане, 6 рослин, глибина, ніч
+
+> Власник: «Прикольно, тільки деякі все одно обрізані — треба повноцінні. І покращуй ту зону — зроби краще в три рази».
+
+- `planters.js`: `spriteOf(p, kind)` — велике полотно (PADU 40), `pixelize`, обрізання до bbox, `cv.base`, `cv.S`; `HEROES` 6
+  (yucca 760 back, strelitzia 836 back, philodendron 722, areca 796, cereus 880, asplenium 756); `DRAW.yucca / asplenium / cereusBloom`;
+  drawBack: clip вище канта, shear-погойдування, серпанок `back`, нічна квітка цереуса + ореол, світлячки; `drawJar` — крапельна трубка.
+- `i18n/*`: `floor.asplenium`. Перевірки: shot.js день/вечір, телефон; тапи 6/6 з картками; консоль чиста.

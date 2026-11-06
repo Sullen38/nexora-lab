@@ -14,10 +14,12 @@
   const JAR = { x0: 662, x1: 892, y: FY + 4, h: 86, d: 10 };                                                          // високий короб: кант на y≈282 — над спинкою дивана (≈288)                                                          // жардиньєр: x, низ (підлога), висота, «глибина» верху
   // герої: x — центр на верхній кромці жардиньєра; w, h — од.; kind — вид (довідник floor.*)
   const HEROES = [
-    { kind: 'philodendron', x: 714, w: 110, h: 96, seed: 3 },
-    { kind: 'strelitzia', x: 836, w: 64, h: 116, seed: 5 },                                                               // задня, висока
-    { kind: 'areca', x: 792, w: 92, h: 98, seed: 7 },
-    { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },                                                                    // передній, вузький
+    { kind: 'yucca', x: 760, w: 60, h: 104, seed: 11, back: 1 },                                                         // задній шар: синюватий серпанок
+    { kind: 'strelitzia', x: 836, w: 64, h: 116, seed: 5, back: 1 },
+    { kind: 'philodendron', x: 722, w: 96, h: 92, seed: 3 },
+    { kind: 'areca', x: 796, w: 84, h: 94, seed: 7 },
+    { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },
+    { kind: 'asplenium', x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
   ];
   // ---------- палітри ----------
   const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0' };
@@ -82,6 +84,24 @@
       c.strokeStyle = PAL.out; c.lineWidth = 3.2; for (const [ang, l] of [[-1.2, 11], [-.95, 13], [-.7, 10]]) { c.beginPath(); c.moveTo(fx, fy + 6); c.lineTo(fx + Math.cos(ang) * l, fy + 6 + Math.sin(ang) * l); c.stroke(); }
       c.strokeStyle = PAL.white; c.lineWidth = 1.6; for (const [ang, l] of [[-1.2, 11], [-.95, 13], [-.7, 10]]) { c.beginPath(); c.moveTo(fx, fy + 6); c.lineTo(fx + Math.cos(ang) * l, fy + 6 + Math.sin(ang) * l); c.stroke(); }   // білі пелюстки
     },
+    /** Юка: грубий стовбур із рубцями й 2 голови — віяла з 22 гострих мечоподібних листків (задні темні, передні світлі зі смугою). */
+    yucca(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.fillStyle = PAL.out; c.fillRect(cx - 7, by - H * .5 - 2, 14, H * .5 + 2); c.fillStyle = PAL.bark; c.fillRect(cx - 5.5, by - H * .5, 11, H * .5); c.fillStyle = PAL.barkHi; for (let y = by - H * .48; y < by - 4; y += 5) c.fillRect(cx - 5.5 + (y % 10 < 5 ? 0 : 3), y, 4, 1.2);
+      for (const [hx, hy, R, n] of [[cx - 6, by - H * .5, H * .4, 22], [cx + 7, by - H * .62, H * .38, 20]]) { const bl = []; for (let i = 0; i < n; i++) { const a = (i / (n - 1) - .5) * 3.4 + (hash(seed, i + hx) - .5) * .12; bl.push({ a, len: R * (.72 + .28 * hash(seed, i * 7 + hx)), back: Math.abs(a) > 1.1 || i % 3 === 1 }); }
+        bl.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
+        for (const pass of [0, 1]) for (const B of bl) { const ex = hx + Math.sin(B.a) * B.len, ey = hy - Math.cos(B.a) * B.len, w = 4.2; c.beginPath(); c.moveTo(hx - Math.cos(B.a) * w / 2, hy - Math.sin(B.a) * w / 2); c.lineTo(ex, ey); c.lineTo(hx + Math.cos(B.a) * w / 2, hy + Math.sin(B.a) * w / 2); c.closePath();
+          if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 2.4; c.stroke(); c.fillStyle = PAL.out; c.fill(); } else { c.fillStyle = B.back ? PAL.d1 : PAL.d2; c.fill(); if (!B.back) { c.strokeStyle = PAL.d3; c.lineWidth = 1; c.beginPath(); c.moveTo(hx + Math.sin(B.a) * 4 - Math.cos(B.a) * .8, hy - Math.cos(B.a) * 4 - Math.sin(B.a) * .8); c.lineTo(ex - Math.cos(B.a) * .6, ey - Math.sin(B.a) * .6); c.stroke(); } } } }
+    },
+    /** Аспленіум (гніздовий папороть): низька розетка з 11 широких хвилястих листків із темною жилкою. */
+    asplenium(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
+      const ls = []; for (let i = 0; i < 11; i++) { const a = (i / 10 - .5) * 3 + (hash(seed, i) - .5) * .2; ls.push({ a, len: H * (.75 + .25 * hash(seed, i + 4)) * (1 - Math.abs(a) * .12), back: i % 2 === 0 }); }
+      ls.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
+      for (const pass of [0, 1]) for (const L of ls) { const dx = Math.sin(L.a), dy = -Math.cos(L.a), nx = Math.cos(L.a), ny = Math.sin(L.a), wd = L.len * .2; c.beginPath(); c.moveTo(cx, by - 3);
+        for (const sd of [-1, 1]) { const pts = []; for (let i = 1; i <= 8; i++) { const t = i / 8, w = wd * Math.sin(t * Math.PI * .9) * (1 + .18 * Math.sin(t * 14 + seed)); pts.push([cx + dx * L.len * t + nx * sd * w, by - 3 + dy * L.len * t + ny * sd * w]); } if (sd < 0) for (const q of pts) c.lineTo(q[0], q[1]); else for (const q of pts.reverse()) c.lineTo(q[0], q[1]); }
+        c.closePath(); if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 3; c.stroke(); c.fillStyle = PAL.out; c.fill(); } else { c.fillStyle = L.back ? PAL.d2 : PAL.d3; c.fill(); c.strokeStyle = L.back ? PAL.d0 : PAL.d1; c.lineWidth = 1.6; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(cx + dx * L.len * .92, by - 3 + dy * L.len * .92); c.stroke(); if (!L.back) { c.strokeStyle = PAL.hi; c.lineWidth = .8; c.beginPath(); c.moveTo(cx + dx * L.len * .3 + nx * 1.5, by - 3 + dy * L.len * .3 + ny * 1.5); c.lineTo(cx + dx * L.len * .85 + nx * 1.5, by - 3 + dy * L.len * .85 + ny * 1.5); c.stroke(); } } }
+    },
     /** Цереус: ребристий стовп з двома бічними пагонами, ребра — світлі смуги, ареоли з колючками-крапками. */
     cereus(c, W, H, seed) {
       const cx = W / 2, by = H - 2, col = (x, y0, w, h, r) => { c.fillStyle = PAL.out; c.beginPath(); c.roundRect(x - w / 2 - 1.5, y0 - 1.5, w + 3, h + 3, r + 1.5); c.fill();
@@ -90,6 +110,12 @@
         for (let i = 0; i < rb; i++) for (let y = y0 + 3; y < y0 + h - 2; y += 5) { c.fillStyle = PAL.spine; c.fillRect(x - w / 2 + i * rw + rw * .5 - .6, y + hash(seed, y + i) * 1.5, 1.2, .8); } };
       col(cx - 5, by - H * .55, 7, H * .55, 3.5); col(cx + 5, by - H * .68, 7, H * .68, 3.5); col(cx, by - H + 2, 9, H - 2, 4.5);
       c.fillStyle = PAL.out; c.fillRect(cx - 6, by - 4, 12, 4); c.fillStyle = PAL.bark; c.fillRect(cx - 5, by - 3, 10, 2);
+    },
+    /** Нічна квітка цереуса (окремий спрайт, малюється лише вночі): велика біла воронка з жовтою серединою на боці стовпа. */
+    cereusBloom(c, W, H) {
+      const cx = W / 2 - 6, cy = H * .3; c.lineCap = 'round'; c.strokeStyle = PAL.out; c.lineWidth = 3.5; c.beginPath(); c.moveTo(cx + 8, cy + 6); c.lineTo(cx + 2, cy + 2); c.stroke(); c.strokeStyle = PAL.d2; c.lineWidth = 1.6; c.stroke();
+      for (const pass of [0, 1]) for (let i = 0; i < 9; i++) { const a = Math.PI * .55 + (i / 8 - .5) * 2.6, l = 7 + (i % 2) * 2; c.strokeStyle = pass ? PAL.white : PAL.out; c.lineWidth = pass ? 2.2 : 4.2; c.beginPath(); c.moveTo(cx + 2, cy + 2); c.lineTo(cx + 2 + Math.cos(a) * l, cy + 2 + Math.sin(a) * l); c.stroke(); }
+      c.fillStyle = PAL.spine; c.beginPath(); c.arc(cx + 2, cy + 2, 1.8, 0, TAU); c.fill();
     },
   };
   // ---------- піксельний прохід: поріг альфи, палітра, рім з боку світла ----------
@@ -105,10 +131,15 @@
       if (upL && hash(x, y) < .85) { d[q] = RL[0]; d[q + 1] = RL[1]; d[q + 2] = RL[2]; } else if (upR && hash(x, y + 7) < .7) { d[q] = RR[0]; d[q + 1] = RR[1]; d[q + 2] = RR[2]; } }
     c.putImageData(im, 0, 0); return cv;
   }
-  const SPR = {}, PADU = 24;                                                                                      // запас полотна, щоб крайні лопаті не різалися
-  function spriteOf(p) {
-    if (SPR[p.kind]) return SPR[p.kind]; const S = 2, P = PADU, cv = document.createElement('canvas'); cv.width = (p.w + 2 * P) * S; cv.height = (p.h + P) * S; const c = cv.getContext('2d'); c.scale(S, S); c.translate(P, P); DRAW[p.kind](c, p.w, p.h, p.seed);
-    return SPR[p.kind] = pixelize(cv);
+  const SPR = {}, PADU = 40;                                                                                      // запас полотна, щоб крайні лопаті не різалися
+  /** Спрайт героя: малюємо на великому полотні, далі обрізаємо до вмісту (нічого не різане) і запам'ятовуємо, де в ньому точка основи. */
+  function spriteOf(p, kind = p.kind) {
+    if (SPR[kind]) return SPR[kind]; const S = 2, P = PADU, big = document.createElement('canvas'); big.width = (p.w + 2 * P) * S; big.height = (p.h + 2 * P) * S; const c = big.getContext('2d'); c.scale(S, S); c.translate(P, P); DRAW[kind](c, p.w, p.h, p.seed);
+    pixelize(big); const im = c.getImageData(0, 0, big.width, big.height).data; let x0 = big.width, y0 = big.height, x1 = -1, y1 = -1;
+    for (let y = 0; y < big.height; y++) for (let x = 0; x < big.width; x++) if (im[(y * big.width + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) { x0 = y0 = 0; x1 = y1 = 1; } const cv = document.createElement('canvas'); cv.width = x1 - x0 + 1; cv.height = y1 - y0 + 1; cv.getContext('2d').drawImage(big, -x0, -y0);
+    cv.base = [(P + p.w / 2) * S - x0, (P + p.h) * S - y0]; cv.S = S;                                                      // точка основи (центр низу) у пікселях спрайта
+    return SPR[kind] = cv;
   }
   const px = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
   /** Жардиньєр: довгий кібер-короб; видно верх (кант з неоном, ґрунт) над спинкою дивана. */
@@ -121,6 +152,7 @@
     for (let x = x0 + 3; x < x1 - 3; x += 2.3) if (hash(x, 1) > .55) px(c, x, top + 2.5 + hash(x, 2) * (d - 5), 1.2, .8, hash(x, 3) > .5 ? '#3a2a18' : '#1c1410');   // грудки ґрунту
     c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .85 * Math.min(1.3, LK); px(c, x0, top, w, .9, '#3be8ff'); px(c, x0, top + d - .8, w, .6, '#3be8ff');
     c.globalAlpha = .18 * LK; const g = c.createLinearGradient(0, top - 6, 0, top); g.addColorStop(0, 'rgba(59,232,255,0)'); g.addColorStop(1, 'rgba(59,232,255,1)'); c.fillStyle = g; c.fillRect(x0, top - 6, w, 6); c.restore();   // неон і його відсвіт
+    px(c, x0 + 4, top + 4.5, w - 8, 1, '#3a4a6a'); for (let x = x0 + 18; x < x1 - 10; x += 26) { px(c, x, top + 4, 2, 2, '#5a6a8a'); const ph = (t * .5 + x * .013) % 1; if (ph < .3) { c.save(); c.globalAlpha = .9 - ph * 2; px(c, x + .5, top + 6 + ph * 10, 1, 1.6, '#8ae8ff'); c.restore(); } }   // крапельна трубка з емітерами, краплі в ґрунт
     for (let k = 0; k < 3; k++) { const on = Math.floor(t * 1.5 + k) % 3 === 0; c.save(); c.globalAlpha = on ? .95 : .3; px(c, x1 - 12 + k * 3, top + d + 2, 1.6, 1.2, on ? '#3bff8a' : '#1a6a3a'); c.restore(); }   // індикатори
   }
   let hit = null;
@@ -136,9 +168,17 @@
     drawBack(c, t) {
       const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 80, vx1 = NX.cam.x + NX.cam.viewW + 80; if (JAR.x1 < vx0 || JAR.x0 > vx1) return;
       drawJar(c, t, LK);
-      for (const p of HEROES) { if (p.x + p.w / 2 < vx0 || p.x - p.w / 2 > vx1) continue; const cv = spriteOf(p), top = JAR.y - JAR.h + 2, sway = Math.sin(t * .8 + p.seed) * .5;
-        c.save(); c.imageSmoothingEnabled = false; c.translate(p.x + sway, top); c.drawImage(cv, -p.w / 2 - PADU, -p.h - PADU, p.w + 2 * PADU, p.h + PADU);
-        if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-p.w / 2 - PADU, -p.h - PADU, p.w + 2 * PADU, p.h + PADU); } c.restore(); }
+      const top = JAR.y - JAR.h + 2, night = Math.max(0, Math.min(1, (LK - 1) / .7));
+      c.save(); c.beginPath(); c.rect(JAR.x0 - 80, 0, JAR.x1 - JAR.x0 + 160, top + 1); c.clip();                           // нижче канта героїв не малюємо — вони «в ґрунті»
+      for (const p of HEROES) { if (p.x + p.w < vx0 || p.x - p.w > vx1) continue; const cv = spriteOf(p), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, byy = cv.base[1] / S, sh = Math.sin(t * .7 + p.seed) * .012 + Math.sin(t * 1.9 + p.seed * 2) * .004;
+        c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, top); c.transform(1, 0, sh, 1, 0, 0);                   // легке погойдування: верх ходить, основа стоїть
+        c.drawImage(cv, -bx, -byy, w, h);
+        if (p.back) { c.globalAlpha = .2 + .08 * night; c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#2a3a8a'; c.fillRect(-bx, -byy, w, h); }   // серпанок на задньому шарі — глибина
+        if (p.kind === 'cereus' && night > .05) { const bl = spriteOf(p, 'cereusBloom'); c.globalAlpha = night; c.drawImage(bl, -bl.base[0] / S, -bl.base[1] / S, bl.width / S, bl.height / S); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.25 + .1 * Math.sin(t * 2)); c.fillStyle = '#fff6c0'; c.beginPath(); c.arc(-4, -p.h * .7 + 2, 9, 0, TAU); c.fill(); }   // (· 36) цереус квітне вночі
+        if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-bx, -byy, w, h); } c.restore(); }
+      c.restore();
+      if (night > .05) for (let i = 0; i < 7; i++) { const ph = t * (.25 + .08 * (i % 3)) + i * 1.7, x = JAR.x0 + 14 + ((i * 37 + Math.sin(ph) * 22 + 400) % (JAR.x1 - JAR.x0 - 28)), y = top - 24 - (i % 4) * 16 + Math.sin(ph * 1.6) * 9, a = night * (.35 + .65 * Math.max(0, Math.sin(ph * 3 + i)));   // світлячки над жардиньєром уночі
+        c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.fillStyle = '#c8ff6a'; c.fillRect(x, y, 1.4, 1.4); c.globalAlpha = a * .35; c.beginPath(); c.arc(x + .7, y + .7, 3.5, 0, TAU); c.fill(); c.restore(); }
     },
   });
 })();
