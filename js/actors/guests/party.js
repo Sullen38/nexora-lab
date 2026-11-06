@@ -70,6 +70,10 @@ NX.party = (() => {
       if (g.id === 'firebird' && rnd() < .5) S.fx.push({ t: 'sp', x: sx - g.dir * 14 * s, y: sy - (g.alt + 16) * s, vx: -g.dir * 20, vy: 10, g: 0, col: rnd() < .5 ? '#ff7a2a' : '#ffe27a', ttl: .4, age: 0 });
       if (g.id === 'babaYaga' && rnd() < .2) S.fx.push({ t: 'sp', x: sx - g.dir * 10 * s, y: sy - (g.alt + 4) * s, vx: -g.dir * 10, vy: 8, g: 0, col: '#8a8ab0', ttl: .5, age: 0 }); return;
     }
+    if (g.conga) { const C = g.conga, E = S.event; g.alt = Math.abs(Math.sin((b + .5) * Math.PI)) * 3; g.pose = 'walk'; g.rot = Math.sin(b * Math.PI) * .1; g.sx = 1;
+      if (!C.prev) { const R = E && E.route ? E.route : [[.5, .5]], [x, z] = floorXZ(...R[C.idx % R.length]); g.tx = x; g.tz = z; if (step(52)) C.idx++; }
+      else { g.tx = C.prev.x - C.prev.dir * 30; g.tz = C.prev.z; step(56); if (Math.abs(g.tx - g.x) < 4) g.dir = C.prev.dir; } return; }
+    if (g.photo) { const Ph = g.photo; g.alt = 0; g.rot = 0; g.sx = 1; g.tx = Ph.x; g.tz = Ph.z; if (!step(48)) { g.pose = 'walk'; return; } g.dir = Ph.dir; g.pose = S.event && t > S.event.flashT - 1.5 ? 'cheer' : 'stand'; g.alt = g.pose === 'cheer' ? bounce * 6 : 0; return; }
     if (g.trip) { const T = g.trip; g.alt = 0;                                                        // похід до бару / закусок
       if (T.ph === 'go') { g.pose = 'walk'; if (step(44)) { T.ph = 'wait'; T.t = t + (T.to === 'bar' ? 3.2 : 2.2) + rnd(); g.dir = T.to === 'bar' ? 1 : -1; if (T.to === 'bar' && !BM.guest) { BM.guest = g; BM.pose = 'shake'; BM.until = t + 1.7; } } return; }
       if (T.ph === 'wait') { g.pose = Math.floor(b) % 4 === 0 ? 'cheer' : 'stand'; if (T.to === 'snack' && !g.item && t > T.t - 1) g.item = rnd() < .5 ? 'pizza' : 'cake';
@@ -131,14 +135,17 @@ NX.party = (() => {
       const a = idle[rnd() * idle.length | 0]; let bq = idle.filter(g => g !== a); const b = bq[rnd() * bq.length | 0];
       b.mv = true; b.tx = clamp(a.x + a.dir * 40, G().dance.x0 + 10, G().dance.x1 - 10); b.tz = a.z; S.pair = { a, b, until: t + 16, met: false }; S.pairNext = 0;
     }
-    if (S.pair && !S.pair.met && !S.pair.b.mv) { const { a, b } = S.pair; S.pair.met = true; a.dir = Math.sign(b.x - a.x) || 1; b.dir = -a.dir; a.pairT = b.pairT = t + 9; a.pairSide = 1; b.pairSide = -1; a.next = b.next = t + 10; sparks((a.x + b.x) / 2, 0, 0, []); S.fx.push({ t: 'note', x: fp((a.x + b.x) / 2, a.z)[0], y: fp(a.x, a.z)[1] - 70 * sc(a.z), vx: 0, vy: -16, g: 0, col: '#ff7af0', ttl: 1.6, age: 0 }); }
+    if (S.pair && !S.pair.met && !S.pair.b.mv) { const { a, b } = S.pair; S.pair.met = true; a.dir = Math.sign(b.x - a.x) || 1; b.dir = -a.dir; a.pairT = b.pairT = t + 9; a.pairSide = 1; b.pairSide = -1; a.next = b.next = t + 10; S.duet = { a, b, at: t + .6, step: 0 }; sparks((a.x + b.x) / 2, 0, 0, []); S.fx.push({ t: 'note', x: fp((a.x + b.x) / 2, a.z)[0], y: fp(a.x, a.z)[1] - 70 * sc(a.z), vx: 0, vy: -16, g: 0, col: '#ff7af0', ttl: 1.6, age: 0 }); }
+    if (S.duet && t > S.duet.at) { const D = S.duet, g = D.step % 2 ? D.b : D.a, L = NX.t(`guests.${g.id}.t`) || []; if (L.length) g.bub = { text: L[(D.step >> 1) % L.length], until: t + 2.6 }; D.step++; D.at = t + 3.2; if (D.step >= 4) S.duet = null; }   // дует: обмінюються репліками
     if (!S.nexiCheer || t > S.nexiCheer + 20) { S.nexiCheer = t + 6 + rnd() * 10; }                   // Nexi підіймає руку — усі «ура»
     if (t > S.nexiCheer && t < S.nexiCheer + 1.6) { S.nexiPose = 'cheer'; if (!S.cheerDone) { S.cheerDone = true; S.list.forEach(g => { if (!g.trip && !g.fly) g.cheerT = t + 1.8; }); const N = nexiPos(); for (let i = 0; i < 8; i++) S.fx.push({ t: 'note', x: N.x + (rnd() - .5) * 60, y: N.y - 70, vx: (rnd() - .5) * 30, vy: -26, g: 0, col: NEON[i % 6], ttl: 1.6, age: 0 }); } }
     else { S.nexiPose = 'dance'; if (t > S.nexiCheer + 1.6) S.cheerDone = false; }
     if (t > CAT.until) { CAT.pose = CAT.pose === 'sit' && rnd() < .35 ? 'paw' : CAT.pose === 'sit' && rnd() < .2 ? 'groom' : 'sit'; CAT.until = t + (CAT.pose === 'sit' ? 4 + rnd() * 6 : 1.6); }   // Рудик: сидить, б'є лапкою конфеті, вмивається
-    if (!S.event && t > S.eventT) { const kinds = ['spot', 'strobe', 'fire']; S.event = { kind: kinds[rnd() * 3 | 0], t0: t, until: t + (rnd() < .5 ? 6 : 5) }; S.eventT = t + 30 + rnd() * 20;   // події
+    if (!S.event && t > S.eventT) { const kinds = ['spot', 'strobe', 'fire', 'conga', 'photo']; const kind = kinds[rnd() * kinds.length | 0]; S.event = { kind, t0: t, until: t + (kind === 'conga' ? 14 : kind === 'photo' ? 9 : rnd() < .5 ? 6 : 5) }; S.eventT = t + 30 + rnd() * 20;   // події
       if (S.event.kind === 'spot') { const cand = S.list.filter(g => !g.trip && !g.fly); S.event.g = cand[rnd() * cand.length | 0] || null; S.list.forEach(g => { if (g !== S.event.g && !g.trip) g.cheerT = t + 2.5; }); } }
-    if (S.event && t > S.event.until) S.event = null;
+    if (S.event && S.event.kind === 'conga' && !S.event.set) { S.event.set = true; const free = idle.slice(0, 7); if (free.length >= 3) { const D = G().dance; S.event.line = free; free.forEach((g, i) => { g.conga = { prev: i ? free[i - 1] : null, idx: 0 }; g.trip = null; g.mv = false; }); S.event.route = [[.12, .15], [.88, .15], [.88, .85], [.12, .85]]; S.event.label = NX.t('party.conga'); } else S.event = null; }   // конга: 3–7 гостей ланцюжком по колу танцполу
+    if (S.event && S.event.kind === 'photo' && !S.event.set) { S.event.set = true; const free = idle.slice(0, 9); if (free.length >= 2) { S.event.line = free; free.forEach((g, i) => { const [x, z] = floorXZ(.5 + (i - (free.length - 1) / 2) * .11, i % 2 ? .12 : .02); g.photo = { x, z, dir: i < free.length / 2 ? 1 : -1 }; g.trip = null; g.mv = false; }); S.event.flashT = t + 5; S.event.label = NX.t('party.photo'); } else S.event = null; }   // фото біля пульта: стають у ряд, «ура», спалах
+    if (S.event && t > S.event.until) { (S.event.line || []).forEach(g => { g.conga = null; g.photo = null; g.next = t + 2 + rnd() * 4; }); S.event = null; }
     if (S.event && S.event.kind === 'fire' && rnd() < .25) { const x = 774 + (rnd() - .5) * 700, [sx, sy] = pt(x, 90 + rnd() * 80, G().ZB - 20), col = NEON[rnd() * 6 | 0]; for (let i = 0; i < 14; i++) { const a = i / 14 * 6.283; S.fx.push({ t: 'sp', x: sx, y: sy, vx: Math.cos(a) * 45, vy: Math.sin(a) * 45, g: 30, col, ttl: .9, age: 0 }); } }   // салют за пультом
   }
   /** Події поверх: прожектор на найкращого танцюриста з підписом, строб. */
@@ -147,6 +154,8 @@ NX.party = (() => {
     if (E.kind === 'spot' && E.g) { const g = E.g, [sx, sy] = gxy(g), s = sc(g.z), top = pt(774, G().CEIL + 20, 150); c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .22; c.fillStyle = '#ffffff'; poly(c, [top, [sx - 40 * s, sy + 6], [sx + 40 * s, sy + 6]]); c.fill(); c.globalAlpha = .3; c.beginPath(); c.ellipse(sx, sy + 2, 44 * s, 12 * s, 0, 0, 7); c.fill(); c.restore();
       const lab = NX.t('party.best'); c.font = '8px "Press Start 2P", monospace'; const w = c.measureText(lab).width + 14, y = sy - 78 * s; R(c, sx - w / 2, y - 7, w, 14, '#0a0626ee'); c.strokeStyle = '#ffe27a'; c.lineWidth = 1; c.strokeRect(sx - w / 2 + .5, y - 6.5, w - 1, 13); P.text(c, lab, sx, y + 3, '#ffe27a', 8, 'center');
       if (rnd() < .3) sparks(sx + (rnd() - .5) * 60 * s, sy - 20 * s, 1, ['#ffe27a', '#ffffff']); }
+    if (E.label) { const [lx, ly] = pt(774, G().sign.y1 + 30, G().ZB - 8); c.font = '9px "Press Start 2P", monospace'; const w = c.measureText(E.label).width + 16; R(c, lx - w / 2, ly - 8, w, 16, '#0a0626ee'); c.strokeStyle = '#ff7af0'; c.lineWidth = 1; c.strokeRect(lx - w / 2 + .5, ly - 7.5, w - 1, 15); P.text(c, E.label, lx, ly + 3.5, '#ff9af0', 9, 'center'); }
+    if (E.kind === 'photo' && t > E.flashT && t < E.flashT + .5) { c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = (E.flashT + .5 - t) * 1.6; c.fillStyle = '#ffffff'; c.fillRect(0, 0, NX.loop.canvas.width, NX.loop.canvas.height); c.restore(); if (!E.flashed) { E.flashed = true; (E.line || []).forEach(g => { g.cheerT = t + 2.5; }); for (let i = 0; i < 20; i++) sparks(774 + (rnd() - .5) * 400, fp(774, 60)[1] - 40, 1, ['#ffffff', '#ffe27a']); } }
     if (E.kind === 'strobe' && Math.floor(t * 8) % 2 === 0) { c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .18; c.fillStyle = '#ffffff'; c.fillRect(0, 0, NX.loop.canvas.width, NX.loop.canvas.height); c.restore(); }
   }
   /** Рудик на лівій колонці: сидить і киває в такт; б'є лапкою по конфеті; вмивається. */
@@ -169,10 +178,11 @@ NX.party = (() => {
   /** Бармен за стійкою: протирає келихи; гість підійшов — шейкер, потім наливає й віддає келих. Після нього поверх — грані стійки з растра. */
   function drawBartender(c, t) {
     const Bm = G().barman, Br = G().bar, s = sc(Bm.z) * .95, [GW, GH] = A().size('bartender'), w = GW * s, h = GH * s, [sx, sy] = pt(Bm.x, Bm.y, Bm.z);   // бармен на підвищенні за стійкою, трохи більший
-    if (BM.guest && t > BM.until) { if (BM.pose === 'shake') { BM.pose = 'pour'; BM.until = t + 1.5; } else if (BM.pose === 'pour') { BM.guest.item = rnd() < .5 ? 'drink' : 'drink2'; BM.guest = null; BM.pose = 'wipe'; } }
+    if (BM.guest && t > BM.until) { if (BM.pose === 'shake') { BM.pose = 'pour'; BM.until = t + 1.5; } else if (BM.pose === 'pour') { BM.guest.item = rnd() < .5 ? 'drink' : 'drink2'; BM.guest = null; BM.pose = 'wipe'; const L = NX.t('party.barman') || []; if (L.length) BM.bub = { text: L[rnd() * L.length | 0], until: t + 2.8 }; } }
     else if (!BM.guest && BM.pose !== 'wipe' && BM.pose !== 'stand') BM.pose = 'wipe';
     if (!BM.guest && t > BM.until) { BM.pose = rnd() < .7 ? 'wipe' : 'stand'; BM.until = t + 3 + rnd() * 4; }
     const img = A().frame('bartender', BM.pose, 0, Math.floor(t * 12) / 12, {}); c.save(); c.imageSmoothingEnabled = false; c.translate(sx, 0); c.scale(-1, 1); c.drawImage(img, -w / 2, sy - h, w, h); c.restore();
+    if (BM.bub && t < BM.bub.until) bubble(c, BM.bub.text, sx, sy - h - 4, Math.min(1, (BM.bub.until - t) * 3));
     const y0 = Br.y0 - 3, q = [[Br.x0, y0, Br.z0], [Br.x1, y0, Br.z0], [Br.x1, FL, Br.z0], [Br.x0, FL, Br.z0], [Br.x0, y0, Br.z0], [Br.x1, y0, Br.z0], [Br.x1, y0, Br.z1], [Br.x0, y0, Br.z1], [Br.x0, y0, Br.z0], [Br.x0, y0, Br.z1], [Br.x0, FL, Br.z1], [Br.x0, FL, Br.z0]];
     c.save(); c.beginPath(); for (let k = 0; k < 3; k++) { const P4 = q.slice(k * 4, k * 4 + 4).map(p => pt(...p)); c.moveTo(P4[0][0], P4[0][1]); for (let m = 1; m < 4; m++) c.lineTo(P4[m][0], P4[m][1]); c.closePath(); } c.clip(); c.drawImage(S.bg.cv, S.bg.x0, S.bg.y0); c.restore();
   }
