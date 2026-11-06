@@ -6,7 +6,8 @@
  *   NX.fx.emit(type, x, y, opts) — додати частинку
  *   NX.fx.skin(kind, x, y, s, moving, dir) — ефект обраного скіна навколо Nexi
  * Типи: 'spark','flame','steam','heart','z','bit','rain','snow','fire',
- *       'bubble','trail','energy','portal','dust','note'
+ *       'bubble','trail','energy','portal','dust','note',
+ *       'line' (швидкісна риска ривка: ширина w), 'ring' (кільце на підлозі, що розходиться: r0, gr — переміщення Nexi, 06.11)
  * ========================================================================== */
 NX.fx = {
   list: [],
@@ -29,6 +30,8 @@ NX.fx = {
       energy: { vy: -70, ttl: .45, s: 1, h: 5, col: '#7af0ff' },
       portal: { ttl: .9, s: 1.5, col: r() < .5 ? '#d94bff' : '#3be8ff' },
       dust:   { vx: (r() - .5) * 16, vy: -6, ttl: .6, s: 1.5, col: 'rgba(200,180,255,.6)' },
+      line:   { ttl: .22, s: 1, h: 1, w: 8, col: '#fff' },
+      ring:   { ttl: .45, r0: 4, gr: 60, col: '#fff' },
     }[type] || {};
     this.list.push(Object.assign(base, T, o));
   },
@@ -56,6 +59,7 @@ NX.fx = {
       else if (p.type === 'heart') { const x = Math.round(p.x), y = Math.round(p.y); P.rect(c, x, y, 2, 2, p.col); P.rect(c, x + 3, y, 2, 2, p.col); P.rect(c, x, y + 1, 5, 2, p.col); P.rect(c, x + 1, y + 3, 3, 1, p.col); P.rect(c, x + 2, y + 4, 1, 1, p.col); }
       else if (p.type === 'note') { P.rect(c, p.x, p.y, 1, 5, p.col); P.rect(c, p.x - 2, p.y + 4, 3, 2, p.col); P.rect(c, p.x, p.y, 3, 1, p.col); }
       else if (p.ring) { c.strokeStyle = p.col; c.lineWidth = .7; c.strokeRect(p.x, p.y, p.s, p.s); }
+      else if (p.type === 'ring') { const rr = p.r0 + p.age * p.gr; c.strokeStyle = p.col; c.lineWidth = 1; c.beginPath(); c.ellipse(p.x, p.y, rr, rr * .3, 0, 0, 7); c.stroke(); }
       else P.rect(c, p.x, p.y, p.w || p.s, p.h || p.s, p.col);
     });
     c.globalAlpha = 1;

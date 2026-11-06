@@ -8,6 +8,8 @@
  *   {say:'..'}    сказати фразу           {wait:сек}   почекати
  *   {work:{pose,dur,obj,start,end}}       працювати в позі з прогресом
  *   {fade:{alpha,zoom,y,dur}}             зменшитись/зникнути (портал — коли повернеться)
+ *   {tp:[x,y], kind}                       телепорт: тане зі спіном — з'являється в точці (переміщення до зон, 06.11 — TRAVEL)
+ *   {walk, dash}  ривок (спринт зі слідом)  {fly, jet}  підліт на ранці дугою — теж TRAVEL
  *   {rot:градуси}                          лягти (поворот спрайта)
  * Сценарії (з якої дії складається "сісти на диван" тощо) — в activities.js.
  * Тут же автономне життя: якщо довго немає команд, Nexi сам щось робить.
@@ -26,11 +28,49 @@ NX.nexi = {
     if (byUser) { this.lastCmd = NX.time; NX.cam.toNexi(); }                        // команда користувача — камера знову на Nexi (і після гортання)
     this.finishTask(false);
     this.autoRun = !byUser;                                                           // сценарій знає, чи це вільний час (майстерня: без лабораторії скінів)
-    this.queue = [...this.exitRoute(), ...A.route(this)]; this.cur = null;
+    this.endTp();
+    this.queue = [...this.exitRoute(), ...this.travel(id, A.route(this))]; this.cur = null;
     this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
   },
   /** Просто піти в точку підлоги (тап по підлозі). */
-  walkTo(x, y) { this.lastCmd = NX.time; NX.cam.unfocus(); this.finishTask(false); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy] }, { loc: 'floor' }]; this.cur = null; },
+  walkTo(x, y) { this.lastCmd = NX.time; NX.cam.unfocus(); this.finishTask(false); this.endTp(); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy], far: 'floor' }, { loc: 'floor' }]; this.cur = null; },
+  /* ---------------- ПЕРЕМІЩЕННЯ ДО ЗОН (06.11) ----------------
+   * Власник: «зроби, щоб Nexi трохи швидше переміщався… спосіб переміщення швидшим до нової точки; до кожної зони — окремий
+   * ефект переміщення, достатньо швидкий: десь пробіг, десь підлетів, десь телепортація». Перший крок сценарію зони ({walk})
+   * стає способом цієї зони, якщо до неї далі за TRAVEL_MIN (зовсім поруч — просто підходить):
+   *   dash — ривок (DASH_SPEED) з пилом: маркетинг — неонові швидкісні риски (гоночне крісло), інструменти — іскри з-під ніг;
+   *   jet  — підліт на ранці дугою, удвічі з гаком швидше за звичайний політ: аналітика — жовтий слід, як лінія графіка;
+   *   tp   — телепорт за 0,56 с (тане зі спіном — з'являється на місці): СКІНИ — рожеві промені сканера (лабораторія скінів
+   *          відкривається швидше), AI-центр — розсипається на біти й збирається, портал (вечірка) — вихор.
+   * Решта (диван, вікно, декор, вільний час) — звичайна хода, лише швидша (core/config.js); далекий тап по підлозі — ривок. */
+  TRAVEL: { marketing: 'dash', tools: 'dash', analytics: 'jet', workshop: 'tp', ai: 'tp', party: 'tp' },
+  TRAVEL_MIN: 90,
+  travel(id, R) {
+    const st = this.TRAVEL[id], i = st ? R.findIndex(s => s.walk) : -1; if (i < 0) return R;
+    const to = R[i].walk; if (Math.hypot(to[0] - this.x, to[1] - this.y) < this.TRAVEL_MIN) return R;
+    R[i] = st === 'tp' ? { tp: to, kind: id } : st === 'jet' ? { fly: to, jet: id } : { walk: to, dash: id };
+    return R;
+  },
+  /** Нова команда посеред телепорту — Nexi одразу видно (інакше лишився б напівпрозорим). */
+  endTp() { if (this.cur && this.cur.tp) { this.alpha = 1; this.zoom = 1; } },
+  /** Частинки переміщень: телепорт (burst — сплеск на початку й у точці появи). */
+  tpFx(a, x, y, burst) {
+    const r = Math.random, F = NX.fx, s = NX.room.scaleAt(Math.max(y, 352)) / 1.45, H = 40 * s, k = a.kind;
+    for (let i = 0, n = burst ? 16 : 2; i < n; i++) {
+      if (k === 'ai') F.emit('bit', x + (r() - .5) * 24 * s, y - r() * H, { vx: (r() - .5) * 46, vy: -24 - r() * 56, col: r() < .6 ? '#3be8ff' : '#3bff8a', s: r() < .3 ? 2.5 : 1.5 });
+      else if (k === 'party') F.list.push({ type: 'portal', x, y: y - H / 2, orbit: (12 + r() * 16) * s, cx: x, cy: y - H / 2, a0: r() * 6.3, age: 0, ttl: .7, s: 1.5, col: r() < .5 ? '#d94bff' : '#3be8ff', vx: 0, vy: 0 });
+      else F.emit('energy', x + (r() - .5) * 26 * s, y - r() * H * .9, { vy: -60 - r() * 70, col: r() < .6 ? '#ff7af0' : '#ffffff', h: 4 + (r() * 5 | 0) });
+    }
+    if (burst) F.emit('ring', x, y, { col: { ai: '#3be8ff', party: '#d94bff' }[k] || '#ff7af0', r0: 4 * s, gr: 64 * s });
+  },
+  /** Слід ривка й підльоту: пил і риски (маркетинг), іскри (інструменти), жовтий слід (аналітика). */
+  trailFx(kind) {
+    const r = Math.random, F = NX.fx, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) / 1.45, d = this.dir, bx = this.x - d * 8 * s;
+    if (kind === 'analytics') { if (r() < .8) F.emit('trail', bx - d * r() * 6 * s, this.y - (6 + r() * 22) * s, { s: 2, ttl: .45, col: r() < .65 ? '#ffc94d' : '#fff3c2' }); return; }
+    if (r() < .5) F.emit('dust', bx, this.y - 1, { vx: -d * (10 + r() * 24) });
+    if (kind === 'tools') { if (r() < .6) F.emit('spark', this.x - d * 4 * s, this.y - 1, { vx: -d * (30 + r() * 70), vy: -20 - r() * 45 }); }
+    else if (r() < (kind === 'floor' ? .35 : .75)) F.emit('line', bx - d * r() * 10 * s, this.y - (5 + r() * 24) * s, { w: Math.max(4, (6 + r() * 10) * s | 0), vx: -d * 30, col: kind === 'floor' ? 'rgba(255,255,255,.7)' : r() < .5 ? '#ff4fd8' : '#3be8ff' });
+  },
   /** Як "вийти" з поточного місця (злізти з дивану, злетіти зі столу...). */
   exitRoute() {
     const P = NX.cfg.POI, up = { do: () => { this.rot = 0; this.back = false; } };
@@ -92,9 +132,13 @@ NX.nexi = {
   begin(a) {
     if (a.walk) {                                                                     // шлях в обхід меблів (world/room.js: route)
       a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk); a.pi = 0;
-      let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > 500;
+      let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > NX.cfg.RUN_FROM;
+      if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
     }
-    if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop; a.dur = a.hop ? .45 : Math.max(.5, Math.hypot(to[0] - this.x, to[1] - this.y) / NX.cfg.FLY_SPEED); if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
+    if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); }
+    if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
+      a.dur = a.hop ? .45 : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED); if (a.jet) a.arc = Math.min(70, 18 + L * .12);
+      if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
       if (a.dy !== undefined || this.dy != null) a.dz = [this.depthY(), a.dy !== undefined ? a.dy : to[1]]; }   // глибина на дивані: плавно (dy)
     if (a.face) this.dir = a.face;
     if (a.loc) this.loc = a.loc;
@@ -107,18 +151,28 @@ NX.nexi = {
   step(a, dt) {
     if (a.walk) {
       this.dy = null;
-      const [tx, ty] = a.path ? a.path[a.pi] : a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
-      this.pose = a.run ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
+      const [tx, ty] = a.path ? a.path[a.pi] : a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.dash ? NX.cfg.DASH_SPEED : a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
+      this.pose = a.run || a.dash ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
+      if (a.dash) this.trailFx(a.dash);
       if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; if (a.path && a.pi < a.path.length - 1) { a.pi++; return false; } return true; }   // кут обходу — далі до наступної точки
       this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
     }
     if (a.spin) { this.dir = Math.floor(a._t * 12) % 2 ? 1 : -1; this.pose = 'spin'; if (a._t >= a.spin) { this.dir = 1; return true; } return false; }
+    if (a.tp) {                                                                         // телепорт: 0,28 с тане зі спіном — 0,28 с з'являється
+      const T = .28, k = a._t; this.dy = null; this.pose = 'spin'; this.dir = Math.floor(k * 16) % 2 ? 1 : -1;
+      if (k < T) { const q = k / T; this.alpha = 1 - q; this.zoom = 1 - .3 * q; this.tpFx(a, this.x, this.y, false); return false; }
+      if (!a.moved) { a.moved = true; this.x = a.tp[0]; this.y = this.gy = a.tp[1]; const P = NX.nexiPhys; P.px = null; P.vx = P.vy = 0; this.tpFx(a, this.x, this.y, true); NX.cam.jump(this.x); }
+      const q = Math.min(1, (k - T) / T); this.alpha = q; this.zoom = .7 + .3 * q;
+      if (q < 1) { this.tpFx(a, this.x, this.y, false); return false; }
+      this.alpha = 1; this.zoom = 1; this.dir = a.tp[0] >= a.from[0] ? 1 : -1; NX.nexiPhys.land(2.4); return true;
+    }
     if (a.hop && a._t < .12) { this.pose = 'crouch'; return false; }                   // присід перед стрибком
     if (a.hop && !a.kicked) { a.kicked = true; NX.nexiPhys.kick(2.6); }
     if (a.fly || a.hop) {
       const to = a.fly || a.hop, k = Math.min(1, (a._t - (a.hop ? .12 : 0)) / a.dur);
       const e = a.hop ? k : (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);   // плавний розгін/гальмування ранця
-      this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * (a.hi || 14) : 0);
+      this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * (a.hi || 14) : a.arc ? Math.sin(e * Math.PI) * a.arc : 0);
+      if (a.arc) { this.gy = NX.px.lerp(a.from[1], to[1], e); this.trailFx(a.jet); }        // підліт дугою: тінь — по підлозі під ним
       if (a.dz) this.dy = k >= 1 ? (a.dy !== undefined ? a.dy : null) : NX.px.lerp(a.dz[0], a.dz[1], e);
       this.pose = a.hop ? 'hop' : 'fly'; if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
       if (k >= 1) NX.nexiPhys.land(a.hop ? 3.2 : 2.2);

@@ -67,6 +67,9 @@ NX.cam = {
     const want = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max);
     this.x += (want - this.x) * Math.min(1, dt * 3);
   },
+  /** Телепорт Nexi (actors/nexi/nexi.js: tp, 06.11): камера одразу там, куди дивилася б follow, — щоб на телефоні було видно,
+   *  як він з'являється (плавно доїхала б, коли все вже скінчилось). Людина гортала (free) чи триває фокус уваги — не чіпає. */
+  jump(tx) { if (this.free || this.foc || performance.now() < this.dragUntil) return; const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max); },
   /** Екранні CSS-пікселі -> координати кімнати. */
   toRoom(sx, sy) { return [sx / this.k + this.x, sy / this.k - this.top]; },
   /** Координати кімнати -> екранні CSS-пікселі (для DOM-баблів). */
