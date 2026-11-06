@@ -499,33 +499,26 @@ NX.guestArt = (() => {
 
   /** 12. БАРОН МЮНХГАУЗЕН — трикутка з золотою облямівкою й кокардою, напудрена перука з буклями й чорним бантом, пишні
    *  закручені вуса, червоний камзол з золотими галунами й ґудзиками, білий жабо, білі лосини, ботфорти; ride — верхи на ядрі. */
-  D.munchausen = (pose, fr, t) => {
-    const ride = pose === 'ride', g = gait(pose, fr), B = g.bob, RD = '#c4202e', WG = '#f4f2ee', WGD = '#c8c4bc', NV = '#1c2a5c';
-    const wave = Math.round(Math.sin(t * 7) * 2), [bh, fh] = ride ? [[17, 36], [36, 15 + wave]] : hands(pose, g, t, B);
-    if (ride) { disc(23, 47, 9, '#2c2c38'); disc(21, 45, 5, '#3c3c4a'); P(17, 41, 3, 2, '#7a7a8c'); px(17, 41, '#c8c8d8');       // ядро з бліком
-      rod(30, 41, 34, 37, '#8a6a3a', 1); star(35, 36, Math.floor(t * 12) % 2 ? '#ffe27a' : '#ff8a2a'); }                      // ґніт з іскрою
-    arm([20, 31 + B], bh, RD, SK, { cuff: WG });
-    if (ride) { rod(16, 43, 13, 50, WG, 3); leg(13, 49, 54, '#1c1c24', '#1c1c24'); rod(28, 43, 32, 50, WG, 3); leg(32, 49, 54, '#1c1c24', '#1c1c24'); }   // ноги обабіч ядра
-    else legs(g, WG, '#1c1c24', { cuff: '#2c2c38', cuffH: 2 });
-    blk(18, 29 + B, 13, 15, RD, 2); P(19, 42 + B, 11, 3, RD);                                                              // камзол
-    P(23, 30 + B, 1, 13, '#e8c060'); P(27, 30 + B, 1, 13, '#e8c060'); [32, 35, 38].forEach(y => { px(25, y + B, '#ffd27a'); px(25, y + 1 + B, '#a8802a'); });   // галуни, ґудзики
-    spans(22, 28 + B, [[1, 5], [0, 6], [1, 4], [1, 3]], WG); px(23, 30 + B, WGD);                                         // жабо
-    const hx = 17, hy = 13 + B;
-    head(hx, hy, SK, { mouth: 0, brow: '#5a3218', iris: '#3a5aa0', cheek: '#ff8f9a' });
-    px(hx + 11, hy + 10, '#ff8f9a'); px(hx + 12, hy + 10, '#e8706a');                                                       // рум'яний ніс
-    rod(hx + 9, hy + 11, hx + 15, hy + 10, '#5a3218', 2); px(hx + 16, hy + 9, '#5a3218'); px(hx + 16, hy + 8, '#5a3218');   // вуса закручені
-    rod(hx + 8, hy + 11, hx + 4, hy + 12, '#5a3218', 2); px(hx + 3, hy + 11, '#5a3218');
-    P(hx - 1, hy + 1, 4, 10, WG); [[-1, 4], [-1, 7], [-1, 10]].forEach(([a, b]) => { P(hx + a, hy + b, 4, 2, WGD); px(hx + a + 1, hy + b, WG); });   // букли
-    P(hx - 3, hy + 9, 3, 6, WG); P(hx - 3, hy + 12, 3, 2, '#1c1c24');                                                      // кіска з бантом
-    P(hx + 1, hy - 1, 13, 3, WG);                                                                                          // перука на тімені
-    const N3 = T(NV), hatHand = ride, hh = hatHand ? [fh[0] - 6, fh[1] - 7] : [hx - 2, hy - 5];                             // трикутка (верхи — махає нею)
-    spans(hh[0], hh[1], [[6, 8], [2, 16], [0, 20], [1, 18]], NV); P(hh[0], hh[1] + 2, 20, 1, '#e8c060'); P(hh[0] + 1, hh[1] + 3, 18, 1, N3.D); P(hh[0] + 7, hh[1], 6, 1, N3.L);
-    disc(hh[0] + 13, hh[1] + 1, 1, '#ffffff'); px(hh[0] + 13, hh[1] + 1, '#d02a3a');                                         // кокарда
-    arm([29, 31 + B], fh, RD, SK, { cuff: WG });
+  // МАВКА (Леся Українка, «Лісова пісня»; 06.11 — замість Мюнхгаузена, власник: «ще якусь дівчину»): лісова дівчина з довгим
+  // зелено-бірюзовим волоссям у квітах, вінок, сукня з листя, босоніж; довкола літають світлячки. 'bloom' — руки вгору, квіти.
+  D.mavka = (pose, fr, t, gs) => {
+    const bl = pose === 'bloom', g = gait(pose, fr), B = g.bob, [bh, fh] = bl ? [[12, 18 + Math.round(Math.sin(t * 3))], [37, 18 - Math.round(Math.sin(t * 3))]] : hands(pose, g, t, B);
+    const HR_ = '#2fa88c', H3 = T(HR_), LF = '#3c9a3a', L3 = T(LF), MS = { M: '#f2e6d6', L: '#fff6ea', D: '#d6c2ae' }, swim = gs && gs.look === 'swim';
+    spans(13, 18 + B, [[2, 6], [1, 8], [0, 9], [0, 9], [0, 10], [0, 10], [0, 10], [0, 10], [0, 9], [0, 9], [1, 8], [1, 8], [1, 8], [1, 7], [2, 6], [2, 6], [2, 5], [3, 4], [3, 3]], HR_);   // довге волосся позаду
+    P(15, 21 + B, 1, 12, H3.D); P(17, 24 + B, 1, 8, H3.L); [[14, 26], [16, 32], [15, 37]].forEach(([a, b], i) => { px(a, b + B, i % 2 ? '#ff8fd0' : '#ffffff'); });   // пасма, квіточки у волоссі
+    if (swim) { swimBody(g, B, MS, '#1e8f6a', { one: 1 }); P(20, 41 + B, 3, 2, '#ffffff'); px(21, 40 + B, '#ff8fd0'); px(23, 42 + B, '#ffe27a'); }   // образ: зелений купальник з лілією
+    else { leg(21 + g.bl, 44 + B, GY - g.bu, S(MS.M, -.1), S(MS.M, -.1), { w: 3 }); leg(27 + g.fl, 44 + B, GY - g.fu, MS.M, MS.M, { w: 3 }); px(23 + g.bl, GY - 1 - g.bu, MS.L); px(29 + g.fl, GY - 1 - g.fu, MS.L);   // босі ноги
+      skirt(24, 36 + B, 49, 12, 24, LF, { folds: 5, hem: 1, hemC: '#6ad04a', sway: g.sw }); for (let i = 0; i < 6; i++) { P(13 + i * 4, 48 + B + (i % 2), 3, 2, i % 2 ? L3.D : '#5ac04a'); px(14 + i * 4, 50 + B + (i % 2), L3.D); }   // сукня з листя, листяний поділ
+      blk(19, 29 + B, 11, 8, LF, 2); P(20, 29 + B, 9, 2, MS.M); px(24, 31 + B, MS.D); P(19, 33 + B, 11, 1, '#6ad04a'); px(22, 35 + B, '#ffe27a'); px(27, 35 + B, '#ff8fd0'); }   // ліф з листя, пояс, квіточки
+    arm([20, 31 + B], bh, MS.M, MS); const hx = 17, hy = 13 + B;
+    head(hx, hy, MS, { lash: 1, brow: '#1e6a52', lip: '#d8607a', mouth: 'smile', iris: '#2a9a6a', cheek: '#ffb0b8', noEar: 1 });
+    spans(hx - 1, hy - 2, [[3, 11], [1, 15], [0, 17], [0, 17], [0, 7], [0, 5], [0, 4], [0, 4], [1, 3]], HR_); P(hx + 2, hy - 1, 9, 1, H3.L);   // волосся спереду
+    [[5, 3], [8, 4], [11, 3], [13, 2]].forEach(([a, h]) => P(hx + a, hy + 2, 2, h, HR_)); P(hx + 14, hy + 4, 2, 6, HR_);
+    [[1, -2, '#ffffff'], [5, -3, '#ff8fd0'], [9, -4, '#ffe27a'], [13, -3, '#ffffff'], [16, -2, '#ff8fd0']].forEach(([a, b, c]) => { disc(hx + a, hy + b, 1, c); px(hx + a, hy + b, c === '#ffffff' ? '#ffe27a' : '#ffffff'); });   // вінок
+    arm([29, 31 + B], fh, MS.M, MS);
+    for (let i = 0; i < 4; i++) { const a = t * 1.6 + i * 1.6, fx = Math.round(24 + Math.cos(a) * (14 + i * 2)), fy = Math.round(26 + B + Math.sin(a * 1.3) * 10 - (bl ? 8 : 0)); px(fx, fy, (Math.floor(t * 6) + i) % 3 ? '#d8ff6a' : '#ffffff'); }   // світлячки
+    if (bl) [[8, 20], [40, 22], [10, 34], [38, 36]].forEach(([a, b], i) => (Math.floor(t * 4) + i) % 2 === 0 && disc(a, b + B, 1, i % 2 ? '#ff8fd0' : '#ffe27a'));   // квіти розпускаються
   };
-
-  /** 14. СВЯТИЙ МИКОЛАЙ — висока біла митра з золотим хрестом і каймою, лагідне обличчя, довга хвиляста біла борода, червона
-   *  риза з золотою вишивкою й застібкою, біла підризниця, золотий жезл із завитком, мішок з подарунками за плечима. */
   D.stNicholas = (pose, fr, t) => {
     const g = gait(pose, fr), B = g.bob, [bh, fh] = hands(pose, g, t, B), RD = '#c4202e', GD = '#e8c060', BE = '#f6f4f0', BD = '#d4cec4';
     blk(5, 26 + B, 12, 15, '#8a6a44', 4); P(7, 24 + B, 8, 3, '#a8845a'); P(9, 23 + B, 4, 2, '#7a5a34'); P(6, 31 + B, 4, 4, '#6a5034');   // мішок з латкою
@@ -793,9 +786,6 @@ NX.guestArt = (() => {
     robinHood(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B;                                            // стріла крізь шапочку, клаптики лопнутої кульки
       rod(hx - 6, hy - 2, hx + 18, hy - 2, '#c8a070', 1); P(hx + 18, hy - 3, 3, 3, '#dce0ec'); px(hx + 20, hy - 2, '#ffffff'); P(hx - 7, hy - 4, 2, 5, '#d02a2a'); P(hx - 9, hy - 3, 2, 3, '#f4f0e8');
       [[8, 30], [30, 36], [36, 24]].forEach(([a, b], i) => P(a, b + B, 2, 2, ['#ff4fd8', '#3be8ff', '#ffe27a'][i])); },
-    munchausen(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B;                                           // сажа після польоту на гарматі піни, перука набакир, димок
-      [[hx + 4, hy + 7], [hx + 11, hy + 9], [hx + 8, hy + 5], [22, 34], [27, 40], [hx - 1, hy + 2]].forEach(([a, b]) => { P(a, b + (b < 28 ? 0 : B), 2, 2, '#2a2228'); px(a + 1, b + (b < 28 ? 0 : B), '#4a4048'); });
-      P(hx - 3, hy - 7, 12, 3, '#f4f2ee'); P(hx - 3, hy - 7, 12, 1, '#ffffff'); smoke(hx + 10, hy - 6, t); face(hx, hy, SK, { eyes: 'wide', mouth: 'grin', noCheek: 1, brow: '#5a3218' }); },
     stNicholas(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 15 + B; shades(hx, hy);                            // окуляри-«сонце», гавайська гірлянда, коктейль
       for (let i = 0; i < 9; i++) { disc(16 + i * 2, 27 + B + (i % 2) * 2, 1, ['#ff4fd8', '#ffe27a', '#3bff8a', '#ff7a2a'][i % 4]); px(16 + i * 2, 27 + B + (i % 2) * 2, '#ffffff'); } },
     merlin(pose, fr, t) { recolor([['#f4f4f8', '#ff9ad8'], ['#cfd0dc', '#e05ab0']]); const B = gait(pose, fr).bob, hx = 17, hy = 15 + B;   // закляття пішло не так: борода рожева, у ній квіти
@@ -838,7 +828,7 @@ NX.guestArt = (() => {
   // фаза анімації, ніс, черевичок. Пози, що не залежать від часу, — один кадр на крок; живі (мітла, димок, блискітки, крила,
   // хвіст…) — петля з N фаз по R на секунду (ANIM). Кеш спільний, щонайбільше CAP кадрів (давні — геть).
   const ANIM = { _: { R: 6, N: 12, p: ['cheer'] }, babaYaga: { R: 12, N: 24, p: ['sweep', 'cheer'] }, dwarf: { R: 4, N: 2, p: 'all' }, pussBoots: { R: 6, N: 12, p: 'all' },
-    quixote: { R: 8, N: 16, p: ['fall', 'cheer'] }, sherlock: { R: 6, N: 12, p: 'all' }, munchausen: { R: 12, N: 24, p: ['ride', 'cheer'] }, cinderella: { R: 10, N: 20, p: 'all' },
+    quixote: { R: 8, N: 16, p: ['fall', 'cheer'] }, sherlock: { R: 6, N: 12, p: 'all' }, mavka: { R: 8, N: 16, p: 'all' }, cinderella: { R: 10, N: 20, p: 'all' },
     merlin: { R: 8, N: 16, p: ['cast', 'cheer'] }, genie: { R: 12, N: 24, p: 'all' }, silver: { R: 12, N: 12, p: ['dig', 'cheer'] }, gorynych: { R: 8, N: 16, p: 'all' },
     firebird: { R: 12, N: 24, p: 'all' }, kolobok: { R: 12, N: 24, p: ['roll', 'walk', 'run'] }, bartender: { R: 8, N: 16, p: ['shake', 'pour', 'wipe', 'stand'] } };
   const CACHE = new Map(), CAP = 160, CHC = document.createElement('canvas');
@@ -883,6 +873,6 @@ NX.guestArt = (() => {
     outline(cv); return cv;
   }
   /** Образ кожного героя після його сценки на справжній вечірці (party_show.js). */
-  const LOOKS = { babaYaga: 'swim', snowWhite: 'swim', cinderella: 'swim', pinocchio: 'burnt', redHood: 'purple', dwarf: 'bowl', whiteRabbit: 'knot', pussBoots: 'socks', quixote: 'bucket', sherlock: 'lamp', robinHood: 'arrow', munchausen: 'soot', stNicholas: 'hawaii', merlin: 'pink', genie: 'hat', tinMan: 'confetti', silver: 'disco', cheshire: 'dress', kolobok: 'choco', firebird: 'wet', gorynych: 'hats' };
+  const LOOKS = { babaYaga: 'swim', snowWhite: 'swim', cinderella: 'swim', pinocchio: 'burnt', redHood: 'purple', dwarf: 'bowl', whiteRabbit: 'knot', pussBoots: 'socks', quixote: 'bucket', sherlock: 'lamp', robinHood: 'arrow', mavka: 'swim', stNicholas: 'hawaii', merlin: 'pink', genie: 'hat', tinMan: 'confetti', silver: 'disco', cheshire: 'dress', kolobok: 'choco', firebird: 'wet', gorynych: 'hats' };
   return { draw, frame, size, drawProp, PROP, LOOKS };
 })();

@@ -14,7 +14,7 @@ const [dir = '/tmp/guests', lang = 'uk', phArg = ''] = process.argv.slice(2);
 const POSES = {   // пози сценки кожного (SCENES / TAP у guests.js); g — стан гостя для кадру
   babaYaga: ['sweep', 'ride'], snowWhite: ['search', 'cheer'], cheshire: ['sit'], redHood: ['give', 'cheer'], whiteRabbit: ['watch', 'run'],
   kolobok: ['roll'], pinocchio: [['stand', { nose: 9 }], 'cheer'], pussBoots: ['bow'], quixote: ['charge', 'fall'], sherlock: ['inspect'],
-  robinHood: ['aim', 'cheer'], munchausen: ['ride'], firebird: ['fly'], stNicholas: ['give', 'cheer'], cinderella: ['twirl', ['stand', { lostShoe: 1 }]],
+  robinHood: ['aim', 'cheer'], firebird: ['fly'], stNicholas: ['give', 'cheer'], cinderella: ['twirl', ['stand', { lostShoe: 1 }]],
   merlin: ['cast'], genie: ['float', 'cast'], tinMan: ['rust', 'cheer'], silver: ['dig', 'cheer'], gorynych: ['sneeze'], dwarf: ['cheer'] };
 (async () => {
   fs.mkdirSync(dir, { recursive: true });

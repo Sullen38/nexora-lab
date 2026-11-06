@@ -47,8 +47,8 @@ NX.party = (() => {
   function prepare() { if (!S.bg) S.bg = NX.partyRoom.build(); }
 
   // ============================ ГОСТІ НА ВЕЧІРЦІ ============================
-  const FLYER = { babaYaga: 'ride', firebird: 'fly', genie: 'float', munchausen: 'ride' };
-  const SPECIAL = { quixote: 'charge', merlin: 'cast', gorynych: 'sneeze', genie: 'cast', tinMan: 'rust', silver: 'dig', sherlock: 'inspect', robinHood: 'aim', pinocchio: 'nose', cinderella: 'twirl',
+  const FLYER = { babaYaga: 'ride', firebird: 'fly', genie: 'float' };
+  const SPECIAL = { quixote: 'charge', merlin: 'cast', gorynych: 'sneeze', genie: 'cast', tinMan: 'rust', silver: 'dig', sherlock: 'inspect', robinHood: 'aim', pinocchio: 'nose', cinderella: 'twirl', mavka: 'bloom',
     snowWhite: 'search', redHood: 'give', pussBoots: 'bow', whiteRabbit: 'watch', stNicholas: 'give', babaYaga: 'sweep' };
   const BM = { pose: 'wipe', until: 0, guest: null };
   const STYLES = ['bounce', 'sway', 'twist', 'jump', 'spin'];                                        // стилі танцю (крок 4): кожен гість має свій, міняє раз на 10–20 с

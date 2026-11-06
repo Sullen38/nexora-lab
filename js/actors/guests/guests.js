@@ -31,7 +31,7 @@
  * ========================================================================== */
 NX.guests = (() => {
   const IDS = ['babaYaga', 'snowWhite', 'cheshire', 'redHood', 'whiteRabbit', 'kolobok', 'pinocchio', 'pussBoots', 'quixote', 'sherlock',
-    'robinHood', 'munchausen', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'silver', 'gorynych'];
+    'robinHood', 'mavka', 'firebird', 'stNicholas', 'cinderella', 'merlin', 'genie', 'tinMan', 'silver', 'gorynych'];
   const MAX = 3, S = { list: [], bag: [], last: null, next: 25, props: [], fx: [], on: true };
   // ---------- КОЛЕКЦІЯ (хто вже спійманий тапом) — у цьому браузері ----------
   const KEY = 'nx.guests'; let COL = []; try { COL = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).filter(id => IDS.includes(id)); } catch (e) {}
@@ -94,8 +94,8 @@ NX.guests = (() => {
     robinHood: { steps: g => { const b = NX.objects.ball; return [{ go: free(b.x + (b.x > 774 ? -110 : 110), b.y) }, { face: () => b.x }, { act: 'aim', dur: 1.4 },
       { do: () => { S.fx.push({ type: 'arrow', x0: g.x + g.dir * 22, y0: g.y - 38, x1: b.x, y1: b.y - 6, t0: NX.time, dur: .35, then: () => { b.kick(g.dir * 260, (rnd() - .5) * 90); for (let i = 0; i < 6; i++) NX.fx.emit('spark', b.x, b.y - 6); } }); } },
       { act: 'aim', dur: .6 }, { say: 0 }, { act: 'cheer', dur: 1 }]; } },
-    munchausen: { flyer: true, steps: g => { const B = NX.room.walkBounds(), far = free(250 + rnd() * 300, B.minY + 70); return [{ fly: far, alt: 70, pose: 'ride', speed: 170, smoke: 1 }, { say: 0 }, { fly: overNexi(), alt: 95, pose: 'ride', speed: 170, smoke: 1 }, { act: 'ride', dur: 1, alt: 95, start: nexiRe(g, 'surprise', 2) },
-      { fly: pad(), alt: 60, pose: 'ride', speed: 170, smoke: 1 }]; } },
+    mavka: { steps: g => [{ go: free(NX.objects.rug.home[0] + (rnd() - .5) * 220, NX.objects.rug.home[1] + 10) }, { say: 0 }, { act: 'bloom', dur: 3, start: nexiRe(g, 'love', 3), tick: () => rnd() < .25 && NX.fx.emit('spark', g.x + (rnd() - .5) * 40, g.y - 10 - rnd() * 40, { col: rnd() < .5 ? '#d8ff6a' : '#ff8fd0' }) },
+      { act: 'stand', dur: 1.2 }, { say: 1 }, { go: free(NX.cfg.SOFA.x + 40, NX.cfg.SOFA.y + 60) }, { act: 'cheer', dur: 1.5, tick: () => rnd() < .15 && NX.fx.emit('note', g.x + (rnd() - .5) * 20, g.y - 40) }] },   // Мавка: до килима, пісня лісу — квіти й світлячки, Nexi закохується
     firebird: { flyer: true, steps: g => { const pts = [anyPt(), anyPt(), anyPt()]; return [{ fly: pts[0], alt: 95, pose: 'fly', speed: 150, trail: 1 }, { fly: pts[1], alt: 70, pose: 'fly', speed: 150, trail: 1 },
       { do: () => S.props.push({ type: 'feather', x: pts[1][0], y: pts[1][1], until: NX.time + 30 }) }, { say: 0 }, { fly: overNexi(), alt: 90, pose: 'fly', speed: 150, trail: 1 }, { act: 'fly', dur: 1.4, alt: 90, start: nexiRe(g, 'love', 2.2), tick: () => rnd() < .4 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 60, { col: '#ffd27a', vy: 40 }) }, { fly: pts[2], alt: 110, pose: 'fly', speed: 150, trail: 1 }, { fly: pad(), alt: 60, pose: 'fly', speed: 150, trail: 1 }]; } },
     stNicholas: { steps: g => { const h = NX.objects.rug.home, gp = free(h[0] - 70 + rnd() * 140, h[1] + 20); return [{ go: free(gp[0] + 26, gp[1]) }, { face: gp[0] },
@@ -150,7 +150,7 @@ NX.guests = (() => {
     quixote: g => [{ act: 'charge', dur: .9 }, { act: 'fall', dur: 1.4, start: () => sparks(g, 6, '#ffe27a', 30) }, { act: 'stand', dur: .3 }],
     sherlock: g => [{ act: 'inspect', dur: 1.8, tick: dust(g) }],
     robinHood: g => [{ act: 'aim', dur: 1.3, end: () => { S.fx.push({ type: 'arrow', x0: g.x + g.dir * 22, y0: g.y - 38, x1: g.x + g.dir * 140, y1: g.y - 60, t0: NX.time, dur: .3 }); } }],
-    munchausen: g => [{ act: 'ride', dur: 1.6, alt: 22, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('steam', g.x - g.dir * 12, g.y - 6); } }, { act: 'stand', dur: .2, alt: 0 }],
+    mavka: g => [{ act: 'bloom', dur: 1.6, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#d8ff6a' }); } }],
     firebird: g => [{ act: 'fly', dur: 1.4, alt: g.alt, tick: () => rnd() < .6 && NX.fx.emit('fire', g.x - g.dir * 16, g.y - g.alt - 20) }],
     stNicholas: g => [{ act: 'give', dur: 1.5, start: () => { for (let i = 0; i < 5; i++) NX.fx.emit('snow', g.x + (rnd() - .5) * 40, g.y - 70); } }],
     cinderella: g => [{ act: 'twirl', dur: 1.6, tick: () => rnd() < .3 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#ffffff' }) }],

@@ -2561,6 +2561,23 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 - Перевірки: `/tmp/t11.js` uk — 3 гості нагору (Білосніжка на балконі, Кролик, Шапочка на сходах), 3 на пуфах; консоль чиста;
   fps 60.
 
+## Чат «Персонажі» 06.11 — крок 45: Мавка замість Мюнхгаузена
+
+> Власник: «Додай тоді замість того, що літає на гарматі, ще якусь дівчину».
+
+- `guest_art.js D.mavka(pose, fr, t, gs)`: волосся spans позаду/спереду (#2fa88c), квіточки у пасмах, вінок (5 квіток), сукня
+  з листя (skirt LF + листяний поділ), ліф із листя з поясом, босі ноги, 4 світлячки по орбітах (блимають), `bloom` — руки
+  вгору, квіти навколо; look `swim` — swimBody один суцільний #1e8f6a + лілія. ANIM mavka {R 8, N 16, all}; LOOKS mavka swim;
+  LOOK.munchausen і D.munchausen видалено.
+- `guests.js`: IDS robinHood → mavka → firebird; SCENES.mavka (go до килима, say 0, bloom 3 с зі spark #d8ff6a/#ff8fd0 і
+  nexiRe love, stand, say 1, go до дивана, cheer з нотками); TAP mavka — bloom 1.6 с.
+- `party.js` FLYER без munchausen, SPECIAL mavka 'bloom'; `cards.js` COLS mavka #5ae0a0; `party_show.js` сцена mavka
+  (bloom + Джин cast + піна → look swim), Кіхот у парі з Мавкою; `tools/guests/sheet.js`; i18n guests.mavka {n, s, t} і
+  show.s.mavka ×4 (munchausen вилучено).
+- Виправлено: при заміні SCENES лишився хвіст рядка Мюнхгаузена → SyntaxError; прибрано.
+- Перевірки: `/tmp/mavka.js` — кадри stand/walk/cheer/bloom/swim, демо в кімнаті, сцена на вечірці з образом; texts.js 0;
+  консоль чиста.
+
 ## Чат «Персонажі» 06.11 — крок 44: репліки на вечірці як субтитри
 
 > Власник: «шрифт трохи більш читабельний в діалогах… діалоги закривають багато картинки — треба обіграти».
