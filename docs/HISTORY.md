@@ -2567,7 +2567,7 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 
 - `guest_art.js D.mavka(pose, fr, t, gs)`: волосся spans позаду/спереду (#2fa88c), квіточки у пасмах, вінок (5 квіток), сукня
   з листя (skirt LF + листяний поділ), ліф із листя з поясом, босі ноги, 4 світлячки по орбітах (блимають), `bloom` — руки
-  вгору, квіти навколо; look `swim` — swimBody один суцільний #1e8f6a + лілія. ANIM mavka {R 8, N 16, all}; LOOKS mavka swim;
+  вгору, квіти навколо; look `swim` — swimBody роздільний #1e8f6a + лілія (власник: «не цільний, а окремий»). ANIM mavka {R 8, N 16, all}; LOOKS mavka swim;
   LOOK.munchausen і D.munchausen видалено.
 - `guests.js`: IDS robinHood → mavka → firebird; SCENES.mavka (go до килима, say 0, bloom 3 с зі spark #d8ff6a/#ff8fd0 і
   nexiRe love, stand, say 1, go до дивана, cheer з нотками); TAP mavka — bloom 1.6 с.
