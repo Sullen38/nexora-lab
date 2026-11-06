@@ -77,7 +77,8 @@ NX.cam = {
    *  гортала (free) — стоїть, де її лишили (фокус уваги минає за часом, як і раніше). */
   follow(tx, dt) {
     const F = this.foc; if (F) { if (NX.time > F.until) this.unfocus(); else { const fx = F.x(); if (Number.isFinite(fx)) tx = fx; } }
-    if (this.free || performance.now() < this.dragUntil) return;
+    if (this.free || performance.now() < this.dragUntil) { this.gl = null; return; }
+    const G = this.gl; if (G) { const q = Math.min(1, (NX.time - G.t0) / G.dur), e = q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q); this.x = G.x0 + (G.x1 - G.x0) * e; if (q >= 1) this.gl = null; return; }
     const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW);
     const want = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max);
     this.x += (want - this.x) * Math.min(1, dt * 3);
@@ -85,6 +86,11 @@ NX.cam = {
   /** Телепорт Nexi (actors/nexi/nexi.js: tp, 06.11): камера одразу там, куди дивилася б follow, — щоб на телефоні було видно,
    *  як він з'являється (плавно доїхала б, коли все вже скінчилось). Людина гортала (free) чи триває фокус уваги — не чіпає. */
   jump(tx) { if (this.free || this.foc || performance.now() < this.dragUntil) return; const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max); },
+  /** Телепорт плавно (власник, 06.11: «екран має більш плавно переміщатися, бо зараз смикається»): камера за dur с м'яко
+   *  (ease in-out) переїжджає туди, куди дивилася б follow у точці появи, — рушає, щойно Nexi починає танути, і приїздить,
+   *  коли він з'являється. Людина гортала (free) чи триває фокус уваги — не чіпає. Поки їде, follow не втручається. */
+  glide(tx, dur) { if (this.free || this.foc || performance.now() < this.dragUntil) return; const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW);
+    const x1 = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max); if (Math.abs(x1 - this.x) < 1) return; this.gl = { x0: this.x, x1, t0: NX.time, dur }; },
   /** Екранні CSS-пікселі -> координати кімнати. */
   toRoom(sx, sy) { return [sx / this.k + this.x, sy / this.k - this.top]; },
   /** Координати кімнати -> екранні CSS-пікселі (для DOM-баблів). */

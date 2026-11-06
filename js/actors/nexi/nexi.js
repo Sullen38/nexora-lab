@@ -58,7 +58,7 @@ NX.nexi = {
     return R;
   },
   /** Нова команда посеред телепорту — Nexi одразу видно (інакше лишився б напівпрозорим). */
-  endTp() { if (this.cur && this.cur.tp) { this.alpha = 1; this.zoom = 1; } },
+  endTp() { if (this.cur && this.cur.tp) { this.alpha = 1; this.zoom = 1; } this.comet = null; },
   /** Частинки переміщень: телепорт (burst — сплеск на початку й у точці появи). */
   tpFx(a, x, y, burst) {
     const r = Math.random, F = NX.fx, s = NX.room.scaleAt(Math.max(y, 352)) / 1.45, H = 40 * s, k = a.kind;
@@ -68,6 +68,13 @@ NX.nexi = {
       else F.emit('energy', x + (r() - .5) * 26 * s, y - r() * H * .9, { vy: -60 - r() * 70, col: r() < .6 ? '#ff7af0' : '#ffffff', h: 4 + (r() * 5 | 0) });
     }
     if (burst) F.emit('ring', x, y, { col: { ai: '#3be8ff', party: '#d94bff' }[k] || '#ff7af0', r0: 4 * s, gr: 64 * s });
+  },
+  /** Комета телепорту: світне ядро зі шлейфом рисок та іскор кольору зони летить дугою від старого місця до нового (q 0..1). */
+  cometFx(a, x, y, q) {
+    const r = Math.random, F = NX.fx, col = { ai: '#3be8ff', party: '#d94bff' }[a.kind] || '#ff7af0', d = Math.sign(a.tp[0] - a.from[0]) || 1;
+    for (let i = 0; i < 5; i++) F.emit('line', x - d * r() * 26, y + (r() - .5) * 10, { w: 12 + r() * 18, col: r() < .5 ? col : '#ffffff', vx: -d * 60, ttl: .3 });
+    F.emit('energy', x, y + 4, { vy: -30, col, ttl: .3, h: 8 }); if (r() < .6) F.emit('spark', x, y, { col, vx: -d * (30 + r() * 60), vy: (r() - .5) * 60, g: 40, ttl: .45 });
+    if (q > .7) F.emit('energy', a.tp[0] + (r() - .5) * 20, a.tp[1] - r() * 30, { vy: -40, col, ttl: .35 });                  // місце появи вже світиться
   },
   /** Слід ривка й підльоту: пил і риски (маркетинг), іскри (інструменти), жовтий слід (аналітика). */
   trailFx(kind) {
@@ -150,7 +157,7 @@ NX.nexi = {
       if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
       if (a.hurry >= 2) a.run = true; if (a.hurry >= 3 && L > 40) a.dash = a.far;         // тапи поспіль по підлозі — біг, далі ривок
     }
-    if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); }
+    if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); a.near = Math.hypot(a.tp[0] - this.x, a.tp[1] - this.y) < 160; }
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
       a.dur = a.quick || (a.hop ? .45 : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED));   // quick — задана тривалість (С4: зліт у капсулу) if (a.jet) a.arc = Math.min(70, 18 + L * .12);
       if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
@@ -173,11 +180,17 @@ NX.nexi = {
       this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
     }
     if (a.spin) { this.dir = Math.floor(a._t * 12) % 2 ? 1 : -1; this.pose = 'spin'; if (a._t >= a.spin) { this.dir = 1; return true; } return false; }
-    if (a.tp) {                                                                         // телепорт: 0,28 с тане зі спіном — 0,28 с з'являється
-      const T = .28, k = a._t; this.dy = null; this.pose = 'spin'; this.dir = Math.floor(k * 16) % 2 ? 1 : -1;
-      if (k < T) { const q = k / T; this.alpha = 1 - q; this.zoom = 1 - .3 * q; this.tpFx(a, this.x, this.y, false); return false; }
-      if (!a.moved) { a.moved = true; this.x = a.tp[0]; this.y = this.gy = a.tp[1]; const P = NX.nexiPhys; P.px = null; P.vx = P.vy = 0; this.tpFx(a, this.x, this.y, true); NX.cam.jump(this.x); }
-      const q = Math.min(1, (k - T) / T); this.alpha = q; this.zoom = .7 + .3 * q;
+    if (a.tp) {                                                                         // телепорт (06.11, власник: «екран має плавно переміщатися»):
+      // 0,25 с тане зі спіном -> 0,3 с світна комета летить до місця (камера на телефоні їде за нею — core/camera.js glide) ->
+      // 0,25 с з'являється; близько (< 160 од.) — без комети, як було
+      const T1 = .25, T2 = a.near ? 0 : .3, T3 = .25, k = a._t; this.dy = null; this.pose = 'spin'; this.dir = Math.floor(k * 16) % 2 ? 1 : -1;
+      if (k < T1) { const q = k / T1; this.alpha = 1 - q; this.zoom = 1 - .3 * q; this.tpFx(a, this.x, this.y, false); return false; }
+      if (k < T1 + T2) { const q = (k - T1) / T2, e = q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q);               // комета: Nexi невидимий летить дугою
+        if (!a.gl) { a.gl = 1; NX.cam.glide(a.tp[0], T2); }                                                       // камера летить разом з кометою (та сама плавність)
+        this.alpha = 0; this.x = a.from[0] + (a.tp[0] - a.from[0]) * e; this.y = this.gy = a.from[1] + (a.tp[1] - a.from[1]) * e; this.comet = [this.x, this.y - Math.sin(q * Math.PI) * 60, a.kind]; this.cometFx(a, this.comet[0], this.comet[1], q); return false; }
+      this.comet = null;
+      if (!a.moved) { a.moved = true; this.x = a.tp[0]; this.y = this.gy = a.tp[1]; const P = NX.nexiPhys; P.px = null; P.vx = P.vy = 0; this.tpFx(a, this.x, this.y, true); if (a.near) NX.cam.jump(this.x); }
+      const q = Math.min(1, (k - T1 - T2) / T3); this.alpha = q; this.zoom = .7 + .3 * q;
       if (q < 1) { this.tpFx(a, this.x, this.y, false); return false; }
       this.alpha = 1; this.zoom = 1; this.dir = a.tp[0] >= a.from[0] ? 1 : -1; NX.nexiPhys.land(2.4); return true;
     }
@@ -284,6 +297,9 @@ NX.nexi = {
       if (this._rt !== t) { this._rt = t; renderBot(this.look, p, t, this.scr); }   // раз за кадр (віддзеркалення бере готовий)
       const K = NX.cam.k * NX.loop.dpr, s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, w = SW * s, h = SH * s, top = FOOT * s;
       const X = Math.round(this.x * K) / K, Y = Math.round(this.y * K) / K;
+      const sr0 = s / SPRITE_K / 1.45;
+      if (this.comet) { const [cx, cy, kd] = this.comet, sr = sr0, col = { ai: 'rgba(59,232,255,.9)', party: 'rgba(217,75,255,.9)' }[kd] || 'rgba(255,122,240,.9)';   // комета телепорту: світне ядро
+        NX.px.glow(c, cx, cy, 44 * sr, col, .9); NX.px.glow(c, cx, cy, 16 * sr, 'rgba(255,255,255,.9)', .9); c.save(); c.fillStyle = '#ffffff'; c.beginPath(); c.ellipse(cx, cy, 8 * sr, 4 * sr, 0, 0, 7); c.fill(); c.restore(); }
       const shY = p.jet ? this.gy : Y, sr = s / SPRITE_K / 1.45;
       c.save(); c.globalAlpha = .45 * this.alpha * (p.jet ? .6 : 1); c.fillStyle = '#000'; c.beginPath(); c.ellipse(X, shY + 1, 11 * sr * (2 - ph.sq), 2.5 * sr, 0, 0, 7); c.fill(); c.restore();
       if (this.fxNow === 'aura') NX.px.glow(c, X, Y - top / 2, top * .8, 'rgba(140,100,255,.6)', this.alpha);
