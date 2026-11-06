@@ -2923,3 +2923,12 @@ glide`) їде разом з кометою — та сама триваліст
 а екран не стрибає (було: `cam.jump` — миттєвий перескок у момент появи). Близький телепорт (< 160 од.) — як було, без комети.
 Людина гортала (free) чи триває фокус уваги — камеру не чіпаємо. Заміри (телефон 390): камера 625 → 887 за 0,3 с плавно, ≤ 37
 px/кадр при 60 fps (було стрибок на 262 px за кадр); `roam.js` — nbad 0; консоль чиста. Шлях до лабораторії довший на 0,3 с (комета).
+## Чат «декор стін · 3» 06.11 — Декор стін · 38: життя жардиньєра (6 ідей)
+
+> Власник: «Реалізовуй в своєму порядку це все».
+
+- `planters.js`: `FLOWERS`, `STAGES` 4, `PERIOD` 170; `bud()`, `pt()` → `c.__pts`; `spriteOf(p, kind, stage)` з `cv.pts`; `stageOf`,
+  `shed`, `PET` (пелюстки), `HUM` (вологість + самополив), `drawPanel`, `bug()` спрайти (bfA/bfB/moth/hum/humW), `drawVisitors`;
+  `NX.planters.{water, hum, needsWater, shake, waterSpots, catSpot, FLOWERS}`; `layers()` — відблиск на спинці дивана.
+- `activities.js`: `jardin`; `nexi.js`: автожиття — `jardin` при `needsWater` або частка садової рутини; `cat.js`: spot `jar`, `jarLife`.
+- `i18n/*`: `act.jardin` (title, steps, lines). Перевірки: shot.js день/вечір, `jardin`, кіт на канті, телефон, roam 6 — чисто.

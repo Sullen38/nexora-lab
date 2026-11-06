@@ -36,7 +36,8 @@ NX.cat = {
   sofaSpot(k, x, y) { const [sx, sy] = NX.cfg.sofaPt(x, y), [, fy] = NX.cfg.sofaPt(x, 384); return { [k]: { x: sx, y: sy, from: [sx, fy] } }; },
   spots() { return {
     ...this.sofaSpot('sofa', 830, 324), ...this.sofaSpot('sofaArm', 871, 301), ...this.bedSpot(), ...this.deskSpots(),
-    rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 } }; },
+    rug: { x: NX.objects.rug.home[0] + 70, y: NX.objects.rug.home[1] + 4 },
+    ...(NX.planters && NX.planters.catSpot ? { jar: NX.planters.catSpot() } : {}) }; },                                   // (декор стін · 38) кант жардиньєра за диваном
   /** Лежанка під столом AI-центру (крок 14): точка на подушці (якір aiBed розкладки) і точка підлоги перед столом, звідки
    *  кіт застрибує під стіл (як на диван: під стіл Nexi й кіт пішки не ходять — слід стола). */
   bedSpot() { const z = NX.arc.zone && NX.arc.zone('ai'); if (!z) return {}; const [x, y] = z.S(108, 336, 20), [fx, fy] = NX.room.clampWalk(...z.S(108, 352, -16), 'cat');
@@ -55,6 +56,7 @@ NX.cat = {
     const r = Math.random();
     if (this.hunger > .7) { if (this.hunger > .9 && NX.time > (this.hungryT || 0)) { this.hungryT = NX.time + 45; this.grr(2.6); this.look(3.4, null, false, true); }   // довго чекає — сердито «шипить» (не частіше, ніж раз на 45 с)
       return this.set('meow', 2.5, () => { NX.fx.emit('note', this.x, this.y - 22); NX.nexi.catHungry = true; }); }   // голодний — кличе Nexi (смаколик)
+    if (r < .07 && this.spots().jar) return this.toSpot('jar', () => this.jarLife());                                  // (· 38) на кант жардиньєра: нюхає квітку, чхає, дрімає
     if (r < .28) { const S = this.spots(), keys = ['aiBed', 'aiBed', 'aiBed', 'sofa', 'sofaArm', 'rug'].filter(k => S[k]), s = S[keys[Math.random() * keys.length | 0]];   // найчастіше — своя лежанка
       return this.goTo(s.x, s.y, () => this.set('sleep', 14 + Math.random() * 14, () => this.set('stretch', 1.4)), s.from); }
     if (r < .44) return this.set('groom', 4 + Math.random() * 3);
@@ -115,6 +117,11 @@ NX.cat = {
     if (r < .72) return this.set('sit', 5 + Math.random() * 4, () => this.set('groom', 3, () => this.set('sit', 2)));
     return this.set('sit', 2, () => this.set('sleep', 10 + Math.random() * 10, () => this.set('stretch', 1.4)));
   },
+  /** (Декор стін · 38) На канті жардиньєра між віолою й примулою: сідає, нюхає квітку (лапка до неї), чхає — пелюстки летять
+   *  (planters.js shake), камера на нього; потім дрімає на теплому канті, потягується. */
+  jarLife() { const S = this.spots().jar; this.dir = -1; this.look(5, null, false, true);
+    this.set('sit', 1.4 + Math.random(), () => this.set('paw', .9, () => { NX.planters.shake(S.flower); NX.fx.emit('note', this.x, this.y - 22); this.look(2.5, null, true);
+      this.set('meow', .7, () => this.set('groom', 2.2, () => this.set('sleep', 9 + Math.random() * 8, () => this.set('stretch', 1.4)))); })); },
   /** Гра з голо-рибкою (objects/aicenter.js): три удари лапкою — рибка відскакує, на третій — розсипається іскрами. */
   play(F) { let n = 0; const hit = () => { if (!F.alive()) return this.set('sit', 2); this.dir = Math.sign(F.x - this.x) || this.dir;
       this.set('paw', .75, () => { F.hit(); if (++n < 3) this.set('sit', .45 + Math.random() * .5, hit); else { this.look(2.2, null, true); this.set('happy', 1.6, () => this.set('sit', 3)); } }); };

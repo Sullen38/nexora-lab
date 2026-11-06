@@ -86,6 +86,7 @@ NX.i18n.add('pl', {
     sofa: { title: 'Odpoczynek na kanapie', steps: ['Siadam na kanapie', 'Czytam wiadomości'], lines: ['Odpocznę chwilę i poczytam wiadomości biznesowe.', 'Kanapa to najlepsze miejsce na nowe pomysły.'] },
     sleep: { title: 'Drzemka na kanapie', steps: ['Kładę się', 'Zzz...'], lines: ['Coś się zmęczyłem... Obudź mnie, gdy będę potrzebny.'] },
     petCat: { title: 'Pogłaskać kota', steps: ['Idę do Rudego', 'Głaszczę ♥'], lines: ['Rudy, chodź tu! Kto jest najlepszym kotem?', 'Kocia przerwa: pogłaszczę Rudego.'] },
+    jardin: { title: 'Podlać donicę za sofą', steps: ['Biorę konewkę', 'Lecę nad donicę', 'Podlewam kwiaty ✓'], lines: ['Wyświetlacz mówi: gleba sucha. Lecę z konewką!', 'Kwiaty za sofą chcą pić.', 'Podlane — pąki zaraz się otworzą.'] },
     garden: { title: 'Podlać rośliny na ścianach', steps: ['Biorę konewkę', 'Lecę do roślin', 'Podlewam każdą ✓'], lines: ['Jestem botanikiem — czas podlać zieleń na ścianach!', 'Roślinki chcą pić. Startuję z konewką!', 'Trochę wody i liście znów błyszczą.'] },
     feedFish: { title: 'Nakarmić ryby', steps: ['Lecę do akwariów', 'Naciskam karmnik', 'Patrzę, jak jedzą ✓'], lines: ['Pora obiadu w akwariach!', 'Rybki czekają na karmę — lecę!', 'Nakarmię rybki i meduzy.'] },
     harvest: { title: 'Zbiory na farmie', steps: ['Biorę koszyk', 'Czekam na tacę', 'Koszyk pełny ✓'], lines: ['Tace dojechały do noża — czas na zbiory!', 'Koszyk w dłoń — po świeżą zieleninę.'], got: 'Zebrałem: {plant}!', done: 'Koszyk pełny. Świeże — na stół!' },

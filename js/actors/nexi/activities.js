@@ -156,6 +156,16 @@
       L.push({ work: { pose: 'hoverLook', dur: .9 } }, { fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.3 } });
       return L; } },
 
+    // ---------- (Декор стін · 38) ПОЛИВ ЖАРДИНЬЄРА за диваном: з підлоги перед диваном угору, зависає над лівою й правою половиною
+    // короба, ллє з лійки (planters.js water: вологість повна, бутони розкриваються, пелюстки «кивають»), дивиться, радіє. ----------
+    jardin: { color: '#7aff9a', route() {
+      const PL = NX.planters, n = NX.nexi; if (!PL || !PL.waterSpots) return [line('jardin')];
+      const f = NX.room.clampWalk(774, 446, 'nexi'), L = [{ walk: f }, { face: 1 }, line('jardin'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      PL.waterSpots().forEach((sp, i) => { const h = hoverAt(sp); let done = false;
+        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverWater', dur: 2.2, tick: (dt, k) => { pourFx(h.d); if (!done && k > .35) { done = true; if (i === 1) PL.water(NX.time); } } } }); });
+      L.push({ work: { pose: 'hoverLook', dur: 1.1 } }, { fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.2 } });
+      return L; } },
+
     feedFish: { color: '#3be8ff', route() {
       const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер ферма)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
