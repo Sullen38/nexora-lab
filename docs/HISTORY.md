@@ -2851,3 +2851,11 @@ fps 50 у контейнері); `texts.js` — suspicious: [] у 4 мовах; 
 - `decor_guide.js`: картка групи floor бере `NX.planters.sprite(p)`.
 - `i18n/*`: `decor.guide.sp.floor.philodendron` (uk/en/pl/nl), латина в uk.
 - Перевірки: `shot.js` десктоп 600..980×160..400 ×3, телефон 390×844 — помилок немає, fps 15 / 52 (як до того).
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 35: герої арека, стреліція Ніколая, цереус
+
+> Власник: «Давай» (· 34 прийнято).
+
+- `planters.js`: `HEROES` + areca 792/92×98, strelitzia 836/64×116, cereus 880/24×84; `DRAW.areca / strelitzia / cereus`; `PADU` 24; у
+  `PAL` + bark, barkHi, spine, white, blue.
+- `i18n/*`: `floor.areca / strelitzia / cereus`, латина в uk. Перевірки: shot.js десктоп / телефон — помилок немає; тапи 4/4.
