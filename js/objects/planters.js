@@ -30,11 +30,11 @@
   // (· 39) висячий сад над вікном: гачок на стельовій рейці (y HOOK_Y), рослина звисає вниз; x — центр, w/h — од.
   const RAIL = { x0: 662, x1: 892, y: 1 }, HOOK_Y = 4;
   const HANG = [
-    { kind: 'chlorophytum', x: 686, w: 52, h: 84, seed: 31, hang: 1 },
-    { kind: 'scindapsus', x: 738, w: 38, h: 108, seed: 32, hang: 1 },
-    { kind: 'tillandsia', x: 828, w: 34, h: 72, seed: 33, hang: 1 },
-    { kind: 'sedum', x: 866, w: 30, h: 94, seed: 34, hang: 1 },
-    { kind: 'pitcher', x: 782, w: 36, h: 66, seed: 35, hang: 1 },                                                        // (· 44) непентес над вивіскою міста (до y ≈ 70)
+    { kind: 'chlorophytum', x: 686, w: 40, h: 64, seed: 31, hang: 1 },
+    { kind: 'scindapsus', x: 738, w: 30, h: 82, seed: 32, hang: 1 },
+    { kind: 'tillandsia', x: 828, w: 26, h: 54, seed: 33, hang: 1 },
+    { kind: 'sedum', x: 866, w: 24, h: 72, seed: 34, hang: 1 },
+    { kind: 'pitcher', x: 782, w: 28, h: 52, seed: 35, hang: 1 },                                                        // (· 44) непентес над вивіскою міста (до y ≈ 70)
   ];
   // ---------- палітри ----------
   const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0', silver: '#b8c8d8', sage: '#7aa890', dusty: '#6a9a98', gray: '#98ac9c', grayD: '#5a7064', moss: '#3a6a30' };
@@ -368,8 +368,7 @@
   }
   /** Гроу-лампа на рейці (вночі): рожево-фіолетова смуга і рожевий відтінок на верхівках листя. */
   function drawGrowLamp(c, t, night) {
-    if (night < .03) return; const { x0, x1, y } = RAIL; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.8 + .1 * Math.sin(t * 1.3)); px(c, x0 + 30, y + 3.5, x1 - x0 - 60, 1.2, '#ff4fd8');
-    const g = c.createLinearGradient(0, y + 4, 0, y + 70); g.addColorStop(0, 'rgba(255,79,216,' + (.16 * night) + ')'); g.addColorStop(1, 'rgba(255,79,216,0)'); c.fillStyle = g; c.beginPath(); c.moveTo(x0 + 30, y + 4); c.lineTo(x1 - 30, y + 4); c.lineTo(x1 + 10, y + 70); c.lineTo(x0 - 10, y + 70); c.closePath(); c.fill(); c.restore();
+    if (night < .03) return; const { x0, x1, y } = RAIL; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.5 + .1 * Math.sin(t * 1.3)); px(c, x0 + 30, y + 3.5, x1 - x0 - 60, 1, '#ff4fd8'); c.restore();   // (· 45) лише смуга — без конуса й відтінку на листі (власник: рослини тьмяніли)
   }
   /** Роса на світанку: блискітки на квітках і листі, гаснуть із днем. */
   function drawDew(c, t) {
@@ -422,8 +421,7 @@
       for (const p of HEROES) { if (p.x + p.w < vx0 || p.x - p.w > vx1) continue; const cv = spriteOf(p, p.kind, FLOWERS.includes(p.kind) ? Math.round(stageOf(p, t) * (STAGES - 1)) : STAGES - 1), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, byy = cv.base[1] / S, sh = Math.sin(t * .7 + p.seed) * .012 + Math.sin(t * 1.9 + p.seed * 2) * .004;
         c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, top); c.transform(1, 0, sh, 1, 0, 0);                   // легке погойдування: верх ходить, основа стоїть
         c.drawImage(cv, -bx, -byy, w, h);
-        if (p.back) { c.globalAlpha = .2 + .08 * night; c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#2a3a8a'; c.fillRect(-bx, -byy, w, h); }   // серпанок на задньому шарі — глибина
-        if (night > .03 && !FLOWERS.includes(p.kind)) { c.globalCompositeOperation = 'source-atop'; const g = c.createLinearGradient(0, -byy, 0, -byy + h * .6); g.addColorStop(0, 'rgba(255,79,216,' + (.3 * night) + ')'); g.addColorStop(1, 'rgba(255,79,216,0)'); c.globalAlpha = 1; c.fillStyle = g; c.fillRect(-bx, -byy, w, h); }   // (· 41) гроу-лампа фарбує верхівки
+        if (p.back) { c.globalAlpha = .12 + .05 * night; c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#2a3a8a'; c.fillRect(-bx, -byy, w, h); }   // серпанок на задньому шарі — глибина
         if (p.kind === 'cereus' && night > .05) { const bl = spriteOf(p, 'cereusBloom'); c.globalAlpha = night; c.drawImage(bl, -bl.base[0] / S, -bl.base[1] / S, bl.width / S, bl.height / S); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.25 + .1 * Math.sin(t * 2)); c.fillStyle = '#fff6c0'; c.beginPath(); c.arc(-4, -p.h * .7 + 2, 9, 0, TAU); c.fill(); }   // (· 36) цереус квітне вночі
         if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-bx, -byy, w, h); } c.restore(); }
       drawLife(c, t, LK); drawGecko(c, t, night); drawPanel(c, t, LK); c.restore();

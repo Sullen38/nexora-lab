@@ -3021,3 +3021,9 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 
 - `planters.js`: HANG + pitcher 782; `DRAW.pitcher / calathea / alocasia`; слоти `slot` у 4 квітучих; `NX.planters.repot / repotSpot`.
 - `activities.js`: `repot`; `nexi.js`: частка автожиття; `i18n/*`: `act.repot`, garden + 3 види. Перевірки: shot.js repot, телефон.
+
+## Чат «декор стін · 3» 07.11 — Декор стін · 45: висячі менші, гроу-лампа без відтінку
+
+> Власник: «Мені верхні не дуже — зроби їх менше трохи. І з гроу-лампою теж: рослини через неї тьмяні стали».
+
+- `planters.js`: розміри `HANG` ×.75; `drawGrowLamp` — лише смуга; тint на героях прибрано; серпанок `back` .12 + .05·night.
