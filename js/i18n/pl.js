@@ -19,6 +19,14 @@ NX.i18n.add('pl', {
   sofa: { news: 'NEXORA NEWS • SPRZEDAŻ +18% • 3 NOWYCH KLIENTÓW • NEXI PRACOWNIKIEM MIESIĄCA • ' },
   decor: {   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      art: {   // (· 27) pamiątki Nexi na półkach-plastrach (objects/decor_guide.js)
+        head: 'PAMIĄTKA NEXI', kind: 'PAMIĄTKA', where: 'PÓŁKI-PLASTRY', count: 'Pamiątek na półkach: {n}',
+        items: { orb: { n: 'Kryształowa kula', d: 'Pierwszy „mózg” Nexi — kula-prototyp na złotej podstawce. Wciąż mieni się.' },
+          books: { n: 'Książki i kryształ', d: 'Podręczniki botaniki i biznesu; kryształ-podpórka pochodzi z pierwszego serwera Nexi.' },
+          terrarium: { n: 'Kula-terrarium', d: 'Świecący mech i kiełek — pierwsza roślina, którą Nexi wyhodował sam.' },
+          flask: { n: 'Kolba z serum', d: 'Płyn odżywczy dla uratowanych roślin. Bąbelki — czyli działa.' },
+          scope: { n: 'Mikroskop', d: 'Nexi ogląda nim liście i zarodniki — tak znajduje chore rośliny.' },
+          figure: { n: 'Złota statuetka', d: 'Nagroda „Botanik roku” — złoty Nexi na marmurowym piedestale.' } } },
       head: 'URATOWANY GATUNEK', no: 'nr', count: 'Uratowano gatunków: {n}', grow: { sprout: 'NOWY PĘD', bloom: 'KWITNIE' }, stage: 'Faza wzrostu {s} z 6', where: { wall: 'ZIELEŃ ŚCIAN', farm: 'FARMA NEXI', reef: 'RAFA', jelly: 'MEDUZARIUM' }, kind: { plant: 'ROŚLINA', fish: 'MIESZKANIEC RAFY', jel: 'MIESZKANIEC MEDUZARIUM' },
       sp: {
         wall: { bonsai: 'Bonsai (figowiec)', succ: 'Eszeweria', cactus2: 'Kaktus jeżowy', sansevieria: 'Sansewieria', bostonfern: 'Nefrolepis', dichondra: 'Dichondra srebrzysta', muehlenbeckia: 'Muehlenbeckia', bivy: 'Winobluszcz pięciolistkowy', passiflora: 'Męczennica błękitna', spathiphyllum: 'Skrzydłokwiat', syngonium: 'Syngonium', bananas: 'Sznur bananów', adansonii: 'Monstera dziurawa', dolphins: 'Sznur delfinów', lysimachia: 'Tojeść rozesłana', davallia: 'Dawalia', flytrap: 'Muchołówka amerykańska', staghorn: 'Płaskla łosioroga', shroom: 'Grzyb świecący', strelitzia: 'Strelicja królewska', palm: 'Chamedora wytworna', monstera: 'Monstera dziurawa', orchid: 'Storczyk falenopsis', ivy: 'Bluszcz pospolity', ceropegia: 'Ceropegia Wooda', rhipsalis: 'Rhipsalis', aeschynanthus: 'Eschynantus', pearls: 'Sznur pereł', tradescantia: 'Trzykrotka', wisteria: 'Glicynia', hoya: 'Hoja', asplenium: 'Zanokcica gniazdowa', peperomia: 'Peperomia', fittonia: 'Fitonia', pothos: 'Epipremnum złociste', columnea: 'Kolumnea' },

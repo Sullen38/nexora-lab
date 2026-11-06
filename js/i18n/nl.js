@@ -19,6 +19,14 @@ NX.i18n.add('nl', {
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
   decor: {   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      art: {   // (· 27) Nexi's aandenkens op de honingraatplanken (objects/decor_guide.js)
+        head: 'AANDENKEN VAN NEXI', kind: 'AANDENKEN', where: 'HONINGRAATPLANKEN', count: 'Aandenkens op de planken: {n}',
+        items: { orb: { n: 'Kristallen bol', d: 'Nexi\'s eerste "brein" — een prototypebol op een gouden voet. Glanst nog steeds.' },
+          books: { n: 'Boeken en een kristal', d: 'Handboeken plantkunde en zaken; de kristallen boekensteun komt van Nexi\'s eerste server.' },
+          terrarium: { n: 'Terrariumbol', d: 'Lichtgevend mos en een kiempje — de eerste plant die Nexi zelf kweekte.' },
+          flask: { n: 'Kolf met serum', d: 'Voedingsvloeistof voor geredde planten. Belletjes — dus het werkt.' },
+          scope: { n: 'Microscoop', d: 'Nexi bekijkt er bladeren en sporen mee — zo vindt hij zieke planten.' },
+          figure: { n: 'Gouden beeldje', d: 'De prijs "Botanicus van het jaar" — een gouden Nexi op een marmeren voetstuk.' } } },
       head: 'GEREDDE SOORT', no: 'nr.', count: 'Geredde soorten: {n}', grow: { sprout: 'NIEUWE SCHEUT', bloom: 'IN BLOEI' }, stage: 'Groeifase {s} van 6', where: { wall: 'MUURGROEN', farm: 'NEXI-FARM', reef: 'RIF', jelly: 'KWALLENTANK' }, kind: { plant: 'PLANT', fish: 'RIFBEWONER', jel: 'KWALLENTANKBEWONER' },
       sp: {
         wall: { bonsai: 'Bonsai (ficus)', succ: 'Echeveria', cactus2: 'Egelcactus', sansevieria: 'Vrouwentong', bostonfern: 'Krulvaren', dichondra: 'Zilveren dichondra', muehlenbeckia: 'Muehlenbeckia', bivy: 'Wilde wingerd', passiflora: 'Passiebloem', spathiphyllum: 'Lepelplant', syngonium: 'Syngonium', bananas: 'Bananenplantje', adansonii: 'Kleine gatenplant', dolphins: 'Dolfijnenplant', lysimachia: 'Penningkruid', davallia: 'Hazenpootvaren', flytrap: 'Venusvliegenvanger', staghorn: 'Hertshoornvaren', shroom: 'Lichtgevende paddenstoel', strelitzia: 'Paradijsvogelbloem', palm: 'Kamerpalm', monstera: 'Gatenplant', orchid: 'Vlinderorchidee', ivy: 'Klimop', ceropegia: 'Chinees lantaarnplantje', rhipsalis: 'Koraalcactus', aeschynanthus: 'Lipstickplant', pearls: 'Erwtenplant', tradescantia: 'Vaderplant', wisteria: 'Blauweregen', hoya: 'Wasbloem', asplenium: 'Nestvaren', peperomia: 'Peperomia', fittonia: 'Mozaïekplant', pothos: 'Scindapsus', columnea: 'Goudvisplant' },

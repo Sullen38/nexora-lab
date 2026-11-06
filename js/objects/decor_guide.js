@@ -14,6 +14,10 @@
  * промінь від сканера до рослини (scanFrom), кільце на ній, картка виду відкривається сама (як від тапу). Бирки з номерами біля
  * рослин були в · 19 і прибрані в · 21 (власник: «таблички з номерами прибираємо — просто коли на рослину жмемо, інформація»).
  * Камера на картку не реагує (тап по декору — не команда Nexi). Картка сама ховається за HIDE с; тап по ній — закрити.
+ * (· 27) РЕЧІ NEXI: штучки в сотах-полицях (куля, книжки, тераріум, колба, мікроскоп, статуетка — dc_art, ART_KINDS) теж мають
+ * картку: «РІЧ NEXI · №N», назва й підпис-історія (i18n decor.guide.art.items.<kind>.n / .d), малюнок — шматок зібраної сцени
+ * (NX.arc.built[side].comp) навколо штучки. Тап по порожньому місцю соти відкриває картку її вмісту (рослини чи речі). Речі не
+ * входять у реєстр урятованих видів (свій лічильник count).
  * ========================================================================== */
 (() => {
   const X = NX.px3d, HIDE = 6.5, GROUPS = ['wall', 'farm', 'reef', 'jelly'];
@@ -25,18 +29,24 @@
     for (const grp of GROUPS) { const d = NX.t('decor.guide.sp.' + grp); if (!d || typeof d !== 'object') continue; for (const kind of Object.keys(d)) { const e = { grp, kind, no: list.length + 1 }; list.push(e); by[grp + '.' + kind] = e; } }
     return REG = { list, by, n: list.length };
   }
-  const find = (grp, kind) => reg().by[grp + '.' + kind] || null;
+  const ART_KINDS = ['orb', 'books', 'terrarium', 'flask', 'scope', 'figure'];                                     // (· 27) речі Nexi в сотах
+  const find = (grp, kind) => grp === 'art' ? (ART_KINDS.includes(kind) ? { grp, kind, no: ART_KINDS.indexOf(kind) + 1 } : null) : (reg().by[grp + '.' + kind] || null);
   const WALL_ALIAS = { fungi: 'shroom', green: 'orchid' };                                                   // тапи decor_live без спрайта рослини -> вид
 
   // ---------- нерухомі рослини: коробки на екрані з розкладки (один раз) ----------
-  let STAT = null;
+  let STAT = null, HEXC = [];
   function statics() {
     if (STAT) return STAT; STAT = []; const DC = NX.decor; if (!DC || !NX.arc.kit) return STAT;
     const live = NX.arc.dcLive || {};
-    for (const B of DC.items) { const d = B.dc; if (!d) continue; const kind = d.plant || d.kind; if (!kind || !find('wall', kind) || live[B.id] || B.st === 'dc_pylon') continue;
-      const { P } = NX.arc.kit.basis(B); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    const box = B => { const { P } = NX.arc.kit.basis(B); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
       for (const u of [-B.w / 2, B.w / 2]) for (const v of [0, B.dep]) for (const y of [B.yt, B.yb]) { const q = X.proj(P(u, v, y)); x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }
-      STAT.push({ kind, x0, x1, y0, y1, a: (x1 - x0) * (y1 - y0), z: P(0, B.dep / 2, B.yb)[2] }); }
+      return { x0, x1, y0, y1, a: (x1 - x0) * (y1 - y0), z: P(0, B.dep / 2, B.yb)[2] }; };
+    HEXC = [];
+    for (const B of DC.items) { const d = B.dc; if (!d) continue;
+      if (B.st === 'dc_hex') { HEXC.push(Object.assign({ id: B.id }, box(B))); continue; }                                   // (· 27) комірки сот — для тапу повз вміст
+      const art = B.st === 'dc_art' && ART_KINDS.includes(d.kind), kind = d.plant || d.kind;
+      if (!kind || (!art && !find('wall', kind)) || live[B.id] || B.st === 'dc_pylon') continue;
+      STAT.push(Object.assign({ kind, grp: art ? 'art' : 'wall', on: B.on || null }, box(B))); }
     return STAT;
   }
 
@@ -47,7 +57,7 @@
     const DL = NX.decorLive, LP = DL ? DL.LP : []; if (LP.length === SP.n) return SP.list; SP.n = LP.length; const out = [], seen = {};
     const put = (kind, x0, x1, y0, y1, z) => { const e = find('wall', kind); if (!e || seen[kind]) return; seen[kind] = 1; out.push({ kind, no: e.no, cx: (x0 + x1) / 2, cy: y0 + (y1 - y0) * .62, z }); };
     for (const L of LP) if (L.e && L.e.sp) put(L.e.sp.kind, L.x0, L.x1, L.y0, L.y1, L.e.P3 ? L.e.P3[2] : 100);
-    for (const S of statics()) put(S.kind, S.x0, S.x1, S.y0, S.y1, S.z);
+    for (const S of statics()) if (S.grp === 'wall') put(S.kind, S.x0, S.x1, S.y0, S.y1, S.z);
     return SP.list = out;
   }
   function drawScan(c, t) {
@@ -67,6 +77,10 @@
       const w = src.width, h = src.height; let x0 = w, y0 = h, x1 = -1, y1 = -1; try { const d = src.getContext('2d').getImageData(0, 0, w, h).data; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch (err) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
       if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; } const sw = x1 - x0 + 1, sh = y1 - y0 + 1, k = Math.min((n - pad * 2) / sw, (n - pad * 2) / sh, 4), dw = sw * k, dh = sh * k; c.drawImage(src, x0, y0, sw, sh, (n - dw) / 2, (n - dh) / 2, dw, dh); };
     try {
+      if (e.grp === 'art') {                                                                                 // (· 27) річ Nexi: шматок зібраної сцени навколо штучки
+        const b = info && info.box, SD = NX.arc.built; if (!b || !SD) return; const S = ['left', 'right'].map(k => SD[k]).find(S => S && S.comp && b.x0 >= S.box[0] && b.x1 <= S.box[2]); if (!S) return;
+        const k = S.comp.width / (S.box[2] - S.box[0]), pad = 1.5, sx = (b.x0 - pad - S.box[0]) * k, sy = (b.y0 - pad - S.box[1]) * k, sw = (b.x1 - b.x0 + pad * 2) * k, sh = (b.y1 - b.y0 + pad * 2) * k, q = Math.min((n - 4) / sw, (n - 4) / sh);
+        c.imageSmoothingEnabled = sw > n; c.drawImage(S.comp, sx, sy, sw, sh, (n - sw * q) / 2, (n - sh * q) / 2, sw * q, sh * q); return; }
       if (e.grp === 'wall') { const sp = NX.arc.dcSpec && NX.arc.dcSpec[e.kind], r = sp && NX.arc.dcPlant(sp); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'farm') { const S = NX.decorFarm && NX.decorFarm.plantSpr(e.kind, info && info.s != null ? info.s : 1); if (S) fit(S.cv); return; }
@@ -81,6 +95,11 @@
   // ---------- картка ----------
   function render() {
     const el = $('guide'); if (!el || !cur) return; const { e, info } = cur, T = NX.t, R = reg();
+    if (e.grp === 'art') {                                                                                   // (· 27) картка речі Nexi: назва, підпис-історія, золота рамка
+      el.querySelector('b').textContent = T('decor.guide.art.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(2, '0');
+      el.querySelector('.gn').textContent = T(`decor.guide.art.items.${e.kind}.n`); el.querySelector('small').textContent = T(`decor.guide.art.items.${e.kind}.d`);
+      el.querySelector('.gw').textContent = T('decor.guide.art.kind') + ' · ' + T('decor.guide.art.where'); el.querySelector('.gc').textContent = T('decor.guide.art.count', { n: ART_KINDS.length });
+      el.style.borderColor = '#ffd27a'; drawSprite(e, info); return; }
     el.querySelector('b').textContent = T('decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
     const lat = T('decor.guide.latin.' + e.kind); el.querySelector('small').textContent = lat.startsWith('decor.') ? '' : lat;
@@ -124,7 +143,9 @@
     /** Тап повз живе: чи влучив у нерухому рослину (соти, витки на цеглі, даваллія, платицеріум, монстера антресолі…). -> true */
     tapStatic(x, y) {
       let best = null; for (const S of statics()) if (x >= S.x0 - 1 && x <= S.x1 + 1 && y >= S.y0 - 1 && y <= S.y1 + 1 && (!best || S.a < best.a)) best = S;
-      if (!best) return false; show(find('wall', best.kind)); return true;
+      if (!best) { let hx = null; for (const H of HEXC) if (x >= H.x0 && x <= H.x1 && y >= H.y0 && y <= H.y1 && (!hx || H.a < hx.a)) hx = H;   // (· 27) тап по порожньому місцю соти — вміст соти
+        if (hx) best = statics().find(S => S.on === hx.id) || null; }
+      if (!best) return false; show(find(best.grp, best.kind), best.grp === 'art' ? { box: best } : null); return true;
     },
   };
 })();

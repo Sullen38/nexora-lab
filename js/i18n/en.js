@@ -19,6 +19,14 @@ NX.i18n.add('en', {
   sofa: { news: 'NEXORA NEWS • SALES +18% • 3 NEW CLIENTS • NEXI IS EMPLOYEE OF THE MONTH • ' },
   decor: {   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      art: {   // (· 27) Nexi's keepsakes on the honeycomb shelves (objects/decor_guide.js)
+        head: 'NEXI\'S KEEPSAKE', kind: 'KEEPSAKE', where: 'HONEYCOMB SHELVES', count: 'Keepsakes on the shelves: {n}',
+        items: { orb: { n: 'Crystal orb', d: 'Nexi\'s first "brain" — a prototype orb on a golden stand. Still shimmering.' },
+          books: { n: 'Books and a crystal', d: 'Botany and business textbooks; the crystal bookend is from Nexi\'s first server.' },
+          terrarium: { n: 'Terrarium globe', d: 'Glowing moss and a sprout — the first plant Nexi ever grew himself.' },
+          flask: { n: 'Flask of serum', d: 'Nutrient fluid for rescued plants. Bubbles mean it\'s working.' },
+          scope: { n: 'Microscope', d: 'Nexi studies leaves and spores with it — that\'s how he spots sick plants.' },
+          figure: { n: 'Golden statuette', d: 'The "Botanist of the Year" award — a golden Nexi on a marble pedestal.' } } },
       head: 'RESCUED SPECIES', no: 'No.', count: 'Species rescued: {n}', grow: { sprout: 'NEW SPROUT', bloom: 'IN BLOOM' }, stage: 'Growth stage {s} of 6', where: { wall: 'WALL GREENERY', farm: 'NEXI FARM', reef: 'REEF', jelly: 'JELLY TANK' }, kind: { plant: 'PLANT', fish: 'REEF RESIDENT', jel: 'JELLY TANK RESIDENT' },
       sp: {
         wall: { bonsai: 'Bonsai (ficus)', succ: 'Echeveria', cactus2: 'Hedgehog cactus', sansevieria: 'Snake plant', bostonfern: 'Boston fern', dichondra: 'Silver falls dichondra', muehlenbeckia: 'Maidenhair vine', bivy: 'Virginia creeper', passiflora: 'Passion flower', spathiphyllum: 'Peace lily', syngonium: 'Arrowhead vine', bananas: 'String of bananas', adansonii: 'Swiss cheese vine', dolphins: 'String of dolphins', lysimachia: 'Creeping Jenny', davallia: 'Rabbit\'s-foot fern', flytrap: 'Venus flytrap', staghorn: 'Staghorn fern', shroom: 'Glowing mushroom', strelitzia: 'Bird of paradise', palm: 'Parlor palm', monstera: 'Monstera', orchid: 'Moth orchid', ivy: 'Ivy', ceropegia: 'String of hearts', rhipsalis: 'Mistletoe cactus', aeschynanthus: 'Lipstick plant', pearls: 'String of pearls', tradescantia: 'Inch plant', wisteria: 'Wisteria', hoya: 'Wax plant', asplenium: 'Bird\'s nest fern', peperomia: 'Peperomia', fittonia: 'Nerve plant', pothos: 'Pothos', columnea: 'Goldfish plant' },
