@@ -117,5 +117,5 @@ NX.cards = (() => {
     if (hit) { S.mode = 'hero'; S.id = hit.id; S.hero = { t0: t, flip: 0, sx: 1 }; S.t0 = t; return true; }
     close(); return true;
   }
-  return { open, close, draw, tap, S, get on() { return S.on; } };
+  return { open, close, draw, tap, S, col, get on() { return S.on; } };
 })();
