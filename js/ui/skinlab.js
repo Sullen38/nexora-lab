@@ -2,22 +2,21 @@
  * ui/skinlab.js — ЛАБОРАТОРІЯ СКІНІВ (відкривається лише в зоні СКІНИ — у коді workshop; тап по Nexi — привітання, nexi.hi)
  * ----------------------------------------------------------------------------
  * Категорії беруться з actors/nexi/skins.js: ГОТОВІ СКІНИ (з рідкістю — кольорова рамка), кольори, антени, тулуб, руки,
- * ноги, АКСЕСУАРИ (спина, голова) і РЕЛІКВІЇ (предмети в руці) — окремо (власник, 29.10); ВЛАСНИКИ — персональні Nexi
- * (02.11). Обличчя тут немає: вирази Nexi обирає сам (емоції — nexi.js moodLife). Зміни одразу видно на Nexi в кімнаті.
- * ПЕРСОНАЛЬНІ NEXI (власник, 02.11: «повторювати скіни не можна; кожен — 99,99 € і NFT»; правила — actors/nexi/owners.js):
- *   приміряти можна будь-що, а ЗАЛИШИТИ (зберегти) — лише стандартний Nexi, готовий скін (поки його не купили) або свій
- *   куплений. Готовий скін теж можна купити як є (власник, 02.11: «будь-який Nexi — 99,99 €, свій номер від #1») — у рядку
- *   стану тоді золота кнопка «КУПИТИ #002 · 99,99 €» (номер — наступний за чергою); куплений — у плитці «ЗАЙНЯТО #003». Рядок під
- *   прев'ю каже, що це за образ: готовий скін (безкоштовно) · унікальний (можна купити, ціна) · такий уже має власник (зміни
- *   хоча б одну річ) · твій Nexi; кнопка внизу — «ЗБЕРЕЖЕНО» / «КУПИТИ · 99,99 €» (аркуш з карткою NFT — ui/shop.js) /
- *   «ЗАЙНЯТО». Закрив лабораторію з образом, який не можна залишити, — примірку знято (повертається збережений).
- * ВИБІР ЗБЕРІГАЄТЬСЯ САМ (власник, 02.11: «скін, який людина обрала, має зберігатися — коли заходить повторно, у кожного
- *   лишається такий, який був»): кожна зміна, яку можна залишити, одразу пишеться в localStorage (persist) — кнопка показує
- *   «ЗБЕРЕЖЕНО»; main.js при запуску вдягає його (і заставка — splash.js). Поки акаунтів немає, «користувач» — його браузер
- *   (телефон чи комп'ютер); з акаунтами (docs/NFT.md, крок 2) образ зберігатиметься на сервері — однаковий на всіх пристроях.
+ * ноги, АКСЕСУАРИ (спина, голова) і РЕЛІКВІЇ (предмети в руці) — окремо (власник, 29.10); ВЛАСНИКИ — картки Nexi (02.11).
+ * Обличчя тут немає: вирази Nexi обирає сам (емоції — nexi.js moodLife). Зміни одразу видно на Nexi в кімнаті.
+ * ОБРАЗ — БУДЬ-ЯКИЙ, БЕЗКОШТОВНО Й ЗБЕРІГАЄТЬСЯ САМ (власник, 06.11: «образ — який людина захотіла, повністю, — вона з ним
+ *   ходить, і він зберігається; коли закриваємо скіни — Nexi в тому, в що ми його зібрали; не треба кнопок „зберегти“ — само
+ *   зберігає, на чому зупинилися, повністю, реліквія теж»): кожна зміна одразу пишеться в localStorage 'nexi-look' (persist),
+ *   закриття нічого не знімає; готовий скін вдягається поверх реліквії (вона лишається). Кнопок «ЗБЕРЕГТИ» немає — лише
+ *   «ВИПАДКОВО», «СКИНУТИ» і золота «КАРТКА #002 · 99,99 €». Поки акаунтів немає, «користувач» — його браузер (телефон чи
+ *   комп'ютер); з акаунтами (docs/NFT.md, крок 2) образ зберігатиметься на сервері — однаковий на всіх пристроях.
+ * КАРТКА NEXI (власник, 06.11: «купується картка з номером — 99,99 €, з будь-яким образом, навіть звичайним»; правила —
+ *   actors/nexi/owners.js): рядок під прев'ю каже, що це за образ (стандарт · готовий скін · свій · уже на картці #00N —
+ *   зміни хоч одну річ · на твоїй картці) і код; кнопка «КАРТКА #00N · 99,99 €» відкриває аркуш з картою NFT (ui/shop.js);
+ *   якщо образ уже на чиїйсь картці — кнопка «ОБРАЗ УЖЕ НА КАРТЦІ #00N» (тап — підказка); своя — «ТВОЯ КАРТКА #001».
  * ========================================================================== */
 NX.ui.skinlab = {
-  open: false, cat: null, kept: null,
+  open: false, cat: null,
   init() {
     const $ = id => document.getElementById(id);
     this.CATS = [{ k: 'skin', items: SKINS }, { k: 'theme', items: THEMES }, { k: 'ant', items: ANTS }, { k: 'body', items: BODIES }, { k: 'arms', items: ARMS },
@@ -26,14 +25,13 @@ NX.ui.skinlab = {
     this.CATS.forEach(c => { const b = document.createElement('button'); b.onclick = () => { this.cat = c; this.grid(); }; c.btn = b; $('cats').appendChild(b); });
     $('lx').onclick = () => this.hide(); addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (NX.ui.shop.open) NX.ui.shop.hide(); else this.hide(); });
     $('pl').onclick = () => this.cycle(-1); $('pr').onclick = () => this.cycle(1);
-    $('save').onclick = () => this.keep(); $('ownbuy').onclick = () => NX.ui.shop.show('buy');   // готовий скін: носити — безкоштовно, купити — рядок стану
+    $('card').onclick = () => this.card();                                                   // картка з номером і цим образом (ui/shop.js)
     $('rst').onclick = () => { NX.nexi.look = { ...DEFAULT_LOOK }; this.persist(); this.grid(); };
     $('rnd').onclick = () => { const p = o => { const k = Object.keys(o); return k[Math.random() * k.length | 0]; }, r = Math.random;
       const backs = WEAR_ACCS.filter(k => ACCS[k].slot === 'back'), heads = WEAR_ACCS.filter(k => ACCS[k].slot === 'head');
       NX.nexi.look = r() < .5 ? skinLook(p(SKINS), { hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: 'none' })   // половина разів — готовий скін
         : { face: 'standard', ant: p(ANTS), body: p(BODIES), arms: p(ARMS), legs: p(LEGS), theme: p(THEMES), back: r() < .4 ? backs[r() * backs.length | 0] : null, head: r() < .35 ? heads[r() * heads.length | 0] : null, hand: r() < .45 ? HAND_ITEMS[r() * HAND_ITEMS.length | 0] : null, fx: 'none' };
       this.persist(); this.grid(); NX.nexi.emote('surprise', 1.5); };
-    this.kept = { ...NX.nexi.look };                                                          // збережений образ (main.js уже перевірив, що його можна залишити)
     NX.ui.shop.init();
     this.relabel();
     this.pv = $('pv').getContext('2d'); this.pscr = document.createElement('canvas'); this.tcr = document.createElement('canvas');
@@ -45,47 +43,37 @@ NX.ui.skinlab = {
   relabel() { this.CATS.forEach(c => c.btn.textContent = NX.t('cats.' + c.k)); NX.ui.shop.relabel(); if (this.open) this.grid(); else this.state(); },
   name(c, id) { return NX.t('skin.' + (c.k === 'relic' ? 'acc' : c.k) + '.' + id); },
   show(fromWorkshop) { this.open = true; document.getElementById('lab').classList.add('open'); this.grid(); if (!fromWorkshop) NX.nexi.say(NX.pick('act.skinLab.lines')); },
-  /** Закрити: якщо на Nexi примірка, яку не можна залишити (персональний образ без покупки), — повернути збережений. */
-  hide() {
-    if (!this.open) return; this.open = false; NX.ui.shop.hide(); document.getElementById('lab').classList.remove('open');
+  /** Закрити: Nexi лишається в тому, в що його зібрали (образ уже збережено при кожній зміні). */
+  hide() { if (!this.open) return; this.open = false; NX.ui.shop.hide(); document.getElementById('lab').classList.remove('open'); this.persist(); },
+  /** Золота кнопка внизу: картка з номером і цим образом (аркуш NFT) · образ уже на чиїйсь картці — підказка · своя — відкрити. */
+  card() {
     const st = NX.owners.status(NX.nexi.look);
-    if (!NX.owners.keepable(NX.nexi.look)) { NX.nexi.look = { ...this.kept }; NX.ui.hud.toast(NX.t(st.kind === 'taken' ? 'own.tryoffTaken' : 'own.tryoff')); } else this.persist();
-  },
-  /** Кнопка внизу: «ЗБЕРЕЖЕНО» (стандарт / готовий скін / свій — уже збережено, тап — підтвердження) · купити (вільний
-   *  персональний — аркуш NFT) · зайнято (чужий). */
-  keep() {
-    const st = NX.owners.status(NX.nexi.look);
-    if (st.kind === 'avail') return NX.ui.shop.show('buy');
     if (st.kind === 'taken') return NX.ui.hud.toast(NX.t('own.takenToast'));
-    this.persist(); NX.ui.hud.toast(NX.t('ui.saved')); NX.nexi.emote('love');
+    NX.ui.shop.show(st.kind === 'mine' ? 'view' : 'buy', st.kind === 'mine' ? st.owner : null);
   },
-  /** Запам'ятати образ на Nexi, якщо його можна залишити (у цьому браузері — localStorage 'nexi-look'); примірку — ні. */
-  persist() {
-    const L = NX.nexi.look; if (!NX.owners.keepable(L)) return false;
-    this.kept = { ...L }; try { localStorage.setItem('nexi-look', JSON.stringify(L)); } catch (e) {} return true;
-  },
-  /** Рядок під прев'ю (що це за образ) і напис на кнопці збереження / купівлі. */
+  /** Запам'ятати образ на Nexi — будь-який, разом з реліквією (у цьому браузері — localStorage 'nexi-look'). */
+  persist() { try { localStorage.setItem('nexi-look', JSON.stringify(NX.nexi.look)); } catch (e) {} return true; },
+  /** Рядок під прев'ю (що це за образ, код) і золота кнопка картки. */
   state() {
-    const O = NX.owners, L = NX.nexi.look, st = O.status(L), $ = id => document.getElementById(id), sv = $('save'), ob = $('ownbuy');
+    const O = NX.owners, L = NX.nexi.look, st = O.status(L), $ = id => document.getElementById(id), cb = $('card'), no = st.owner ? O.noText(st.owner) : O.noText({ no: O.nextNo() });
     $('own').className = 'own ' + st.kind;
     $('ownst').textContent = st.kind === 'std' ? NX.t('own.std') : st.kind === 'preset' ? NX.t('own.preset', { name: NX.t('skin.skin.' + st.preset) })
-      : st.kind === 'avail' ? NX.t('own.avail') + ' · ' + O.priceText()
-      : st.kind === 'taken' ? NX.t('own.taken', { name: O.nameOf(st.owner), no: O.noText(st.owner) })
-      : NX.t('own.mine', { no: O.noText(st.owner) });
-    $('owncode').textContent = st.kind === 'std' || st.kind === 'preset' ? '' : O.code(L);
-    ob.hidden = st.kind !== 'preset'; ob.textContent = NX.t('own.buyNo', { no: O.noText({ no: O.nextNo() }), price: O.priceText() });
-    sv.className = 'save' + (st.kind === 'avail' ? ' buy' : st.kind === 'taken' ? ' busy' : '');
-    sv.textContent = st.kind === 'avail' ? NX.t('own.buy', { price: O.priceText() }) : st.kind === 'taken' ? NX.t('own.busy') : NX.t('ui.kept');
+      : st.kind === 'avail' ? NX.t('own.avail')
+      : st.kind === 'taken' ? NX.t('own.taken', { name: O.nameOf(st.owner), no: no })
+      : NX.t('own.mine', { no: no });
+    $('owncode').textContent = st.kind === 'std' ? '' : O.code(L);
+    cb.className = 'card' + (st.kind === 'taken' ? ' busy' : st.kind === 'mine' ? ' mine' : '');
+    cb.textContent = NX.t(st.kind === 'taken' ? 'own.cardTaken' : st.kind === 'mine' ? 'own.cardMine' : 'own.card', { no: no, price: O.priceText() });
   },
-  isOn(c, id) { const L = NX.nexi.look; if (c.k === 'skin') return skinOf(L) === id && !L.hand; if (c.k === 'acc' || c.k === 'relic') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return (L[c.k] ?? DEFAULT_LOOK[c.k]) === id; },
+  isOn(c, id) { const L = NX.nexi.look; if (c.k === 'skin') return skinOf(L) === id; if (c.k === 'acc' || c.k === 'relic') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return (L[c.k] ?? DEFAULT_LOOK[c.k]) === id; },
   apply(c, id) {
     const n = NX.nexi, L = n.look; n.lastCmd = NX.time;
-    if (c.k === 'skin') Object.assign(L, skinLook(id), { hand: null });                     // готовий скін — увесь образ (без реліквії: інакше це вже персональний)
+    if (c.k === 'skin') Object.assign(L, skinLook(id, L));                                  // готовий скін — увесь образ; реліквія в руці лишається (власник, 06.11)
     else if (c.k === 'acc' || c.k === 'relic') { const s = ACCS[id].slot; L[s] = L[s] === id ? null : id; }
     else if (c.k === 'act') { n.temp = id; n.tempT = NX.time + 4; }
     else if (c.k === 'mood') n.emote(id, 3);
     else L[c.k] = id;
-    if (c.k !== 'act' && c.k !== 'mood') { this.installFx(); this.persist(); }                // обраний скін — одразу збережено (примірку — ні)
+    if (c.k !== 'act' && c.k !== 'mood') { this.installFx(); this.persist(); }                // кожна зміна — одразу збережено
     this.grid();
   },
   /** Ефект встановлення скіна: у капсулі майстерні — маніпулятор «зашиває» скін блискавкою (objects/workshop.js), інакше — іскри. */
@@ -99,17 +87,17 @@ NX.ui.skinlab = {
     this.state();
     if (c.k === 'owners') return this.owners(g);
     Object.keys(c.items).forEach(id => {
-      const b = document.createElement('button'), rar = c.k === 'skin' ? SKINS[id].rar : null, ow = rar && id !== 'classic' && NX.owners.ownerOf(id);   // готовий скін уже купили
+      const b = document.createElement('button'), rar = c.k === 'skin' ? SKINS[id].rar : null, ow = rar && NX.owners.ownerOf(id);   // готовий скін уже на чиїйсь картці (носити можна)
       b.className = 'tile' + (this.isOn(c, id) ? ' on' : '') + (rar ? ' rar rar-' + rar : '') + (ow ? (ow.mine ? ' mine' : ' sold') : '');
       const cn = document.createElement('canvas'); cn.width = SW; cn.height = SH; b.append(cn, this.name(c, id));
-      if (rar) { const sm = document.createElement('small'), O = NX.owners;                   // рідкість готового скіна; куплений — «ЗАЙНЯТО #003» / «#001 · ТИ»
-        sm.textContent = ow ? (ow.mine ? O.noText(ow) + ' · ' + NX.t('own.you') : NX.t('own.busy') + ' ' + O.noText(ow)) : NX.t('skin.rar.' + rar); b.append(sm); }
+      if (rar) { const sm = document.createElement('small'), O = NX.owners;                   // рідкість готового скіна; на картці — «#003» / «#001 · ТИ»
+        sm.textContent = ow ? O.noText(ow) + (ow.mine ? ' · ' + NX.t('own.you') : '') : NX.t('skin.rar.' + rar); b.append(sm); }
       let l = { ...NX.nexi.look }, po = poseFor('stand', .5, false);                                   // t .5 — очі відкриті (у t 0 — кліп)
-      if (c.k === 'skin') l = Object.assign(skinLook(id, l), { hand: null }); else if (c.k === 'acc' || c.k === 'relic') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = NX.nexi.faceOf(id); else l[c.k] = id;
+      if (c.k === 'skin') l = skinLook(id, l); else if (c.k === 'acc' || c.k === 'relic') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = NX.nexi.faceOf(id); else l[c.k] = id;
       renderBot(l, po, .5, this.tcr); cn.getContext('2d').drawImage(this.tcr, 0, 0); b.onclick = () => this.apply(c, id); g.appendChild(b);
     });
   },
-  /** Вкладка ВЛАСНИКИ: усі персональні Nexi за номером (ім'я, #001; свій — «ТИ»); тап — картка NFT (свій можна вдягнути). */
+  /** Вкладка ВЛАСНИКИ: усі картки за номером (ім'я, #001; своя — «ТИ»); тап — картка NFT (свою можна вдягнути). */
   owners(g) {
     const O = NX.owners;
     if (!O.list.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = NX.t('own.none'); g.appendChild(p); return; }

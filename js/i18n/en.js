@@ -1,7 +1,7 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
   ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
-    result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. NEW LOOK — IN THE SKINS ZONE. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', kept: 'SAVED', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+    result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. NEW LOOK — IN THE SKINS ZONE. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
     aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK', kb: 'KB',
     st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },
@@ -110,13 +110,13 @@ NX.i18n.add('en', {
     done: ['Done!', 'Finished ✓', 'Got it! What next?'],
   },
   own: {
-    std: 'Standard Nexi — free for everyone', preset: 'Ready skin “{name}” — free until someone buys it', buyNo: 'BUY {no} · {price}',
-    presetBuy: 'Ready skin “{name}”: buy it first and it’s yours alone', perkNo: 'Number {no} — next in line (locked in at payment)',
-    lost: 'Someone bought my “{name}” skin — it’s Nexi {no} now. Pick me a new look in the Skins zone!', avail: 'Unique! Nobody has this Nexi yet', taken: '{name} already owns this Nexi ({no}) — change at least one thing',
-    mine: 'Your personal Nexi {no} · NFT 1/1', buy: 'BUY · {price}', busy: 'TAKEN', takenToast: 'CHANGE AT LEAST ONE THING', tryoff: 'TRY-ON REMOVED — BUY THIS NEXI TO KEEP IT', tryoffTaken: 'TRY-ON REMOVED — THIS NEXI ALREADY HAS AN OWNER',
-    price: '€{v}', title: 'PERSONAL NEXI', yours: 'YOUR',
-    perks: ['Only yours: nobody else can wear this Nexi', 'NFT 1/1 on Base — in your wallet (created from your email)', 'Resellable; one Nexi per person'],
-    soon: 'SALE OPENS SOON', soonNote: 'Card payments come in the next step — then this Nexi becomes your NFT 1/1.', haveOne: 'YOU ALREADY OWN NEXI {no}', wear: 'WEAR',
+    std: 'Standard Nexi — free for everyone', preset: 'Ready skin “{name}” — free', avail: 'Your own look — free; no card has it yet',
+    taken: 'This look is already on card {no} ({name}) — you can wear it, but not card it', mine: 'Your card {no} · NFT 1/1',
+    card: 'CARD {no} · {price}', cardTaken: 'LOOK ALREADY ON CARD {no}', cardMine: 'YOUR CARD {no}', takenToast: 'CHANGE AT LEAST ONE THING AND THE CARD IS YOURS',
+    cardWith: 'Card {no} with the “{name}” look', cardOwn: 'Card {no} with your own look', perkNo: 'Number {no} — next in line (locked in at payment)',
+    price: '€{v}', title: 'NEXI CARD', yours: 'YOUR',
+    perks: ['A numbered card — NFT 1/1 on Base, in your wallet (created from your email)', 'The look on the card is yours alone: no second card will carry the same look', 'You can wear any look without a card', 'Resellable; one card per person'],
+    soon: 'SALE OPENS SOON', soonNote: 'Card payments come in the next step — then card {no} becomes your NFT 1/1.', haveOne: 'YOU ALREADY OWN CARD {no}', wear: 'WEAR',
     copy: 'COPY CODE', copied: 'CODE COPIED', owner: 'Owner: {name}', since: 'since {date}', founder: 'Founder', you: 'YOU', none: 'No owners yet — be the first!', demoName: 'Example {n}',
     attr: { theme: 'Color', body: 'Body', arms: 'Arms', legs: 'Legs', ant: 'Antenna', head: 'Head', back: 'Back', hand: 'Relic' }, nothing: '—' },
   skin: {

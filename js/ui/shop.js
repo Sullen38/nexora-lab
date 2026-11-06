@@ -1,11 +1,12 @@
 /* ============================================================================
- * ui/shop.js — ПЕРСОНАЛЬНИЙ NEXI: КАРТКА NFT, ЩО ДАЄ ПОКУПКА, ЦІНА (аркуш поверх лабораторії скінів)
+ * ui/shop.js — КАРТКА NEXI: КАРТКА NFT З НОМЕРОМ, ЩО ДАЄ ПОКУПКА, ЦІНА (аркуш поверх лабораторії скінів)
  * ----------------------------------------------------------------------------
- * Відкривається з лабораторії (ui/skinlab.js):
- *   show('buy')         — образ вільний (своє поєднання або готовий скін, ще не куплений): картка NFT зі скіном і НОМЕРОМ, який
- *                         отримає покупець (наступний за чергою: #001 — засновник, далі #002…; власник, 02.11), 8 частин-атрибутів,
+ * Власник (06.11): «купується картка з номером — 99,99 €, з будь-яким образом, навіть звичайним». Відкривається з лабораторії
+ * (ui/skinlab.js, золота кнопка «КАРТКА #002 · 99,99 €»):
+ *   show('buy')         — образ ще не на жодній картці (стандарт, готовий скін чи своє поєднання): картка NFT з образом і
+ *                         НОМЕРОМ, який отримає покупець (наступний за чергою: #001 — засновник, далі #002…), 8 частин-атрибутів,
  *                         що дає покупка, ціна, кнопка;
- *   show('view', owner) — Nexi власника з вкладки «Власники»: картка з номером, власник і з якого часу; свого — «Вдягнути».
+ *   show('view', owner) — картка з вкладки «Власники»: номер, власник і з якого часу; своя — «Вдягнути».
  * Правила й список власників — actors/nexi/owners.js, картка — actors/nexi/nft_card.js, план NFT — docs/NFT.md.
  * КРОК 1 (02.11): справжньої оплати немає — кнопка «ПРОДАЖ СКОРО» неактивна, нічого не списується й не резервується.
  * «Скопіювати код» — код і ключ образу (так власник проєкту надсилає свого Nexi: запишемо його #001 «Засновник»).
@@ -33,7 +34,7 @@ NX.ui.shop = {
     $('shtitle').textContent = o ? (o.mine ? NX.t('own.yours') + ' ' : '') + 'NEXI ' + O.noText(o) : NX.t('own.title') + ' ' + O.noText(next);
     NX.nftCard.play(L, { no: o ? o.no : next.no }, $('nftcv'));                           // жива картка: скін + номер (покупка — наступний за чергою)
     $('shstat').textContent = o ? [NX.t('own.owner', { name: O.nameOf(o) + (o.founder ? ' · ' + NX.t('own.founder') : '') }), o.since ? NX.t('own.since', { date: O.dateText(o) }) : '', 'NFT 1/1 · Base'].filter(Boolean).join(' · ')
-      : st.preset ? NX.t('own.presetBuy', { name: NX.t('skin.skin.' + st.preset) }) : NX.t('own.avail');
+      : st.preset ? NX.t('own.cardWith', { no: O.noText(next), name: NX.t('skin.skin.' + st.preset) }) : NX.t('own.cardOwn', { no: O.noText(next) });
     const dl = $('shattr'); dl.innerHTML = '';                                          // атрибути — 8 частин образу (вони ж атрибути NFT)
     O.PARTS.forEach(k => { const dt = document.createElement('dt'), dd = document.createElement('dd'), v = L[k];
       dt.textContent = NX.t('own.attr.' + k); dd.textContent = v == null ? NX.t('own.nothing') : NX.t('skin.' + this.CAT[k] + '.' + v); dl.append(dt, dd); });
@@ -44,13 +45,13 @@ NX.ui.shop = {
     pr.textContent = buy ? O.priceText() : ''; pr.hidden = !buy;
     b.hidden = !(buy || mine); b.disabled = buy; b.className = 'buy' + (mine ? ' wear' : '');
     b.textContent = mine ? NX.t('own.wear') : O.me ? NX.t('own.haveOne', { no: O.noText(O.me) }) : NX.t('own.soon');
-    note.textContent = buy && !O.me ? NX.t('own.soonNote') : ''; note.hidden = !note.textContent;
+    note.textContent = buy && !O.me ? NX.t('own.soonNote', { no: O.noText(next) }) : ''; note.hidden = !note.textContent;
     $('shcode').textContent = O.code(L) + ' · ' + O.key(L);
   },
-  /** Кнопка аркуша: свій Nexi — вдягнути й зберегти (купівлі в кроці 1 немає — кнопка неактивна). */
+  /** Кнопка аркуша: образ зі своєї картки — вдягнути (зберігається сам; купівлі в кроці 1 немає — кнопка неактивна). */
   act() {
     if (!(this.owner && this.owner.mine)) return;
-    NX.nexi.look = NX.owners.lookOf(this.owner.key); NX.ui.skinlab.keep(); NX.ui.skinlab.installFx(); this.hide(); NX.ui.skinlab.grid();
+    NX.nexi.look = NX.owners.lookOf(this.owner.key); NX.ui.skinlab.persist(); NX.ui.skinlab.installFx(); NX.nexi.emote('love'); this.hide(); NX.ui.skinlab.grid();
   },
   /** Скопіювати код і ключ образу (буфер обміну; якщо браузер не дав — виділити текст, щоб скопіювати вручну). */
   copy() {

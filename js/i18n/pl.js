@@ -1,7 +1,7 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
   ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
-    result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. NOWY WYGLĄD — W STREFIE SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', kept: 'ZAPISANO', saved: 'NEXI ZAPISANY', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
+    result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. NOWY WYGLĄD — W STREFIE SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
     aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK', kb: 'KB',
     st: { js: 'SKRYPTY', img: 'OBRAZ POKOJU', city: 'MIASTO', wings: 'SKRZYDŁA 3D', ready: 'GOTOWE' },
@@ -110,13 +110,13 @@ NX.i18n.add('pl', {
     done: ['Gotowe!', 'Zrobione ✓', 'Jest! Co dalej?'],
   },
   own: {
-    std: 'Standardowy Nexi — za darmo dla wszystkich', preset: 'Gotowa skórka „{name}” — za darmo, dopóki ktoś jej nie kupi', buyNo: 'KUP {no} · {price}',
-    presetBuy: 'Gotowa skórka „{name}”: kup pierwszy — i będzie tylko twoja', perkNo: 'Numer {no} — następny w kolejce (rezerwowany przy płatności)',
-    lost: 'Ktoś kupił moją skórkę „{name}” — to teraz Nexi {no}. Wybierz mi nowy wygląd w strefie „Skórki”!', avail: 'Unikalny! Nikt jeszcze nie ma takiego Nexi', taken: 'Takiego Nexi ma już {name} ({no}) — zmień choć jedną rzecz',
-    mine: 'Twój osobisty Nexi {no} · NFT 1/1', buy: 'KUP · {price}', busy: 'ZAJĘTY', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ', tryoff: 'PRZYMIARKA ZDJĘTA — KUP TEGO NEXI, BY GO ZATRZYMAĆ', tryoffTaken: 'PRZYMIARKA ZDJĘTA — TEN NEXI MA JUŻ WŁAŚCICIELA',
-    price: '{v}\u00a0€', title: 'OSOBISTY NEXI', yours: 'TWÓJ',
-    perks: ['Tylko twój: nikt inny nie założy takiego Nexi', 'NFT 1/1 w sieci Base — w twoim portfelu (tworzonym na e-mail)', 'Można odsprzedać; jeden Nexi na osobę'],
-    soon: 'SPRZEDAŻ WKRÓTCE', soonNote: 'Płatności kartą podłączymy w następnym kroku — wtedy ten Nexi stanie się twoim NFT 1/1.', haveOne: 'MASZ JUŻ SWOJEGO NEXI {no}', wear: 'ZAŁÓŻ',
+    std: 'Standardowy Nexi — za darmo dla wszystkich', preset: 'Gotowa skórka „{name}” — za darmo', avail: 'Własny wygląd — za darmo; żadna karta go jeszcze nie ma',
+    taken: 'Ten wygląd jest już na karcie {no} ({name}) — nosić można, karty z nim — nie', mine: 'Twoja karta {no} · NFT 1/1',
+    card: 'KARTA {no} · {price}', cardTaken: 'WYGLĄD JUŻ NA KARCIE {no}', cardMine: 'TWOJA KARTA {no}', takenToast: 'ZMIEŃ CHOĆ JEDNĄ RZECZ — I KARTA BĘDZIE TWOJA',
+    cardWith: 'Karta {no} z wyglądem „{name}”', cardOwn: 'Karta {no} z twoim wyglądem', perkNo: 'Numer {no} — następny w kolejce (rezerwowany przy płatności)',
+    price: '{v}\u00a0€', title: 'KARTA NEXI', yours: 'TWOJA',
+    perks: ['Karta z numerem — NFT 1/1 w sieci Base, w twoim portfelu (tworzonym na e-mail)', 'Wygląd na karcie jest tylko twój: drugiej karty z takim samym wyglądem nie będzie', 'Nosić dowolny wygląd można też bez karty', 'Można odsprzedać; jedna karta na osobę'],
+    soon: 'SPRZEDAŻ WKRÓTCE', soonNote: 'Płatności kartą podłączymy w następnym kroku — wtedy karta {no} stanie się twoim NFT 1/1.', haveOne: 'MASZ JUŻ KARTĘ {no}', wear: 'ZAŁÓŻ',
     copy: 'KOPIUJ KOD', copied: 'KOD SKOPIOWANY', owner: 'Właściciel: {name}', since: 'od {date}', founder: 'Założyciel', you: 'TY', none: 'Na razie brak właścicieli — bądź pierwszy!', demoName: 'Przykład {n}',
     attr: { theme: 'Kolor', body: 'Korpus', arms: 'Ręce', legs: 'Nogi', ant: 'Antena', head: 'Głowa', back: 'Plecy', hand: 'Relikwia' }, nothing: '—' },
   skin: {

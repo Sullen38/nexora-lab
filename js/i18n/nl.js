@@ -1,7 +1,7 @@
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
   ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
-    result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. NIEUWE LOOK — IN DE ZONE SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', kept: 'OPGESLAGEN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
+    result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. NIEUWE LOOK — IN DE ZONE SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
   splash: {   // WELKOMSTSCHERM (js/ui/splash.js): laadfasen, zinnetjes van Nexi, bouwstappen
     aria: 'Nexi’s lab wordt geladen', retry: 'Pagina vernieuwen', ok: 'OK', kb: 'KB',
     st: { js: 'SCRIPTS', img: 'KAMERBEELD', city: 'STAD', wings: '3D-VLEUGELS', ready: 'KLAAR' },
@@ -110,13 +110,13 @@ NX.i18n.add('nl', {
     done: ['Klaar!', 'Gedaan ✓', 'Gelukt! Wat nu?'],
   },
   own: {
-    std: 'Standaard-Nexi — gratis voor iedereen', preset: 'Kant-en-klare skin "{name}" — gratis tot iemand hem koopt', buyNo: 'KOOP {no} · {price}',
-    presetBuy: 'Kant-en-klare skin "{name}": koop hem als eerste en hij is alleen van jou', perkNo: 'Nummer {no} — de volgende op rij (vastgelegd bij betaling)',
-    lost: 'Iemand kocht mijn skin "{name}" — het is nu Nexi {no}. Kies een nieuwe look voor me in de Skins-zone!', avail: 'Uniek! Niemand heeft deze Nexi nog', taken: '{name} heeft deze Nexi al ({no}) — verander minstens één ding',
-    mine: 'Jouw persoonlijke Nexi {no} · NFT 1/1', buy: 'KOPEN · {price}', busy: 'BEZET', takenToast: 'VERANDER MINSTENS ÉÉN DING', tryoff: 'PASSEN GESTOPT — KOOP DEZE NEXI OM HEM TE HOUDEN', tryoffTaken: 'PASSEN GESTOPT — DEZE NEXI HEEFT AL EEN EIGENAAR',
-    price: '€\u00a0{v}', title: 'PERSOONLIJKE NEXI', yours: 'JOUW',
-    perks: ['Alleen van jou: niemand anders kan deze Nexi dragen', 'NFT 1/1 op Base — in je wallet (aangemaakt met je e-mail)', 'Doorverkoopbaar; één Nexi per persoon'],
-    soon: 'VERKOOP BINNENKORT', soonNote: 'Betalen met kaart komt in de volgende stap — dan wordt deze Nexi jouw NFT 1/1.', haveOne: 'JE HEBT AL NEXI {no}', wear: 'DRAGEN',
+    std: 'Standaard-Nexi — gratis voor iedereen', preset: 'Kant-en-klare skin "{name}" — gratis', avail: 'Eigen look — gratis; nog geen kaart heeft hem',
+    taken: 'Deze look staat al op kaart {no} ({name}) — dragen mag, een kaart ermee niet', mine: 'Jouw kaart {no} · NFT 1/1',
+    card: 'KAART {no} · {price}', cardTaken: 'LOOK STAAT AL OP KAART {no}', cardMine: 'JOUW KAART {no}', takenToast: 'VERANDER MINSTENS ÉÉN DING EN DE KAART IS VAN JOU',
+    cardWith: 'Kaart {no} met de look "{name}"', cardOwn: 'Kaart {no} met jouw eigen look', perkNo: 'Nummer {no} — de volgende op rij (vastgelegd bij betaling)',
+    price: '€\u00a0{v}', title: 'NEXI-KAART', yours: 'JOUW',
+    perks: ['Een kaart met nummer — NFT 1/1 op Base, in je wallet (aangemaakt met je e-mail)', 'De look op de kaart is alleen van jou: geen tweede kaart krijgt dezelfde look', 'Je kunt elke look dragen, ook zonder kaart', 'Doorverkoopbaar; één kaart per persoon'],
+    soon: 'VERKOOP BINNENKORT', soonNote: 'Betalen met kaart komt in de volgende stap — dan wordt kaart {no} jouw NFT 1/1.', haveOne: 'JE HEBT AL KAART {no}', wear: 'DRAGEN',
     copy: 'CODE KOPIËREN', copied: 'CODE GEKOPIEERD', owner: 'Eigenaar: {name}', since: 'sinds {date}', founder: 'Oprichter', you: 'JIJ', none: 'Nog geen eigenaren — wees de eerste!', demoName: 'Voorbeeld {n}',
     attr: { theme: 'Kleur', body: 'Romp', arms: 'Armen', legs: 'Benen', ant: 'Antenne', head: 'Hoofd', back: 'Rug', hand: 'Reliek' }, nothing: '—' },
   skin: {
