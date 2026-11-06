@@ -21,11 +21,11 @@
     { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },
     { kind: 'asplenium', x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
     // (· 37) квітучі малята спереду: кожен — свій вид і свій колір
-    { kind: 'saintpaulia', x: 724, w: 30, h: 22, seed: 21 },
-    { kind: 'kalanchoe', x: 750, w: 28, h: 26, seed: 22 },
+    { slot: 1, kind: 'saintpaulia', x: 724, w: 30, h: 22, seed: 21 },
+    { slot: 1, kind: 'kalanchoe', x: 750, w: 28, h: 26, seed: 22 },
     { kind: 'anthurium', x: 792, w: 34, h: 34, seed: 23 },
-    { kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
-    { kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
+    { slot: 1, kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
+    { slot: 1, kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
   ];
   // (· 39) висячий сад над вікном: гачок на стельовій рейці (y HOOK_Y), рослина звисає вниз; x — центр, w/h — од.
   const RAIL = { x0: 662, x1: 892, y: 1 }, HOOK_Y = 4;
@@ -34,6 +34,7 @@
     { kind: 'scindapsus', x: 738, w: 38, h: 108, seed: 32, hang: 1 },
     { kind: 'tillandsia', x: 828, w: 34, h: 72, seed: 33, hang: 1 },
     { kind: 'sedum', x: 866, w: 30, h: 94, seed: 34, hang: 1 },
+    { kind: 'pitcher', x: 782, w: 36, h: 66, seed: 35, hang: 1 },                                                        // (· 44) непентес над вивіскою міста (до y ≈ 70)
   ];
   // ---------- палітри ----------
   const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0', silver: '#b8c8d8', sage: '#7aa890', dusty: '#6a9a98', gray: '#98ac9c', grayD: '#5a7064', moss: '#3a6a30' };
@@ -191,6 +192,26 @@
     sedum(c, W, H, seed) { const cx = W / 2, pb = DRAW._pot(c, W, seed, 'navy');
       const ropes = []; for (let v = 0; v < 6; v++) { const dx = (v / 5 - .5) * W * .7, len = (H - pb) * (.6 + .4 * hash(seed, v)); ropes.push({ dx, len, back: v % 2 === 0, v }); } ropes.sort((p, q) => q.back - p.back);
       for (const pass of [0, 1]) for (const R of ropes) { const n = Math.floor(R.len / 2.6); for (let i = 0; i < n; i++) { const t = i / n, x = cx + R.dx * Math.min(1, t * 3) + Math.sin(t * 4 + R.v) * 1.5, y = pb - 2 + R.len * t, r = 2.1 - t * .5 + (i % 2) * .3; c.fillStyle = pass ? (R.back ? PAL.dusty : (i % 3 ? PAL.sage : PAL.d3)) : PAL.out; c.beginPath(); c.ellipse(x + (i % 2 ? 1 : -1) * .9, y, r + (pass ? 0 : 1.1), r * .8 + (pass ? 0 : 1.1), 0, 0, TAU); c.fill(); if (pass && !R.back && i % 3 === 0) { c.fillStyle = PAL.cream; c.fillRect(x + (i % 2 ? 1 : -1) * .9 - .6, y - .9, 1, .8); } } } },
+    /** Непентес (висячий): розетка довгастих листків, з кінчиків на вусиках звисають глечики з кришечками. */
+    pitcher(c, W, H, seed) { const cx = W / 2, pb = DRAW._pot(c, W, seed, 'navy'), py = pb - 3; c.lineCap = 'round'; c.lineJoin = 'round';
+      const ls = []; for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3.2 + (hash(seed, i) - .5) * .2; ls.push({ a, len: 14 + 8 * hash(seed, i + 3), back: i % 2 === 0, i }); } ls.sort((p, q) => q.back - p.back);
+      for (const pass of [0, 1]) for (const L of ls) { const ex = cx + Math.sin(L.a) * L.len, ey = py + Math.cos(L.a) * L.len * .55 + Math.abs(Math.sin(L.a)) * 2; c.strokeStyle = pass ? (L.back ? PAL.d1 : PAL.d2) : PAL.out; c.lineWidth = pass ? 3.4 : 5.6; c.beginPath(); c.moveTo(cx, py); c.lineTo(ex, ey); c.stroke(); if (pass && !L.back) { c.strokeStyle = PAL.d3; c.lineWidth = 1; c.beginPath(); c.moveTo(cx, py); c.lineTo(ex, ey); c.stroke(); }
+        if (pass && L.i % 2 === 1) { const vx = ex + Math.sin(L.a) * 3, vy = ey + 9 + 6 * hash(seed, L.i); c.strokeStyle = PAL.out; c.lineWidth = 2.4; c.beginPath(); c.moveTo(ex, ey); c.quadraticCurveTo(ex + Math.sin(L.a) * 4, (ey + vy) / 2, vx, vy); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .9; c.stroke();   // вусик
+          for (const p2 of [0, 1]) { c.fillStyle = p2 ? (L.i % 4 === 1 ? '#c84a5a' : '#8a3a6a') : PAL.out; const e = p2 ? 0 : 1.3; c.beginPath(); c.ellipse(vx, vy + 6, 3 + e, 6.5 + e, 0, 0, TAU); c.fill(); }   // глечик
+          c.fillStyle = '#e8a0b0'; c.fillRect(vx - 1.4, vy + 1, 1.2, 8); c.fillStyle = PAL.d3; c.beginPath(); c.ellipse(vx + .5, vy - .5, 3.2, 1.4, -.3, 0, TAU); c.fill(); c.fillStyle = PAL.out; c.beginPath(); c.ellipse(vx + .3, vy + .6, 2, .9, 0, 0, TAU); c.fill(); } }   // смужка, кришечка, отвір
+    },
+    /** Калатея (мала, передня): розетка округлих листків із темно-світлими смугами й пурпуровим низом. */
+    calathea(c, W, H, seed) { const cx = W / 2, by = H - 2; c.lineJoin = 'round';
+      const ls = []; for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3 + (hash(seed, i) - .5) * .2; ls.push({ a, len: H * (.55 + .4 * hash(seed, i + 2)), back: i % 2 === 0 }); } ls.sort((p, q) => q.back - p.back);
+      for (const pass of [0, 1]) for (const L of ls) { const ex = cx + Math.sin(L.a) * L.len * .8, ey = by - 4 - Math.cos(L.a) * L.len * .8, R = H * .2; c.strokeStyle = PAL.out; c.lineWidth = 2.4; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(ex, ey); c.stroke(); if (pass) { c.strokeStyle = '#7a3a6a'; c.lineWidth = 1; c.stroke(); }
+        c.save(); c.translate(ex, ey); c.rotate(L.a * .6); c.fillStyle = pass ? (L.back ? PAL.d1 : PAL.d2) : PAL.out; const e = pass ? 0 : 1.4; c.beginPath(); c.ellipse(0, 0, R + e, R * 1.35 + e, 0, 0, TAU); c.fill();
+        if (pass) { c.fillStyle = L.back ? PAL.d2 : PAL.hi; for (let k = -3; k <= 3; k++) { c.beginPath(); c.ellipse(k * R * .3, 0, R * .1, R * 1.2 * (1 - Math.abs(k) * .12), 0, 0, TAU); c.fill(); } c.fillStyle = PAL.d0; c.fillRect(-.5, -R * 1.3, 1, R * 2.6); } c.restore(); } },
+    /** Алоказія (мала, передня): 4 стрілоподібні листки з білими жилками на високих черешках. */
+    alocasia(c, W, H, seed) { const cx = W / 2, by = H - 2; c.lineJoin = 'round'; c.lineCap = 'round';
+      const ls = [[-.9, .8, 1], [.8, .85, 1], [-.3, 1, 0], [.4, .95, 0]];
+      for (const pass of [0, 1]) for (const [a, l, back] of ls) { const ex = cx + Math.sin(a) * H * l * .5, ey = by - 4 - Math.cos(a) * H * l * .75; c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(ex, ey); c.stroke(); if (pass) { c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 1.3; c.stroke(); }
+        const R = H * .22; c.save(); c.translate(ex, ey); c.rotate(a * .5); c.fillStyle = pass ? (back ? PAL.d1 : PAL.d2) : PAL.out; const e = pass ? 0 : 1.4; c.beginPath(); c.moveTo(0, R * 1.3 + e); c.lineTo(-R - e, -R * .2); c.lineTo(-R * .45, -R * 1.1 - e); c.lineTo(0, -R * .6); c.lineTo(R * .45, -R * 1.1 - e); c.lineTo(R + e, -R * .2); c.closePath(); c.fill();
+        if (pass) { c.strokeStyle = back ? PAL.d3 : PAL.cream; c.lineWidth = .9; c.beginPath(); c.moveTo(0, R * 1.1); c.lineTo(0, -R * .5); c.moveTo(0, R * .3); c.lineTo(-R * .7, -R * .3); c.moveTo(0, R * .3); c.lineTo(R * .7, -R * .3); c.moveTo(0, -R * .2); c.lineTo(-R * .35, -R * .85); c.moveTo(0, -R * .2); c.lineTo(R * .35, -R * .85); c.stroke(); } c.restore(); } },
     /** Цереус: ребристий стовп з двома бічними пагонами, ребра — світлі смуги, ареоли з колючками-крапками. */
     cereus(c, W, H, seed) {
       const cx = W / 2, by = H - 2, col = (x, y0, w, h, r) => { c.fillStyle = PAL.out; c.beginPath(); c.roundRect(x - w / 2 - 1.5, y0 - 1.5, w + 3, h + 3, r + 1.5); c.fill();
@@ -367,6 +388,13 @@
     /** Полив (Nexi, activities.js jardin): вологість повна, бутони, що чекали, одразу йдуть у розкривання; квіти «кивають» пелюстками. */
     water(t = NX.time) { HUM.v = 1; HUM.drip = 0; for (const p of LEAFY) if (!p.young && hash(Math.floor(t), p.seed) < .7) p.young = { t0: t + 20 + 40 * hash(p.seed, 5) }; for (const p of FL) { const u = ((t - p.t0) % PERIOD + PERIOD) % PERIOD / PERIOD; if (u < .15 || u >= .8) p.t0 = t - PERIOD * .15; shed(p, t, 2); } },
     hum() { return HUM.v; },
+    /** (· 44) Nexi пересаджує: один із передніх малят (крім квітучих у повному цвіті) міняється на вид із ротації — калатея, алоказія,
+     *  і назад на квітку; повертає {from, to} або null. */
+    repot(t = NX.time) { const ROT = ['calathea', 'alocasia', 'saintpaulia', 'kalanchoe', 'viola', 'primula'], slots = HEROES.filter(p => p.slot); if (!slots.length) return null;
+      const p = slots.reduce((a, b) => (a.rep || 0) <= (b.rep || 0) ? a : b), used = new Set(HEROES.map(q => q.kind)), cand = ROT.filter(k => !used.has(k)); if (!cand.length) return null;
+      const to = cand[Math.floor(hash(Math.floor(t), p.seed) * cand.length)], from = p.kind; p.kind = to; p.rep = t; p.t0 = t - PERIOD * .1; p.young = null; p.flash = t; if (!FLOWERS.includes(to)) { p.w = 34; p.h = 30; } else { p.w = 30; p.h = 24; }
+      if (FLOWERS.includes(to) && !FL.includes(p)) FL.push(p); if (!FLOWERS.includes(to)) { const i = FL.indexOf(p); if (i >= 0) FL.splice(i, 1); } hit = to; return { from, to }; },
+    repotSpot() { const slots = HEROES.filter(p => p.slot), p = slots.reduce((a, b) => (a.rep || 0) <= (b.rep || 0) ? a : b), top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: p.x, y: top - 30, z, dir: p.x < 790 ? 1 : -1 }; },
     /** (· 42) Де Nexi сидить на канті: між філодендроном і арекою; hoverAt ставить її на точку (y — рівень канта, вона «сидить» на ньому). */
     sitSpot() { const top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: 764, y: top - 14, z, dir: 1 }; },
     /** (· 42) Рудик копає ґрунт: грудки летять, вологість трохи падає; Nexi (якщо вільна) свариться. */

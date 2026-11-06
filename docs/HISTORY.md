@@ -2999,3 +2999,8 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 
 - `i18n/*`: `decor.garden.{title,count}`, `decor.guide.sp.garden` (15 видів перенесено з floor, + yucca), `where.garden`.
 - `decor_guide.js`: GROUPS + garden, рамка, `hit === 'planter'` → garden ∨ floor. `planters.js`: `drawPanel` 54×24 із текстом (`NX.px.text`).
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 44: непентес на рейці, пересаджування
+
+- `planters.js`: HANG + pitcher 782; `DRAW.pitcher / calathea / alocasia`; слоти `slot` у 4 квітучих; `NX.planters.repot / repotSpot`.
+- `activities.js`: `repot`; `nexi.js`: частка автожиття; `i18n/*`: `act.repot`, garden + 3 види. Перевірки: shot.js repot, телефон.

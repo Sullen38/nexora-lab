@@ -186,6 +186,16 @@
         { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.jarSit.done') }];
     } },
 
+    // ---------- (Декор стін · 44) ПЕРЕСАДЖУВАННЯ в саду за диваном: Nexi несе новий горщик (кошик повний), зависає над переднім
+    // рядом, міняє рослину на вид із ротації (planters.js repot) — калатея, алоказія або квітка назад. ----------
+    repot: { color: '#9aff6a', route() {
+      const PL = NX.planters, n = NX.nexi; if (!PL || !PL.repotSpot) return [line('repot')];
+      const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.repotSpot(), h = hoverAt(sp); let done = false;
+      return [{ walk: f }, { face: 1 }, line('repot'), { do: () => { n.basket = 1; } }, { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
+        { fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.8, tick: (dt, k) => { if (!done && k > .5) { done = true; const r = PL.repot(NX.time); n.basket = 0; for (let i = 0; i < 6; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 10, { ttl: .7 }); if (r) n.say(NX.t('act.repot.done', { plant: NX.t('decor.guide.sp.garden.' + r.to) })); n.emote('happy', 1.6); } } } },
+        { fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
+    } },
+
     feedFish: { color: '#3be8ff', route() {
       const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер ферма)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
