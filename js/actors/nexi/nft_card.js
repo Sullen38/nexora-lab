@@ -81,9 +81,13 @@ NX.nftCard = (() => {
     for (let a = 0; a < 64; a++) { const an = a / 64 * TAU; x.fillRect(Math.round(48 + Math.cos(an) * rx), Math.round(HOR + 1 + Math.sin(an) * ry), 1, 1); }
     // 5) сам Nexi: дихає (поза «стоїть»), кліпає посередині циклу, антена погойдується; час Nexi — неперервний (крила, плащ,
     //    реліквії мають свої ритми — у живій картці без стрибка; поза й кліпання — кратні циклу)
-    const tn = t + 2, po = poseFor('stand', tn, false); po.antX = Math.sin(TAU * u) * 1.4; po.antY = 0;
+    //    ЗДІБНІСТЬ РЕЛІКВІЇ (власник, 06.11: «на кожній картці Nexi має показувати цей самий ефект періодично»): у вікні циклу
+    //    (relics.js cardK) Nexi стає в позу реліквії, а поверх — її ефект у піксель-арті (cardFx); кулька — підскоки
+    const RL = NX.objects.relics, rk = look.hand && RL && RL.POSE[look.hand] ? RL.cardK(u) : -1, hop = look.hand === 'balloon' && rk >= 0 ? Math.round(Math.abs(Math.sin(rk * Math.PI * 3)) * 4) : 0;
+    const tn = t + 2, po = poseFor(rk >= 0 ? RL.POSE[look.hand] : 'stand', tn, false); po.antX = Math.sin(TAU * u) * 1.4; po.antY = 0; if (rk >= 0) po.face = 'standard';
     renderBot(Object.assign({}, look, { face: 'standard' }), po, tn, bot);
-    x.drawImage(bot, 24, HOR + 1 - FOOT);
+    x.drawImage(bot, 24, HOR + 1 - FOOT - hop);
+    if (rk >= 0) RL.cardFx(x, look.hand, rk, Math.floor(u * 48), HOR);
     // 6) рамка: темний край, золотий неон «1/1», кант кольору теми, кутики
     const frame = (n, col) => { x.fillStyle = col; x.fillRect(n, n, W - 2 * n, 1); x.fillRect(n, H - 1 - n, W - 2 * n, 1); x.fillRect(n, n, 1, H - 2 * n); x.fillRect(W - 1 - n, n, 1, H - 2 * n); };
     frame(0, '#05030f'); frame(1, '#ffc94d'); frame(2, '#8a5a10'); frame(3, css(mixRGB(acc, [5, 3, 15], .35)));

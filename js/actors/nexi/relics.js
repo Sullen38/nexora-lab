@@ -5,8 +5,11 @@
  * блискавка вгору; до кожної реліквії — свій ефект, коли тапаєш на Nexi».
  * Дві нагоди показати реліквію (skins.js: ACCS slot 'hand', зараз у look.hand):
  *   ІНОДІ САМ (idle): Nexi вільний і стоїть на підлозі чи на доку — раз на 30–70 с (update);
- *   ТАП ПО NEXI (nexi.js: hi -> tap(id)): замість помаху — здібність реліквії, емоція й коротка фраза (act.relic.<id>, 4 мови);
- *     поки здібність триває, нові тапи лише підкидають Nexi (hi: «лоскотно» на третій — як було).
+ *   ПОДВІЙНИЙ ТАП ПО NEXI (власник, 06.11: «коли на Nexi два рази тапаємо — повністю»; nexi.js: hi -> tap(id, busy)): перший
+ *     тап — привітання, як було; другий поспіль — здібність реліквії, емоція й коротка фраза (act.relic.<id>, 4 мови). Якщо
+ *     Nexi зайнятий (крісло, капсула, політ) — лише ефект у кімнаті, без зміни пози; третій тап — «лоскотно», як було.
+ *   НА КАРТЦІ NFT (власник: «на кожній картці Nexi має показувати цей самий ефект періодично»): cardFx — та сама здібність у
+ *     піксель-арті картки раз за цикл 4 с (nft_card.js), без випадковості.
  * Кожна здібність — поза Nexi (poses.js: raise / swing / present / guard — тимчасова, nexi.temp) + ефект у кімнаті (шар
  * поверх Nexi: layers) + частинки (fx/particles.js). Тривалість — D с; ефект залежить від фази k = 0..1.
  *   hammer    ГРОМОВИЙ МОЛОТ — підіймає вгору, з бойка б'є блискавка в стелю, спалах, кільце грому по підлозі, іскри
@@ -38,24 +41,25 @@ NX.objects.relics = (() => {
   const free = () => { const N = n(); return !N.cur && !N.queue.length && !NX.ui.skinlab.open && (N.loc === 'floor' || N.loc === 'dock') && N.alpha > .9 && !N.rot; };
 
   /** Почати здібність реліквії id (why: 'tap' | 'idle'). Повертає false, якщо Nexi зайнятий або здібність уже триває. */
-  function show(id, why) {
-    if (S.act || !POSE[id] || !free()) return false;
+  function show(id, why, light) {
+    if (S.act || !POSE[id]) return false; if (!light && !free()) return false;
     const N = n(), t = NX.time, D = DUR[id];
-    S.act = { id, t0: t, D, why, done: {} }; S.bolt = null; S.flash = 0; S.bits = [];
-    N.lastCmd = t; N.back = false; N.temp = POSE[id]; N.tempT = t + D; N.hiT = 0; N.emote(MOOD[id], D + .4);
+    S.act = { id, t0: t, D, why, done: {}, light: !!light }; S.bolt = null; S.flash = 0; S.bits = [];
+    N.lastCmd = t; N.emote(MOOD[id], D + .4);
+    if (!light) { N.back = false; N.temp = POSE[id]; N.tempT = t + D; N.hiT = 0; }
     if (why === 'tap') N.say(NX.pick('act.relic.' + id));
     if (id === 'balloon') N.hops = 0;
     return true;
   }
-  /** Тап по Nexi з реліквією в руці (nexi.js: hi). */
-  const tap = id => show(id, 'tap');
+  /** Подвійний тап по Nexi з реліквією в руці (nexi.js: hi); busy — Nexi зайнятий: лише ефект, без пози. */
+  const tap = (id, busy) => show(id, 'tap', busy);
 
   function update(dt, t) {
     const N = n(), hand = N.look.hand;
     if (S.flash > 0) S.flash -= dt;
     // іноді сам — раз на 30–70 с, лише вільний на підлозі (власник: «молот іноді підіймає вгору»)
     if (!S.act) { if (!S.next) S.next = t + 20 + r() * 30; if (hand && t > S.next && !N.talking && t - N.lastCmd > 6) { S.next = t + 30 + r() * 40; show(hand, 'idle'); } return; }
-    const A = S.act, k = (t - A.t0) / A.D; if (k >= 1 || N.cur || N.look.hand !== A.id) { S.act = null; S.bolt = null; S.bits = []; if (N.temp === POSE[A.id]) N.tempT = 0; S.next = t + 30 + r() * 40; return; }
+    const A = S.act, k = (t - A.t0) / A.D; if (k >= 1 || (N.cur && !A.light) || N.look.hand !== A.id) { S.act = null; S.bolt = null; S.bits = []; if (N.temp === POSE[A.id]) N.tempT = 0; S.next = t + 30 + r() * 40; return; }
     const G = geo(), F = NX.fx, once = (key, f) => { if (!A.done[key]) { A.done[key] = 1; f(); } };
     switch (A.id) {
       case 'hammer': {                                                               // 0.35: удар блискавки вгору зі спалахом і громом, далі ще два коротші
@@ -140,5 +144,35 @@ NX.objects.relics = (() => {
       c.restore();
     } }];
   }
-  return { S, show, tap, update, layers, POSE, DUR, busy: () => !!S.act };
+  /** ЗДІБНІСТЬ НА КАРТЦІ NFT (nft_card.js): піксель-арт 96×128, Nexi стоїть у (24, HOR-51), ноги на HOR+1. k — фаза здібності 0..1
+   *  (вікно всередині циклу картки), fr — номер кадру (для «тремтіння» без випадковості). Малює поверх Nexi. Повертає позу. */
+  const H = (a, b) => { let h = (a * 374761393 + b * 668265263) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  function cardFx(x, id, k, fr, HOR) {
+    const hx = 63, hy = HOR - 31, top = HOR - 46, px = (X, Y, c) => { x.fillStyle = c; x.fillRect(Math.round(X), Math.round(Y), 1, 1); }, ring = (r, c) => { x.fillStyle = c; for (let a = 0; a < 40; a++) px(48 + Math.cos(a / 40 * TAU) * r, HOR + 1 + Math.sin(a / 40 * TAU) * r * .3, c); };
+    x.save(); x.globalCompositeOperation = 'lighter';
+    switch (id) {
+      case 'hammer': { if (k > .3 && k < .75) { const a = 1 - (k - .3) / .45; x.strokeStyle = `rgba(255,255,255,${a})`; x.lineWidth = 1.5; x.beginPath(); x.moveTo(hx, top);
+          for (let q = 1; q <= 8; q++) x.lineTo(hx + (H(q, fr) - .5) * 10, top - (top - 14) * q / 8); x.stroke(); x.strokeStyle = `rgba(120,230,255,${a * .6})`; x.lineWidth = 3; x.stroke();
+          if (k < .4) { x.fillStyle = `rgba(255,255,255,${(.4 - k) * 1.5})`; x.fillRect(3, 3, 90, 122); } ring(10 + (k - .3) * 60, `rgba(154,246,255,${a * .8})`); }
+        if (k > .25 && k < .8) for (let q = 0; q < 4; q++) if (H(q, fr >> 1) > .5) px(hx - 6 + H(q, 3) * 12, top - 2 - H(q, fr) * 8, '#9af6ff'); break; }
+      case 'blade': case 'sword': { const c = id === 'blade' ? (fr & 2 ? '#ff4fd8' : '#3be8ff') : '#ffffff', sw = Math.sin(k * TAU * 2); x.strokeStyle = c; x.lineWidth = 1; x.beginPath(); x.arc(56, hy + 4, 12, -1.3 + sw * .5, .5 + sw * .5); x.stroke();
+        for (let q = 0; q < 3; q++) px(60 + H(q, fr) * 14, hy - 8 + H(q + 5, fr) * 18, c); break; }
+      case 'gauntlet': { x.fillStyle = `rgba(255,212,90,${.25 + .2 * Math.sin(k * TAU * 3)})`; x.beginPath(); x.arc(hx, hy - 2, 5 + k * 4, 0, TAU); x.fill();
+        if (k > .5) { const q0 = (k - .5) * 2; for (let q = 0; q < 10; q++) { const a = q / 10 * TAU, r = 3 + q0 * 14; px(hx + Math.cos(a) * r, hy - 2 + Math.sin(a) * r - q0 * 6, q & 1 ? '#ffd45a' : '#fff6c0'); } } break; }
+      case 'excalibur': { if (k > .25) { const a = Math.min(1, (k - .25) * 4) * (k > .85 ? (1 - k) / .15 : 1); x.fillStyle = `rgba(255,246,200,${a * .3})`; x.fillRect(36, 10, 24, HOR - 10); x.fillStyle = `rgba(255,255,255,${a * .5})`; x.fillRect(46, 10, 4, HOR - 10);
+          for (let q = 0; q < 5; q++) px(38 + H(q, 9) * 20, 14 + ((H(q, 11) + k * 2) % 1) * (HOR - 20), '#ffffff'); } break; }
+      case 'staff': { for (let q = 0; q < 8; q++) { const a = k * TAU * 2 + q / 8 * TAU, r = 8 + k * 14; px(48 + Math.cos(a) * r, HOR - 10 - k * 34 - q, q & 1 ? '#ffffff' : '#cfefff'); } if (k > .2) ring(8 + k * 20, 'rgba(154,246,255,.5)'); px(hx, top + 2, fr & 1 ? '#ffffff' : '#9af6ff'); break; }
+      case 'trident': { if (k > .3) { ring((k - .3) * 50, 'rgba(74,192,255,.8)'); for (let q = 0; q < 8; q++) { const q0 = ((k - .3) * 1.4 + H(q, 3)) % 1; px(66 + H(q, 1) * 22 + q0 * 10, HOR - 2 - q0 * 20, '#9ad8ff'); } } break; }
+      case 'wand': { for (let q = 0; q < 8; q++) { const a = q / 8 * TAU + k * 2, r = 6 + k * 16; px(70 + Math.cos(a) * r, hy - 6 + Math.sin(a) * r * .7, ['#ffe27a', '#ff7af0', '#ffffff'][q % 3]); } if (k > .6 && (fr & 2)) { px(44, hy - 14 - (k - .6) * 20, '#ff5ae0'); px(45, hy - 14 - (k - .6) * 20, '#ff5ae0'); } break; }
+      case 'torch': { for (let q = 0; q < 6; q++) { const q0 = (H(q, 2) + k * 3) % 1; px(hx - 2 + H(q + 7, fr >> 1) * 4, top - 2 - q0 * 12, q0 < .5 ? '#ffe27a' : '#ff7a2a'); } x.fillStyle = 'rgba(255,170,70,.25)'; x.beginPath(); x.arc(hx, top - 2, 7 + Math.sin(k * TAU * 4), 0, TAU); x.fill(); break; }
+      case 'magnet': { for (let q = 0; q < 8; q++) { const a = H(q, 4) * TAU, r = 22 * (1 - ((k * 1.5 + H(q, 6)) % 1)); px(72 + Math.cos(a) * r, hy + 4 + Math.sin(a) * r * .6, q & 1 ? '#ff6a6a' : '#6a8aff'); } break; }
+      case 'shield': { const a = k < .2 ? k / .2 : k > .85 ? (1 - k) / .15 : 1; x.strokeStyle = `rgba(59,232,255,${a * .8})`; x.lineWidth = 1; x.beginPath(); x.ellipse(48, HOR - 22, 24, 26, 0, Math.PI, TAU); x.stroke();
+        for (let q = 0; q < 4; q++) { const ang = Math.PI + (H(q, 5) + k) % 1 * Math.PI; px(48 + Math.cos(ang) * 26, HOR - 22 + Math.sin(ang) * 28, '#3be8ff'); } break; }
+      case 'balloon': { for (let q = 0; q < 4; q++) px(40 + H(q, 8) * 16, HOR + 1 - H(q, fr >> 2) * 3, 'rgba(200,180,255,.7)'); break; }
+    }
+    x.restore();
+  }
+  /** Вікно здібності в циклі картки (u 0..1): [.5, .92] -> k 0..1, інакше -1. Поза Nexi в цьому вікні — POSE[id]. */
+  const cardK = u => u > .5 && u < .92 ? (u - .5) / .42 : -1;
+  return { S, show, tap, update, layers, POSE, DUR, busy: () => !!S.act, cardFx, cardK };
 })();
