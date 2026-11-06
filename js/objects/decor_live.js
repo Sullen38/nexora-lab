@@ -456,6 +456,7 @@
       if (!M.px) M.px = M.cv.getContext('2d').getImageData(0, 0, M.cv.width, M.cv.height);
       const i = Math.floor((x - M.x) / M.w * M.cv.width), j = Math.floor((y - M.y) / M.h * M.cv.height); if (i < 0 || j < 0 || i >= M.cv.width || j >= M.cv.height || M.px.data[(j * M.cv.width + i) * 4 + 3] < 128) continue;
       TP.aq = { aq, x, y, t0: t }; hit = 'aq'; break; }
+    if (!hit && NX.planters && NX.planters.tap(x, y)) hit = 'planter';                  // (· 31) вазони перед вікном — картка виду
     if (!hit && NX.decorVault && NX.decorVault.tap(x, y, t)) hit = 'vault';                  // (· 20) капсула сховища — картка виду ферми
     if (!hit && NX.decorGuide && NX.decorGuide.tapStatic(x, y, t)) hit = 'guide';     // (· 18) нерухомі рослини (соти, витки, корч…) — лише картка довідника
     if (hit) { TP.marks.push({ x, y, t0: t }); if (NX.decorGuide) NX.decorGuide.tap(hit, x, y, t, hit === 'plant' ? LPhit : null); }   // (· 18) картка врятованого виду
