@@ -13,17 +13,21 @@
   const C = NX.cfg, FY = C.FLOOR_Y, hash = NX.art.hash;
   // x — центр на підлозі; kind — вид (dc_plants OWN); pot — вазон; pw/ph — вазон (од.); w/h — рослина (од.); seed
   const PL = [
-    { x: 700, y: FY + 3, kind: 'alocasia', pot: 'hex', pw: 30, ph: 21, w: 54, h: 74, seed: 11, col: '#3be8ff' },
-    { x: 742, y: FY + 2, kind: 'cactus', pot: 'tripod', pw: 22, ph: 16, w: 30, h: 82, seed: 23, col: '#ff4fd8' },
-    { x: 784, y: FY + 4, kind: 'ficus', pot: 'barrel', pw: 34, ph: 25, w: 60, h: 94, seed: 37, col: '#b8ff3a' },
-    { x: 826, y: FY + 3, kind: 'yucca', pot: 'column', pw: 26, ph: 32, w: 56, h: 76, seed: 41, col: '#9af6ff' },
-    { x: 866, y: FY + 4, kind: 'dracaena', pot: 'hover', pw: 28, ph: 16, w: 50, h: 96, seed: 53, col: '#ff4fd8' },
+    { x: 670, y: FY + 3, kind: 'calathea', pot: 'cage', pw: 24, ph: 18, w: 44, h: 60, seed: 71, col: '#ff4fd8' },
+    { x: 706, y: FY + 3, kind: 'alocasia', pot: 'hex', pw: 30, ph: 21, w: 54, h: 74, seed: 11, col: '#3be8ff' },
+    { x: 740, y: FY + 2, kind: 'cactus', pot: 'tripod', pw: 22, ph: 16, w: 30, h: 82, seed: 23, col: '#ff4fd8' },
+    { x: 774, y: FY + 4, kind: 'ficus', pot: 'barrel', pw: 34, ph: 25, w: 60, h: 94, seed: 37, col: '#b8ff3a' },
+    { x: 806, y: FY + 3, kind: 'bamboo', pot: 'column', pw: 22, ph: 30, w: 34, h: 98, seed: 83, col: '#9af6ff' },
+    { x: 836, y: FY + 3, kind: 'yucca', pot: 'column', pw: 26, ph: 32, w: 56, h: 76, seed: 41, col: '#3bff8a' },
+    { x: 864, y: FY + 4, kind: 'dracaena', pot: 'hover', pw: 28, ph: 16, w: 50, h: 96, seed: 53, col: '#ff4fd8' },
+    { x: 882, y: FY + 2, kind: 'pitcher', pot: 'cage', pw: 20, ph: 18, w: 32, h: 64, seed: 61, col: '#ffd23a' },
   ];
-  // Усі — за диваном (видно над спинкою). «За зонами» (стіл маркетингу, капсула СКІНІВ) — перевірено: обидві зони в растрі крила
-  // закривають свої шибки вікна цілком (екрани маркетингу, капсула), тож вазон за ними невидимий; перед ними — не можна (зони).
-  const SPR = {};
+  // (· 33) Вісім вазонів у смузі вікна за диваном: вазони між тумбою маркетингу (655) і панеллю СКІНІВ (893), листя — над ними;
+  // спрайти з полем pad (листя не зрізається). «За зонами» перевірено червоними смугами перед стінами: шибки за екраном маркетингу й
+  // капсулою СКІНІВ закриті растром цілком, тож там рослин не видно; рами вікна — перед склом, рослини — перед рамами (після стін).
+  const PAD = 14, SPR = {};                                                                                              // поле навколо спрайта (од.)
   function spriteOf(p) {
-    if (SPR[p.kind]) return SPR[p.kind]; const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1 }); if (!r) return null;
+    if (SPR[p.kind]) return SPR[p.kind]; const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: PAD }); if (!r) return null;
     const cv = document.createElement('canvas'); cv.width = r.sw; cv.height = r.sh; const c = cv.getContext('2d'), im = c.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); c.putImageData(im, 0, 0);
     return SPR[p.kind] = cv;
   }
@@ -63,14 +67,15 @@
   NX.planters = {
     PL,
     /** Тап по рослині чи вазону -> true; вид — lastKind (картка показує objects/decor_guide.js). */
-    tap(x, y) { for (const p of PL) { const top = p._top != null ? p._top : p.y - p.ph; if (x >= p.x - p.w / 2 - 1 && x <= p.x + p.w / 2 + 1 && y >= top - p.h - 1 && y <= p.y + 1) { hit = p.kind; p.flash = NX.time; return true; } } return false; },
+    tap(x, y) { let best = null; for (const p of PL) { const top = p._top != null ? p._top : p.y - p.ph; if (x >= p.x - p.w / 2 - 6 && x <= p.x + p.w / 2 + 6 && y >= top - p.h - 8 && y <= p.y + 1) { const d = Math.abs(x - p.x) / (p.w / 2 + 6); if (!best || d < best.d) best = { p, d }; } }
+      if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; return true; },
     get lastKind() { return hit; },
   };
   function drawAll(c, t, back) {
         const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 60, vx1 = NX.cam.x + NX.cam.viewW + 60;
         for (const p of PL) { if (p.x < vx0 || p.x > vx1) continue; const top = drawPot(c, p, t, LK), cv = spriteOf(p); if (!cv) continue;
-          const sway = Math.sin(t * .9 + p.seed) * .4; c.save(); c.imageSmoothingEnabled = false; c.translate(p.x + sway, top + 1); c.drawImage(cv, -p.w / 2, -p.h, p.w, p.h);
+          const sway = Math.sin(t * .9 + p.seed) * .4; c.save(); c.imageSmoothingEnabled = false; c.translate(p.x + sway, top + 1); c.drawImage(cv, -p.w / 2 - PAD, -p.h - PAD, p.w + 2 * PAD, p.h + PAD);
           if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .35; c.fillStyle = '#ffffff'; c.fillRect(-p.w / 2, -p.h, p.w, p.h); } c.restore(); }
   }
-  NX.addObject({ id: 'planters', span: [600, 950], drawBack(c, t) { drawAll(c, t, false); } });                                // після стін і вікна (arc_scene), перед диваном (шар)
+  NX.addObject({ id: 'planters', span: [590, 950], drawBack(c, t) { drawAll(c, t, false); } });                                // після стін і вікна (arc_scene), перед диваном (шар)
 })();

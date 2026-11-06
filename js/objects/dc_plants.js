@@ -105,13 +105,13 @@ NX.arc = NX.arc || {};
   /** spec: {kind, w, h, seed, pal, hang, leaves}. Основа — посередині внизу спрайта (hang — угорі: ліана, непентес). */
   function dcPlant(sp) {
     if (!sp.snap) SPEC[sp.kind] = sp;                                                  // (· 18) спрайт виду для довідника ботаніка
-    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap, sp.lit || 1, sp.hz || 0].join('|');   // (· 24) lit — бік світла, hz — серпанок за глибиною
+    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap, sp.lit || 1, sp.hz || 0, sp.pad || 0].join('|');   // (· 24) lit — бік світла, hz — серпанок за глибиною
     let r = CACHE.get(key); if (r) return r;
-    const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, S = F.Sheet(0, 0, W, H, U);
+    const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, pad = sp.pad || 0, S = F.Sheet(-pad, -pad, W + pad, H, U);   // (· 33) pad — поле навколо (вазони: листя не зрізається)
     if (OWN[k0]) OWN[k0](S, W, H, seed, sp);
     else v3(S, W, H, seed, sp);
     volume(S.r, sp);
-    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U, meta: S.meta || null }; CACHE.set(key, r); return r;
+    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U, pad, meta: S.meta || null }; CACHE.set(key, r); return r;
   }
   /** (· 17) ОБ'ЄМ для кожної рослини (власник: «пишніші, живіші, більше об'ємності»): глибина силуету (відстань до прозорого —
    *  ерозія в 5 кроків): усередині куща темніше (затінок між листям), край — як було; ВЕРХНІ й ЛІВІ краї (світло від вікна зліва
@@ -298,6 +298,22 @@ NX.arc = NX.arc || {};
       for (const [hx, hy, k] of heads) { if (k < 1) { line(S, [cx + W * .03, hy + H * .12], [hx, hy], OUT, 1.8); line(S, [cx + W * .03, hy + H * .12], [hx, hy], '#8a7a5a', 1); }
         for (const [n, kk, q0] of [[12, 1.08, .2], [14, .9, .34]]) for (let q = 0; q < n; q++) { const a = (q / n - .5) * 3.7 + (hash(seed, q + k * 11 + n) - .5) * .3, len = (H * .3 + hash(seed, q + 2 + n) * H * .1) * k * kk;
           fillLeaf(S, leaf([hx, hy], a, len, 2.4 * k * kk, (a > 0 ? 1 : -1) * .35, 'blade', seed + q + n), PAL, { q0: q0 + .25 * Math.abs(a) / 1.85, hi: a < 0, rim: 1 }); } }
+    },
+    /** Калатея: кущ овальних листків зі смугастим візерунком (темно-зелені з світлими «пір'їнами»), знизу пурпурові. */
+    calathea(S, W, H, seed) {
+      const cx = W / 2, by = H - .3, PAL = ['#1a0a24', '#2a1434', '#0a2a1c', '#124030', '#1c5a40', '#2a7a56', '#8ad8a0', '#d8ffd8'];
+      for (const [n, k, q0] of [[8, 1.05, .25], [7, .85, .45]]) for (let q = 0; q < n; q++) { const u = (q + .5) / n, a = (u - .5) * 2.6 + (hash(seed + n, q) - .5) * .3, st = H * (.2 + .3 * hash(seed + n, q + 3)) * k, bx = cx + Math.sin(a) * st, bb = by - Math.cos(a) * st;
+        line(S, [cx, by], [bx, bb], OUT, 1.3); line(S, [cx, by], [bx, bb], '#5a2a5a', .7);
+        const len = Math.min(H * .4, W * .42) * k; fillLeaf(S, leaf([bx, bb], a * .7, len, len * .62, (q % 2 ? 1 : -1) * .08, 'round', seed + n + q), PAL, { q0, hi: a < 0, vein: 1, rim: 1 });
+        for (let s = 1; s < 5; s++) { const t0 = .18 + s * .16, px = bx + Math.sin(a * .7) * len * t0, py = bb - Math.cos(a * .7) * len * t0, ww = len * .55 * Math.sin(t0 * Math.PI) * .5; line(S, [px, py], [px - Math.cos(a * .7) * ww, py - Math.sin(a * .7) * ww], '#9ae8b0', .45); line(S, [px, py], [px + Math.cos(a * .7) * ww, py + Math.sin(a * .7) * ww], '#9ae8b0', .45); } }
+    },
+    /** Щасливий бамбук: 5–7 високих колін різної висоти з вузлами, зверху — пучки вузьких листків. */
+    bamboo(S, W, H, seed) {
+      const by = H - .3, n = 5 + Math.floor(hash(seed, 1) * 3), PAL = ['#0a2a10', '#145a20', '#1f7a2e', '#2f9a3e', '#48b850', '#7ad870', '#a8f090', '#d8ffc0'];
+      for (let q = 0; q < n; q++) { const x = W * (.15 + .7 * q / (n - 1)) + (hash(seed, q) - .5) * W * .06, h = H * (.5 + .48 * hash(seed, q + 5)), tr = 1.1 + hash(seed, q + 9) * .5;
+        line(S, [x, by], [x, by - h], OUT, tr * 2 + 1.2); line(S, [x, by], [x, by - h], '#4a9a3a', tr * 1.6); line(S, [x - tr * .5, by], [x - tr * .5, by - h], '#9ad870', .5);
+        for (let k = 1; k * 6 < h; k++) { const yy = by - k * 6; S.poly([[x - tr - .4, yy], [x + tr + .4, yy], [x + tr + .4, yy - .8], [x - tr - .4, yy - .8]], '#2a6a24'); }
+        for (let l = 0; l < 7; l++) { const yy = by - h + l * 2.2, d = l % 2 ? 1 : -1, a = d * (.9 + .5 * hash(seed, q + l)), len = 5 + hash(seed, l + q) * 4; fillLeaf(S, leaf([x, yy], a, len, 1.6, d * .15, 'blade', seed + q * 7 + l), PAL, { q0: .35 + .3 * hash(seed, l), hi: d < 0, rim: 1 }); } }
     },
     /** Кактус-колона з двома «руками» (цереус), ребра, колючки, рожева квітка на маківці. */
     cactus(S, W, H, seed) {
