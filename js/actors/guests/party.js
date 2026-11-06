@@ -26,6 +26,8 @@
  *     знизу: після нього поверх перемальовуються грані стійки з растра (clip по їх многокутниках).
  *   ТРИ ПЛАНИ (крок 3): спереду — огорожа лаунжу (растр), посередині — танцпол і гості, позаду — НАТОВП-ТЛО: темні силуети
  *     обабіч пульта, що хитаються в такт і підіймають руки (GEO.crowd), — кімната не порожня навіть із трьома гостями.
+ *   МУЗИКА (party_music.js): 8-bit трек синтезом (Web Audio), кнопка «♪ ЗВУК» у шапці, за замовчуванням вимкнено, вибір
+ *     запам'ятовується; увімкнення скидає такт (S.t0) — плитки й танець у такт музиці.
  *   ТЕКСТИ — party.* у словниках (4 мови); растр кімнати перебудовується при зміні мови.
  * ========================================================================== */
 NX.party = (() => {
@@ -250,6 +252,9 @@ NX.party = (() => {
     const w1 = c.measureText(s1).width + 18; R(c, 12, 52, w1, 22, '#0a0626dd'); c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(12.5, 52.5, w1 - 1, 21); P.text(c, s1, 21, 68, '#ffe27a', 9);
     const s2 = NX.t('party.back'); c.font = '9px "Press Start 2P", monospace'; const w2 = c.measureText(s2).width + 20, bx = vw - 12 - w2, by = vh > vw ? 52 : 14;
     R(c, bx, by, w2, 26, '#0a0626ee'); c.strokeStyle = '#3be8ff'; c.strokeRect(bx + .5, by + .5, w2 - 1, 25); P.text(c, s2, bx + w2 / 2, by + 18, '#3be8ff', 9, 'center'); S.btn = { x: bx, y: by, w: w2, h: 26 };
+    if (NX.partyMusic) { const M = NX.partyMusic, s3 = '♪ ' + NX.t('party.sound'), onM = M.playing; c.font = '9px "Press Start 2P", monospace'; const w3 = c.measureText(s3).width + 20, bx3 = bx - 10 - w3;   // кнопка звуку (музика — party_music.js)
+      R(c, bx3, by, w3, 26, '#0a0626ee'); c.strokeStyle = onM ? '#ffe27a' : '#5a5a7a'; c.strokeRect(bx3 + .5, by + .5, w3 - 1, 25); P.text(c, s3, bx3 + w3 / 2, by + 18, onM ? '#ffe27a' : '#8a8aa8', 9, 'center'); S.btnM = { x: bx3, y: by, w: w3, h: 26 };
+      if (onM) { const bt = beat() % 1; R(c, bx3 + 4, by + 22 - bt * 0, 3, 2, bt < .25 ? '#ffe27a' : '#5a5a7a'); } }
     if (!n) { const k = S.k * dpr; c.setTransform(k, 0, 0, k, -S.x * k, -S.y * k); const txt = NX.t('party.empty'), words = txt.split(' '), lines = []; let cur = ''; c.font = '8px "Press Start 2P", monospace';   // підказка на порожньому танцполі
       words.forEach(w => { const tr = cur ? cur + ' ' + w : w; if (c.measureText(tr).width > Math.min(380, S.viewW - 40) && cur) { lines.push(cur); cur = w; } else cur = tr; }); lines.push(cur);
       const ph = lines.length * 13 + 12, [, y0] = fp(774, 40), hw = Math.min(205, S.viewW / 2 - 12); R(c, 774 - hw, y0, hw * 2, ph, '#0a0626cc'); c.strokeStyle = '#ffe27a'; c.strokeRect(774 - hw + .5, y0 + .5, hw * 2 - 1, ph - 1); lines.forEach((l, i) => P.text(c, l, 774, y0 + 16 + i * 13, '#ffe27a', 8, 'center')); }
@@ -272,6 +277,7 @@ NX.party = (() => {
   const toWorld = (sx, sy) => [sx / S.k + S.x, sy / S.k + S.y];
   function tap(sx, sy) {
     const b = S.btn; if (b && sx >= b.x && sx <= b.x + b.w && sy >= b.y && sy <= b.y + b.h) { close(); return; }
+    const bm = S.btnM; if (bm && NX.partyMusic && sx >= bm.x && sx <= bm.x + bm.w && sy >= bm.y && sy <= bm.y + bm.h) { if (NX.partyMusic.toggle()) S.t0 = NX.time; return; }
     const [x, y] = toWorld(sx, sy);
     for (const g of S.list.slice().sort((a, b) => a.z - b.z)) { const [GW, GH, K] = A().size(g.id), s = sc(g.z) * K, w = GW * s * .6, h = GH * s, [gx, gy] = gxy(g), top = gy - g.alt * s - h;
       if (x > gx - w / 2 && x < gx + w / 2 && y > top && y < gy - g.alt * s + 3) { const L = NX.t(`guests.${g.id}.t`) || NX.t(`guests.${g.id}.s`) || []; g.ti = ((g.ti == null ? rnd() * L.length | 0 : g.ti + 1)) % Math.max(1, L.length);
@@ -288,8 +294,8 @@ NX.party = (() => {
   function bind() { if (bound) return; bound = true; const cv = NX.loop.canvas; cv.addEventListener('pointerdown', H_.down, true); cv.addEventListener('pointermove', H_.move, true); cv.addEventListener('pointerup', H_.up, true); cv.addEventListener('pointercancel', e => { if (S.on) { e.stopImmediatePropagation(); S.pointer = null; } }, true);
     addEventListener('keydown', H_.key); addEventListener('resize', () => { if (S.on) layout(); }); if (NX.i18n && NX.i18n.onLang) NX.i18n.onLang(() => { S.bg = null; }); }
   /** Відкрити вечірку (кличе сценарій Nexi `party`, коли він зник у вихорі). */
-  function open() { bind(); prepare(); S.on = true; S.t0 = NX.time; S.fx = []; S.bub = null; layout(); const V = G().VIEW; S.x = clamp(774 - S.viewW / 2, V.x0, Math.max(V.x0, V.x1 - S.viewW)); roster(); document.body.classList.add('nx-party'); if (NX.input) NX.input.hover = null; }
+  function open() { bind(); prepare(); S.on = true; S.t0 = NX.time; S.fx = []; S.bub = null; layout(); const V = G().VIEW; S.x = clamp(774 - S.viewW / 2, V.x0, Math.max(V.x0, V.x1 - S.viewW)); roster(); document.body.classList.add('nx-party'); if (NX.input) NX.input.hover = null; if (NX.partyMusic && NX.partyMusic.enabled) NX.partyMusic.on(); }
   /** Закрити (кнопка «← У КІМНАТУ», Esc): сценарій Nexi бачить !on і повертає його на майданчик. */
-  function close() { if (!S.on) return; S.on = false; document.body.classList.remove('nx-party'); }
+  function close() { if (!S.on) return; S.on = false; document.body.classList.remove('nx-party'); if (NX.partyMusic) NX.partyMusic.off(); }
   return { open, close, frame, prepare, S, get on() { return S.on; }, roster };
 })();

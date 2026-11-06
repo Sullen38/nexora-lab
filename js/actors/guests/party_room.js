@@ -126,6 +126,14 @@ NX.partyRoom = (() => {
         c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(5.5, 5.5, W - 11, H - 11); const sign = NX.t('party.sign'); c.font = '34px "Press Start 2P", monospace'; let tw = c.measureText(sign).width, fs = 34; if (tw > W - 44) { fs = Math.floor(34 * (W - 44) / tw); }
         for (const [dx, dy, cc] of [[-2, 0, '#8a1a7a'], [2, 0, '#8a1a7a'], [0, -2, '#8a1a7a'], [0, 2, '#8a1a7a'], [-1, 0, '#ff4fd8'], [1, 0, '#ff4fd8'], [0, -1, '#ff4fd8'], [0, 1, '#ff4fd8'], [0, 0, '#fff0fb']]) P.text(c, sign, W / 2 + dx, H / 2 + fs * .42 + dy, cc, fs, 'center'); });
         return (u, v, i, j) => { const cc = t(u, v); if (!cc) return base(u, v, i, j); X.SH.fl = F_EMIT; return cc; }; } }); }
+    // гірлянди прапорців під стелею спереду (видно на телефоні, де вгорі стеля): дріт провисає, трикутники в кольорах неону
+    for (const z of [-40, -170]) { ++id; const n = 26, pts = []; for (let i = 0; i <= n; i++) { const u = i / n; pts.push([XL + (XR - XL) * u, CEIL + 22 + Math.sin(u * Math.PI) * 26 + Math.sin(u * Math.PI * 6) * 3, z]); }
+      for (let i = 0; i < n; i++) { const a = pts[i], b = pts[i + 1]; X.tube(L, a, b, 1, () => ramp(PAL.CHROME, .5, 0, 0), { id }); const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 14, z], c = [NEONC.pink, NEONC.cyan, NEONC.gold, NEONC.green, NEONC.lil, NEONC.orange][i % 6];
+        X.face(L, [a, b, m], a, [b[0] - a[0], b[1] - a[1], 0], [m[0] - a[0], m[1] - a[1], 0], (u, v, i2, j2) => (u + v > .9 ? dim(c, .7) : c), { id, n: [0, 0, -1] }); } }
+    // підвісні лампи-конуси спереду (над лаунжем): шнур, конус, лампочка (світиться)
+    for (const x of [XL + 150, 774 - 300, 774 + 300, XR - 150]) { ++id; X.tube(L, [x, CEIL, -120], [x, CEIL + 48, -120], 1.5, () => ramp(PAL.STEEL, .5, 0, 0), { id });
+      X.face(L, [[x - 14, CEIL + 64, -120], [x + 14, CEIL + 64, -120], [x + 3, CEIL + 48, -120], [x - 3, CEIL + 48, -120]], [x - 14, CEIL + 64, -120], [28, 0, 0], [0, -16, 0], (u, v, i2, j2) => ramp(PAL.MET, .55 + (u < .5 ? .15 : -.1) * (1 - v), i2, j2), { id, n: [0, 0, -1] });
+      X.disc(L, [x, CEIL + 66, -120.5], 4, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .25 ? NEONC.white : NEONC.gold; }, { id }); }
     // афіша колекції на задній стіні (рамка; портрети — живий шар party.js: drawPoster)
     { const Po = GEO.poster; ++id; box(L, id, Po.x0, Po.x1, Po.y0, Po.y1, ZB - 4, ZB, { all: mBevel(PAL.MET, 3), front: (q, fw, fh) => { const b = bevel(PAL.MET, q, fw, fh, 3); return (u, v, i, j) => (u * fw > 4 && u * fw < fw - 4 && v * fh > 4 && v * fh < fh - 4) ? ramp(PAL.DARK || PAL.STEEL, .15, i, j) : b(u, v, i, j); } }); }
     // дзеркальна куля на ланцюгу
