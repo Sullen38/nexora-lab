@@ -412,7 +412,7 @@
     return CREW[aq].map((m, k) => { const e = AQX && AQX.adjust ? AQX.adjust(aq, A, m, k, t, where(aq, A, m, k, t)) : where(aq, A, m, k, t), [kind, size] = m, S = frame(kind, 0), q = X.proj(e.p), s = sOf(e.p[2]), w = size * s, h = w * S.h / S.w;
       const pu = DL && DL.fishPush(aq, q, t); if (pu) { q[0] += pu[0]; q[1] += pu[1]; } return { kind, x: q[0], y: q[1] + (aq === 'jelly' ? h * .3 : 0), w, h }; });
   }
-  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, ramp, byId, items, SPR, CREW, JELLY: jelly, frame, crewAt };   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
+  NX.decor = { droneAt, droneCall, upstairs, ROUTE, MK, AQ, sprite, glowSpr, hex, ramp, byId, items, SPR, CREW, JELLY: jelly, frame, crewAt, where };   // (· 29) where — для чистильника (decor_aqua.js)   // для перевірок (tools), живого шару · 4 (objects/decor_live.js), акваріумів · 5 (objects/decor_aqua.js) і Nexi на другому поверсі · 7 (actors/nexi/activities.js)
   NX.addObject({
     id: 'decorLive',
     /** (Декор стін · 5) тапи по декору — objects/decor_live.js (зони мають першість; ui/input.js кличе tapFirst до зон). */

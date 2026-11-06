@@ -251,6 +251,18 @@
   }
   const flakeAt = (F, f, t) => { const a = t - f.t0; return a < 0 ? null : [f.x + Math.sin(a * 1.7 + f.sw) * .8, .4 + a * f.vy * (a < 1 ? .6 : 1)]; };
   /** Риби пливуть до корму (кличе objects/decor.js: позиція з «прогулянки» r -> зсунута до найближчого пластівця). */
+  // (· 29) ГУБАН-ЧИСТИЛЬНИК ПРАЦЮЄ: кожні 30 с на 11 с підпливає до «клієнта» — великої риби (хірург, ідол, крилатка, черепаха,
+  // спинорог, ангел), тримається під її зябрами й «чищає» (дрібне тремтіння), клієнт пливе далі — чистильник з ним; далі — свої справи.
+  const CLIENTS = ['tang', 'idol', 'lion', 'turtle', 'trigger', 'angel', 'puffer']; let wBusy = false;
+  function wrasseAt(A, m, t) {
+    if (wBusy || !DC.where || !CREW) return null; const T = 30, ph = ((t % T) + T) % T, cyc = Math.floor(t / T); if (ph < 17) return null;
+    const crew = CREW.reef, cands = crew.map((c, k) => [c, k]).filter(([c]) => CLIENTS.includes(c[0])); if (!cands.length) return null;
+    const [cm, ck] = cands[cyc % cands.length], k = crew.findIndex(c => c[0] === 'wrasse'); wBusy = true;
+    let r, me; try { r = DC.where('reef', A, cm, ck, t); me = DC.where('reef', A, m, k, t); } finally { wBusy = false; } if (!r || !me) return null;
+    const w = Math.min(1, (ph - 17) / 1.6) * Math.min(1, (T - .4 - ph) / 1.6), s = cm[1] * .28, dir = r.dir >= 0 ? 1 : -1;              // підпливає 1.6 с, відпливає 1.6 с
+    const tgt = [r.p[0] - dir * s * .6, r.p[1] + s * .55 + Math.sin(t * 14) * .25 * w, r.p[2] + .6];
+    return { p: me.p.map((v, i) => v + (tgt[i] - v) * w), dir: w > .5 ? dir : me.dir, clean: w > .9 };
+  }
   function adjust(aq, A, m, k, t, r) {
     const E = FEED[aq], F = FEEDER[aq]; if (!E || !F || t - E.t0 > 16) return r;
     const w = Math.min(1, Math.max(0, (t - E.t0 - .4) / 1.4)) * Math.min(1, Math.max(0, (16 - (t - E.t0)) / 2)) * (m[0] === 'seahorse' ? .35 : m[0] === 'shrimp' || m[0] === 'axolotl' ? .5 : .9);
@@ -302,7 +314,7 @@
     /** Після риб (list — риби кадру: корм, до якого риба доплила, з'їдено). */
     front(fx, aq, A, t, list) { drawFeed(fx, aq, t, list); if (aq === 'reef' && R) reefFront(fx, A, t); else if (aq === 'jelly') drawBloom(fx, t); },
     /** Особлива поведінка мешканця (objects/decor.js where): рибка-клоун — в анемоні. */
-    where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : null; },
+    where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : aq === 'reef' && m[0] === 'wrasse' ? wrasseAt(A, m, t) : null; },   // (· 29) чистильник
     adjust, feed, drawFeeders,
     /** Медузи після годування світяться яскравіше (множник сяйва). */
     glow(aq, t) { const E = FEED.jelly; if (aq !== 'jelly' || !E) return 1; const a = t - E.t0; return a < 0 || a > 10 ? 1 : 1 + 1.4 * Math.min(1, a * 1.5) * (1 - a / 10); },
