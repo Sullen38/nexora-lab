@@ -249,6 +249,29 @@ NX.guestArt = (() => {
       line(lx, fh[1], lx, ly, '#5a4a3a'); P(lx - 2, ly, 5, 1, '#a8802a'); P(lx - 2, ly + 1, 5, 5, '#e8b830'); P(lx - 1, ly + 2, 3, 3, fl ? '#fff6b0' : '#ffd86a'); px(lx, ly + 3, '#ffffff'); P(lx - 2, ly + 6, 5, 1, '#a8802a'); }
   };
 
+  /** БАРМЕН (вечірка, party.js; 06.11) — свій образ: кремезний, лисий, з закрученими вусами, біла сорочка з закоченими рукавами,
+   *  чорний жилет, червоний метелик, рушник на плечі; shake — трусить шейкер над головою, pour — наливає з пляшки в келих,
+   *  wipe — протирає келих рушником (стоячи за стійкою; ноги ховає стійка). */
+  D.bartender = (pose, fr, t) => {
+    const g = gait(pose, fr), B = g.bob, sh = pose === 'shake', po = pose === 'pour', wp = pose === 'wipe', WH = '#f4f2f8', VS = '#1e1830', V3 = T(VS), b2 = Math.round(Math.sin(t * 9) * 2);
+    legs(g, '#14101e', '#0a0812', { hip: 44 });
+    blk(17, 28 + B, 14, 16, WH, 2); P(17, 36 + B, 14, 8, '#dcdce6');                                                    // сорочка
+    P(17, 29 + B, 4, 15, VS); P(27, 29 + B, 4, 15, VS); P(17, 29 + B, 1, 15, V3.L); P(30, 29 + B, 1, 15, V3.D); px(22, 36 + B, '#e8c060'); px(22, 40 + B, '#e8c060');   // жилет, ґудзики
+    P(21, 28 + B, 6, 2, '#c81e3c'); px(23, 28 + B, '#ffffff'); px(23, 29 + B, '#7a1020');                                   // метелик
+    P(28, 27 + B, 4, 7, '#f0ece0'); P(29, 29 + B, 2, 1, '#c8c0a0'); P(29, 32 + B, 2, 1, '#c8c0a0');                        // рушник на плечі
+    const bh = sh ? [15, 20 + b2] : po ? [19, 38 + B] : [17, 42 + B], fh = sh ? [33, 16 - b2] : po ? [35, 30 + B] : wp ? [34, 36 + B] : [31, 42 + B];
+    arm([20, 31 + B], bh, WH, SK, { cuff: '#dcdce6' });
+    const hx = 16, hy = 14 + B; head(hx, hy, SK, { brow: '#3a2410', eyes: Math.floor(t * 1.3) % 7 === 0 ? 'shut' : undefined, mouth: 'smile', noCheek: 1 });
+    P(hx, hy + 3, 2, 6, '#3a2410'); P(hx + 1, hy + 2, 1, 1, '#3a2410'); P(hx + 4, hy, 9, 1, SK.L);                           // лисина з бліком, волосся за вухами
+    P(hx + 7, hy + 11, 8, 2, '#3a2410'); px(hx + 6, hy + 11, '#3a2410'); px(hx + 15, hy + 10, '#3a2410'); px(hx + 5, hy + 10, '#3a2410');   // закручені вуса
+    arm([29, 31 + B], fh, WH, SK, { cuff: '#dcdce6' });
+    if (sh) { const sx = fh[0] - 1, sy = fh[1] - 12; P(sx - 2, sy, 7, 11, '#b8c0d0'); P(sx - 2, sy, 1, 11, '#e8ecf4'); P(sx + 4, sy, 1, 11, '#7a8296'); P(sx - 1, sy - 3, 5, 3, '#9aa2b4'); P(sx - 1, sy - 3, 5, 1, '#d4dae6');   // шейкер
+      star(sx + 8, sy - 2 + b2, '#ffffff', 0); star(sx - 5, sy + 4 - b2, '#9af6ff', 0); }
+    if (po) { const bx = fh[0] + 1, by = fh[1] - 6; rod(bx, by, bx + 8, by - 8, '#2ab8e0', 4); rod(bx + 8, by - 8, bx + 11, by - 11, '#2ab8e0', 2); px(bx + 1, by - 2, '#9af6ff');   // пляшка нахилена, струмінь, келих
+      for (let i = 0; i < 4; i++) px(bx + 12, by - 10 + i * 2 + Math.floor(t * 6) % 2, '#ffe27a'); P(bx + 10, by - 2, 5, 6, '#e0f4ff'); P(bx + 11, by + 1, 3, 3, '#ffd27a'); P(bx + 12, by + 4, 1, 3, '#c8d8e0'); P(bx + 10, by + 7, 5, 1, '#c8d8e0'); }
+    if (wp) { const gx = fh[0] + 2, gy = fh[1] - 7 + Math.round(Math.sin(t * 7)); P(gx, gy, 5, 6, '#e0f4ff'); px(gx + 1, gy + 1, '#ffffff'); P(gx + 2, gy + 6, 1, 3, '#c8d8e0'); P(gx, gy + 9, 5, 1, '#c8d8e0'); P(gx - 3 + Math.round(Math.sin(t * 7) * 2), gy - 2, 4, 3, '#f0ece0'); }
+  };
+
   /** 4. ЧЕРВОНА ШАПОЧКА — червона накидка з каптуром (світла підкладка, золота застібка), каштанова коса, біла сорочка,
    *  темний ліф зі шнурівкою, синя спідниця з білим фартухом; плетений кошик з картатою серветкою й пиріжками. */
   D.redHood = (pose, fr, t) => {
@@ -717,7 +740,7 @@ NX.guestArt = (() => {
   const ANIM = { _: { R: 6, N: 12, p: ['cheer'] }, babaYaga: { R: 12, N: 24, p: ['sweep', 'cheer'] }, dwarf: { R: 4, N: 2, p: 'all' }, pussBoots: { R: 6, N: 12, p: 'all' },
     quixote: { R: 8, N: 16, p: ['fall', 'cheer'] }, sherlock: { R: 6, N: 12, p: 'all' }, munchausen: { R: 12, N: 24, p: ['ride', 'cheer'] }, cinderella: { R: 10, N: 20, p: 'all' },
     merlin: { R: 8, N: 16, p: ['cast', 'cheer'] }, genie: { R: 12, N: 24, p: 'all' }, silver: { R: 12, N: 12, p: ['dig', 'cheer'] }, gorynych: { R: 8, N: 16, p: 'all' },
-    firebird: { R: 12, N: 24, p: 'all' }, kolobok: { R: 12, N: 24, p: ['roll', 'walk', 'run'] } };
+    firebird: { R: 12, N: 24, p: 'all' }, kolobok: { R: 12, N: 24, p: ['roll', 'walk', 'run'] }, bartender: { R: 8, N: 16, p: ['shake', 'pour', 'wipe', 'stand'] } };
   const CACHE = new Map(), CAP = 160, CHC = document.createElement('canvas');
   /** Готовий кадр (полотно) — з кешу або намальований. Чеширський кіт дешевий і зникає за 7-секундним циклом — без кешу. */
   function frame(id, pose, fr, t, g = {}) {

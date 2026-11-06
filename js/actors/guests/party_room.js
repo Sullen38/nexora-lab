@@ -90,9 +90,11 @@ NX.partyRoom = (() => {
     speakers: [{ x: 774 - 360, z: 210 }, { x: 774 + 360, z: 210 }],                                   // стек: 52 завширшки, 150 заввишки
     ball: { x: 774, y: 196, z: 260, r: 26 }, sign: { x0: 774 - 210, x1: 774 + 210, y0: 64, y1: 128, z: ZB - 6 },
     lamps: [774 - 420, 774 - 140, 774 + 140, 774 + 420].map(x => ({ x, y: CEIL + 14, z: 150 })),      // прожектори на рейці
-    bar: { x0: 1280, x1: 1400, z0: -40, z1: 300, y0: 332 }, cake: { x0: 150, x1: 262, z0: 60, z1: 250, y0: 338 },
+    bar: { x0: 1226, x1: 1326, z0: -40, z1: 300, y0: 332 }, barman: { x: 1372, y: 346, z: 150 }, snack: { x0: 150, x1: 262, z0: 40, z1: 270, y0: 338 },
+    crowd: [], rail: { z: -210, y0: 330 },
     bulbs: [], balloons: [[214, 150, 60, 'pink'], [240, 128, 90, 'cyan'], [268, 158, 40, 'gold'], [1330, 146, 60, 'green'], [1300, 124, 100, 'orange'], [1272, 154, 40, 'lil'], [560, 118, 420, 'pink'], [990, 120, 420, 'cyan']],
   };
+  for (let i = 0; i < 18; i++) { const side = i < 9 ? -1 : 1, k = i % 9; GEO.crowd.push({ x: 774 + side * (150 + k * 36 + (k % 2) * 10), z: 176 + (k % 3) * 9, h: 44 + hash(i, 5) * 14, ph: hash(i, 9) * 6, w: 20 + hash(i, 2) * 8 }); }   // натовп-тло обабіч пульта
   (() => { for (let w = 0; w < 2; w++) for (let i = 0; i <= 11; i++) { const u = i / 11, xa = w ? XR - 10 : XL + 10, xb = w ? 774 + 230 : 774 - 230, x = xa + (xb - xa) * u, y = CEIL + 14 + Math.sin(u * Math.PI) * 34 + u * 8, z = ZB - 60 + (1 - u) * -120; GEO.bulbs.push([x, y, z]); } })();
 
   // ============================ ЗБІРКА РАСТРА ============================
@@ -140,18 +142,29 @@ NX.partyRoom = (() => {
       box(L, id, sp.x - 28, sp.x + 28, y0, y1, z0, z1, { front: mBevel(PAL.STEEL, 3), top: mBevel(PAL.STEEL, 2), left: mBevel(PAL.STEEL, 2), right: mBevel(PAL.STEEL, 2) });
       [[y0 + 22, 15], [y0 + 54, 11]].forEach(([cy, r]) => X.disc(L, [sp.x, cy, z0 - .6], r, (u, v, i, j) => { const d = Math.hypot(u - .5, v - .5) * 2; return d > .86 ? ramp(PAL.MET, .7 - (v - .5), i, j) : d < .22 ? ramp(PAL.CHROME, .6 - d, i, j) : ramp(PAL.STEEL, .55 - d * .5 + (u < .5 ? .08 : -.08), i, j); }, { id }));
       X.face(L, [[sp.x - 20, y0 + 6, z0 - .6], [sp.x + 20, y0 + 6, z0 - .6], [sp.x + 20, y0 + 9, z0 - .6], [sp.x - 20, y0 + 9, z0 - .6]], [sp.x - 20, y0 + 6, z0 - .6], [40, 0, 0], [0, 3, 0], (u, v) => { X.SH.fl = F_EMIT; return u % .25 < .12 ? NEONC.pink : dim(NEONC.pink, .4); }, { id, n: [0, 0, -1] }); } });
-    // бар уздовж правої стіни: стійка з неоновою кромкою, полиця з пляшками, що світяться, келихи на стійці
+    // бар уздовж правої стіни: стійка з неоновою кромкою (за нею — місце бармена, party.js), полиця з пляшками, що світяться, келихи на стійці
     { const B = GEO.bar; ++id; box(L, id, B.x0, B.x1, B.y0, FLY, B.z0, B.z1, { front: mBevel(PAL.WOOD, 3, { seam: 24 }), left: mBevel(PAL.WOOD, 3, { seam: 24 }), top: mGloss(PAL.TOP) });
       ++id; box(L, id, B.x0 - 2, B.x1, B.y0 - 3, B.y0, B.z0 - 2, B.z1, { front: mNeon(NEONC.pink, .8), left: mNeon(NEONC.pink, .8), top: mFlat(PAL.STEEL, .35) });
       ++id; box(L, id, XR - 30, XR, 196, 202, B.z0 + 20, B.z1 - 20, { front: mBevel(PAL.MET, 1), top: mBevel(PAL.MET, 1), left: mBevel(PAL.MET, 1), bottom: mBevel(PAL.MET, 1) });   // полиця
       ['pink', 'cyan', 'gold', 'green', 'orange', 'lil', 'cyan', 'pink'].forEach((cn, k) => { const z = B.z0 + 36 + k * 34, c = NEONC[cn]; ++id;
         box(L, id, XR - 26, XR - 12, 168, 196, z - 6, z + 6, { all: (q) => (u, v, i, j) => { X.SH.fl = F_EMIT; return v < .25 ? (u > .3 && u < .7 ? dim(c, .8) : 0) : mixc(dim(c, .75), NEONC.white, u < .35 ? .35 : u > .8 ? -.0 : .05); } }); });
       [[B.z0 + 60, 'gold'], [B.z0 + 120, 'cyan'], [B.z0 + 220, 'orange']].forEach(([z, cn]) => { ++id; box(L, id, B.x0 + 36, B.x0 + 50, B.y0 - 20, B.y0, z - 7, z + 7, { front: (q) => (u, v, i, j) => v < .6 ? mixc(NEONC[cn], NEONC.white, u < .3 ? .5 : .15) : ramp(PAL.CHROME, .7, i, j), left: (q) => (u, v, i, j) => v < .6 ? dim(NEONC[cn], .8) : ramp(PAL.CHROME, .5, i, j), top: mFlat(PAL.CHROME, .9) }); }); }
-    // стіл із тортом уздовж лівої стіни
-    { const C = GEO.cake; ++id; box(L, id, C.x0, C.x1, C.y0, FLY, C.z0, C.z1, { front: mBevel(PAL.WOOD, 3, { seam: 24 }), right: mBevel(PAL.WOOD, 3, { seam: 24 }), top: mBevel(PAL.CREAM, 2) });
+    // стіл із закусками вздовж лівої стіни (власник, 06.11: «замість торту — стіл із закусками різними»): скатертина, піца на
+    // дошці, гора сендвічів, миска з фруктами, кекси, чіпси в мисці, глечик соку, стос тарілок
+    { const C = GEO.snack; ++id; box(L, id, C.x0, C.x1, C.y0, FLY, C.z0, C.z1, { front: mBevel(PAL.WOOD, 3, { seam: 24 }), right: mBevel(PAL.WOOD, 3, { seam: 24 }), top: (q, w, h) => (u, v, i, j) => ramp(PAL.CREAM, .8 + ((Math.floor(u * w / 12) + Math.floor(v * h / 12)) % 2 ? -.18 : 0) - v * .15, i, j) });
       ++id; box(L, id, C.x0 - 2, C.x1 + 2, C.y0 - 2, C.y0, C.z0 - 2, C.z1 + 2, { front: mNeon(NEONC.gold, .8), right: mNeon(NEONC.gold, .8), top: mFlat(PAL.STEEL, .35) });
-      const cx = (C.x0 + C.x1) / 2, cz = (C.z0 + C.z1) / 2; [[52, PAL.PINK, 0], [38, PAL.LILAC, 20], [26, PAL.CYAN, 36]].forEach(([r, PL, dy]) => { ++id; box(L, id, cx - r, cx + r, C.y0 - 18 - dy, C.y0 - dy, cz - r, cz + r, { all: (q, w, h) => (u, v, i, j) => ramp(PL, v < .14 ? .95 : q + .25 - v * .25 + ((u * w) % 8 < 1.5 && v > .4 ? -.2 : 0), i, j) }); });
-      for (let k = 0; k < 5; k++) { const x = cx - 16 + k * 8; ++id; X.tube(L, [x, C.y0 - 54 - 8, cz - 4], [x, C.y0 - 54, cz - 4], 2.2, () => col('#ffffff'), { id }); X.disc(L, [x, C.y0 - 64, cz - 5], 2.2, () => { X.SH.fl = F_EMIT; return NEONC.gold; }, { id }); } }
+      const T0 = C.y0, cx = (C.x0 + C.x1) / 2;
+      ++id; box(L, id, cx - 26, cx + 26, T0 - 3, T0, C.z1 - 70, C.z1 - 18, { all: mFlat(PAL.WOOD, .7) });                                     // дошка з піцою
+      ++id; box(L, id, cx - 22, cx + 22, T0 - 6, T0 - 3, C.z1 - 66, C.z1 - 22, { top: (q, w, h) => (u, v, i, j) => { const dx = u - .5, dy = v - .5, d = Math.hypot(dx, dy) * 2; if (d > 1) return 0; const a = Math.atan2(dy, dx), cut = Math.abs(((a / Math.PI * 4) % 1 + 1) % 1 - .5) < .03;
+        if (cut) return col('#5a2a10'); if (d > .86) return ramp(PAL.GOLD, .55 + (d - .86) * 3, i, j); const pep = hash(Math.floor(u * 7), Math.floor(v * 7)) > .62; return pep ? col(hash(Math.floor(u * 7) + 3, Math.floor(v * 7)) > .5 ? '#c8302a' : '#2a8a3a') : ramp(PAL.GOLD, .72, i, j); }, front: mFlat(PAL.GOLD, .5), right: mFlat(PAL.GOLD, .45) });
+      ++id; for (let k = 0; k < 4; k++) box(L, id, cx - 34 + (k % 2) * 6, cx - 10 + (k % 2) * 6, T0 - 6 - k * 6, T0 - k * 6, C.z0 + 40 - (k % 2) * 4, C.z0 + 70 - (k % 2) * 4,           // гора сендвічів
+        { all: (q, w, h) => (u, v, i, j) => v < .3 ? ramp(PAL.CREAM, .7 - v, i, j) : v < .5 ? col('#3aa040') : v < .7 ? col('#e0b040') : v < .82 ? col('#c8302a') : ramp(PAL.CREAM, .65, i, j) });
+      ++id; box(L, id, cx + 2, cx + 36, T0 - 14, T0, C.z0 + 36, C.z0 + 76, { all: (q, w, h) => (u, v, i, j) => v > .55 ? ramp(PAL.CHROME, .55 - (v - .55) * .6 + (u < .2 ? .2 : 0), i, j) : (() => { const f = hash(Math.floor(u * 6), Math.floor(v * 5) + 11); return col(f < .25 ? '#e03a3a' : f < .5 ? '#ffb020' : f < .75 ? '#7ad040' : '#8a40c8'); })() });   // миска з фруктами
+      [[cx - 36, C.z1 - 110, '#ff84d4'], [cx - 22, C.z1 - 100, '#9af6ff'], [cx - 8, C.z1 - 112, '#ffe27a'], [cx + 6, C.z1 - 98, '#c08af0']].forEach(([x, z, c]) => { ++id; box(L, id, x - 6, x + 6, T0 - 9, T0, z - 6, z + 6, { all: (q, w, h) => (u, v, i, j) => v < .45 ? mixc(col(c), NEONC.white, u < .3 ? .4 : .1) : ramp(PAL.WOOD, .6 - v * .3, i, j) }); X.disc(L, [x, T0 - 11, z - 6.5], 2, () => col('#c81e3c'), { id }); });   // кекси з вишенькою
+      ++id; box(L, id, cx + 12, cx + 44, T0 - 10, T0, C.z1 - 118, C.z1 - 86, { all: (q, w, h) => (u, v, i, j) => v > .5 ? ramp(PAL.LILAC, .6 - (v - .5) * .5, i, j) : col(hash(Math.floor(u * 8), Math.floor(v * 4) + 21) > .5 ? '#ffd27a' : '#e8b040') });   // чіпси в мисці
+      ++id; box(L, id, cx + 26, cx + 42, T0 - 30, T0, C.z0 + 90, C.z0 + 106, { all: (q, w, h) => (u, v, i, j) => { X.SH.fl = F_EMIT; return v < .2 ? ramp(PAL.CHROME, .7, i, j) : mixc(NEONC.orange, NEONC.white, u < .3 ? .4 : .05); } });   // глечик соку
+      ++id; for (let k = 0; k < 5; k++) box(L, id, cx - 40, cx - 16, T0 - 3 - k * 2.4, T0 - k * 2.4, C.z0 + 90, C.z0 + 114, { all: (q, w, h) => (u, v, i, j) => ramp(PAL.CREAM, .85 - v * .5, i, j) });   // стос тарілок
+    }
     // лаунж-диванчик уздовж лівої стіни (далі, біля стіни)
     { ++id; box(L, id, 150, 260, 334, FLY, 290, 390, { front: mBevel(PAL.PLUM, 3, { seam: 36 }), right: mBevel(PAL.PLUM, 3), top: mBevel(PAL.PLUM, 2) });
       ++id; box(L, id, 150, 260, 290, 334, 376, 392, { front: mBevel(PAL.PLUM, 3, { seam: 36 }), right: mBevel(PAL.PLUM, 2), top: mBevel(PAL.PLUM, 2) }); }
@@ -159,6 +172,9 @@ NX.partyRoom = (() => {
     GEO.balloons.forEach(([x, y, z, cn]) => { const c = NEONC[cn]; ++id; X.tube(L, [x, y + 14, z], [x + (hash(x, 3) - .5) * 30, y + 70, z], 1, () => ramp(PAL.CHROME, .45, 0, 0), { id });
       ++id; X.disc(L, [x, y, z], 12, (u, v, i, j) => { const dx = u - .5, dy = (v - .5) * .85, d = Math.hypot(dx, dy) * 2; if (d > 1) return 0; X.SH.fl = F_EMIT; const hl = Math.hypot(dx + .18, dy + .2) < .16; return hl ? mixc(c, NEONC.white, .7) : d > .82 ? dim(c, .55) : d > .5 ? dim(c, .8) : c; }, { id }); });
 
+    // передній план: низьке огородження лаунжу обабіч (темне, з тонким неоном зверху) — три плани: огорожа → танцпол → стіна
+    { const Rl = GEO.rail; [[XL + 40, 774 - 330], [774 + 330, XR - 40]].forEach(([x0, x1]) => { ++id; box(L, id, x0, x1, Rl.y0, Rl.y0 + 4, Rl.z - 3, Rl.z + 3, { all: mBevel(PAL.STEEL, 1), top: mNeon(NEONC.lil, .5) });
+      for (let x = x0; x <= x1; x += (x1 - x0) / 3) { ++id; box(L, id, x - 4, x + 4, Rl.y0 + 4, FLY, Rl.z - 4, Rl.z + 4, { all: mBevel(PAL.STEEL, 1) }); } }); }
     // контур і віддзеркалення в підлозі (все, що стоїть на підлозі або висить на стінах)
     X.outline(L, col('#060313'), 1);
     X.reflect(L, i => (i === ID_FLOOR || i === 5 ? null : { y: FLY, h: 60 }), { a: .34, h: 60, emit: 2.2, streak: true });
