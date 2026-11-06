@@ -13,11 +13,11 @@
   const C = NX.cfg, FY = C.FLOOR_Y, hash = NX.art.hash;
   // x — центр на підлозі; kind — вид (dc_plants OWN); pot — вазон; pw/ph — вазон (од.); w/h — рослина (од.); seed
   const PL = [
-    { x: 668, y: FY + 3, kind: 'alocasia', pot: 'hex', pw: 26, ph: 19, w: 46, h: 70, seed: 11, col: '#3be8ff' },
-    { x: 722, y: FY + 2, kind: 'cactus', pot: 'tripod', pw: 18, ph: 15, w: 22, h: 76, seed: 23, col: '#ff4fd8' },
-    { x: 776, y: FY + 4, kind: 'ficus', pot: 'barrel', pw: 30, ph: 23, w: 50, h: 88, seed: 37, col: '#b8ff3a' },
-    { x: 832, y: FY + 3, kind: 'yucca', pot: 'column', pw: 24, ph: 30, w: 48, h: 72, seed: 41, col: '#9af6ff' },
-    { x: 886, y: FY + 4, kind: 'dracaena', pot: 'hover', pw: 26, ph: 15, w: 42, h: 90, seed: 53, col: '#ff4fd8' },
+    { x: 700, y: FY + 3, kind: 'alocasia', pot: 'hex', pw: 30, ph: 21, w: 54, h: 74, seed: 11, col: '#3be8ff' },
+    { x: 742, y: FY + 2, kind: 'cactus', pot: 'tripod', pw: 22, ph: 16, w: 30, h: 82, seed: 23, col: '#ff4fd8' },
+    { x: 784, y: FY + 4, kind: 'ficus', pot: 'barrel', pw: 34, ph: 25, w: 60, h: 94, seed: 37, col: '#b8ff3a' },
+    { x: 826, y: FY + 3, kind: 'yucca', pot: 'column', pw: 26, ph: 32, w: 56, h: 76, seed: 41, col: '#9af6ff' },
+    { x: 866, y: FY + 4, kind: 'dracaena', pot: 'hover', pw: 28, ph: 16, w: 50, h: 96, seed: 53, col: '#ff4fd8' },
   ];
   // Усі — за диваном (видно над спинкою). «За зонами» (стіл маркетингу, капсула СКІНІВ) — перевірено: обидві зони в растрі крила
   // закривають свої шибки вікна цілком (екрани маркетингу, капсула), тож вазон за ними невидимий; перед ними — не можна (зони).
