@@ -60,6 +60,8 @@ NX.partyRoom = (() => {
     if (by < 2 || bx < 2) return ramp(PAL.MORTAR, .5 + (hv - .5) * .4, i, j);
     let qq = q + (hv - .5) * .24 + (o.grad || 0) * (.5 - v) + (by < 4 ? .08 : by > 11 ? -.08 : 0);
     if (hv > .93 && bx > 8 && bx < 20 && by > 5 && by < 10) qq -= .3;                            // скол
+    const gr = hash(Math.floor(x / 90) + (o.seed || 0) * 3, Math.floor(y / 70)); if (gr > .7) qq -= (gr - .7) * .9 * (1 - Math.abs(((x % 90) / 90 - .5) * 2)) * (1 - Math.abs(((y % 70) / 70 - .5) * 2));   // плями кіптяви
+    if (v > .85) qq -= (v - .85) * 2;                                                                                                   // бруд унизу
     return ramp(PAL.BRICK, qq, i, j);
   };
   /** Підлога: темний глянець із великими плитами 80 од. (ледь помітні шви) — у ній відбивається все (F_FLOOR). */
@@ -119,6 +121,7 @@ NX.partyRoom = (() => {
     ...[XL + 150, 774 - 300, 774 + 300, XR - 150].map(x => ({ p: [x, 130, -120], c: [1, .85, .5], r: 300, k: .5 })),              // підвісні лампи спереду (прапорці, лаунж)
     { p: [774 - 380 + 40, 320, -170], c: [1, .8, .4], r: 140, k: .5 }, { p: [774 + 380 - 40, 320, -170], c: [1, .8, .4], r: 140, k: .5 },   // свічки лаунжу
     { p: [XL + 40, 70, 416], c: [.3, .9, 1], r: 260, k: .5 }, { p: [XR - 40, 70, 416], c: [1, .35, .85], r: 260, k: .5 },                 // прожектори балконів
+    { p: [XL + 10, 200, 100], c: [1, .5, .9], r: 200, k: .45 }, { p: [XL + 10, 160, 200], c: [1, .8, .4], r: 140, k: .4 }, { p: [XR - 10, 160, 200], c: [1, .8, .4], r: 140, k: .4 },   // графіті, бра
   ];
   /** Світло в точці світу: [r, g, b] множники (ambient + сума джерел; 1 — як намальовано). */
   function lightAt(x, y, z) {
@@ -324,6 +327,24 @@ NX.partyRoom = (() => {
         for (let k = 0; k < 3; k++) { const x = x0 + 40 + k * (x1 - x0 - 80) / 2, h = 46 + hash(k, side + 21) * 10; ++id; box(L, id, x - 14, x + 14, FLY - 34 - h, FLY - 34, z - 10, z + 12, { all: mFlat(PAL.DARK, .3) }); X.disc(L, [x, FLY - 34 - h - 9, z - 10.5], 9, (u, v) => Math.hypot(u - .5, v - .5) > .5 ? 0 : ramp(PAL.DARK, .3, 0, 0), { id }); }   // сидять
         const tx = side ? x0 - 40 : x1 + 40; ++id; X.tube(L, [tx, FLY - 44, z], [tx, FLY, z], 3, (u) => ramp(PAL.CHROME, .45 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id }); X.disc(L, [tx, FLY - 44, z - .5], 20, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 3); return d > .5 ? 0 : ramp(PAL.TOP, .5 + (d < .15 ? .3 : 0), 0, 0); }, { id });   // столик
         X.tube(L, [tx, FLY - 44, z - 4], [tx, FLY - 54, z - 4], 4, () => rgb(240, 230, 210), { id }); X.disc(L, [tx, FLY - 57, z - 5], 2.5, () => { X.SH.fl = F_EMIT; return NEONC.gold; }, { id }); }); }   // свічка
+    // ============ DJ-СЦЕНА (план «сире» 5): сходинки подіуму з LED-кромкою, монітори, кейси, кабелі, CO2-гармати ============
+    { const B = GEO.booth; for (let k = 0; k < 2; k++) { const y1 = FLY - k * 9, y0 = y1 - 9, x0 = B.x0 - 50 + k * 12, x1 = B.x1 + 50 - k * 12; ++id;
+        box(L, id, x0, x1, y0, y1, B.z0 - 60 + k * 14, B.z1 + 50, { front: (q, w, h) => (u, v, i, j) => v < .22 ? (() => { X.SH.fl = F_EMIT; return mixc(NEONC.cyan, NEONC.white, .3); })() : bevel(PAL.MET, q, w, h, 1)(u, v, i, j), top: mFlat(PAL.STEEL, .45), left: mBevel(PAL.MET, 1), right: mBevel(PAL.MET, 1) }); }   // сходинки з LED-кромкою
+      [[B.x0 - 36, 1], [B.x1 + 36, -1]].forEach(([x, d]) => { ++id; box(L, id, x - 16, x + 16, B.y0 + 10, B.y0 + 32, B.z0 - 10, B.z0 + 16, { front: (q, w, h) => (u, v, i, j) => { const dd = Math.hypot(u - .5, v - .5) * 2; return dd < .7 ? ramp(PAL.STEEL, .55 - dd * .4, i, j) : bevel(PAL.STEEL, q, w, h, 2)(u, v, i, j); }, top: mBevel(PAL.STEEL, 2), left: mBevel(PAL.STEEL, 2), right: mBevel(PAL.STEEL, 2) }); });   // монітори-клини
+      ++id; box(L, id, B.x1 + 60, B.x1 + 100, FLY - 30, FLY, B.z1 - 10, B.z1 + 30, { all: mBevel(PAL.STEEL, 2), front: (q, w, h) => (u, v, i, j) => (Math.abs(u - .5) < .1 && v < .5 && v > .25) ? ramp(PAL.CHROME, .7, i, j) : bevel(PAL.STEEL, q, w, h, 2)(u, v, i, j) }); box(L, id, B.x0 - 100, B.x0 - 60, FLY - 24, FLY, B.z1 - 10, B.z1 + 26, { all: mBevel(PAL.STEEL, 2) });   // кейси
+      for (let k = 0; k < 4; k++) { const x0 = B.x0 + 20 + k * 60, z = B.z1 + 20; X.tube(L, [x0, FLY - 1, z], [x0 + 40 + k * 6, FLY - 1, z + 30 - k * 8], 1.5, () => ramp(PAL.DARK, .3, 0, 0), { id }); }   // кабелі
+      [[B.x0 - 30, -1], [B.x1 + 30, 1]].forEach(([x, d]) => { ++id; box(L, id, x - 7, x + 7, FLY - 60, FLY - 8, B.z0 - 30, B.z0 - 16, { all: mBevel(PAL.CHROME, 1) }); X.tube(L, [x, FLY - 60, B.z0 - 23], [x + d * 10, FLY - 80, B.z0 - 23], 6, (u) => ramp(PAL.CHROME, .5 + (Math.abs(u - .5) < .25 ? .3 : 0), 0, 0), { id }); });   // CO2-гармати обабіч
+      GEO.co2 = [{ x: B.x0 - 30 - 10, y: FLY - 80, z: B.z0 - 23, d: -1 }, { x: B.x1 + 30 + 10, y: FLY - 80, z: B.z0 - 23, d: 1 }]; }
+    // ============ ФАКТУРА (план «сире» 6): труби й короби під стелею, знак виходу, вогнегасник, бра, неонове графіті ============
+    { ++id; X.tube(L, [XL, CEIL + 30, ZB - 20], [XR, CEIL + 30, ZB - 20], 9, (u) => ramp(PAL.STEEL, .35 + (Math.abs(u - .5) < .25 ? .25 : 0), 0, 0), { id }); X.tube(L, [XL, CEIL + 46, ZB - 20], [XR, CEIL + 46, ZB - 20], 5, (u) => ramp(PAL.MET, .35 + (Math.abs(u - .5) < .25 ? .25 : 0), 0, 0), { id });   // труби вздовж задньої стіни
+      for (const x of [XL + 300, 774, XR - 300]) { box(L, id, x - 7, x + 7, CEIL + 24, CEIL + 36, ZB - 28, ZB - 12, { all: mBevel(PAL.STEEL, 1) }); }                                                                                 // хомути
+      ++id; box(L, id, 774 - 560, 774 - 320, CEIL, CEIL + 30, ZB - 160, ZB - 100, { front: mBevel(PAL.STEEL, 2, { seam: 40 }), bottom: mBevel(PAL.STEEL, 2), left: mBevel(PAL.STEEL, 2), right: mBevel(PAL.STEEL, 2) }); box(L, id, 774 + 320, 774 + 560, CEIL, CEIL + 30, ZB - 160, ZB - 100, { front: mBevel(PAL.STEEL, 2, { seam: 40 }), bottom: mBevel(PAL.STEEL, 2), left: mBevel(PAL.STEEL, 2), right: mBevel(PAL.STEEL, 2) });   // вентиляційні короби
+      ++id; box(L, id, XR - 90, XR - 30, 70, 92, ZB - 4, ZB, { all: mBevel(PAL.STEEL, 1), front: (q, fw, fh) => { const t = tex(60, 22, (c, W, H) => { c.fillStyle = '#0a2a14'; c.fillRect(0, 0, W, H); c.strokeStyle = '#3bff8a'; c.strokeRect(1.5, 1.5, W - 3, H - 3); c.fillStyle = '#3bff8a'; c.fillRect(8, 6, 6, 10); c.fillRect(14, 9, 6, 4); c.beginPath(); c.moveTo(20, 6); c.lineTo(26, 11); c.lineTo(20, 16); c.fill(); c.fillRect(34, 8, 18, 2); c.fillRect(34, 12, 18, 2); }); return (u, v) => { X.SH.fl = F_EMIT; return t(u, v); }; } });   // знак виходу
+      ++id; box(L, id, XR - 10, XR, 300, 340, 60, 72, { all: (q, w, h) => (u, v, i, j) => v < .15 ? ramp(PAL.STEEL, .5, i, j) : v < .25 ? col('#0a0626') : ramp(PAL.PINK, .35 + (u < .3 ? .2 : 0) - (v > .8 ? .2 : 0), i, j) }); X.tube(L, [XR - 6, 300, 66], [XR - 14, 310, 60], 2, () => ramp(PAL.DARK, .4, 0, 0), { id });   // вогнегасник
+      for (const [x, z, side] of [[XL + 1, 200, 1], [XR - 1, 200, -1], [XL + 1, -40, 1], [XR - 1, -40, -1]]) { ++id; box(L, id, side > 0 ? x : x - 8, side > 0 ? x + 8 : x, 150, 170, z - 10, z + 10, { all: mBevel(PAL.MET, 1) }); X.disc(L, [x + side * 9, 160, z], 5, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .3 ? NEONC.white : NEONC.gold; }, { id }); }   // бра на бічних стінах
+      ++id; { const gx = XL + 2, gz0 = ZB - 400, tube = (a, b, c) => X.tube(L, [gx, a[1], a[0]], [gx, b[1], b[0]], 3, (u) => { X.SH.fl = F_EMIT; return Math.abs(u - .5) < .3 ? mixc(c, NEONC.white, .4) : dim(c, .7); }, { id });   // неонове графіті на лівій стіні: «NEXI» хвилею + зірка
+        const pts = []; for (let i = 0; i <= 24; i++) pts.push([gz0 + i * 7, 220 + Math.sin(i * .6) * 22]); for (let i = 0; i < 24; i++) tube(pts[i], pts[i + 1], i < 12 ? NEONC.pink : NEONC.cyan);
+        const st = [[gz0 + 100, 150], [gz0 + 112, 180], [gz0 + 140, 184], [gz0 + 118, 202], [gz0 + 126, 230], [gz0 + 100, 214], [gz0 + 74, 230], [gz0 + 82, 202], [gz0 + 60, 184], [gz0 + 88, 180], [gz0 + 100, 150]]; for (let i = 0; i < 10; i++) tube(st[i], st[i + 1], NEONC.gold); } }
     // контур і віддзеркалення в підлозі (все, що стоїть на підлозі або висить на стінах)
     X.outline(L, col('#060313'), 1); bake(L);
     X.reflect(L, i => (i === ID_FLOOR || i === 5 ? null : { y: FLY, h: 60 }), { a: .34, h: 60, emit: 2.2, streak: true });
