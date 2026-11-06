@@ -129,6 +129,7 @@ NX.party = (() => {
       default: g.alt = bounce * (k === 7 ? 9 : 5); g.pose = k === 7 || k === 3 ? 'cheer' : 'walk'; if (g.pose === 'walk') g.fr = hb % 4;
         if (hb % 2 === 0 && hb !== g.lastB) { g.lastB = hb; if (rnd() < .3) g.dir = -g.dir; }
     }
+    if (S.dropK) { g.alt += S.dropK * 14; if (S.dropK > .5) g.pose = 'cheer'; } if (g.waveK) { g.alt += g.waveK * 22; g.pose = 'cheer'; }   // дроп і хвиля (party_live.js)
   }
   // ---------- світло на спрайтах (06.11): колір сцени на гостях, Nexi, бармені; тінь — від найближчого прожектора ----------
   const LIT = document.createElement('canvas');
@@ -202,6 +203,7 @@ NX.party = (() => {
   function drawPool(c, g) { const [sx, sy] = gxy(g), s = sc(g.z), col = NEON[(Math.floor((g.x - 400) / 180) + Math.floor(beat() / 8) + 6) % 6]; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .14 + pulse() * .1; c.fillStyle = col; c.beginPath(); c.ellipse(sx, sy + 1, 26 * s, 8 * s, 0, 0, 7); c.fill(); c.restore(); }
   /** Режисер вечірки (кроки 4–6): пари танцюристів, «ура» від Nexi, Рудик на колонці, події раз на ~35 с. */
   function director(t) {
+    if (NX.partyLive) NX.partyLive.tick(t, S.dt || .016);   // жива вечірка: дроп, кульки, бульбашки, балачки, хвиля, кіно-камера
     if (NX.partyShow && NX.partyShow.on) { NX.partyShow.tick(t, S.dt || .016); if (S.bub && t > S.bub.until) S.bub = null; return; }
     const idle = S.list.filter(g => !g.trip && !g.mv && !g.fly && !g.up && !g.pouf && !g.rest && !g.conga && !g.photo && !g.hockey && !g.sing && !g.fan && g.id !== 'kolobok' && g.id !== 'cheshire' && !(g.pairT && t < g.pairT) && t > g.spT);
     if (S.hockey && t > S.hockey.until) { S.hockey.a.hockey = S.hockey.b.hockey = null; S.hockey.a.next = S.hockey.b.next = t + 3; S.hockey = null; }
@@ -230,7 +232,7 @@ NX.party = (() => {
     if (t > CAT.until) { if (age > 150 && CAT.pose !== 'meow') { CAT.pose = 'sleep'; CAT.until = t + 30; } else { CAT.pose = CAT.pose === 'sit' && rnd() < .35 ? 'paw' : CAT.pose === 'sit' && rnd() < .2 ? 'groom' : 'sit'; CAT.until = t + (CAT.pose === 'sit' ? 4 + rnd() * 6 : 1.6); } }   // пізно — Рудик засинає
     if (age > 120 && !S.event && !S.restNext) S.restNext = t + 5;                                      // пізно ввечері: гості по черзі йдуть перепочити на диванчик
     if (S.restNext && t > S.restNext && !S.event) { S.restNext = t + 14 + rnd() * 10; const free = idle.filter(g => !g.rest && !g.item); const n = S.list.filter(g => g.rest).length; if (free.length && n < 2) { const g = free[rnd() * free.length | 0], So = G().sofa; g.rest = { x: So.x0 - 26, z: So.z0 + 24 + n * 50, ph: 'go', until: t + 14 + rnd() * 8 }; g.mv = false; g.trip = null; } }   // Рудик: сидить, б'є лапкою конфеті, вмивається
-    if (!S.event && t > S.eventT) { const kinds = ['spot', 'strobe', 'fire', 'conga', 'photo', 'solo', 'foam', 'smoke', 'foam', 'smoke']; const kind = kinds[rnd() * kinds.length | 0]; S.event = { kind, t0: t, until: t + (kind === 'conga' ? 14 : kind === 'photo' ? 9 : kind === 'solo' ? 11 : kind === 'foam' ? 16 : kind === 'smoke' ? 10 : rnd() < .5 ? 6 : 5) };
+    if (!S.event && t > S.eventT) { const kinds = ['spot', 'strobe', 'fire', 'conga', 'photo', 'solo', 'foam', 'smoke', 'foam', 'smoke', 'glow', 'wave', 'glow']; const kind = kinds[rnd() * kinds.length | 0]; S.event = { kind, t0: t, until: t + (kind === 'conga' ? 14 : kind === 'photo' ? 9 : kind === 'solo' ? 11 : kind === 'foam' ? 16 : kind === 'smoke' ? 10 : kind === 'glow' ? 14 : kind === 'wave' ? 7 : rnd() < .5 ? 6 : 5) };
       if (kind === 'foam') { S.foam = []; S.list.forEach(g => { if (!g.trip && !g.fly) g.cheerT = t + 2; }); }
       if (kind === 'solo') { S.event.label = NX.t('party.solo'); S.solo = { k: 0, z: 40 }; S.list.forEach(g => { if (!g.trip) g.next = Math.max(g.next, t + 11); }); } S.eventT = t + 30 + rnd() * 20;   // події
       if (S.event.kind === 'spot') { const cand = S.list.filter(g => !g.trip && !g.fly); S.event.g = cand[rnd() * cand.length | 0] || null; S.list.forEach(g => { if (g !== S.event.g && !g.trip) g.cheerT = t + 2.5; }); } }
@@ -409,6 +411,7 @@ NX.party = (() => {
       chip(c, bx3, by, w3, 26, onM ? '#ffe27a' : '#5a5a7a'); P.text(c, s3, bx3 + w3 / 2, by + 18, onM ? '#ffe27a' : '#8a8aa8', 9, 'center'); S.btnM = { x: bx3, y: by, w: w3, h: 26 };
       if (onM) { const bt = beat() % 1; R(c, bx3 + 4, by + 22 - bt * 0, 3, 2, bt < .25 ? '#ffe27a' : '#5a5a7a'); } }
     if (S.openT && NX.time - S.openT < 1.2) { const k0 = (NX.time - S.openT) / 1.2, a = 1 - k0; c.save(); c.globalAlpha = a; const gr = c.createRadialGradient(vw / 2, vh / 2, 0, vw / 2, vh / 2, Math.max(vw, vh) * (0.2 + k0 * .9)); gr.addColorStop(0, 'rgba(200,120,255,.0)'); gr.addColorStop(.6, 'rgba(120,60,220,.5)'); gr.addColorStop(1, 'rgba(6,3,20,1)'); c.fillStyle = gr; c.fillRect(0, 0, vw, vh); c.restore(); }   // вхід: вихор розходиться
+    if (NX.partyLive) NX.partyLive.drawDim(c, vw, vh);
     drawSubs(c, vw, vh);
     if (S.flashT && NX.time < S.flashT) { c.save(); c.globalAlpha = (S.flashT - NX.time) * 2.5; c.fillStyle = '#ffffff'; c.fillRect(0, 0, vw, vh); c.restore(); }   // спалах (сцени справжньої вечірки)
     if (NX.partyShow) { S.btnR = NX.partyShow.drawHud(c, vw, vh, chip, NX.time); NX.partyShow.drawTitle(c, vw, vh, NX.time); }
@@ -428,9 +431,9 @@ NX.party = (() => {
     c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#03020a'; c.fillRect(0, 0, NX.loop.canvas.width, NX.loop.canvas.height);
     c.setTransform(k, 0, 0, k, NX.loop.canvas.width / 2 - cxw * k, NX.loop.canvas.height * .55 - cyw * k); c.imageSmoothingEnabled = false; S.tf = { k, cxw, cyw };
     c.drawImage(S.bg.cv, S.bg.x0, S.bg.y0);
-    drawPoster(c); drawScreen(c, t); drawTiles(c); drawFog(c); drawCrowd(c, t); drawLights(c, t); drawGobos(c, t); drawNexi(c, t); drawLed(c, t); drawBartender(c, t); drawRudyk(c, t);
+    drawPoster(c); drawScreen(c, t); drawTiles(c); drawFog(c); drawCrowd(c, t); drawLights(c, t); drawGobos(c, t); if (NX.partyLive) NX.partyLive.drawBack(c, t); drawNexi(c, t); drawLed(c, t); drawBartender(c, t); drawRudyk(c, t);
     if (S.bub && S.bub.nexi) { const N = nexiPos(); bubble(c, S.bub.text, N.x, N.y - 60, Math.min(1, (S.bub.until - t) * 3), 'Nexi', '#3be8ff'); }
-    S.list.slice().sort((a, b) => b.z - a.z).forEach(g => drawGuest(c, g, t)); drawOverlays(c); drawBallSpots(c, t);
+    S.list.slice().sort((a, b) => b.z - a.z).forEach(g => drawGuest(c, g, t)); drawOverlays(c); drawBallSpots(c, t); if (NX.partyLive) NX.partyLive.drawFront(c, t);
     drawHockey(c, dt, t); drawKaraoke(c, t); drawEvent(c, t); drawFx(c, dt); grade(c); drawHud(c);
   }
   // ============================ ВХІД, ВИХІД, ДОТИКИ ============================
@@ -465,9 +468,9 @@ NX.party = (() => {
   function bind() { if (bound) return; bound = true; const cv = NX.loop.canvas; cv.addEventListener('pointerdown', H_.down, true); cv.addEventListener('pointermove', H_.move, true); cv.addEventListener('pointerup', H_.up, true); cv.addEventListener('pointercancel', e => { if (S.on) { e.stopImmediatePropagation(); S.pointer = null; } }, true);
     addEventListener('keydown', H_.key); addEventListener('resize', () => { if (S.on) layout(); }); if (NX.i18n && NX.i18n.onLang) NX.i18n.onLang(() => { S.bg = null; }); }
   /** Відкрити вечірку (кличе сценарій Nexi `party`, коли він зник у вихорі). */
-  function open() { bind(); prepare(); S.on = true; S.t0 = NX.time; S.openT = NX.time; S.zoom = 1.25; S.fx = []; S.bub = null; S.cx = S.cy = null; S.focus = null; S.nexiSleep = false; S.subs = []; layout(); const V = G().VIEW; S.x = clamp(774 - S.viewW / 2, V.x0, Math.max(V.x0, V.x1 - S.viewW)); roster(); document.body.classList.add('nx-party'); if (NX.input) NX.input.hover = null; if (NX.partyMusic && NX.partyMusic.enabled) NX.partyMusic.on(); }
+  function open() { bind(); prepare(); S.on = true; S.t0 = NX.time; S.openT = NX.time; S.zoom = 1.25; S.fx = []; S.bub = null; S.cx = S.cy = null; S.focus = null; S.nexiSleep = false; S.subs = []; layout(); if (NX.partyLive) NX.partyLive.init(LIVE_API); const V = G().VIEW; S.x = clamp(774 - S.viewW / 2, V.x0, Math.max(V.x0, V.x1 - S.viewW)); roster(); document.body.classList.add('nx-party'); if (NX.input) NX.input.hover = null; if (NX.partyMusic && NX.partyMusic.enabled) NX.partyMusic.on(); }
   /** Закрити (кнопка «← У КІМНАТУ», Esc): сценарій Nexi бачить !on і повертає його на майданчик. */
   function close() { if (!S.on) return; S.on = false; document.body.classList.remove('nx-party'); if (NX.partyMusic) NX.partyMusic.off(); }
-  const SHOW_API = { S, G, gxy, fp, pt, sc, sparks, floorXZ, NEON, nexiPos };   // для party_show.js
+  const SHOW_API = { S, G, gxy, fp, pt, sc, sparks, floorXZ, NEON, nexiPos }, LIVE_API = { ...SHOW_API, beat, pulse };   // для party_show.js / party_live.js
   return { open, close, frame, prepare, S, get on() { return S.on; }, roster };
 })();

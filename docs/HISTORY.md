@@ -2561,6 +2561,23 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 - Перевірки: `/tmp/t11.js` uk — 3 гості нагору (Білосніжка на балконі, Кролик, Шапочка на сходах), 3 на пуфах; консоль чиста;
   fps 60.
 
+## Чат «Персонажі» 07.11 — крок 47: жива вечірка (party_live.js)
+
+> Власник: «Вечірку зроби більш живою пліз. Покращи вечірку в три рази».
+
+- `party_live.js` (NX.partyLive: init(API)/tick/drawBack/drawFront/drawDim/L): L.drop {next 32 біти, k, build}; tick —
+  дроп (S.dropK = k·|sin πb|, S.flashT, S.zoom +.06, cannons() 2×26 конфеті з g 90, cheerT усім), кульки (mkBalloon: x у
+  межах кімнати, y → CEIL+24, дрейф vx, лопання → sparks, респавн знизу), бульбашки (spawn біля snack.x1, sway, ttl 4–8 с),
+  балачки (пари idle гостей ≤70×50, until 6–11 с, dir одне до одного, next +8), хвиля (order за x, waveK = sin фаз зі
+  зсувом .35 с), glow (S.glow), кіно-камера (S.focus {cine, until}, L.camT 22–32 с). drawBack — пульс колонок (lighter,
+  радіус ×(1+pl·.25+k·.3)) і кульки з ниткою (за гостями); drawFront — бульбашки, «…» балачок у кольорі героя, палички
+  (lighter, нахил sin πb+i, кулька світла); drawDim — затемнення glow .42 + розгін .3, стробоскоп частішає з build.
+- `party.js`: director → partyLive.tick до показу; kinds + 'glow','wave','glow' (тривалості 14/7); після стилів танцю
+  `g.alt += S.dropK·14` (cheer при >.5) і `g.waveK·22`; frame → drawBack після gobos, drawFront після ballSpots; HUD →
+  drawDim перед субтитрами; open → partyLive.init(LIVE_API = SHOW_API + beat, pulse). `index.html` + party_live.js.
+- Перевірки: `/tmp/live.js` — дроп (усі «ура», конфеті), glow (палички, затемнення), wave; fps 47 (комп'ютер) / 61
+  (телефон); консоль чиста.
+
 ## Чат «Персонажі» 06.11 — крок 46: Снігуронька замість Сільвера
 
 > Власник: «Давай ще замість пірата якусь дівчину ще одну».
