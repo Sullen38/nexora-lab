@@ -104,6 +104,41 @@ NX.partyRoom = (() => {
   for (let i = 0; i < 18; i++) { const side = i < 9 ? -1 : 1, k = i % 9; GEO.crowd.push({ x: 774 + side * (150 + k * 36 + (k % 2) * 10), z: 176 + (k % 3) * 9, h: 44 + hash(i, 5) * 14, ph: hash(i, 9) * 6, w: 20 + hash(i, 2) * 8 }); }   // натовп-тло обабіч пульта
   (() => { for (let w = 0; w < 2; w++) for (let i = 0; i <= 11; i++) { const u = i / 11, xa = w ? XR - 10 : XL + 10, xb = w ? 774 + 230 : 774 - 230, x = xa + (xb - xa) * u, y = CEIL + 14 + Math.sin(u * Math.PI) * 34 + u * 8, z = ZB - 60 + (1 - u) * -120; GEO.bulbs.push([x, y, z]); } })();
 
+  // ============================ СВІТЛО КІМНАТИ (06.11: «світло пласке — гості наклеєні») ============================
+  // Джерела кольорового світла: кожен піксель растра (стіни, підлога, меблі) підфарбовується найближчими — рожеве біля бару,
+  // золоте біля фуршету, cyan біля пульта й VJ-екрана, лілове від пілястрів, кольори прожекторів з рейки; кути темніші (ambient).
+  // Те саме lightAt(x, y, z) кличе party.js для гостей, Nexi й бармена — спрайти в тому ж світлі, що й кімната.
+  const LIGHTS = [
+    { p: [1276, 300, 130], c: [1, .35, .85], r: 360, k: .9 }, { p: [1300, 150, 150], c: [1, .8, .4], r: 220, k: .6 },           // бар: рожевий неон, лампи
+    { p: [208, 300, 170], c: [1, .85, .45], r: 330, k: .9 }, { p: [208, 150, 140], c: [1, .5, .8], r: 220, k: .5 },            // фуршет: золота гірлянда, рожеві лампи
+    { p: [774, 290, 232], c: [.25, .9, 1], r: 320, k: 1 }, { p: [774, 166, 432], c: [.3, .8, 1], r: 300, k: .8 },              // пульт і VJ-екран
+    { p: [774, 370, 430], c: [.25, .9, 1], r: 520, k: .35 },                                                                   // плінтус-неон
+    ...[XL + 160, 774 - 330, 774 + 330, XR - 160].map(x => ({ p: [x, 220, 428], c: [.8, .45, 1], r: 240, k: .55 })),           // пілястри
+    ...[[774 - 420, [1, .3, .85]], [774 - 140, [.25, .9, 1]], [774 + 140, [1, .9, .45]], [774 + 420, [.25, 1, .55]]].map(([x, c]) => ({ p: [x, 100, 150], c, r: 300, k: .55 })),   // прожектори
+    { p: [320, 318, 300], c: [1, .6, .25], r: 160, k: .6 },                                                                     // лампа лаунжу
+    ...[XL + 150, 774 - 300, 774 + 300, XR - 150].map(x => ({ p: [x, 130, -120], c: [1, .85, .5], r: 300, k: .5 })),              // підвісні лампи спереду (прапорці, лаунж)
+  ];
+  /** Світло в точці світу: [r, g, b] множники (ambient + сума джерел; 1 — як намальовано). */
+  function lightAt(x, y, z) {
+    const amb = .4 + .2 * (1 - Math.min(1, Math.abs(x - 774) / 760)) + .18 * Math.max(0, Math.min(1, (y - 60) / 312)); let r = amb, g = amb, b = amb;
+    for (const L of LIGHTS) { const dx = x - L.p[0], dy = y - L.p[1], dz = z - L.p[2], d = Math.sqrt(dx * dx + dy * dy + dz * dz); if (d >= L.r) continue; const I = L.k * (1 - d / L.r) ** 2; r += I * L.c[0] * 1.3; g += I * L.c[1] * 1.3; b += I * L.c[2] * 1.3; }
+    return [r, g, b];
+  }
+  /** Запекти світло в растр: для кожного невипромінюючого пікселя відновлюємо точку світу з глибини (промінь від ока) і множимо колір. */
+  function bake(L) {
+    const { W, H, R, x0, y0, c: C, dep: DP, fl: FLg, id: ID } = L, VX = X.VX, VY = X.VY, D = X.D, R_ = X.R_, G_ = X.G_, B_ = X.B_, rgb = X.rgb;
+    for (let j = 0; j < H; j++) { const Y = y0 + (j + .5) / R, dy = Y - VY; for (let i = 0; i < W; i++) { const k = j * W + i; if (!ID[k] || (FLg[k] & F_EMIT)) continue; const t = DP[k]; if (!isFinite(t)) continue;
+      const dx = x0 + (i + .5) / R - VX, wx = VX + t * dx, wy = VY + t * dy, wz = -D + t * D, [lr, lg, lb] = lightAt(wx, wy, wz), c = C[k];
+      C[k] = rgb(Math.min(255, R_(c) * lr), Math.min(255, G_(c) * lg), Math.min(255, B_(c) * lb), 255); } }
+  }
+  /** Bloom: випромінюючі пікселі — у зменшене полотно, розмиття масштабуванням, додати світлом (lighter) поверх растра. */
+  function bloom(cv, L) {
+    const { W, H, c: C, fl: FLg } = L, em = new Uint8ClampedArray(W * H * 4); for (let k = 0; k < W * H; k++) if (FLg[k] & F_EMIT) { const c = C[k]; em[k * 4] = X.R_(c); em[k * 4 + 1] = X.G_(c); em[k * 4 + 2] = X.B_(c); em[k * 4 + 3] = 255; }
+    const e = document.createElement('canvas'); e.width = W; e.height = H; e.getContext('2d').putImageData(new ImageData(em, W, H), 0, 0);
+    const s1 = document.createElement('canvas'); s1.width = W >> 2; s1.height = H >> 2; const c1 = s1.getContext('2d'); c1.imageSmoothingEnabled = true; c1.drawImage(e, 0, 0, s1.width, s1.height);
+    const s2 = document.createElement('canvas'); s2.width = W >> 3; s2.height = H >> 3; const c2 = s2.getContext('2d'); c2.imageSmoothingEnabled = true; c2.drawImage(s1, 0, 0, s2.width, s2.height);
+    const c = cv.getContext('2d'); c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true; c.globalAlpha = .32; c.drawImage(s1, 0, 0, W, H); c.globalAlpha = .22; c.drawImage(s2, 0, 0, W, H); c.restore();
+  }
   // ============================ ЗБІРКА РАСТРА ============================
   function build() {
     const L = X.Layer(-20, GEO.RASTER.y0, 1570, GEO.RASTER.y1, 1); let id = 0;
@@ -127,6 +162,34 @@ NX.partyRoom = (() => {
     ++id; box(L, id, 774 - 470, 774 + 470, CEIL + 4, CEIL + 12, GEO.lamps[0].z - 5, GEO.lamps[0].z + 5, { front: mBevel(PAL.STEEL, 1), bottom: mBevel(PAL.STEEL, 1) });
     GEO.lamps.forEach((lp, k) => { ++id; box(L, id, lp.x - 12, lp.x + 12, lp.y - 2, lp.y + 22, lp.z - 10, lp.z + 10, { all: mBevel(PAL.STEEL, 2) }); X.disc(L, [lp.x, lp.y + 20, lp.z - 10.5], 8, (u, v, i, j) => { X.SH.fl = F_EMIT; const d = Math.hypot(u - .5, v - .5); return d < .3 ? NEONC.white : [NEONC.pink, NEONC.cyan, NEONC.gold, NEONC.green][k]; }, { id }); });
     // вивіски «ВЕЧІРКА NEXI» більше немає (власник, 06.11) — на її місці більший VJ-екран; піна й дим — події (party.js)
+    // гірлянди прапорців під стелею спереду (видно на телефоні, де вгорі стеля): дріт провисає, трикутники в кольорах неону
+    for (const z of [-40, -170]) { ++id; const n = 26, pts = []; for (let i = 0; i <= n; i++) { const u = i / n; pts.push([XL + (XR - XL) * u, CEIL + 22 + Math.sin(u * Math.PI) * 26 + Math.sin(u * Math.PI * 6) * 3, z]); }
+      for (let i = 0; i < n; i++) { const a = pts[i], b = pts[i + 1]; X.tube(L, a, b, 1, () => ramp(PAL.CHROME, .5, 0, 0), { id }); const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 14, z], c = [NEONC.pink, NEONC.cyan, NEONC.gold, NEONC.green, NEONC.lil, NEONC.orange][i % 6];
+        X.face(L, [a, b, m], a, [b[0] - a[0], b[1] - a[1], 0], [m[0] - a[0], m[1] - a[1], 0], (u, v, i2, j2) => (u + v > .9 ? dim(c, .7) : c), { id, n: [0, 0, -1] }); } }
+    // підвісні лампи-конуси спереду (над лаунжем): шнур, конус, лампочка (світиться)
+    for (const x of [XL + 150, 774 - 300, 774 + 300, XR - 150]) { ++id; X.tube(L, [x, CEIL, -120], [x, CEIL + 48, -120], 1.5, () => ramp(PAL.STEEL, .5, 0, 0), { id });
+      X.face(L, [[x - 14, CEIL + 64, -120], [x + 14, CEIL + 64, -120], [x + 3, CEIL + 48, -120], [x - 3, CEIL + 48, -120]], [x - 14, CEIL + 64, -120], [28, 0, 0], [0, -16, 0], (u, v, i2, j2) => ramp(PAL.MET, .55 + (u < .5 ? .15 : -.1) * (1 - v), i2, j2), { id, n: [0, 0, -1] });
+      X.disc(L, [x, CEIL + 66, -120.5], 4, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .25 ? NEONC.white : NEONC.gold; }, { id }); }
+    // VJ-екран за пультом: рамка зі сталі з хромовою кромкою, темне скло (живі візуалізації — party.js)
+    { const Sc = GEO.screen; ++id; box(L, id, Sc.x0 - 8, Sc.x1 + 8, Sc.y0 - 8, Sc.y1 + 8, Sc.z - 2, ZB, { all: mBevel(PAL.MET, 3), front: (q, fw, fh) => { const b = bevel(PAL.MET, q, fw, fh, 3); return (u, v, i, j) => (u * fw > 8 && u * fw < fw - 8 && v * fh > 8 && v * fh < fh - 8) ? ramp(PAL.DARK, .2 + ((i + j) & 1) * .05, i, j) : (u * fw < 2 || v * fh < 2 || u * fw > fw - 2 || v * fh > fh - 2) ? ramp(PAL.CHROME, .7, i, j) : b(u, v, i, j); } });
+      for (const x of [Sc.x0 - 4, Sc.x1 + 4]) X.disc(L, [x, Sc.y1 + 4, Sc.z - 2.5], 2, () => { X.SH.fl = F_EMIT; return NEONC.cyan; }, { id }); }
+    // неонове панно на стінах обабіч: зигзаг-блискавка, трикутник і коло з неонових трубок різних кольорів (F_EMIT — відбиваються в підлозі)
+    GEO.neonArt.forEach(({ x, y, side }, k) => { ++id; const tube = (a, b, c) => X.tube(L, [a[0], a[1], ZB - 1.5], [b[0], b[1], ZB - 1.5], 3, (u) => { X.SH.fl = F_EMIT; return Math.abs(u - .5) < .3 ? mixc(c, NEONC.white, .4) : dim(c, .7); }, { id });
+      const zz = [[x - 30, y - 60], [x + 10, y - 20], [x - 10, y - 10], [x + 30, y + 40]]; for (let i = 0; i < 3; i++) tube(zz[i], zz[i + 1], NEONC.gold);                       // блискавка
+      const tr = [[x - 70, y + 70], [x + 70, y + 70], [x, y - 40], [x - 70, y + 70]]; for (let i = 0; i < 3; i++) tube(tr[i], tr[i + 1], k ? NEONC.cyan : NEONC.pink);        // трикутник
+      const N = 14; for (let i = 0; i < N; i++) { const a0 = i / N * 6.283, a1 = (i + 1) / N * 6.283; tube([x + Math.cos(a0) * 56, y + 20 + Math.sin(a0) * 56], [x + Math.cos(a1) * 56, y + 20 + Math.sin(a1) * 56], k ? NEONC.pink : NEONC.cyan); }   // коло
+      X.disc(L, [x, y + 20, ZB - 2], 6, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .3 ? NEONC.white : NEONC.lil; }, { id }); });
+    // над баром: неонова вивіска «БАР» (party.bar) у рамці та підвісна полиця з келихами догори дном
+    { const B = GEO.bar, w = 90, h = 30, ys = 120, zs0 = B.z0 + 40, zs1 = zs0 + w; ++id;
+      box(L, id, XR - 8, XR, ys, ys + h, zs0, zs1, { left: (q, fw, fh) => { const base = bevel(PAL.STEEL, q - .1, fw, fh, 2), t = tex(Math.round(fw), Math.round(fh), (c, W, H) => { c.strokeStyle = '#ff4fd8'; c.strokeRect(2.5, 2.5, W - 5, H - 5); P.text(c, NX.t('party.bar'), W / 2, H / 2 + 6, '#ff9af0', 16, 'center'); }); return (u, v, i, j) => { const cc = t(1 - u, v); if (!cc) return base(u, v, i, j); X.SH.fl = F_EMIT; return cc; }; }, top: mFlat(PAL.STEEL, .4), bottom: mFlat(PAL.STEEL, .3), front: mFlat(PAL.STEEL, .35) });
+      ++id; box(L, id, B.x0 + 10, B.x1 - 10, 150, 156, B.z0 + 30, B.z1 - 30, { all: mBevel(PAL.MET, 1) }); for (const x of [B.x0 + 14, B.x1 - 14]) X.tube(L, [x, CEIL, B.z0 + 150], [x, 150, B.z0 + 150], 1.5, () => ramp(PAL.STEEL, .5, 0, 0), { id });   // підвісна полиця
+      for (let k = 0; k < 7; k++) { const z = B.z0 + 44 + k * 32; ++id; box(L, id, B.x0 + 44, B.x1 - 44, 156, 174, z - 6, z + 6, { all: (q) => (u, v, i, j) => v < .35 ? rgb(230, 244, 255, 150) : v < .8 ? rgb(200, 220, 240, 70) : rgb(230, 244, 255, 190) }); } }   // келихи догори дном
+    // лаунж: низький столик зі скляним верхом і лампа-гриб на ньому (світиться)
+    { const T = GEO.table; ++id; box(L, id, T.x - 30, T.x + 30, 346, 350, T.z - 20, T.z + 20, { all: mGloss(PAL.TOP) }); for (const [dx, dz] of [[-24, -14], [24, -14], [-24, 14], [24, 14]]) X.tube(L, [T.x + dx, 350, T.z + dz], [T.x + dx, FLY, T.z + dz], 2, () => ramp(PAL.CHROME, .55, 0, 0), { id });
+      ++id; X.tube(L, [T.x, 346, T.z], [T.x, 328, T.z], 2, () => ramp(PAL.CHROME, .6, 0, 0), { id }); box(L, id, T.x - 12, T.x + 12, 318, 328, T.z - 12, T.z + 12, { all: (q) => (u, v, i, j) => { X.SH.fl = F_EMIT; return v < .3 ? mixc(NEONC.orange, NEONC.white, .5) : mixc(NEONC.orange, NEONC.white, .15); } }); }
+    // афіша колекції на задній стіні (рамка; портрети — живий шар party.js: drawPoster)
+    { const Po = GEO.poster; ++id; box(L, id, Po.x0, Po.x1, Po.y0, Po.y1, ZB - 4, ZB, { all: mBevel(PAL.MET, 3), front: (q, fw, fh) => { const b = bevel(PAL.MET, q, fw, fh, 3); return (u, v, i, j) => { const x = u * fw, y = v * fh, ins = x > 5 && x < fw - 5 && y > 5 && y < fh - 5, edge = (x > 3 && x < 5) || (x > fw - 5 && x < fw - 3) || (y > 3 && y < 5) || (y > fh - 5 && y < fh - 3); if (edge) { X.SH.fl = F_EMIT; return NEONC.lil; } return ins ? ramp(PAL.DARK, .15, i, j) : b(u, v, i, j); }; } });
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) X.disc(L, [dx ? Po.x1 - 1 : Po.x0 + 1, dy ? Po.y1 - 1 : Po.y0 + 1, ZB - 4.5], 2.5, () => ramp(PAL.CHROME, .9, 0, 0), { id }); }
     // дзеркальна куля на ланцюгу
     { const B = GEO.ball; ++id; X.tube(L, [B.x, CEIL, B.z], [B.x, B.y - B.r, B.z], 2, (u, v, i, j) => ramp(PAL.CHROME, .5 + (Math.sin(v * 90) > 0 ? .2 : -.2), i, j), { id });
       ++id; X.disc(L, [B.x, B.y, B.z], B.r, (u, v, i, j) => { const dx = u - .5, dy = v - .5, d = Math.hypot(dx, dy) * 2, tx = Math.floor(u * 11), ty = Math.floor(v * 11), hv = hash(tx, ty); const q = .35 + .5 * (1 - d) + (hv - .5) * .5 + (dx < 0 && dy < 0 ? .15 : 0); return ((Math.floor(u * 44) % 4 === 0 || Math.floor(v * 44) % 4 === 0) ? ramp(PAL.STEEL, .3, i, j) : ramp(PAL.CHROME, q, i, j)); }, { id }); }
@@ -239,9 +302,9 @@ NX.partyRoom = (() => {
     { const Rl = GEO.rail; [[XL + 40, 774 - 330], [774 + 330, XR - 40]].forEach(([x0, x1]) => { ++id; box(L, id, x0, x1, Rl.y0, Rl.y0 + 4, Rl.z - 3, Rl.z + 3, { all: mBevel(PAL.STEEL, 1), top: mNeon(NEONC.lil, .5) });
       for (let x = x0; x <= x1; x += (x1 - x0) / 3) { ++id; box(L, id, x - 4, x + 4, Rl.y0 + 4, FLY, Rl.z - 4, Rl.z + 4, { all: mBevel(PAL.STEEL, 1) }); } }); }
     // контур і віддзеркалення в підлозі (все, що стоїть на підлозі або висить на стінах)
-    X.outline(L, col('#060313'), 1);
+    X.outline(L, col('#060313'), 1); bake(L);
     X.reflect(L, i => (i === ID_FLOOR || i === 5 ? null : { y: FLY, h: 60 }), { a: .34, h: 60, emit: 2.2, streak: true });
-    return { cv: X.canvas(L), x0: L.x0, y0: L.y0 };
+    const cv = X.canvas(L); bloom(cv, L); return { cv, x0: L.x0, y0: L.y0 };
   }
-  return { build, GEO, PAL, NEONC };
+  return { build, GEO, PAL, NEONC, LIGHTS, lightAt };
 })();

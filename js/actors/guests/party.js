@@ -107,11 +107,24 @@ NX.party = (() => {
         if (hb % 2 === 0 && hb !== g.lastB) { g.lastB = hb; if (rnd() < .3) g.dir = -g.dir; }
     }
   }
+  // ---------- світло на спрайтах (06.11): колір сцени на гостях, Nexi, бармені; тінь — від найближчого прожектора ----------
+  const LIT = document.createElement('canvas');
+  /** Кадр спрайта в світлі точки (x, z): множимо на [r, g, b] від lightAt (тінь у темних кутах, колір прожектора), поверх — м'яке підсвічування. */
+  function litFrame(img, x, z, y = FL - 30) {
+    const [r, g, b] = NX.partyRoom.lightAt(x, y, z), W = img.width, H = img.height; if (LIT.width !== W || LIT.height !== H) { LIT.width = W; LIT.height = H; } const c = LIT.getContext('2d');
+    c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, W, H); c.drawImage(img, 0, 0); c.globalCompositeOperation = 'multiply'; c.fillStyle = `rgb(${Math.min(255, r * 170) | 0},${Math.min(255, g * 170) | 0},${Math.min(255, b * 170) | 0})`; c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'destination-in'; c.drawImage(img, 0, 0); c.globalCompositeOperation = 'source-over'; return LIT;
+  }
+  /** Тінь гостя: витягнута від найближчого сильного джерела (прожектори з рейки) по підлозі. */
+  function shadow(c, x, z, w, alt) {
+    const [sx, sy] = fp(x, z), s = PZ.s(z), Ls = NX.partyRoom.LIGHTS; let best = null, bd = 1e9; for (const L of Ls) { if (L.p[1] > 200) continue; const d = Math.hypot(x - L.p[0], z - L.p[2]); if (d < bd) { bd = d; best = L; } }
+    const dir = best ? Math.sign(x - best.p[0]) || 1 : 1, len = best ? Math.min(1.6, .6 + bd / 300) : 1, k = Math.max(.3, 1 - alt / 120);
+    c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(sx + dir * 6 * s * len, sy + 1, w * .32 * k * len, 3.2 * s * k, 0, 0, 7); c.fill(); c.restore();
+  }
   /** Гість: тінь, відбиток у підлозі (перевернутий, тане), спрайт, бабл. */
   function drawGuest(c, g, t) {
     const [GW, GH, K] = A().size(g.id), s = sc(g.z) * K, w = GW * s, h = GH * s, [sx, sy] = gxy(g), alt = g.alt * s, top = sy - alt - h, tq = Math.floor(t * 12) / 12;
-    const img = A().frame(g.id, g.pose, g.fr, tq, g.g); c.imageSmoothingEnabled = false; drawPool(c, g);
-    c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.ellipse(sx, sy + 1, w * .3 * Math.max(.3, 1 - alt / 120), 3 * PZ.s(g.z), 0, 0, 7); c.fill();
+    const img0 = A().frame(g.id, g.pose, g.fr, tq, g.g), img = litFrame(img0, g.x, g.z); c.imageSmoothingEnabled = false; drawPool(c, g); shadow(c, g.x, g.z, w, alt);
     c.save(); c.translate(sx, sy + alt); c.scale(g.dir, -1); c.globalAlpha = .26; c.drawImage(img, -w / 2, -h, w, h); c.restore();       // відбиток у глянці
     c.save(); c.translate(sx, sy - alt); c.rotate(g.rot || 0); c.scale(g.dir * (g.sx || 1), 1); c.drawImage(img, -w / 2, -h, w, h); c.restore();
     if (g.item) drawItem(c, g.item, sx + g.dir * 9 * s, sy - alt - 19 * s, s, g.dir);
@@ -242,7 +255,7 @@ NX.party = (() => {
     if (BM.guest && t > BM.until) { if (BM.pose === 'shake') { BM.pose = 'pour'; BM.until = t + 1.5; } else if (BM.pose === 'pour') { BM.guest.item = rnd() < .5 ? 'drink' : 'drink2'; BM.guest = null; BM.pose = 'wipe'; const L = NX.t('party.barman') || []; if (L.length) BM.bub = { text: L[rnd() * L.length | 0], until: t + 2.8 }; } }
     else if (!BM.guest && BM.pose !== 'wipe' && BM.pose !== 'stand') BM.pose = 'wipe';
     if (!BM.guest && t > BM.until) { BM.pose = rnd() < .7 ? 'wipe' : 'stand'; BM.until = t + 3 + rnd() * 4; }
-    const img = A().frame('bartender', BM.pose, 0, Math.floor(t * 12) / 12, {}); c.save(); c.imageSmoothingEnabled = false; c.translate(sx, 0); c.scale(-1, 1); c.drawImage(img, -w / 2, sy - h, w, h); c.restore(); S.barBox = [sx - w / 2, sy - h, w, h * .6];
+    const img = litFrame(A().frame('bartender', BM.pose, 0, Math.floor(t * 12) / 12, {}), Bm.x - 30, Bm.z, 320); c.save(); c.imageSmoothingEnabled = false; c.translate(sx, 0); c.scale(-1, 1); c.drawImage(img, -w / 2, sy - h, w, h); c.restore(); S.barBox = [sx - w / 2, sy - h, w, h * .6];
     if (BM.bub && t < BM.bub.until) bubble(c, BM.bub.text, sx, sy - h - 4, Math.min(1, (BM.bub.until - t) * 3));
     const y0 = Br.y0 - 3, q = [[Br.x0, y0, Br.z0], [Br.x1, y0, Br.z0], [Br.x1, FL, Br.z0], [Br.x0, FL, Br.z0], [Br.x0, y0, Br.z0], [Br.x1, y0, Br.z0], [Br.x1, y0, Br.z1], [Br.x0, y0, Br.z1], [Br.x0, y0, Br.z0], [Br.x0, y0, Br.z1], [Br.x0, FL, Br.z1], [Br.x0, FL, Br.z0]];
     c.save(); c.beginPath(); for (let k = 0; k < 3; k++) { const P4 = q.slice(k * 4, k * 4 + 4).map(p => pt(...p)); c.moveTo(P4[0][0], P4[0][1]); for (let m = 1; m < 4; m++) c.lineTo(P4[m][0], P4[m][1]); c.closePath(); } c.clip(); c.drawImage(S.bg.cv, S.bg.x0, S.bg.y0); c.restore();
@@ -311,6 +324,16 @@ NX.party = (() => {
   function chip(c, x, y, w, h, col) { c.save(); c.fillStyle = '#0a0626e6'; c.fillRect(x, y, w, h); c.strokeStyle = col; c.globalAlpha = .55; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, w - 1, h - 1); c.globalAlpha = 1; c.lineWidth = 2;
     for (const [cx, cy, dx, dy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]) { c.beginPath(); c.moveTo(cx, cy + dy * 6); c.lineTo(cx, cy); c.lineTo(cx + dx * 6, cy); c.stroke(); }
     c.globalCompositeOperation = 'lighter'; c.globalAlpha = .12; c.fillStyle = col; c.fillRect(x, y, w, 3); c.restore(); }
+  // ---------- тонування кадру (06.11): пурпур у тінях, бірюза у світлі, зерно — «фотографія клубу» ----------
+  let GRAIN = null;
+  function grade(c) {
+    const cv = NX.loop.canvas; c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalCompositeOperation = 'multiply'; c.fillStyle = 'rgb(222,206,255)'; c.fillRect(0, 0, cv.width, cv.height);               // тіні в пурпур
+    c.globalCompositeOperation = 'screen'; c.fillStyle = 'rgba(10,30,50,.35)'; c.fillRect(0, 0, cv.width, cv.height);                // ледь бірюзи у світлі
+    if (!GRAIN) { GRAIN = document.createElement('canvas'); GRAIN.width = GRAIN.height = 256; const g = GRAIN.getContext('2d'), d = g.createImageData(256, 256); for (let i = 0; i < d.data.length; i += 4) { const v = 110 + Math.random() * 90; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); }
+    c.globalCompositeOperation = 'overlay'; c.globalAlpha = .08; const ox = (Math.random() * 256) | 0, oy = (Math.random() * 256) | 0; for (let y = -oy; y < cv.height; y += 256) for (let x = -ox; x < cv.width; x += 256) c.drawImage(GRAIN, x, y);   // зерно
+    c.restore();
+  }
   function drawHud(c) {
     const dpr = NX.loop.dpr, vw = innerWidth, vh = innerHeight; c.setTransform(dpr, 0, 0, dpr, 0, 0);
     const vg = c.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * .45, vw / 2, vh / 2, Math.max(vw, vh) * .8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = vg; c.fillRect(0, 0, vw, vh);   // віньєтка
@@ -335,7 +358,7 @@ NX.party = (() => {
     drawPoster(c); drawScreen(c, t); drawTiles(c); drawFog(c); drawCrowd(c, t); drawLights(c, t); drawGobos(c, t); drawNexi(c, t); drawLed(c, t); drawBartender(c, t); drawRudyk(c, t);
     if (S.bub && S.bub.nexi) { const N = nexiPos(); bubble(c, S.bub.text, N.x, N.y - 60, Math.min(1, (S.bub.until - t) * 3)); }
     S.list.slice().sort((a, b) => b.z - a.z).forEach(g => drawGuest(c, g, t));
-    drawEvent(c, t); drawFx(c, dt); drawHud(c);
+    drawEvent(c, t); drawFx(c, dt); grade(c); drawHud(c);
   }
   // ============================ ВХІД, ВИХІД, ДОТИКИ ============================
   function layout() { const V = G().VIEW, vw = innerWidth, vh = innerHeight, VW = V.x1 - V.x0, VH = V.y1 - V.y0; S.k = Math.max(vw / VW, vh / VH); S.viewW = vw / S.k; S.viewH = vh / S.k;
