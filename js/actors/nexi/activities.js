@@ -199,7 +199,7 @@
     party: { color: '#d94bff', route() {
       const z = NX.arc && NX.arc.zone && NX.arc.zone('portal'), n = NX.nexi, po = NX.objects.portal; if (!z || !NX.party) return [line('party')];
       const pad = z.S(100, 316, 30), front = NX.room.clampWalk(...z.S(100, 352, -30), 'nexi'), P2 = [pad[0], pad[1]];
-      return [{ walk: front }, { face: 1 }, line('party'), { work: { pose: 'cheer', dur: .9 } }, { work: { pose: 'crouch', dur: .14 } }, { hop: P2, hi: 18 }, { loc: 'portalPad' }, { face: 1 },
+      return [{ do: () => NX.party.prepare() }, { walk: front }, { face: 1 }, line('party'), { work: { pose: 'cheer', dur: .9 } }, { work: { pose: 'crouch', dur: .14 } }, { hop: P2, hi: 18 }, { loc: 'portalPad' }, { face: 1 },
         { work: { pose: 'crouch', dur: .3, start: () => { if (po) po.active = true; } } },
         { fade: { alpha: 0, zoom: .25, y: pad[1] - 26, dur: 1.1, spin: true } }, { do: () => NX.party.open() },
         { work: { pose: 'stand', dur: 1e6, tick: () => { const c = n.cur; if (c && !NX.party.on) c._t = 1e7; } } },   // чекає, поки людина не повернеться з вечірки
