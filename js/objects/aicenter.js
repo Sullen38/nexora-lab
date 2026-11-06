@@ -7,7 +7,8 @@
  *   ГОЛО-ЕКРАН у рамці (NX.arc.holo.pane, crisp, непрозорий; вміст — NX.arc.aiScreen: мозок-нейромережа, показники, журнал,
  *     сканер «зір», карта, хвиля «думки»; перемальовується раз на 5 кадрів); довкола — м'яке сяйво на стіні; зрідка (раз на
  *     24–42 с) коротко «лагає»;
- *   МОНІТОРИ на столі (fg у розкладці) рушій малює ще раз ПОВЕРХ екрана (NX.arc.fgDraw).
+ *   ДИСКИ-ПРОЄКТОРИ на столі (fg у розкладці) рушій малює ще раз ПОВЕРХ екрана (NX.arc.fgDraw); над ними — ГОЛО-МОНІТОРИ (Правки
+ *   зон · 5: панелі NX.arc.holo.pane з вмістом NX.arc.aiMon, промінь проєктора — beam).
  * Крок 14 (власник: «зроби взаємодію з Nexi»): Nexi злітає на стіл (коло-майданчик посередині стільниці), стає спиною до
  *   нас і працює: екран показує задачу (рожева смужка поступу в шапці, мозок і сигнали швидші), у кінці — «✓» на екрані й
  *   картка результату (ui/zones.js: «відповісти клієнту», «лист партнеру», «підсумок зустрічі» — раніше з дивану).
@@ -34,6 +35,21 @@
   const S = { act: false, prog: 0, task: null, doneT: -99, hiT: -99, cat: null, alert: null, cleanT: -99, by: null, hole: null, vir: null };   // стан для вмісту екрана (ai_paint.js)
   const FX = { nextLag: 24 + Math.random() * 14, icons: [], nextIcon: 0, fish: null };
   let pane = null;
+  // ГОЛО-МОНІТОРИ (Правки зон · 5, власник: «зроби їх голографічними»): дві напівпрозорі панелі над дисками-проєкторами на столі
+  // (привиди ai_monL/R і диски ai_mon*b — gen_room.py aicenter(); вміст — NX.arc.aiMon у ai_paint.js). Малюються ПІСЛЯ fgDraw —
+  // поверх великого екрана й дисків; від диска до панелі — конус світла проєктора, на диску — сяйво.
+  const MON = [{ item: 'ai_monL', X: [4, 76], Y: [235, 278], rgb: '59,232,255', seed: 7, kind: 0 }, { item: 'ai_monR', X: [170, 232], Y: [243, 278], rgb: '59,255,138', seed: 11, kind: 1 }];
+  const mons = () => { MON.forEach(m => m.p || (m.p = NX.arc.holo.pane({ zone: 'ai', item: m.item, Xc: (m.X[0] + m.X[1]) / 2, X: m.X, Y: m.Y, v: 0, rgb: m.rgb, seed: m.seed, shade: .42, every: 4, lagMin: 30, lagVar: 30,
+    paint: (c, fw, fh, t) => NX.arc.aiMon(c, fw, fh, t, m.kind) }))); return MON; };
+  /** Промінь проєктора: від диска (точка на його лиці — NX.arc.holo.at) до нижнього краю панелі, світлий конус; на диску — сяйво. */
+  function beam(c, m, t) {
+    const q = m.p.quad(); if (!q) return; const at = m.at || (m.at = NX.arc.holo.at('ai', m.item + 'b', (m.X[0] + m.X[1]) / 2, 0)); if (!at) return;
+    const d = at((m.X[0] + m.X[1]) / 2, 283.2), bx = (q[3][0] + q[2][0]) / 2, by = (q[3][1] + q[2][1]) / 2, bw = (q[2][0] - q[3][0]) * .42, fl = .75 + .25 * Math.sin(t * 9 + m.seed);
+    c.save(); c.globalCompositeOperation = 'lighter';
+    const g = c.createLinearGradient(0, d[1], 0, by); g.addColorStop(0, `rgba(${m.rgb},${.8 * fl})`); g.addColorStop(1, `rgba(${m.rgb},.07)`);
+    c.fillStyle = g; c.beginPath(); c.moveTo(d[0] - 1.2, d[1]); c.lineTo(d[0] + 1.2, d[1]); c.lineTo(bx + bw, by); c.lineTo(bx - bw, by); c.closePath(); c.fill();
+    P.glow(c, d[0], d[1], 7, `rgba(${m.rgb},.6)`, .35 * fl); c.restore();
+  }
   const mk = () => pane || (pane = NX.arc.holo.pane({ zone: 'ai', item: 'ai_scr', Xc: SCR.Xc, X: SCR.X, Y: SCR.Y, v: 0, rgb: '150,240,255', seed: 5, lagMin: 0, crisp: true, shade: 1, every: 5,
     paint: (c, fw, fh, t) => NX.arc.aiScreen(c, fw, fh, t, S) }));
   /** М'яке сяйво екрана на стіні довкола (під екраном): блакитне й трохи рожевого від рамки. Овали під форму екрана (крок 13.3:
@@ -142,7 +158,8 @@
       const q = pane.quad(); if (q) glow(c, q, t, !!this.active);
       pane.draw(c, t);
       if (S.alert && q) { c.save(); c.globalCompositeOperation = 'lighter'; P.glow(c, (q[0][0] + q[1][0]) / 2, (q[0][1] + q[3][1]) / 2, (q[1][0] - q[0][0]) * .5, 'rgba(255,40,60,.6)', .22 + .14 * Math.sin(t * 10)); c.restore(); }   // тривога — червоне сяйво
-      if (NX.arc.fgDraw) NX.arc.fgDraw(c, 'ai');                                               // монітори на столі — поверх екрана
+      if (NX.arc.fgDraw) NX.arc.fgDraw(c, 'ai');                                               // диски-проєктори на столі — поверх екрана
+      for (const m of mons()) { beam(c, m, t); m.p.draw(c, t); }                                   // голо-монітори над дисками
       link(c, t); icons(c, t);
     },
     layers() { const l = fishLayer(); return l ? [l] : []; },

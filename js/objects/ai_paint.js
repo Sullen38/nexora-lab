@@ -15,7 +15,8 @@
  *   ai_knee    — задня панель простору для ніг: доріжки сходяться до «синапсу» з м'яким сяйвом, лоток з кабелем
  *   ai_bed     — лежанка Рудика під столом (крок 14): бортик зі стьобкою й сердечком, подушка зі слідом лапки
  *   (крок 13.1 — кімната ширша з боків, куточок кота прибрано: стіл на тумбах замість опор-«водоспадів» з нішею)
- *   ai_monL/R  — монітори по краях стола: чат з клієнтом / лист (нерухомі; передні — поверх голо-екрана)
+ *   ai_monL/R  — ГОЛО-МОНІТОРИ по краях стола (Правки зон · 5): привиди в розкладці; вміст NX.arc.aiMon (чат з клієнтом / лист) малює
+ *                objects/aicenter.js через NX.arc.holo.pane над дисками-проєкторами ai_mon*b (fg — поверх голо-екрана)
  *   ai_screen  — висока рамка на столі: шапка з вивіскою, утоплене скло під голо-екран, пульт за моніторами; бік — ґратка
  *   (крок 13.2 — на 15 % більша за аналітику, від неї до краю кімнати; 13.3 — ще ширша: рамка й стіл трохи заходять на бік аналітики)
  * Крок 15: шапка екрана — тривога «ВІРУС!» (червона, з трикутником), «ЗАГРОЗУ ЗНИЩЕНО» (зелена), «ПРИВІТ, NEXI!»; червоний
@@ -161,54 +162,50 @@
 
   // ---------- МОНІТОРИ НА СТОЛІ ----------
   /** Рамка монітора, скло; вміст — чат з клієнтом (kind 0) або лист (kind 1); вогник живлення. */
-  /** Правки зон · 5 (06.11, власник: «монітори старомодні — зроби новішими»): ультратонка безрамкова панель — скло майже до
-   *  країв (кант .5), зрізані кути, камера-крапка вгорі, знизу — блакитна світлова планка; на екрані — сучасний інтерфейс
-   *  (темне скло з відблиском, рядок стану, картки з м'яким сяйвом): kind 0 — чат з клієнтом (аватари, бульки, «друкує…», поле
-   *  вводу), 1 — лист (картка з шапкою, тема, рядки, вкладення, світна кнопка «надіслати»). Нерухомий (fg — поверх голо-екрана). */
-  function monitor(c, fw, fh, kind) {
-    const bz = .5, x0 = bz, y0 = bz + .9, w = fw - bz * 2, h = fh - bz * 2 - 2.1;                        // корпус — тонкий кант; зверху місце для камери, знизу — планка
-    c.fillStyle = '#07061c'; rr(c, 0, 0, fw, fh, 1.6); c.fill();
-    c.strokeStyle = 'rgba(190,200,255,.4)'; c.lineWidth = .3; rr(c, .15, .15, fw - .3, fh - .3, 1.5); c.stroke();   // металева крайка
-    const g = c.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, '#0d1d58'); g.addColorStop(.5, '#0a1544'); g.addColorStop(1, '#070d30');
-    c.fillStyle = g; rr(c, x0, y0, w, h, .8); c.fill();
-    const d = c.createLinearGradient(x0, y0, x0 + w, y0 + h); d.addColorStop(0, 'rgba(120,200,255,.14)'); d.addColorStop(.45, 'rgba(120,200,255,0)'); d.addColorStop(1, 'rgba(255,120,230,.07)');
-    c.fillStyle = d; rr(c, x0, y0, w, h, .8); c.fill();                                                   // відблиск на склі навскіс
-    c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(x0, y0, w, .25);
-    c.fillStyle = '#1a1a3a'; c.beginPath(); c.arc(fw / 2, .55, .32, 0, 7); c.fill(); c.fillStyle = '#3be8ff'; c.beginPath(); c.arc(fw / 2, .55, .14, 0, 7); c.fill();   // камера
-    // рядок стану: вогник, час-риски, сигнал
-    const sy = y0 + 1.1; c.fillStyle = kind ? GR : CY; c.beginPath(); c.arc(x0 + 1.3, sy, .35, 0, 7); c.fill(); dash(c, x0 + 2.2, sy - .25, w * .18, .5, 'rgba(200,220,255,.55)');
-    [0, 1, 2, 3].forEach(k => { c.fillStyle = k < 3 ? 'rgba(200,230,255,.8)' : 'rgba(200,230,255,.3)'; c.fillRect(x0 + w - 3.6 + k * .8, sy + .4 - (k + 1) * .3, .5, (k + 1) * .3); });
-    const card = (x, y, cw, ch, col, a) => { c.fillStyle = col.replace('A', String(a * .5)); rr(c, x - .4, y - .4, cw + .8, ch + .8, 1.4); c.fill(); c.fillStyle = col.replace('A', String(a)); rr(c, x, y, cw, ch, 1.1); c.fill(); };
-    if (!kind) {                                                                                             // ЧАТ: запит клієнта (ліворуч), відповідь Nexi (праворуч), «друкує…», поле вводу
-      const cy = y0 + h * .22; c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 2.4, cy + .9, 1.3, 0, 7); c.fill(); c.fillStyle = '#ffd6f2'; c.fillRect(x0 + 1.9, cy + .5, 1, 1);   // аватар клієнта
-      card(x0 + 4.6, cy - .6, w * .5, h * .24, 'rgba(150,140,255,A)', .5); [.02, .11].forEach((v, k) => dash(c, x0 + 6, cy + .4 + h * v, w * (k ? .3 : .42), .55, 'rgba(240,240,255,.9)'));
-      const ny = y0 + h * .55; c.fillStyle = '#0a0624'; c.beginPath(); c.arc(x0 + w - 2.4, ny + .9, 1.3, 0, 7); c.fill(); icon(c, 'ai', x0 + w - 2.4, ny + .9, 1.5, '#9af6ff');    // аватар Nexi
-      card(x0 + w * .36, ny - .6, w * .55, h * .22, 'rgba(59,232,255,A)', .55); [.02, .1].forEach((v, k) => dash(c, x0 + w * .39, ny + .4 + h * v, w * (k ? .28 : .46), .55, '#e8feff'));
-      [0, 1, 2].forEach(k => { c.fillStyle = `rgba(180,240,255,${.9 - k * .25})`; c.beginPath(); c.arc(x0 + w * .4 + k * 1.5, y0 + h * .82, .45, 0, 7); c.fill(); });   // «друкує…»
-      c.fillStyle = 'rgba(255,255,255,.08)'; rr(c, x0 + 1.2, y0 + h * .86, w - 2.4, h * .11, 1.2); c.fill(); dash(c, x0 + 2.4, y0 + h * .905, w * .3, .45, 'rgba(200,220,255,.4)');   // поле вводу
-      c.fillStyle = CY; c.beginPath(); c.arc(x0 + w - 2.6, y0 + h * .915, .9, 0, 7); c.fill(); c.fillStyle = '#04101e'; c.beginPath(); c.moveTo(x0 + w - 3, y0 + h * .915 - .4); c.lineTo(x0 + w - 2.2, y0 + h * .915); c.lineTo(x0 + w - 3, y0 + h * .915 + .4); c.fill();   // кнопка-стрілка
-    } else {                                                                                                 // ЛИСТ: картка з шапкою, тема, рядки, вкладення, кнопка «надіслати»
-      const ky = y0 + h * .17, kh = h * .78; card(x0 + 1.2, ky, w - 2.4, kh, 'rgba(120,150,255,A)', .16);
-      c.fillStyle = 'rgba(59,232,255,.22)'; rr(c, x0 + 1.2, ky, w - 2.4, h * .15, 1.1); c.fill(); c.fillRect(x0 + 1.2, ky + h * .1, w - 2.4, h * .05);
-      icon(c, 'mail', x0 + 3.2, ky + h * .075, 2.2, '#bff8ff'); dash(c, x0 + 5.2, ky + h * .05, w * .38, .6, 'rgba(230,245,255,.9)');
-      c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 3.2, ky + h * .27, 1.1, 0, 7); c.fill(); dash(c, x0 + 5, ky + h * .24, w * .3, .5, 'rgba(230,240,255,.8)'); dash(c, x0 + 5, ky + h * .31, w * .2, .4, 'rgba(200,220,255,.45)');
-      for (let k = 0; k < 3; k++) dash(c, x0 + 2.4, ky + h * (.42 + k * .08), w * (.78 - (k === 2 ? .3 : hash(k, 9) * .15)), .45, 'rgba(210,225,255,.6)');
-      c.fillStyle = 'rgba(255,255,255,.1)'; rr(c, x0 + 2.4, ky + h * .64, w * .32, h * .09, .9); c.fill(); c.fillStyle = VI; c.fillRect(x0 + 3.2, ky + h * .665, 1, h * .04); dash(c, x0 + 4.8, ky + h * .675, w * .18, .4, 'rgba(230,240,255,.7)');   // вкладення
-      const bx = x0 + w * .58, by = ky + h * .62, bw = w * .34, bh = h * .13; c.fillStyle = 'rgba(255,79,216,.35)'; rr(c, bx - .6, by - .6, bw + 1.2, bh + 1.2, 1.6); c.fill();
-      const bg = c.createLinearGradient(bx, by, bx + bw, by); bg.addColorStop(0, '#ff4fd8'); bg.addColorStop(1, '#9a6cff'); c.fillStyle = bg; rr(c, bx, by, bw, bh, bh / 2); c.fill();   // кнопка «надіслати»
+  /** Правки зон · 5 (06.11, власник: «монітори старомодні — зроби новішими» → «зроби їх голографічними»): ГОЛО-ПАНЕЛЬ без корпусу —
+   *  вміст NX.arc.aiMon(c, fw, fh, t, kind) малює живий об'єкт зони (objects/aicenter.js) через NX.arc.holo.pane (напівпрозора
+   *  підкладка, розчинені краї, скан-лінії, зрідка лаг); тут — лише те, що світиться: тонкий блакитний / зелений обрис зі зрізаними
+   *  кутами й кутиками, рядок стану, картки з м'яким сяйвом; kind 0 — чат з клієнтом (аватари, бульки, «друкує…» — крапки
+   *  пульсують, курсор блимає у полі вводу), 1 — лист (картка з шапкою, тема, рядки, вкладення, кнопка «надіслати» дихає, галочка). */
+  NX.arc.aiMon = (c, fw, fh, t, kind) => {
+    const col = kind ? GR : CY, rgb = kind ? '59,255,138' : '59,232,255', x0 = 1.2, y0 = 1.2, w = fw - 2.4, h = fh - 2.4, cut = 2.2;
+    const outline = () => { c.beginPath(); c.moveTo(x0 + cut, y0); c.lineTo(x0 + w, y0); c.lineTo(x0 + w, y0 + h - cut); c.lineTo(x0 + w - cut, y0 + h); c.lineTo(x0, y0 + h); c.lineTo(x0, y0 + cut); c.closePath(); };
+    const g = c.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, `rgba(${rgb},.16)`); g.addColorStop(.5, `rgba(${rgb},.06)`); g.addColorStop(1, `rgba(${rgb},.14)`);
+    outline(); c.fillStyle = g; c.fill(); c.strokeStyle = `rgba(${rgb},.95)`; c.lineWidth = .55; outline(); c.stroke();          // скло голограми й обрис
+    [[x0, y0 + cut, 1, 1], [x0 + w, y0, -1, 1], [x0 + w, y0 + h - cut, -1, -1], [x0, y0 + h, 1, -1]].forEach(([x, y, dx, dy]) => { c.strokeStyle = col; c.lineWidth = .7; c.beginPath(); c.moveTo(x + dx * 4, y); c.lineTo(x, y); c.lineTo(x, y + dy * 4); c.stroke(); });   // кутики
+    const sy = y0 + 1.4; c.fillStyle = col; c.beginPath(); c.arc(x0 + 1.8, sy, .4, 0, 7); c.fill(); dash(c, x0 + 2.9, sy - .25, w * .2, .5, `rgba(${rgb},.6)`);   // рядок стану
+    [0, 1, 2, 3].forEach(k => { c.fillStyle = `rgba(${rgb},${k < 3 ? .85 : .3})`; c.fillRect(x0 + w - 4.2 + k * .8, sy + .5 - (k + 1) * .32, .5, (k + 1) * .32); });
+    c.fillStyle = `rgba(${rgb},.35)`; c.fillRect(x0 + 1.2, sy + 1.3, w - 2.4, .25);
+    const card = (x, y, cw, ch, rg, a) => { c.fillStyle = `rgba(${rg},${a * .35})`; rr(c, x - .5, y - .5, cw + 1, ch + 1, 1.5); c.fill(); c.fillStyle = `rgba(${rg},${a})`; rr(c, x, y, cw, ch, 1.1); c.fill(); c.strokeStyle = `rgba(${rg},${Math.min(1, a + .35)})`; c.lineWidth = .3; rr(c, x, y, cw, ch, 1.1); c.stroke(); };
+    if (!kind) {                                                                                             // ЧАТ
+      const cy = y0 + h * .25; c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 2.8, cy + .9, 1.3, 0, 7); c.fill(); c.fillStyle = '#ffd6f2'; c.fillRect(x0 + 2.3, cy + .5, 1, 1);   // аватар клієнта
+      card(x0 + 5, cy - .6, w * .5, h * .23, '170,150,255', .4); [.02, .1].forEach((v, k) => dash(c, x0 + 6.4, cy + .4 + h * v, w * (k ? .3 : .42), .55, 'rgba(240,240,255,.9)'));
+      const ny = y0 + h * .56; c.fillStyle = 'rgba(10,6,36,.8)'; c.beginPath(); c.arc(x0 + w - 2.8, ny + .9, 1.3, 0, 7); c.fill(); icon(c, 'ai', x0 + w - 2.8, ny + .9, 1.5, '#bffbff');   // аватар Nexi
+      card(x0 + w * .36, ny - .6, w * .54, h * .21, rgb, .45); [.02, .09].forEach((v, k) => dash(c, x0 + w * .39, ny + .4 + h * v, w * (k ? .28 : .46), .55, '#eaffff'));
+      [0, 1, 2].forEach(k => { const a = .35 + .6 * Math.max(0, Math.sin(t * 5 - k * 1.1)); c.fillStyle = `rgba(190,245,255,${a})`; c.beginPath(); c.arc(x0 + w * .4 + k * 1.5, y0 + h * .81, .45, 0, 7); c.fill(); });   // «друкує…» — хвилею
+      c.fillStyle = `rgba(${rgb},.12)`; rr(c, x0 + 1.4, y0 + h * .86, w - 2.8, h * .11, 1.2); c.fill(); c.strokeStyle = `rgba(${rgb},.5)`; c.lineWidth = .3; rr(c, x0 + 1.4, y0 + h * .86, w - 2.8, h * .11, 1.2); c.stroke();   // поле вводу
+      dash(c, x0 + 2.8, y0 + h * .905, w * .3, .45, `rgba(${rgb},.45)`); if (Math.floor(t * 2) & 1) c.fillRect(x0 + 2.8 + w * .31, y0 + h * .885, .35, h * .06);   // курсор блимає
+      c.fillStyle = col; c.beginPath(); c.arc(x0 + w - 3, y0 + h * .915, .9, 0, 7); c.fill(); c.fillStyle = '#04101e'; c.beginPath(); c.moveTo(x0 + w - 3.4, y0 + h * .915 - .4); c.lineTo(x0 + w - 2.6, y0 + h * .915); c.lineTo(x0 + w - 3.4, y0 + h * .915 + .4); c.fill();
+    } else {                                                                                                 // ЛИСТ
+      const ky = y0 + h * .2, kh = h * .74; card(x0 + 1.6, ky, w - 3.2, kh, rgb, .1);
+      c.fillStyle = `rgba(${rgb},.3)`; rr(c, x0 + 1.6, ky, w - 3.2, h * .15, 1.1); c.fill(); c.fillRect(x0 + 1.6, ky + h * .1, w - 3.2, h * .05);
+      icon(c, 'mail', x0 + 3.6, ky + h * .075, 2.2, '#dfffea'); dash(c, x0 + 5.6, ky + h * .05, w * .38, .6, 'rgba(235,255,245,.9)');
+      c.fillStyle = '#ff7ad0'; c.beginPath(); c.arc(x0 + 3.6, ky + h * .27, 1.1, 0, 7); c.fill(); dash(c, x0 + 5.4, ky + h * .24, w * .3, .5, 'rgba(230,255,240,.8)'); dash(c, x0 + 5.4, ky + h * .31, w * .2, .4, `rgba(${rgb},.5)`);
+      for (let k = 0; k < 3; k++) dash(c, x0 + 2.8, ky + h * (.42 + k * .08), w * (.76 - (k === 2 ? .3 : hash(k, 9) * .15)), .45, 'rgba(215,255,230,.6)');
+      c.fillStyle = `rgba(${rgb},.14)`; rr(c, x0 + 2.8, ky + h * .64, w * .32, h * .09, .9); c.fill(); c.fillStyle = VI; c.fillRect(x0 + 3.6, ky + h * .665, 1, h * .04); dash(c, x0 + 5.2, ky + h * .675, w * .18, .4, 'rgba(235,255,245,.7)');   // вкладення
+      const bx = x0 + w * .57, by = ky + h * .62, bw = w * .34, bh = h * .13, br = .6 + .4 * Math.sin(t * 2.4);
+      c.fillStyle = `rgba(255,79,216,${.25 + .2 * br})`; rr(c, bx - .8, by - .8, bw + 1.6, bh + 1.6, 1.8); c.fill();                     // кнопка «надіслати» дихає
+      const bg = c.createLinearGradient(bx, by, bx + bw, by); bg.addColorStop(0, '#ff4fd8'); bg.addColorStop(1, '#9a6cff'); c.fillStyle = bg; rr(c, bx, by, bw, bh, bh / 2); c.fill();
       dash(c, bx + bw * .18, by + bh * .42, bw * .42, .45, '#ffe8fb'); c.fillStyle = '#fff'; c.beginPath(); c.moveTo(bx + bw * .7, by + bh * .22); c.lineTo(bx + bw * .86, by + bh * .5); c.lineTo(bx + bw * .7, by + bh * .78); c.lineTo(bx + bw * .74, by + bh * .5); c.fill();
-      c.strokeStyle = GR; c.lineWidth = .45; c.beginPath(); c.moveTo(x0 + 2.4, ky + h * .86); c.lineTo(x0 + 3.1, ky + h * .92); c.lineTo(x0 + 4.4, ky + h * .8); c.stroke(); dash(c, x0 + 5.4, ky + h * .85, w * .22, .4, 'rgba(120,255,160,.6)');
+      c.strokeStyle = '#bfffd4'; c.lineWidth = .45; c.beginPath(); c.moveTo(x0 + 2.8, ky + h * .86); c.lineTo(x0 + 3.5, ky + h * .92); c.lineTo(x0 + 4.8, ky + h * .8); c.stroke(); dash(c, x0 + 5.8, ky + h * .85, w * .22, .4, 'rgba(180,255,200,.6)');
     }
-    A.neon(c, x0 + 1, fh - .9, x0 + w - 1, fh - .9, kind ? GR : CY, .5);                                     // світлова планка знизу
-    c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(fw / 2 - 1, fh - .55, 2, .3);                             // логотип-риска
-  }
+    c.fillStyle = `rgba(${rgb},.5)`; c.fillRect(x0 + w / 2 - 1.5, y0 + h - .7, 3, .3);                       // мітка проєктора знизу
+  };
   /** Диск-основа монітора: зверху — неонове кільце. */
   const discTop = col => (c, fw, fh) => { c.fillStyle = 'rgba(10,8,30,.6)'; c.beginPath(); c.ellipse(fw / 2, fh / 2, fw * .5, fh * .5, 0, 0, 7); c.fill();
     c.strokeStyle = col; c.lineWidth = .5; c.beginPath(); c.ellipse(fw / 2, fh / 2, fw * .38, fh * .38, 0, 0, 7); c.stroke(); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(fw * .3, fh * .2, fw * .4, .3); };
   const discFront = (c, fw, fh) => { c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(0, 0, fw, .3); };
   PAINT.ai_monLb = discFront; PAINT.ai_monLb.sides = { top: discTop(CY) }; PAINT.ai_monRb = (c, fw, fh) => discFront(c, fw, fh); PAINT.ai_monRb.sides = { top: discTop(GR) };
-  PAINT.ai_monL = (c, fw, fh) => monitor(c, fw, fh, 0);
-  PAINT.ai_monR = (c, fw, fh) => monitor(c, fw, fh, 1);
 
   // ---------- ВИСОКА РАМКА ЕКРАНА ----------
   /** Частки лиця рамки (кроки 13.2–13.3 — рамка X −13..249, Y 50..284 у gen_room.py aicenter(); скло — SCR у objects/aicenter.js):
