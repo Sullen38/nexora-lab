@@ -20,7 +20,7 @@
  * входять у реєстр урятованих видів (свій лічильник count).
  * ========================================================================== */
 (() => {
-  const X = NX.px3d, HIDE = 6.5, GROUPS = ['wall', 'floor', 'farm', 'reef', 'jelly'];   // (· 31) floor — вазони перед вікном
+  const X = NX.px3d, HIDE = 6.5, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly'];   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
   const $ = id => document.getElementById(id);
   let REG = null, cur = null, timer = 0;
   /** Реєстр видів зі словника: [{grp, kind, no}] і мапа kind -> запис. */
@@ -81,7 +81,7 @@
         const b = info && info.box, SD = NX.arc.built; if (!b || !SD) return; const S = ['left', 'right'].map(k => SD[k]).find(S => S && S.comp && b.x0 >= S.box[0] && b.x1 <= S.box[2]); if (!S) return;
         const k = S.comp.width / (S.box[2] - S.box[0]), pad = 1.5, sx = (b.x0 - pad - S.box[0]) * k, sy = (b.y0 - pad - S.box[1]) * k, sw = (b.x1 - b.x0 + pad * 2) * k, sh = (b.y1 - b.y0 + pad * 2) * k, q = Math.min((n - 4) / sw, (n - 4) / sh);
         c.imageSmoothingEnabled = sw > n; c.drawImage(S.comp, sx, sy, sw, sh, (n - sw * q) / 2, (n - sh * q) / 2, sw * q, sh * q); return; }
-      if (e.grp === 'floor') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
+      if (e.grp === 'floor' || e.grp === 'garden') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
         if (NX.planters.sprite) { fit(NX.planters.sprite(p), 4); return; }                                               // (· 34) герой перед вікном — власний спрайт
         const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
@@ -110,7 +110,7 @@
     const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : 'plant', gs = e.grp === 'wall' && NX.decorGrow ? NX.decorGrow.state(e.kind) : null;   // (· 22) росте / цвіте
     el.querySelector('.gw').textContent = T('decor.guide.kind.' + kindT) + ' · ' + T('decor.guide.where.' + e.grp) + (e.grp === 'farm' && info && info.s != null ? ' · ' + T('decor.guide.stage', { s: Math.min(6, Math.floor(info.s * 6) + 1) }) : '') + (gs ? ' · ' + T('decor.guide.grow.' + gs) : '');
     el.querySelector('.gc').textContent = T('decor.guide.count', { n: R.n });
-    el.style.borderColor = { wall: '#3bff8a', floor: '#9aff6a', farm: '#b8ff3a', reef: '#3be8ff', jelly: '#d94bff' }[e.grp];
+    el.style.borderColor = { wall: '#3bff8a', garden: '#7aff9a', floor: '#9aff6a', farm: '#b8ff3a', reef: '#3be8ff', jelly: '#d94bff' }[e.grp];
     drawSprite(e, info);
   }
   function show(e, info) {
@@ -137,7 +137,7 @@
       if (WALL_ALIAS[hit]) return show(find('wall', WALL_ALIAS[hit]));
       if (hit === 'hex') return void this.tapStatic(x, y);
       if (hit === 'vault' && NX.decorVault) return show(find('farm', NX.decorVault.lastKind));
-      if (hit === 'planter' && NX.planters) return show(find('floor', NX.planters.lastKind));                   // (· 31) вазон перед вікном                   // (· 20) капсула сховища насіння                                                   // рослина в соті (бонсай, ехеверія, кактус, сансев'єрія)
+      if (hit === 'planter' && NX.planters) return show(find('garden', NX.planters.lastKind) || find('floor', NX.planters.lastKind));                   // (· 31) вазон перед вікном                   // (· 20) капсула сховища насіння                                                   // рослина в соті (бонсай, ехеверія, кактус, сансев'єрія)
       if (hit === 'farm' && NX.decorFarm && NX.decorFarm.nearTray) { const tr = NX.decorFarm.nearTray(x, y, t); if (tr && tr.d < 30) return show(find('farm', tr.kind), tr); return; }
       if (hit === 'aq') { const TP = NX.decorLive && NX.decorLive.TP, aq = TP && TP.aq && TP.aq.aq; if (!aq) return;
         let best = null, bd = 1e9;

@@ -21,8 +21,8 @@
     { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },
     { kind: 'asplenium', x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
     // (· 37) квітучі малята спереду: кожен — свій вид і свій колір
-    { kind: 'saintpaulia', x: 703, w: 30, h: 22, seed: 21 },
-    { kind: 'kalanchoe', x: 731, w: 28, h: 26, seed: 22 },
+    { kind: 'saintpaulia', x: 724, w: 30, h: 22, seed: 21 },
+    { kind: 'kalanchoe', x: 750, w: 28, h: 26, seed: 22 },
     { kind: 'anthurium', x: 792, w: 34, h: 34, seed: 23 },
     { kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
     { kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
@@ -263,14 +263,16 @@
   function drawPetals(c, t) { for (const q of PET) { const a = q.land ? Math.max(0, 1 - (t - q.land) / 6) : 1; c.globalAlpha = a; c.fillStyle = q.col; const r = q.land ? 0 : Math.sin(t * 6 + q.ph); c.fillRect(q.x - 1, q.y - .6, 2 + Math.abs(r), 1.2); } c.globalAlpha = 1; }
   /** Голодисплей на лівому краю канта: вологість (крапля + смуга), температура (стовпчик), кільце таймера поливу. Без тексту. */
   function drawPanel(c, t, LK) {
-    const x = JAR.x0 + 2, y = TOP() - 23, w = 24, h = 15, a = .75 + .15 * Math.sin(t * 3);
-    c.save(); c.globalAlpha = .7; c.fillStyle = '#071226'; c.fillRect(x, y, w, h); c.globalAlpha = a * Math.min(1.2, LK); c.strokeStyle = '#3be8ff'; c.lineWidth = .6; c.strokeRect(x + .3, y + .3, w - .6, h - .6);
-    c.fillStyle = '#3be8ff'; c.fillRect(x, y + h, 1, 5); c.fillRect(x + w - 1, y + h, 1, 5);                                                                   // ніжки до канта
-    const hv = HUM.v, hc = hv < .3 ? '#ff6a5a' : '#3be8ff'; c.fillStyle = hc; c.beginPath(); c.moveTo(x + 4, y + 3); c.lineTo(x + 6, y + 6.5); c.lineTo(x + 2, y + 6.5); c.closePath(); c.fill(); c.fillRect(x + 2, y + 6, 4, 1.5);   // крапля
-    c.globalAlpha = .35 * a; c.fillRect(x + 8, y + 4, 13, 2.2); c.globalAlpha = a; c.fillRect(x + 8, y + 4, 13 * hv, 2.2);                                     // смуга вологості
-    c.fillStyle = '#ffb04a'; c.fillRect(x + 3, y + 9, 2, 4); c.fillRect(x + 2.5, y + 12, 3, 1.5); c.globalAlpha = .35 * a; c.fillRect(x + 8, y + 10.5, 13, 2.2); c.globalAlpha = a; c.fillRect(x + 8, y + 10.5, 13 * (.55 + .05 * Math.sin(t * .3)), 2.2);   // температура
-    c.strokeStyle = '#b8ff3a'; c.lineWidth = 1; c.beginPath(); c.arc(x + w - 5, y + 7.5, 2.6, -Math.PI / 2, -Math.PI / 2 + TAU * ((t * .02) % 1)); c.stroke();   // кільце таймера
-    if (HUM.drip) { c.globalAlpha = .5 + .5 * Math.sin(t * 8); c.fillStyle = '#8ae8ff'; c.fillRect(x + w - 6.5, y + 11.5, 3, 1.2); }
+    const x = JAR.x0 + 2, y = TOP() - 32, w = 54, h = 24, a = .75 + .15 * Math.sin(t * 3), T = NX.t, n = NX.planters.PL.length;
+    c.save(); c.globalAlpha = .72; c.fillStyle = '#071226'; c.fillRect(x, y, w, h); c.globalAlpha = a * Math.min(1.2, LK); c.strokeStyle = '#3be8ff'; c.lineWidth = .6; c.strokeRect(x + .3, y + .3, w - .6, h - .6);
+    c.fillStyle = '#3be8ff'; c.fillRect(x, y + h, 1, 8); c.fillRect(x + w - 1, y + h, 1, 8);                                                                   // ніжки до канта
+    NX.px.text(c, T('decor.garden.title'), x + w / 2, y + 5.5, '#7aff9a', 3.1, 'center'); NX.px.text(c, T('decor.garden.count', { n }), x + w / 2, y + 10.5, '#9ad8ff', 2.5, 'center');   // (· 43) табличка-голограма
+    c.fillStyle = '#1a3a5a'; c.fillRect(x + 3, y + 12.6, w - 6, .5);
+    const hv = HUM.v, hc = hv < .3 ? '#ff6a5a' : '#3be8ff'; c.fillStyle = hc; c.beginPath(); c.moveTo(x + 5, y + 15); c.lineTo(x + 7, y + 18.5); c.lineTo(x + 3, y + 18.5); c.closePath(); c.fill(); c.fillRect(x + 3, y + 18, 4, 1.5);   // крапля
+    c.globalAlpha = .35 * a; c.fillRect(x + 9, y + 16, 16, 2.2); c.globalAlpha = a; c.fillRect(x + 9, y + 16, 16 * hv, 2.2);                                     // смуга вологості
+    c.fillStyle = '#ffb04a'; c.fillRect(x + 30, y + 15, 2, 4); c.fillRect(x + 29.5, y + 18, 3, 1.5); c.globalAlpha = .35 * a; c.fillRect(x + 34, y + 16, 12, 2.2); c.globalAlpha = a; c.fillRect(x + 34, y + 16, 12 * (.55 + .05 * Math.sin(t * .3)), 2.2);   // температура
+    c.strokeStyle = '#b8ff3a'; c.lineWidth = 1; c.beginPath(); c.arc(x + w - 4.5, y + 17, 2.4, -Math.PI / 2, -Math.PI / 2 + TAU * ((t * .02) % 1)); c.stroke();   // кільце таймера
+    if (HUM.drip) { c.globalAlpha = .5 + .5 * Math.sin(t * 8); c.fillStyle = '#8ae8ff'; c.fillRect(x + 9, y + 20.5, 16, 1.2); }
     c.restore();
   }
   // ---------- гості: 2 метелики по квітах удень, колібрі-бражник, нічний метелик до квітки цереуса ----------

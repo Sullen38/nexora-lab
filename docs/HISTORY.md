@@ -2994,3 +2994,8 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 
 - `poses.js`: `sitGaze`; `activities.js`: `jarSit`; `nexi.js`: `jarSit` у пулі автожиття; `planters.js`: `sitSpot`, `dig`; `cat.js`: `jarDig`
   (40 % замість нюхання); `i18n/*`: `act.jarSit`, `act.decorReact.dig`.
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 43: табличка-голограма, група «сад за диваном»
+
+- `i18n/*`: `decor.garden.{title,count}`, `decor.guide.sp.garden` (15 видів перенесено з floor, + yucca), `where.garden`.
+- `decor_guide.js`: GROUPS + garden, рамка, `hit === 'planter'` → garden ∨ floor. `planters.js`: `drawPanel` 54×24 із текстом (`NX.px.text`).
