@@ -51,6 +51,8 @@ NX.guests = (() => {
   const KEYA = 'nx.guests.alt'; let ALT = {}; try { ALT = JSON.parse(localStorage.getItem(KEYA) || '{}') || {}; } catch (e) {}
   const alts = () => ALT, collectAlt = (id, look) => { if (!look || ALT[id] === look) return false; ALT[id] = look; try { localStorage.setItem(KEYA, JSON.stringify(ALT)); } catch (e) {} return true; };
   const full = () => COL.length >= IDS.length;
+  /** Тап по табличці «ГОСТІ n/20» біля брами → сторінка карток (cards.js). */
+  const plaqueHit = (x, y) => { const fr = zone().S(100, 352, -30), py = fr[1] + 16; return Math.abs(x - fr[0]) < 44 && y > py - 14 && y < py + 14; };
   const P = NX.px, A = NX.guestArt, t_ = (k, o) => NX.t(k, o), rnd = Math.random;
   const zone = () => NX.arc && NX.arc.zone && NX.arc.zone('portal');
   /** Точки порталу на екрані: майданчик під аркою (де з'являються) і підлога перед брамою. */
@@ -303,7 +305,7 @@ NX.guests = (() => {
     tapFirst(x, y) { const z = zone(); if (!z || !z.box) return false; const [x0, x1, y0, y1] = z.box; if (x < x0 || x > x1 || y < y0 || y > y1 - 6) return false;
       const p = pad(); for (let i = 0; i < 12; i++) NX.fx.emit('portal', p[0] + (Math.random() - .5) * 60, p[1] - 20 - Math.random() * 90);
       if (NX.party && !NX.party.on && NX.acts.party) NX.nexi.do('party'); return true; } });   // тап по брамі — Nexi на вечірку (власник, 04.11)
-  return { spawn, summon, hitTest, IDS, S, collect, collection, atParty, alts, collectAlt, full, forgetAlts() { ALT = {}; try { localStorage.removeItem(KEYA); } catch (e) {} },
+  return { spawn, summon, hitTest, IDS, S, collect, collection, atParty, alts, collectAlt, full, plaqueHit, forgetAlts() { ALT = {}; try { localStorage.removeItem(KEYA); } catch (e) {} },
     collectAll() { COL = IDS.slice(); saveCol(); }, forget() { COL = []; saveCol(); },
     /** Для перевірки й знімків: усі 20 рядами перед брамою (поза stand), без сценок. */
     demo(ids = IDS) { S.on = false; S.list = []; const B = NX.room.walkBounds(); ids.forEach((id, i) => { const g = { id, x: 140 + (i % 10) * 132, y: B.minY + 40 + Math.floor(i / 10) * 70, dir: 1, pose: i === 2 ? 'sit' : 'stand', fr: 0, ft: 0, alt: 0, alpha: 1, zoom: 1, g: {}, cv: null, q: [{ hold: 1 }], cur: null, speed: 1 }; S.list.push(g); }); },

@@ -115,6 +115,7 @@ NX.loop = {
     list.filter(Boolean).sort((a, b) => a.y - b.y).forEach(l => l.draw(c, t));
     NX.fx.draw(c);
     NX.input.drawHover(c, t);
+    if (NX.cards && NX.cards.on) NX.cards.draw(c, innerWidth, innerHeight, t);   // сторінка карток гостей поверх кімнати (actors/guests/cards.js)
     requestAnimationFrame(() => this.frame());
   },
 };

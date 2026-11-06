@@ -115,7 +115,7 @@ NX.cam = {
           if (this.z > 1) { const vh = this.vh / this.k, yMin = -this.top0, yMax = C.ROOM_H + this.front0 - vh; this.top = -NX.px.clamp(down.cy - dy / this.k, yMin, Math.max(yMin, yMax)); } }
       } else NX.input && NX.input.onHover(...this.toRoom(e.clientX, e.clientY));
     });
-    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (down && !down.moved && e.type === 'pointerup') NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; arm(); };
+    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (down && !down.moved && e.type === 'pointerup') { if (NX.cards && NX.cards.on) NX.cards.tap(e.clientX, e.clientY); else NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); } down = null; arm(); };
     canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
     canvas.addEventListener('wheel', e => { e.preventDefault(); this.setZoom(this.z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); if (this.z > 1) this.free = true; }, { passive: false });
   },
