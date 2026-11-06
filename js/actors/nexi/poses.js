@@ -39,6 +39,7 @@ function poseFor(a,t,moving){
  case'look':p.look=Math.round(Math.sin(t*1.3)*1.4);p.hx=Math.round(Math.sin(t*1.3));p.ra={x:3,y:6};break;
  case'jump':p.ll={dx:-1,lift:2};p.rl={dx:1,lift:2};p.la={x:-5,y:-5};p.ra={x:5,y:-5};p.face='happy';break;
  case'gaze':p.back=1;p.la={x:1,y:6};p.ra={x:-1,y:6};p.hy=Math.round(Math.sin(t*.8));break;
+case'sitGaze':p.sit=1;p.back=1;p.bob=3;p.la={x:1,y:5};p.ra={x:-1,y:5};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};p.hy=Math.round(Math.sin(t*.8));break;   // (Декор стін · 42) сидить на канті жардиньєра спиною, дивиться на місто
  case'water':p.ra={x:6,y:1+Math.round(Math.sin(t*4))};p.la={x:-3,y:6};p.tool='can';p.hy=1;break;
  // (Декор стін · 6) на ранці біля стіни: поливає з лійки, сипле корм, тисне кнопку годівнички, роздивляється
  case'hoverWater':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:6,y:2+Math.round(Math.sin(t*4))};p.la={x:-4,y:4};p.tool='can';p.hy=1;p.bob=Math.round(Math.sin(t*5));break;

@@ -365,6 +365,10 @@
     /** Полив (Nexi, activities.js jardin): вологість повна, бутони, що чекали, одразу йдуть у розкривання; квіти «кивають» пелюстками. */
     water(t = NX.time) { HUM.v = 1; HUM.drip = 0; for (const p of LEAFY) if (!p.young && hash(Math.floor(t), p.seed) < .7) p.young = { t0: t + 20 + 40 * hash(p.seed, 5) }; for (const p of FL) { const u = ((t - p.t0) % PERIOD + PERIOD) % PERIOD / PERIOD; if (u < .15 || u >= .8) p.t0 = t - PERIOD * .15; shed(p, t, 2); } },
     hum() { return HUM.v; },
+    /** (· 42) Де Nexi сидить на канті: між філодендроном і арекою; hoverAt ставить її на точку (y — рівень канта, вона «сидить» на ньому). */
+    sitSpot() { const top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: 764, y: top - 14, z, dir: 1 }; },
+    /** (· 42) Рудик копає ґрунт: грудки летять, вологість трохи падає; Nexi (якщо вільна) свариться. */
+    dig(x, t = NX.time) { for (let i = 0; i < 5; i++) PET.push({ x: x + (Math.random() - .5) * 4, y: TOP() + 1, vx: (Math.random() - .5) * 14, vy: -8 - Math.random() * 10, col: Math.random() < .5 ? '#3a2a18' : '#1c1410', t0: t - 6, ph: Math.random() * TAU }); HUM.v = Math.max(0, HUM.v - .05); },
     /** (· 41) Є пожовклий або опалий листок — Nexi йде з кошиком (activities.js prune). */
     needsPrune() { return FALLEN.length > 0 || LEAFY.some(p => p.old); },
     pruneSpot() { const p = LEAFY.find(q => q.old) || LEAFY[0], top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: p.x, y: top - 36, z, dir: p.x < 790 ? 1 : -1 }; },

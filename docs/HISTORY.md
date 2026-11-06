@@ -2989,3 +2989,8 @@ px/кадр при 60 fps (було стрибок на 262 px за кадр); `
 - `planters.js`: якорі `young/old` → `youngA/oldA`; `LEAFY`, `FALLEN`, `LIFE`; `youngLeaf`, `oldLeaf`, `lifeTick`, `drawLife`; `GK`/`GECKO`/
   `drawGecko`; `drawGrowLamp` + рожевий градієнт на героях уночі; `drawDew`; API `needsPrune / pruneSpot / prune`, `water` → young.
 - `activities.js`: `prune`; `nexi.js`: автожиття — `prune` при `needsPrune`; `i18n/*`: `act.prune`.
+
+## Чат «декор стін · 3» 06.11 — Декор стін · 42: Nexi сидить у саду, Рудик копає
+
+- `poses.js`: `sitGaze`; `activities.js`: `jarSit`; `nexi.js`: `jarSit` у пулі автожиття; `planters.js`: `sitSpot`, `dig`; `cat.js`: `jarDig`
+  (40 % замість нюхання); `i18n/*`: `act.jarSit`, `act.decorReact.dig`.

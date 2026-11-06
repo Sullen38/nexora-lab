@@ -176,6 +176,16 @@
         { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.prune.done') }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
     } },
 
+    // ---------- (Декор стін · 42) ПОСИДІТИ В САДУ ЗА ДИВАНОМ: злітає на кант жардиньєра між рослинами, сідає спиною (ноги на спинці
+    // дивана — диван малюється поверх), дивиться на місто; гекон і метелики поруч. ----------
+    jarSit: { color: '#7aff9a', route() {
+      const PL = NX.planters, n = NX.nexi; if (!PL || !PL.sitSpot) return [line('jarSit')];
+      const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.sitSpot(), h = hoverAt(sp);
+      return [{ walk: f }, { face: 1 }, line('jarSit'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
+        { fly: h.p, dy: h.dy }, { face: 1 }, { work: { pose: 'sitGaze', dur: 14 + Math.random() * 8, back: true } }, { do: () => n.emote('love', 2) }, { work: { pose: 'sit', dur: 1.6 } },
+        { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.jarSit.done') }];
+    } },
+
     feedFish: { color: '#3be8ff', route() {
       const A = NX.decorAqua, n = NX.nexi, side = 'left'; if (!A || !A.feederAt) return [line('feedFish')];   // (· 12) обидва акваріуми — ліворуч (праворуч тепер ферма)
       const f = wallFloor(side), L = [{ walk: f }, line('feedFish'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];

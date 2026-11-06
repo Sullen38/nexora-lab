@@ -120,8 +120,15 @@ NX.cat = {
   /** (Декор стін · 38) На канті жардиньєра між віолою й примулою: сідає, нюхає квітку (лапка до неї), чхає — пелюстки летять
    *  (planters.js shake), камера на нього; потім дрімає на теплому канті, потягується. */
   jarLife() { const S = this.spots().jar; this.dir = -1; this.look(5, null, false, true);
+    if (Math.random() < .4) return this.jarDig();                                                                       // (· 42) або копає ґрунт
     this.set('sit', 1.4 + Math.random(), () => this.set('paw', .9, () => { NX.planters.shake(S.flower); NX.fx.emit('note', this.x, this.y - 22); this.look(2.5, null, true);
       this.set('meow', .7, () => this.set('groom', 2.2, () => this.set('sleep', 9 + Math.random() * 8, () => this.set('stretch', 1.4)))); })); },
+  /** (Декор стін · 42) Копає ґрунт у жардиньєрі: три удари лапкою — грудки летять (planters.js dig); Nexi, якщо вільна, сердиться
+   *  й свариться (act.decorReact.dig) — Рудик зістрибує й тікає на килим. */
+  jarDig() { let k = 0; const dig = () => this.set('paw', .5, () => { NX.planters.dig(this.x + this.dir * 6); if (++k < 3) { this.set('sit', .3, dig); return; }
+      const n = NX.nexi; if (n && !n.act) { n.emote('angry', 2.6); n.say(NX.pick('act.decorReact.dig')); n.dir = this.x > n.x ? 1 : -1; }
+      this.set('meow', .5, () => { this.look(3, null, true); const R = NX.objects.rug; this.goTo(R ? R.home[0] + 70 : this.x - 200, R ? R.home[1] + 4 : this.FLOOR, () => this.set('groom', 2), null, true); }); });
+    this.set('sit', .8, dig); },
   /** Гра з голо-рибкою (objects/aicenter.js): три удари лапкою — рибка відскакує, на третій — розсипається іскрами. */
   play(F) { let n = 0; const hit = () => { if (!F.alive()) return this.set('sit', 2); this.dir = Math.sign(F.x - this.x) || this.dir;
       this.set('paw', .75, () => { F.hit(); if (++n < 3) this.set('sit', .45 + Math.random() * .5, hit); else { this.look(2.2, null, true); this.set('happy', 1.6, () => this.set('sit', 3)); } }); };
