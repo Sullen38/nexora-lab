@@ -1,6 +1,7 @@
 /* js/i18n/nl.js — NEDERLANDS */
 NX.i18n.add('nl', {
-  ui: { result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. NIEUWE LOOK — IN DE ZONE SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', kept: 'OPGESLAGEN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
+  ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
+    result: 'RESULTAAT', resultAuto: 'NEXI DEED HET ZELF', photo: 'FOTO OPGESLAGEN 📸', tagline: '8-BIT AI-ASSISTENT', hint: 'TIK OP EEN ZONE, DE BANK OF HET RAAM — NEXI GAAT ERHEEN. NIEUWE LOOK — IN DE ZONE SKINS. TIK OP DE KAT — AAIEN.', dialog: 'CHAT MET NEXI', ask: 'Stuur Nexi een bericht...', labTitle: 'MAAK JE EIGEN NEXI', random: 'WILLEKEURIG', reset: 'RESET', kept: 'OPGESLAGEN', saved: 'NEXI OPGESLAGEN', task: 'TAAK', free: 'VRIJE TIJD', close: 'Sluiten', send: 'Versturen', room: 'Kamer van Nexi', lab: 'Skin-lab', prev: 'Vorige', next: 'Volgende' },
   splash: {   // WELKOMSTSCHERM (js/ui/splash.js): laadfasen, zinnetjes van Nexi, bouwstappen
     aria: 'Nexi’s lab wordt geladen', retry: 'Pagina vernieuwen', ok: 'OK', kb: 'KB',
     st: { js: 'SCRIPTS', img: 'KAMERBEELD', city: 'STAD', wings: '3D-VLEUGELS', ready: 'KLAAR' },

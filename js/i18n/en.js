@@ -1,6 +1,7 @@
 /* js/i18n/en.js — ENGLISH */
 NX.i18n.add('en', {
-  ui: { result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. NEW LOOK — IN THE SKINS ZONE. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', kept: 'SAVED', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
+  ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
+    result: 'RESULT', resultAuto: 'NEXI DID IT ON ITS OWN', photo: 'PHOTO SAVED 📸', tagline: '8-BIT AI ASSISTANT', hint: 'TAP A ZONE, THE SOFA OR THE WINDOW — NEXI GOES THERE. NEW LOOK — IN THE SKINS ZONE. TAP THE CAT — PET IT.', dialog: 'CHAT WITH NEXI', ask: 'Message Nexi...', labTitle: 'CREATE YOUR NEXI', random: 'RANDOM', reset: 'RESET', kept: 'SAVED', saved: 'NEXI SAVED', task: 'TASK', free: 'FREE TIME', close: 'Close', send: 'Send', room: "Nexi's room", lab: 'Skin lab', prev: 'Previous', next: 'Next' },
   splash: {   // WELCOME SPLASH (js/ui/splash.js): loading stages, Nexi's lines, build steps
     aria: 'Loading Nexi’s lab', retry: 'Reload the page', ok: 'OK', kb: 'KB',
     st: { js: 'SCRIPTS', img: 'ROOM IMAGE', city: 'CITY', wings: '3D WINGS', ready: 'READY' },

@@ -12,6 +12,7 @@ NX.ui.hud = {
   applyLang() {
     const $ = this.$, T = NX.t;
     $('tagline').textContent = T('ui.tagline');
+    $('copy').textContent = T('ui.brand');                                                     // © / ™ (docs/BRAND.md)
     $('hint').textContent = T('ui.hint'); $('tg').textContent = T('ui.dialog'); $('q').placeholder = T('ui.ask'); $('labtitle').textContent = T('ui.labTitle');
     $('rnd').textContent = T('ui.random'); $('rst').textContent = T('ui.reset'); $('lx').setAttribute('aria-label', T('ui.close'));
     // підказки для екранних читачів і title — теж мовою сайту
