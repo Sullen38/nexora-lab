@@ -81,7 +81,9 @@
         const b = info && info.box, SD = NX.arc.built; if (!b || !SD) return; const S = ['left', 'right'].map(k => SD[k]).find(S => S && S.comp && b.x0 >= S.box[0] && b.x1 <= S.box[2]); if (!S) return;
         const k = S.comp.width / (S.box[2] - S.box[0]), pad = 1.5, sx = (b.x0 - pad - S.box[0]) * k, sy = (b.y0 - pad - S.box[1]) * k, sw = (b.x1 - b.x0 + pad * 2) * k, sh = (b.y1 - b.y0 + pad * 2) * k, q = Math.min((n - 4) / sw, (n - 4) / sh);
         c.imageSmoothingEnabled = sw > n; c.drawImage(S.comp, sx, sy, sw, sh, (n - sw * q) / 2, (n - sh * q) / 2, sw * q, sh * q); return; }
-      if (e.grp === 'floor') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind), r = p && NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
+      if (e.grp === 'floor') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
+        if (NX.planters.sprite) { fit(NX.planters.sprite(p), 4); return; }                                               // (· 34) герой перед вікном — власний спрайт
+        const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'wall') { const sp = NX.arc.dcSpec && NX.arc.dcSpec[e.kind], r = sp && NX.arc.dcPlant(sp); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
