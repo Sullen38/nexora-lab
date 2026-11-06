@@ -292,7 +292,7 @@ NX.party = (() => {
     { const Bt = g.booth, s = PZ.s(Bt.z0); [Bt.x0 + 50, Bt.x1 - 50].forEach(x => { const [sx, sy] = pt(x, Bt.y0 - 1, Bt.z0 + 24), a = t * 5;                       // диски пульта крутяться
         c.fillStyle = '#0a0626'; c.beginPath(); c.ellipse(sx, sy, 17 * s, 6 * s, 0, 0, 7); c.fill(); c.fillStyle = '#2a2560'; c.beginPath(); c.ellipse(sx, sy, 14 * s, 5 * s, 0, 0, 7); c.fill(); R(c, sx + Math.cos(a) * 10 * s - 1, sy + Math.sin(a) * 3.5 * s - 1, 2, 2, '#3be8ff'); R(c, sx - 1, sy - 1, 2, 2, '#ff4fd8'); });
       for (let i = 0; i < 10; i++) { const on = i < 2 + Math.floor(pl * 8), [sx, sy] = pt(774 - 24 + i * 5, Bt.y0 - 1, Bt.z0 + 30); R(c, sx, sy - 1, 3, 2, on ? (i > 7 ? '#ff3b5c' : i > 4 ? '#ffe27a' : '#3bff8a') : '#1e1650'); } }   // еквалайзер
-    { const Sn = g.snack, [jx, jy] = pt((Sn.x0 + Sn.x1) / 2 + 34, Sn.y0 - 32, Sn.z0 + 90); if (rnd() < .08) S.fx.push({ t: 'sp', x: jx + (rnd() - .5) * 6, y: jy, vx: 0, vy: -10, g: 0, col: '#ffe27a', ttl: .8, age: 0 }); }   // бульбашки над глечиком соку
+    { const Sn = g.snack, [jx, jy] = pt((Sn.x0 + Sn.x1) / 2 + 18, Sn.y0 - 26, Sn.z1 - 50); if (rnd() < .12) S.fx.push({ t: 'sp', x: jx + (rnd() - .5) * 6, y: jy, vx: 0, vy: -10, g: 0, col: '#ffe27a', ttl: .8, age: 0 }); }   // іскорки над чашею пуншу
   }
   function drawFog(c) {                                                                               // туман над підлогою: смуга в глибині танцполу
     const g = G(), [, y1] = fp(774, g.ZF + 60), [, y0] = fp(774, g.ZB - 60), gr = c.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(120,90,200,0)'); gr.addColorStop(.5, 'rgba(120,90,200,.13)'); gr.addColorStop(1, 'rgba(120,90,200,0)');
