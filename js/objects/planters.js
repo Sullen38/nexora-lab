@@ -20,9 +20,15 @@
     { kind: 'areca', x: 796, w: 84, h: 94, seed: 7 },
     { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },
     { kind: 'asplenium', x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
+    // (· 37) квітучі малята спереду: кожен — свій вид і свій колір
+    { kind: 'saintpaulia', x: 684, w: 30, h: 22, seed: 21 },
+    { kind: 'kalanchoe', x: 720, w: 28, h: 26, seed: 22 },
+    { kind: 'anthurium', x: 792, w: 34, h: 34, seed: 23 },
+    { kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
+    { kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
   ];
   // ---------- палітри ----------
-  const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0' };
+  const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0' };
   const HEX = Object.values(PAL).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
   // ---------- малювання героїв (полотно 2 px/од.) ----------
   const DRAW = {
@@ -101,6 +107,45 @@
       for (const pass of [0, 1]) for (const L of ls) { const dx = Math.sin(L.a), dy = -Math.cos(L.a), nx = Math.cos(L.a), ny = Math.sin(L.a), wd = L.len * .2; c.beginPath(); c.moveTo(cx, by - 3);
         for (const sd of [-1, 1]) { const pts = []; for (let i = 1; i <= 8; i++) { const t = i / 8, w = wd * Math.sin(t * Math.PI * .9) * (1 + .18 * Math.sin(t * 14 + seed)); pts.push([cx + dx * L.len * t + nx * sd * w, by - 3 + dy * L.len * t + ny * sd * w]); } if (sd < 0) for (const q of pts) c.lineTo(q[0], q[1]); else for (const q of pts.reverse()) c.lineTo(q[0], q[1]); }
         c.closePath(); if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 3; c.stroke(); c.fillStyle = PAL.out; c.fill(); } else { c.fillStyle = L.back ? PAL.d2 : PAL.d3; c.fill(); c.strokeStyle = L.back ? PAL.d0 : PAL.d1; c.lineWidth = 1.6; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(cx + dx * L.len * .92, by - 3 + dy * L.len * .92); c.stroke(); if (!L.back) { c.strokeStyle = PAL.hi; c.lineWidth = .8; c.beginPath(); c.moveTo(cx + dx * L.len * .3 + nx * 1.5, by - 3 + dy * L.len * .3 + ny * 1.5); c.lineTo(cx + dx * L.len * .85 + nx * 1.5, by - 3 + dy * L.len * .85 + ny * 1.5); c.stroke(); } } }
+    },
+    /** Сенполія (фіалка): розетка округлих оксамитових листків, зверху 5 фіолетових п'ятипелюсткових квіток із жовтим вічком. */
+    saintpaulia(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3.3, r = H * .55, lx = cx + Math.sin(a) * r * .75, ly = by - 4 - Math.cos(a) * r * .35, R = H * .22; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, R + (pass ? 0 : 1.6), R * .8 + (pass ? 0 : 1.6), a * .3, 0, TAU); c.fill(); if (pass) { c.fillStyle = PAL.d3; c.beginPath(); c.ellipse(lx - 1, ly - 1.2, R * .45, R * .3, a * .3, 0, TAU); c.fill(); } }
+      for (let f = 0; f < 5; f++) { const fx = cx + (f - 2) * 5.5 + (hash(seed, f) - .5) * 2, fy = by - H * .68 - (f % 2) * 3; for (const pass of [0, 1]) for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + f; c.fillStyle = pass ? PAL.purple : PAL.out; c.beginPath(); c.ellipse(fx + Math.cos(a) * 2.2, fy + Math.sin(a) * 2.2, 2 + (pass ? 0 : 1.2), 1.4 + (pass ? 0 : 1.2), a, 0, TAU); c.fill(); }
+        c.fillStyle = PAL.lilac; c.beginPath(); c.arc(fx - 1.4, fy - 1.4, 1.5, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.2, 0, TAU); c.fill(); }
+    },
+    /** Каланхое: м'ясисті зубчасті листки, над ними щільні китиці дрібних помаранчево-червоних квіток. */
+    kalanchoe(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 2.8, r = H * .5, lx = cx + Math.sin(a) * r * .7, ly = by - 3 - Math.cos(a) * r * .4; c.fillStyle = pass ? (i % 2 ? PAL.d3 : PAL.d2) : PAL.out; c.beginPath(); const R = H * .2 + (pass ? 0 : 1.6); for (let k = 0; k <= 12; k++) { const t = k / 12 * TAU, rr = R * (1 + .12 * Math.cos(t * 6)); c.lineTo(lx + Math.cos(t) * rr, ly + Math.sin(t) * rr * .75); } c.closePath(); c.fill(); }
+      for (let s2 = 0; s2 < 3; s2++) { const sx = cx + (s2 - 1) * 8, sy = by - H * .55; c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); c.moveTo(sx, sy + 6); c.lineTo(sx, sy - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.2; c.stroke();
+        for (const pass of [0, 1]) for (let k = 0; k < 7; k++) { const a = hash(seed, s2 * 9 + k) * TAU, r = 2 + hash(seed, k + s2) * 3, fx = sx + Math.cos(a) * r, fy = sy - 5 + Math.sin(a) * r * .7; c.fillStyle = pass ? (k % 3 ? PAL.orange : PAL.red) : PAL.out; c.beginPath(); c.arc(fx, fy, 1.6 + (pass ? 0 : 1.1), 0, TAU); c.fill(); if (pass) { c.fillStyle = PAL.yellow; c.fillRect(fx - .5, fy - .5, 1, 1); } } }
+    },
+    /** Антуріум: глянцеві серцеподібні листки на черешках і 2 червоні «покривала» з жовтими початками — найграфічніший. */
+    anthurium(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
+      const heart = (x, y, R, ang, fill, hi) => { for (const pass of [0, 1]) { c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = pass ? fill : PAL.out; const e = pass ? 0 : 1.5; c.beginPath(); c.moveTo(0, R + e); c.bezierCurveTo(-R * 1.1 - e, R * .3, -R * 1.1 - e, -R * .8 - e, 0, -R * .35); c.bezierCurveTo(R * 1.1 + e, -R * .8 - e, R * 1.1 + e, R * .3, 0, R + e); c.fill();
+        if (pass && hi) { c.fillStyle = hi; c.beginPath(); c.ellipse(-R * .35, -R * .1, R * .3, R * .45, .4, 0, TAU); c.fill(); } c.restore(); } };
+      for (const [a, r, back] of [[-1.1, .5, 1], [1.0, .5, 1], [-.45, .62, 0], [.5, .6, 0], [0, .42, 0]]) { const lx = cx + Math.sin(a) * H * r * .8, ly = by - 4 - Math.cos(a) * H * r * .6; c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(lx, ly); c.stroke(); c.strokeStyle = PAL.stem; c.lineWidth = 1.4; c.stroke(); heart(lx, ly - 3, H * .17, a * .5 + Math.PI, back ? PAL.d1 : PAL.d2, back ? null : PAL.d3); }
+      for (const [a, r] of [[-.7, .95], [.6, 1.0]]) { const fx = cx + Math.sin(a) * H * r * .45, fy = by - 4 - Math.cos(a) * H * r * .75; c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(fx, fy + 2); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.4; c.stroke(); heart(fx, fy - 2, H * .14, a * .4 + Math.PI, PAL.red, PAL.pink);
+        c.strokeStyle = PAL.out; c.lineWidth = 3.6; c.beginPath(); c.moveTo(fx, fy - 2); c.lineTo(fx + Math.sin(a * .4) * 7, fy - 2 - Math.cos(a * .4) * 7); c.stroke(); c.strokeStyle = PAL.yellow; c.lineWidth = 1.8; c.stroke(); }
+    },
+    /** Віола (братки): дрібні листочки й 4 великі «личка» — фіолетові верхні пелюстки, жовта нижня з темним вічком. */
+    viola(c, W, H, seed) {
+      const cx = W / 2, by = H - 2;
+      for (const pass of [0, 1]) for (let i = 0; i < 8; i++) { const a = (i / 7 - .5) * 3, lx = cx + Math.sin(a) * W * .4, ly = by - 3 - Math.cos(a) * H * .25; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, 2.6 + (pass ? 0 : 1.3), 3.4 + (pass ? 0 : 1.3), a, 0, TAU); c.fill(); }
+      for (let f = 0; f < 4; f++) { const fx = cx + (f - 1.5) * 7 + (hash(seed, f) - .5) * 2, fy = by - H * .6 - (f % 2) * 4, cols = f % 2 ? [PAL.purple, PAL.yellow] : [PAL.lilac, PAL.yellow];
+        c.strokeStyle = PAL.out; c.lineWidth = 2.6; c.beginPath(); c.moveTo(fx, fy + 3); c.lineTo(fx + (f - 1.5) * .8, by - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1; c.stroke();
+        for (const pass of [0, 1]) { const e = pass ? 0 : 1.2; for (const [dx, dy, r, col] of [[-2.2, -2, 2.4, cols[0]], [2.2, -2, 2.4, cols[0]], [-2.6, .8, 2, cols[0]], [2.6, .8, 2, cols[0]], [0, 2.2, 2.8, cols[1]]]) { c.fillStyle = pass ? col : PAL.out; c.beginPath(); c.ellipse(fx + dx, fy + dy, r + e, r * .85 + e, 0, 0, TAU); c.fill(); } }
+        c.fillStyle = PAL.out; c.beginPath(); c.arc(fx, fy + 1, 1, 0, TAU); c.fill(); c.fillStyle = PAL.orange; c.fillRect(fx - .5, fy + .3, 1, 1); }
+    },
+    /** Примула: зморшкуваті зубчасті листки розеткою, над ними парасолька з 6 рожево-кремових квіток із жовтим вічком. */
+    primula(c, W, H, seed) {
+      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 3.1, lx = cx + Math.sin(a) * W * .36, ly = by - 3 - Math.cos(a) * H * .2; c.save(); c.translate(lx, ly); c.rotate(a * .6); c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); const e = pass ? 0 : 1.4; for (let k = 0; k <= 14; k++) { const t = k / 14 * TAU, rr = (1 + .1 * Math.cos(t * 7)); c.lineTo(Math.cos(t) * (3 + e) * rr, Math.sin(t) * (5 + e) * rr); } c.closePath(); c.fill(); if (pass) { c.strokeStyle = PAL.d0; c.lineWidth = .8; c.beginPath(); c.moveTo(0, 4); c.lineTo(0, -3.5); c.stroke(); } c.restore(); }
+      c.strokeStyle = PAL.out; c.lineWidth = 3.4; c.beginPath(); c.moveTo(cx, by - 4); c.lineTo(cx, by - H * .6); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.4; c.stroke();
+      for (const pass of [0, 1]) for (let f = 0; f < 6; f++) { const a = f / 6 * TAU + .3, fx = cx + Math.cos(a) * 6.5, fy = by - H * .66 + Math.sin(a) * 3.5; for (let k = 0; k < 5; k++) { const b = k / 5 * TAU + f; c.fillStyle = pass ? (f % 2 ? PAL.pink : PAL.cream) : PAL.out; c.beginPath(); c.arc(fx + Math.cos(b) * 1.9, fy + Math.sin(b) * 1.9, 1.5 + (pass ? 0 : 1), 0, TAU); c.fill(); } if (pass) { c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.1, 0, TAU); c.fill(); } }
     },
     /** Цереус: ребристий стовп з двома бічними пагонами, ребра — світлі смуги, ареоли з колючками-крапками. */
     cereus(c, W, H, seed) {
