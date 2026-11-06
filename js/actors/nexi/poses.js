@@ -56,6 +56,11 @@ case'hoverCall':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:5,y:-3+Mat
  case'bye':p.ra={x:5,y:-3+Math.round(s(t*12.56637)*2)};p.la={x:-3,y:6};break;
  case'think':p.ra={x:-4,y:-5};p.hx=-1;p.face='think';p.bob=0;break;
  case'point':p.ra={x:6,y:-1};p.hx=1;break;
+ // ЗДІБНОСТІ РЕЛІКВІЙ (actors/nexi/relics.js): підняти вгору, розчерки, випад уперед, захист щитом
+ case'raise':{p.ra={x:3,y:-12};p.la={x:-3,y:5};p.bob=-1;p.hy=-1;p.face='serious';break}
+ case'swing':{const k=Math.sin(t*12)>0;p.ra=k?{x:8,y:-7}:{x:9,y:3};p.la={x:-4,y:4};p.hx=1;p.bob=k?-1:0;p.face='serious';break}
+ case'present':{const k=Math.sin(t*5)>0;p.ra={x:k?10:8,y:0};p.la={x:-4,y:5};p.hx=1;p.bob=k?0:1;break}
+ case'guard':p.la={x:-9,y:0};p.ra={x:3,y:5};p.bob=1;p.ll={dx:-1,lift:0};p.rl={dx:2,lift:0};p.face='serious';break;
  case'talk':p.talk=1;p.la={x:-5,y:2+Math.round(s(t*6.28319)*2)};p.ra={x:5,y:2+Math.round(s(t*6.28319+2)*2)};p.bob=Math.sin(t*6.28319)>.5?-1:0;break;
  case'cheer':{const j=Math.abs(s(t*6.28319));p.bob=-Math.round(j*3);p.la={x:-4,y:-5};p.ra={x:4,y:-5};p.ll.lift=0;p.face='happy';break}
  case'work':{const k=Math.floor(t*9)%2;p.la={x:-2,y:2+k*2};p.ra={x:2,y:4-k*2};p.hy=1;p.bob=0;break}

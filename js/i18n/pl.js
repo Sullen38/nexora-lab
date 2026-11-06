@@ -103,6 +103,13 @@ NX.i18n.add('pl', {
     bounce: { title: 'Trampolina na kanapie', steps: ['Wskakuję', 'Boing!'], lines: ['Nikt nie patrzy? To trampolina!', 'Kanapa to najlepsza trampolina!'] },
     fluff: { title: 'Wytrzepać poduszki', steps: ['Biorę poduszki', 'Puf-puf!'], lines: ['Zrobię przytulnie — wytrzepię poduszki.', 'Poduszki muszą być puszyste!'] },
     skinLab: { lines: ['Zmieńmy mój wygląd! Wybierz skórki po prawej.'] },
+    relic: {
+      hammer: ['Grzmot i błyskawica! Słyszysz?', 'Młot naładowany — trzymaj się!'], blade: ['Wżum-wżum! Laser jest gorący.', 'Ostrożnie, ostrze ze światła!'],
+      gauntlet: ['Pstryk! Złoto lśni.', 'Jedno pstryknięcie i wszystko błyszczy.'], excalibur: ['Światło z nieba — to mój miecz!', 'Legendarne ostrze — i ja je noszę.'],
+      staff: ['Kryształ śpiewa chłodem.', 'Czujesz mróz? To kostur.'], trident: ['Fala! Trzymaj stopy suche.', 'Morze słucha trójzębu.'],
+      wand: ['Gwiazdko, gwiazdko — bęc!', 'Odrobina magii nie zaszkodzi.'], balloon: ['Balonik ciągnie w górę — lecimy!', 'Hop! Jeszcze trochę i odlecę.'],
+      torch: ['Ogień ogrzeje wszystkich.', 'Światło w ciemności — to ja.'], magnet: ['Wszystko przyciąga się do mnie!', 'Magnes — tylko nie dla Rudego.'],
+      shield: ['Pod kopułą bezpiecznie.', 'Tarcza Nexi — nic nie przejdzie!'], sword: ['Raz-dwa — i gotowe!', 'Stal to niezawodna rzecz.'] },
     tap: {   // dotknięcie Nexi (nexi.js: hi)
       hi: ['Cześć! Jestem tu.', 'O, to ty! Co robimy?', 'Hej! Dotknij strefy, a wezmę się do pracy.', 'Do usług! Marketing, analityka, narzędzia — mów.', 'Cześć, cześć! Miłego dnia.', 'Jestem! Gotowy do pracy.'],
       busy: ['Sekundkę — kończę i wracam!', 'Pracuję! Prawie gotowe.', 'Widzę cię! Zaraz skończę.'],

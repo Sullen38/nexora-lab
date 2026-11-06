@@ -103,6 +103,13 @@ NX.i18n.add('nl', {
     bounce: { title: 'Bank-trampoline', steps: ['Erop springen', 'Boing!'], lines: ['Niemand kijkt? Trampolinetijd!', 'De bank is de beste trampoline!'] },
     fluff: { title: 'Kussens opschudden', steps: ['Kussens pakken', 'Poef-poef!'], lines: ['Gezellig maken — kussens opschudden.', 'Kussens moeten pluizig zijn!'] },
     skinLab: { lines: ['Laten we mijn look veranderen! Kies rechts een skin.'] },
+    relic: {
+      hammer: ['Donder en bliksem! Hoor je dat?', 'Hamer opgeladen — hou je vast!'], blade: ['Zwiep-zwiep! De laser is heet.', 'Voorzichtig, een kling van licht!'],
+      gauntlet: ['Knip! Goud glanst.', 'Eén knip en alles schittert.'], excalibur: ['Licht uit de hemel — dat is mijn zwaard!', 'Een legendarische kling — en ik draag hem.'],
+      staff: ['Het kristal zingt van kou.', 'Voel je de vorst? Dat is de staf.'], trident: ['Golf! Hou je voeten droog.', 'De zee gehoorzaamt de drietand.'],
+      wand: ['Sterretje, sterretje — zap!', 'Een beetje magie kan nooit kwaad.'], balloon: ['De ballon trekt me omhoog — we vliegen!', 'Hup! Nog even en ik ben weg.'],
+      torch: ['Vuur verwarmt iedereen.', 'Licht in het donker — dat ben ik.'], magnet: ['Alles wordt naar mij getrokken!', 'Magneet — alleen niet voor Gember.'],
+      shield: ['Veilig onder de koepel.', 'Nexi-schild — niets komt erdoor!'], sword: ['Een-twee — klaar!', 'Staal is betrouwbaar.'] },
     tap: {   // tik op Nexi (nexi.js: hi)
       hi: ['Hoi! Ik ben er.', 'O, jij bent het! Wat gaan we doen?', 'Hé! Tik op een zone en ik ga aan de slag.', 'Tot je dienst! Marketing, analyse, tools — zeg het maar.', 'Hallo hallo! Fijne dag nog.', 'Hier ben ik! Klaar om te werken.'],
       busy: ['Momentje — even afmaken, dan ben ik terug!', 'Ik ben bezig! Bijna klaar.', 'Ik zie je! Zo klaar.'],

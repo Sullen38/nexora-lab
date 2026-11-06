@@ -110,6 +110,7 @@ NX.nexi = {
     NX.nexiPhys.kick(this.taps === 3 ? 2.6 : 1.4);
     if (!busy) { this.back = false; this.temp = 'wave'; this.tempT = this.hiT; }              // вільний — повертається до нас насовсім
     const ch = { mkChair: NX.objects.mkChair, anChair: NX.objects.anChair }[this.loc]; if (ch && ch.peek) ch.peek(2.2);
+    if (this.taps !== 3 && !busy && this.look.hand && NX.objects.relics && NX.objects.relics.tap(this.look.hand)) return;   // реліквія в руці — її здібність (relics.js)
     if (this.taps === 3) { this.emote('happy', 2.4); this.say(NX.pick('act.tap.tickle')); return; }
     if (waving) return;
     const k = ws ? 'ws' : busy ? 'busy' : ++this.hiN % 3 === 2 ? 'skins' : 'hi';
@@ -131,7 +132,7 @@ NX.nexi = {
     this.autolife(t);
     this.moodLife(t); this.decorLife(t);                                                 // (Декор стін · 25) зиркає на рибок, нюхає м'яту, здригається від мухоловки
     NX.nexiPhys.update(this, dt);
-    if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie') { this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
+    if (!this.cur && !this.queue.length && !this.talking && t > (this.nextIdle || 0) && this.loc !== 'sofaLie' && !(NX.objects.relics && NX.objects.relics.busy())) {   /* поки показує реліквію — без «роззирається» */ this.nextIdle = t + 5 + Math.random() * 5; const a = ['look', 'stretch', 'stand', 'look'][Math.random() * 4 | 0]; if (a !== 'stand') { this.temp = a; this.tempT = t + 2.6; } }
     if (this.cur && (this.cur.fly || this.pose === 'fly' || (this.cur.work && /hover/.test(this.cur.work.pose))) && Math.random() < .7) NX.fx.emit('flame', this.x + (Math.random() < .5 ? -9 : 9) * NX.room.scaleAt(this.depthY()) / 1.45 * (this.dir), this.y + 2);
     if (this.fxNow && this.fxNow !== 'none' && this.alpha > .5) NX.fx.skin(this.fxNow, this.x, this.y, NX.room.scaleAt(Math.max(this.depthY(), 352)), !!(this.cur && this.cur.walk), this.dir);
   },

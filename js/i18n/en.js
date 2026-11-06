@@ -103,6 +103,13 @@ NX.i18n.add('en', {
     bounce: { title: 'Sofa trampoline', steps: ['Jumping on', 'Boing!'], lines: ["Nobody's watching? Trampoline time!", 'The sofa is the best trampoline!'] },
     fluff: { title: 'Fluff the pillows', steps: ['Grabbing pillows', 'Poof-poof!'], lines: ["Let's make it cozy — fluffing pillows.", 'Pillows must be fluffy!'] },
     skinLab: { lines: ["Let's change my look! Pick skins on the right."] },
+    relic: {
+      hammer: ['Thunder and lightning! Hear that?', 'Hammer charged — hold on!'], blade: ['Whoosh-whoosh! Laser is hot.', 'Careful, a blade of light!'],
+      gauntlet: ['Snap! Gold is shining.', 'One snap and everything sparkles.'], excalibur: ['Light from the sky — that’s my sword!', 'A legendary blade — and I carry it.'],
+      staff: ['The crystal sings with cold.', 'Feel the frost? That’s the staff.'], trident: ['Wave! Keep your feet dry.', 'The sea obeys the trident.'],
+      wand: ['Twinkle, twinkle — zap!', 'A bit of magic never hurts.'], balloon: ['The balloon pulls me up — let’s fly!', 'Hop! A little more and I’m off.'],
+      torch: ['Fire warms everyone.', 'Light in the dark — that’s me.'], magnet: ['Everything is drawn to me!', 'Magnet — just not for Ginger.'],
+      shield: ['Safe under the dome.', 'Nexi shield — nothing gets through!'], sword: ['One-two — done!', 'Steel is a reliable thing.'] },
     tap: {   // tap on Nexi (nexi.js: hi)
       hi: ["Hi! I'm here.", "Oh, it's you! What shall we do?", "Hey! Tap a zone and I'll get to work.", 'At your service! Marketing, analytics, tools — just say.', 'Hi there! Have a great day.', 'Here I am! Ready to work.'],
       busy: ["One sec — finishing up, then I'm back!", 'Working on it! Almost done.', 'I see you! Nearly finished.'],
