@@ -23,6 +23,9 @@
  * назад нікуди — закрити). Тому ЗАПАСНИЙ КРОК: після дотику до кімнати в історії стає ще один крок на цю саму сторінку —
  * випадковий «назад» лишає в кімнаті (без перезавантаження), а крок ставиться знову при наступному дотику. Вийти —
  * «назад» двічі поспіль.
+ * ЗУМ (власник, 06.11: «щоб пальцями трохи можна було приближати»): щипок двома пальцями — масштаб 1..3 навколо точки між
+ * пальцями; колесо миші / трекпад — те саме на комп'ютері; при зумі кімнату можна гортати і вгору-вниз. Усе, що читає cam.k /
+ * cam.top / cam.x / cam.viewW (растри з Rd, бабли, loop), працює як є — зум лише міняє ці числа. Щипок до < 1.05 — повертає 1.
  * ========================================================================== */
 NX.cam = {
   k: 1,          // скільки CSS-пікселів в 1 одиниці кімнати
@@ -35,6 +38,8 @@ NX.cam = {
   dragUntil: 0,  // для інструментів знімків (tools/same.js, bench.js, wingbox/shot.js): тримати камеру до цього performance.now()
   foc: null,     // фокус уваги: { x() — центр, until — до якого часу NX.time } (подія з Рудиком)
   focEnd: -99,   // коли фокус скінчився (дрібна подія одразу після — камера не смикається туди-сюди)
+  z: 1,          // зум (щипок / колесо): 1 — як після layout; k = k0 · z
+  k0: 1, top0: 60, front0: 200, vw: 0, vh: 0,
 
   /** Перерахунок під розмір вікна. Викликається на старті і при resize. */
   layout(vw, vh) {
@@ -47,11 +52,21 @@ NX.cam = {
     } else {
       this.k = vh / (C.ROOM_H + 60 + 190);                      // телефон: по висоті
     }
-    this.viewW = vw / this.k;
+    this.vw = vw; this.vh = vh; this.k0 = this.k;
     const extra = vh / this.k - C.ROOM_H;                       // скільки треба добудувати
-    this.top = Math.round(Math.max(C.TOP_MIN, Math.min(110, extra * .2)));
-    this.front = Math.round(extra - this.top);
-    this.x = NX.px.clamp(this.x, C.ROOM_X0, Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW));
+    this.top0 = Math.round(Math.max(C.TOP_MIN, Math.min(110, extra * .2)));
+    this.front0 = Math.round(extra - this.top0); this.front = this.front0;   // front — геометрія світу (підлога, пояс ходьби), зум її не чіпає
+    this.setZoom(this.z, 0, 0, true);
+  },
+  /** Зум z (1..3) навколо екранної точки (sx, sy): точка кімнати під нею лишається на місці. keep — лише перерахунок після layout. */
+  setZoom(z, sx, sy, keep) {
+    const C = NX.cfg; z = Math.max(1, Math.min(3, z)); if (z < 1.05) z = 1;
+    const [rx, ry] = keep ? [0, 0] : this.toRoom(sx, sy); this.z = z; this.k = this.k0 * z; this.viewW = this.vw / this.k;
+    const vh = this.vh / this.k, yMin = -this.top0, yMax = C.ROOM_H + this.front0 - vh;   // верхній край: від стелі до низу добудованої підлоги
+    let yv = keep ? -this.top : ry - sy / this.k, x = keep ? this.x : rx - sx / this.k;
+    if (z === 1) yv = yMin;
+    this.top = -NX.px.clamp(yv, yMin, Math.max(yMin, yMax));
+    this.x = NX.px.clamp(x, C.ROOM_X0, Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW));
   },
   /** Фокус уваги на x() на sec секунд. Довший фокус, що вже йде, коротший не перебиває (force — замінити). */
   focus(x, sec, force) { const until = NX.time + sec; if (!force && this.foc && this.foc.until > until) return; this.foc = { x, until }; },
@@ -86,15 +101,22 @@ NX.cam = {
     const arm = () => { if (armed || !history.pushState) return; armed = true; try { history.pushState({ nx: 1 }, ''); } catch (e) {} };
     addEventListener('popstate', () => { armed = !!(history.state && history.state.nx); });
     canvas.addEventListener('touchend', arm);
-    canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, cx: this.x, moved: false }; canvas.setPointerCapture(e.pointerId); });
+    const pts = new Map(); let pinch = null;   // активні пальці; щипок: { d0, z0 }
+    const mid = () => { const a = [...pts.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y)]; };
+    canvas.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); canvas.setPointerCapture(e.pointerId);
+      if (pts.size === 2) { const [, , d] = mid(); pinch = { d0: d, z0: this.z }; down = null; } else if (pts.size === 1) down = { x: e.clientX, y: e.clientY, cx: this.x, cy: -this.top, moved: false }; });
     canvas.addEventListener('pointermove', e => {
+      if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pts.size >= 2) { const [mx, my, d] = mid(); this.setZoom(pinch.z0 * d / Math.max(1, pinch.d0), mx, my); this.free = true; return; }
       if (down) {
-        const dx = e.clientX - down.x;
-        if (Math.abs(dx) > 6) down.moved = true;
-        if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(down.cx - dx / this.k, C.ROOM_X0, max); this.free = true; }
+        const dx = e.clientX - down.x, dy = e.clientY - down.y;
+        if (Math.abs(dx) > 6 || (this.z > 1 && Math.abs(dy) > 6)) down.moved = true;
+        if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(down.cx - dx / this.k, C.ROOM_X0, max); this.free = true;
+          if (this.z > 1) { const vh = this.vh / this.k, yMin = -this.top0, yMax = C.ROOM_H + this.front0 - vh; this.top = -NX.px.clamp(down.cy - dy / this.k, yMin, Math.max(yMin, yMax)); } }
       } else NX.input && NX.input.onHover(...this.toRoom(e.clientX, e.clientY));
     });
-    canvas.addEventListener('pointerup', e => { if (down && !down.moved) NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; arm(); });
-    canvas.addEventListener('pointercancel', () => down = null);
+    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (down && !down.moved && e.type === 'pointerup') NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); down = null; arm(); };
+    canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+    canvas.addEventListener('wheel', e => { e.preventDefault(); this.setZoom(this.z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); if (this.z > 1) this.free = true; }, { passive: false });
   },
 };

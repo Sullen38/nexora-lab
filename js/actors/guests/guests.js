@@ -38,7 +38,7 @@ NX.guests = (() => {
   const saveCol = () => { try { localStorage.setItem(KEY, JSON.stringify(COL)); } catch (e) {} };
   /** Спіймати гостя (тап): новий — у колекцію, значок і феєрверк іскор над ним. */
   function collect(g) {
-    if (COL.includes(g.id)) return false; COL.push(g.id); saveCol();
+    if (COL.includes(g.id)) { if (!S.fx.some(f => f.type === 'badge' && f.g === g)) S.fx.push({ type: 'badge', have: true, g, x: g.x, y: g.y - g.alt - 58, t0: NX.time, dur: 2 }); return false; } COL.push(g.id); saveCol();
     S.fx.push({ type: 'badge', x: g.x, y: g.y - g.alt - 58, t0: NX.time, dur: 2.2 });
     for (let i = 0; i < 14; i++) NX.fx.emit('spark', g.x + (rnd() - .5) * 36, g.y - g.alt - 20 - rnd() * 40, { col: i % 3 ? '#ffe27a' : '#9af6ff', vy: 30 });
     return true;
@@ -115,7 +115,7 @@ NX.guests = (() => {
     const sc = SCENES[id], p = pad(), g = { id, x: p[0], y: p[1], dir: -1, pose: 'stand', fr: 0, ft: 0, alt: 0, alpha: 0, zoom: .25, g: {}, cv: document.createElement('canvas'), q: [], cur: null, onPad: true, speed: sc.speed || 1 };
     const back = sc.flyer ? [] : sc.rollBack ? [{ run: front(), pose: 'roll' }, { hop: p }] : [{ [sc.runBack ? 'run' : 'go']: front() }, { hop: p }];   // назад: до брами, на майданчик
     const bye = [{ do: () => { if (!COL.includes(g.id)) return; g.dir = -1; const L = NX.t('guests.bye') || []; if (L.length) g.bub = { text: L[Math.random() * L.length | 0], until: NX.time + 2.4 }; g.byeT = NX.time + 1.6; } }, { until: () => !g.byeT || NX.time > g.byeT, max: 2, pose: 'cheer' }];   // спійманий — на прощання махає: «До зустрічі на вечірці!»
-    g.q = [{ appear: 1.9 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, ...bye, { vanish: 1.6 }];
+    g.q = [{ appear: 1.9 }, ...(COL.includes(g.id) ? [{ do: () => S.fx.push({ type: 'badge', have: true, g, x: g.x, y: g.y - g.alt - 58, t0: NX.time, dur: 3 }) }] : []), ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, ...bye, { vanish: 1.6 }];
     S.portalT = NX.time + 2; if (nexiFree()) NX.nexi.emote(['surprise', 'happy', 'idea'][Math.random() * 3 | 0], 2);
     return g;                                                                                                             // підказки «з порталу: …» немає (власник, 03.11): гостя просто видно
   }
@@ -271,8 +271,8 @@ NX.guests = (() => {
         c.fillStyle = '#0a0626dd'; c.fillRect(fr[0] - w / 2, y - 6, w, 12); c.strokeStyle = n >= tot ? '#ffe27a' : '#c86aff'; c.lineWidth = 1; c.strokeRect(fr[0] - w / 2 + .5, y - 5.5, w - 1, 11);
         c.fillStyle = n >= tot ? '#ffe27a' : '#e2b4ff'; c.globalAlpha = pl; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, fr[0], y + .5); c.fillStyle = '#c86aff'; c.globalAlpha = .5; c.fillRect(fr[0] - 1, y + 6, 2, 4); c.restore(); } }); }
     S.fx.forEach(f => { if (f.type !== 'badge') return; out.push({ y: 999, draw: c => { const k = Math.min(1, (NX.time - f.t0) / f.dur), y = f.y - k * 26, a = k < .15 ? k / .15 : k > .7 ? (1 - k) / .3 : 1;   // значок «У КОЛЕКЦІЇ ✓» злітає й тане
-      c.save(); c.globalAlpha = a; c.font = '6px "Press Start 2P", monospace'; const s = NX.t('guests.badge'), w = c.measureText(s).width + 10, x0 = P.clamp(f.x - w / 2, NX.cam.x + 4, NX.cam.x + NX.cam.viewW - w - 4);
-      c.fillStyle = '#0a0626ee'; c.fillRect(x0, y - 9, w, 13); c.strokeStyle = '#ffe27a'; c.lineWidth = 1; c.strokeRect(x0 + .5, y - 8.5, w - 1, 12); c.fillStyle = '#ffe27a'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s, x0 + w / 2, y - 2.5); c.restore(); } }); });
+      c.save(); c.globalAlpha = a; c.font = '6px "Press Start 2P", monospace'; const s = NX.t(f.have ? 'guests.have' : 'guests.badge'), col = f.have ? '#9af6ff' : '#ffe27a', w = c.measureText(s).width + 10, x0 = P.clamp(f.x - w / 2, NX.cam.x + 4, NX.cam.x + NX.cam.viewW - w - 4);
+      c.fillStyle = '#0a0626ee'; c.fillRect(x0, y - 9, w, 13); c.strokeStyle = col; c.lineWidth = 1; c.strokeRect(x0 + .5, y - 8.5, w - 1, 12); c.fillStyle = col; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s, x0 + w / 2, y - 2.5); c.restore(); } }); });
     S.fx.forEach(f => { if (f.type !== 'flash' && f.type !== 'ring') return; const k = Math.min(1, (NX.time - f.t0) / f.dur), sc = NX.room.scaleAt(f.y) * .98;
       if (f.type === 'flash') out.push({ y: 998, draw: c => { const a = Math.sin(k * Math.PI), r = (18 + 30 * k) * sc; P.glow(c, f.x, f.y, r, 'rgba(200,240,255,.95)', a); P.glow(c, f.x, f.y, r * .45, '#ffffff', a * .9);   // спалах
           c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.strokeStyle = '#e8f8ff'; c.lineWidth = 1; for (let i = 0; i < 6; i++) { const an = i * 1.047 + k * 2, L = r * (.7 + i % 2 * .25); c.beginPath(); c.moveTo(f.x, f.y); c.lineTo(f.x + Math.cos(an) * L, f.y + Math.sin(an) * L * .6); c.stroke(); } c.restore(); } });
@@ -285,8 +285,8 @@ NX.guests = (() => {
   }
   /** Гість під точкою (тап, наведення): межі спрайта. */
   function hitTest(x, y) {
-    for (const g of S.list) { const [W, H, K] = A.size(g.id), s = NX.room.scaleAt(g.y) * K * .98 * g.zoom, w = W * s * .6, h = H * s, top = g.y - g.alt - h;
-      if (g.alpha > .5 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 3) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => tap(g) }; }
+    for (const g of S.list) { const [W, H, K] = A.size(g.id), s = NX.room.scaleAt(g.y) * K * .98 * g.zoom, w = Math.max(44, W * s * .95), h = H * s, top = g.y - g.alt - h - 12;   // широка зона тапу (власник, 06.11: «часом нажимаєш і нічого не відбувається»)
+      if (g.alpha > .3 && x > g.x - w / 2 && x < g.x + w / 2 && y > top && y < g.y - g.alt + 12) return { g, box: { x: g.x - w / 2, y: top, w, h: h - 2 }, name: `guests.${g.id}.n`, tap: () => tap(g) }; }
     return null;
   }
   /** Кликати гостя з мішка (до 04.11 — тап по брамі; тепер — для коду й перевірок): якщо в кімнаті менше трьох. Інакше — лише спалах. */
