@@ -8,7 +8,7 @@
 у мережі Base (крок 1 — лабораторія, картка NFT і власники; оплата й NFT — далі, план у `docs/NFT.md`).
 
 Стан, правила й план — **`docs/HANDOFF.md`** (паспорт); як малюємо зони — `tools/wingbox/README.md`; історія кроків —
-`docs/HISTORY.md`; персональні Nexi й NFT — `docs/NFT.md`; історія світу Nexi — `docs/UNIVERSE.md`.
+`docs/HISTORY.md`; персональні Nexi й NFT — `docs/NFT.md`; історія світу Nexi — `docs/UNIVERSE.md`; захист бренду (ТМ, авторське право, план) — `docs/BRAND.md`.
 
 ## Запуск
 
