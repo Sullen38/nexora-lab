@@ -144,12 +144,41 @@ NX.guestArt = (() => {
     P(cx - 2, top + 1, 4, 2, '#c02030'); px(cx - 2, top + 1, '#ee5a6a');
   }
 
+  /** ТІЛО В КУПАЛЬНИКУ (образи після сценок «справжньої вечірки», 06.11): фігура — плечі, тонка талія, стегна; босі ноги;
+   *  купальник suit: o.one — суцільний, інакше роздільний; o.dots — у горошок, o.stripes — у смужку; o.ring — надувне коло. */
+  function swimBody(g, B, sk, suit, o = {}) {
+    const t = T(suit), ptn = (a, b) => o.dots ? ((a + b) % 4 === 0 ? '#ffffff' : null) : o.stripes ? (b % 3 === 0 ? '#ffffff' : null) : null;
+    leg(21 + g.bl, 44 + B, GY - g.bu, S(sk.M, -.12), S(sk.M, -.1), { w: 3 }); leg(27 + g.fl, 44 + B, GY - g.fu, sk.M, sk.M, { w: 3 });   // босі ноги
+    px(23 + g.bl, GY - 1 - g.bu, sk.L); px(29 + g.fl, GY - 1 - g.fu, sk.L); px(31 + g.fl, GY - g.fu, sk.D);                 // пальчики
+    const TOR = [[0, 13], [0, 13], [0, 13], [1, 11], [1, 11], [2, 9], [2, 9], [2, 9], [1, 11], [0, 12], [0, 12], [-1, 13], [-1, 13], [0, 12], [1, 10], [2, 8]];   // плечі → талія → стегна
+    TOR.forEach(([a, w], i) => { P(18 + a, 29 + B + i, w, 1, sk.M); px(18 + a, 29 + B + i, sk.L); px(18 + a + w - 1, 29 + B + i, sk.D); });
+    px(25, 36 + B, sk.D); P(20, 29 + B, 9, 1, sk.L);                                                                      // пупок, світло на плечах
+    const top = [[0, 13], [0, 13], [1, 11], [1, 11]], bot = [[-1, 13], [-1, 13], [0, 12], [1, 10], [2, 8]], from = o.one ? 0 : 4;
+    (o.one ? TOR.slice(0, 11) : top).forEach(([a, w], i) => { P(18 + a, 29 + B + i, w, 1, suit); px(18 + a, 29 + B + i, t.L); px(18 + a + w - 1, 29 + B + i, t.D); for (let k = 1; k < w - 1; k++) { const c = ptn(k, i); if (c) px(18 + a + k, 29 + B + i, c); } });
+    bot.forEach(([a, w], i) => { P(18 + a, 40 + B + i, w, 1, suit); px(18 + a, 40 + B + i, t.L); px(18 + a + w - 1, 40 + B + i, t.D); for (let k = 1; k < w - 1; k++) { const c = ptn(k, i + 11); if (c) px(18 + a + k, 40 + B + i, c); } });
+    px(24, 31 + B, t.D); px(20, 28 + B, suit); px(28, 28 + B, suit);                                                      // виріз, бретельки
+    if (o.ring) { const RC = o.ring; for (let y = -3; y <= 3; y++) { const w = Math.round(Math.sqrt(9 - y * y) * 4.6) + 10; P(24 - w / 2, 41 + B + y, w, 1, y < 0 ? S(RC, .25) : RC); P(24 - w / 2 + 3, 41 + B + y, 1, 1, '#ffffff'); }   // надувне коло
+      TOR.slice(9, 14).forEach(([a, w], i) => { if (i < 2) return; P(18 + a, 38 + B + i, w, 1, i === 2 ? S(RC, .25) : RC); }); for (let i = 0; i < 5; i++) px(13 + i * 6, 41 + B, '#fff0a0'); }
+  }
+  /** Перефарбувати готовий кадр: кожна пара [з, на] — колір і його тони (L/M/D/K) — на відповідні тони нового кольору. */
+  function recolor(pairs) {
+    const Wc = x.canvas.width, Hc = x.canvas.height, id = x.getImageData(0, 0, Wc, Hc), d = id.data, map = new Map();
+    const hex = c => { const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+    pairs.forEach(([a, b]) => { const ta = T(a), tb = T(b); [['L', 'L'], ['M', 'M'], ['D', 'D'], ['K', 'K']].forEach(([k1, k2]) => map.set(hex(ta[k1]).join(','), hex(tb[k2]))); map.set(hex(a).join(','), hex(b)); });
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue; const m = map.get(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); if (m) { d[i] = m[0]; d[i + 1] = m[1]; d[i + 2] = m[2]; } }
+    x.putImageData(id, 0, 0); lastC = null;
+  }
+  /** Святковий ковпачок (конус у смужку з помпоном) вершиною вгору; окуляри-«сонце» на очі голови (hx, hy). */
+  const partyHat = (cx, yb, h = 11, c1 = '#ff4fd8', c2 = '#ffe27a') => { for (let i = 0; i < h; i++) { const w = Math.round((h - i) * 1.1) + 1; P(cx - w / 2, yb - i, w, 1, i % 4 < 2 ? c1 : c2); px(cx - w / 2, yb - i, '#ffffff'); } disc(cx, yb - h - 1, 1, '#ffffff'); px(cx, yb - h - 2, '#3be8ff'); };
+  const shades = (hx, hy, c = '#1a1030') => { P(hx + 5, hy + 5, 4, 3, c); P(hx + 10, hy + 5, 4, 3, c); px(hx + 9, hy + 6, c); px(hx + 6, hy + 5, '#5a5a8a'); px(hx + 11, hy + 5, '#5a5a8a'); P(hx + 14, hy + 6, 2, 1, c); };
+  const smoke = (cx, cy, t, n = 3) => { for (let i = 0; i < n; i++) { const k = (t * .7 + i / n) % 1; px(cx + Math.round(Math.sin(k * 6 + i * 2) * 2), cy - Math.round(k * 9), k < .5 ? '#6a6a7a' : '#9a9ab0'); } };
+
   // =============================== ГЕРОЇ ===============================
   const D = {};
 
   /** 1. БАБА ЯГА — згорблена, хустка з квітами й горошком, гачкуватий ніс з бородавкою, один зуб, сиві пасма, латана сукня,
    *  фартух, шаль з китицями, лапоть і КІСТЯНА НОГА; мітла (sweep — мете); летить у СТУПІ з товкачем (ride), мітла позаду. */
-  D.babaYaga = (pose, fr, t) => {
+  D.babaYaga = (pose, fr, t, gs) => {
     const ride = pose === 'ride', sweep = pose === 'sweep', g = gait(ride ? 'stand' : pose, fr), B = g.bob, sw = sweep ? Math.sin(t * 9) * 3 : 0;
     const DR = '#5c3c2c', SC = '#b4202e', SHW = '#3a4a3c', HL = '#dcdad4';
     /** Голова з хусткою, носом і зубом (hx, hy — ліво-верх голови). tails — кінці хустки (-1 — летять назад). */
@@ -185,6 +214,10 @@ NX.guestArt = (() => {
     }
     // ---- ПІШКИ ----
     const hy0 = 37 + B, bx = 40 + sw;
+    if (gs && gs.look === 'swim') {                                                                                           // образ: старомодний смугастий купальник, надувне коло-каченя, окуляри
+      swimBody(g, B, OLD, '#2a3a8a', { one: 1, stripes: 1, ring: '#ffd23a' }); arm([20, 31 + B], [15, 40 + B], OLD.M, OLD); yagaHead(20, 16 + B); shades(20, 16 + B);
+      P(10, 36 + B, 4, 3, '#ffd23a'); P(13, 36 + B, 2, 1, '#ff8a2a'); px(11, 36 + B, '#1a1030');                                 // голова каченяти на колі
+      arm([28, 31 + B], [34, 26 + B], OLD.M, OLD); P(33, 20 + B, 4, 6, '#e0f4ff'); P(34, 22 + B, 2, 3, '#ff4fd8'); px(35, 19 + B, '#ff4fd8'); return; }   // коктейль у руці
     rod(32, 30 + B, bx, 51, '#8a5a2a', 2); besom(bx + 1, 50, GY, sw * .3);                                                     // мітла
     arm([20, 33 + B], [15, 38 + B], DR, OLD);                                                                               // задня рука — на попереку
     legs(g, '#4a3a3a', '#c8a050', { fx: 27, front: { bone: 1 }, back: {} }); P(19 + g.bl, 54 - g.bu, 4, 1, '#a88030'); px(20 + g.bl, 55 - g.bu, '#a88030');   // лапоть плетений; кістяна нога
@@ -202,10 +235,17 @@ NX.guestArt = (() => {
 
   /** 2. БІЛОСНІЖКА — шкіра біла, як сніг, губи червоні, як кров, волосся чорне з синіми відблисками; золотий обруч з
    *  рубіном, високий білий комір, червона сукня з золотою шнурівкою й каймою, мереживний фартух, яблуко в руці. */
-  D.snowWhite = (pose, fr, t) => {
-    const g = gait(pose, fr), B = g.bob, [bh, fh] = hands(pose, g, t, B), HA = '#16121e', HB = '#3e4c84', RED = '#b81e2e';
+  D.snowWhite = (pose, fr, t, gs) => {
+    const g = gait(pose, fr), B = g.bob, [bh, fh] = hands(pose, g, t, B), HA = '#16121e', HB = '#3e4c84', RED = '#b81e2e', swim = gs && gs.look === 'swim';
     spans(13, 18 + B, [[2, 6], [1, 8], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [0, 9], [1, 8], [1, 8], [1, 8], [1, 8], [2, 7], [2, 7], [2, 6], [3, 5], [3, 5], [4, 3]], HA);   // довге волосся позаду
     P(15, 20 + B, 1, 14, HB); P(17, 22 + B, 1, 10, '#2a3460');
+    if (swim) {                                                                                                              // образ: червоний суцільний купальник у білий горошок, босоніж, червона квітка у волоссі
+      swimBody(g, B, PALE, RED, { one: 1, dots: 1 }); arm([20, 31 + B], bh, PALE.M, PALE); const hx = 17, hy = 13 + B;
+      head(hx, hy, PALE, { lash: 1, brow: HA, lip: '#e0203a', mouth: 'smile', iris: '#4a3a8a', cheek: '#ffa0b6', noEar: 1 });
+      spans(hx - 1, hy - 2, [[3, 11], [1, 15], [0, 17], [0, 17], [0, 16], [0, 8], [0, 6], [0, 5], [0, 5], [0, 5], [0, 4], [0, 4], [0, 4], [0, 4], [1, 3]], HA);
+      [[6, 3], [8, 4], [10, 3], [12, 4], [14, 3]].forEach(([a, h]) => P(hx + a, hy + 3, 2, h, HA)); P(hx + 2, hy - 1, 8, 1, HB);
+      disc(hx + 2, hy + 1, 2, '#e0203a'); px(hx + 2, hy + 1, '#ffe27a'); px(hx + 1, hy, '#ff8a9a');                           // квітка
+      arm([29, 31 + B], fh, PALE.M, PALE); return; }
     arm([20, 31 + B], bh, RED, PALE, { cuff: '#ffffff' });
     legs(g, '#f6f2f4', '#a0182a');
     skirt(24, 38 + B, 54, 14, 23, RED, { folds: 5, hem: 2, hemC: '#e0b040', sway: g.sw });
@@ -513,7 +553,15 @@ NX.guestArt = (() => {
    *  ярусами воланів і поясом з бантом, буфи, довгі рукавички, блискітки, кришталеві черевички (twirl — кружляє). */
   D.cinderella = (pose, fr, t, gs) => {
     const tw = pose === 'twirl', g = gait(pose, fr), B = g.bob, [bh, fh] = tw ? [[14, 22], [35, 21]] : hands(pose, g, t, B), sw = tw ? Math.round(Math.sin(t * 8) * 2) : 0;
-    const PK = '#f4b4d4', P3 = T(PK), HR_ = '#f2c84e', GLV = '#fbf6fa';
+    const PK = '#f4b4d4', P3 = T(PK), HR_ = '#f2c84e', GLV = '#fbf6fa', swim = gs && gs.look === 'swim';
+    if (swim) {                                                                                                              // образ: рожевий роздільний купальник, босоніж, діадема лишається, блискітки
+      swimBody(g, B, PALE, '#ff5fc8', {}); arm([20, 31 + B], bh, PALE.M, PALE); const hx = 17, hy = 13 + B;
+      head(hx, hy, PALE, { lash: 1, brow: '#c8962a', lip: '#e05a7a', mouth: 'smile', iris: '#3a7ad0', cheek: '#ffa0b8', noEar: 1 });
+      spans(hx - 1, hy - 2, [[3, 11], [1, 15], [0, 17], [0, 17], [0, 7], [0, 5], [0, 4], [0, 4], [1, 3]], HR_); disc(hx + 2, hy - 3, 4, HR_); px(hx, hy - 5, '#fff0a0');
+      [[5, 3], [8, 4], [11, 3], [13, 2]].forEach(([a, h]) => P(hx + a, hy + 2, 2, h, HR_)); P(hx + 2, hy - 1, 9, 1, '#fff0a0'); P(hx + 14, hy + 4, 2, 6, HR_);
+      P(hx + 4, hy - 1, 8, 1, '#e8f4ff'); [5, 8, 11].forEach(a => px(hx + a, hy - 2, '#cfeaff')); px(hx + 8, hy - 3, '#ffffff');
+      [[14, 33], [30, 45], [22, 50]].forEach(([a, b], i) => (Math.floor(t * 5) + i) % 3 === 0 && star(a, b + B, '#ffffff'));
+      arm([29, 31 + B], fh, PALE.M, PALE); return; }
     arm([20, 31 + B], bh, GLV, { M: GLV, L: '#ffffff', D: '#dcd4e4' });
     if (gs && gs.lostShoe) { legs(g, '#fbe6de', '#cfeaff'); P(26 + g.fl, 55 - g.fu, 5, 3, '#fbe6de'); } else legs(g, '#fbe6de', '#cfeaff');
     skirt(24 + sw, 37 + B, 55, 14, 31, PK, { folds: 6, hem: 2, hemC: '#ffe2f0', pow: .8, sway: g.sw });                                 // пишна сукня
@@ -716,6 +764,58 @@ NX.guestArt = (() => {
       else { P(hx + 5, hy + 4, 4, 1, G3.K); px(hx + 6, hy + 5, '#ffffff'); } });
   };
 
+  // ======================= ОБРАЗИ ПІСЛЯ СЦЕНОК (справжня вечірка, 06.11) =======================
+  // Малюються поверх готового кадру (до контуру): кожен герой після своєї сценки лишається в новому вигляді до кінця вечірки;
+  // такий образ можна зібрати в колекцію тапом (guests.js collectAlt). Купальники — у самих D.* (swimBody).
+  const LOOK = {
+    pinocchio(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B; recolor([['#3a8c3c', '#2a3a2a'], ['#d02a3a', '#4a2a2a']]);   // обгорілий: курточка й ковпак у сажі, кінчик носа чорний, димок, здивовані очі
+      [[20, 33], [26, 39], [23, 30], [hx + 3, hy + 9], [hx + 10, hy + 3], [hx + 6, hy - 8]].forEach(([a, b]) => { P(a, b + (b < 28 ? 0 : B), 2, 2, '#2a2228'); px(a + 1, b + (b < 28 ? 0 : B), '#4a4048'); });
+      P(hx + 17, hy + 8, 3, 2, '#2a2228'); px(hx + 19, hy + 9, '#ff6a1a'); smoke(hx + 19, hy + 6, t); smoke(hx + 5, hy - 12, t, 2); face(hx, hy, WOOD, { eyes: 'wide', mouth: 'o', noCheek: 1, brow: '#5a3a1a', browA: -1 }); },
+    redHood(pose, fr, t) { recolor([['#d0222e', '#7a3ad0'], ['#e84a54', '#b48aff'], ['#f27a80', '#d4b8ff']]); const B = gait(pose, fr).bob;   // накидка пофарбована пуншем у фіолетовий, світна паличка в косі, краплі
+      [[14, 36], [12, 44], [16, 50]].forEach(([a, b]) => px(a, b + B, '#ff4fd8')); P(29, 25 + B, 2, 8, Math.floor(t * 4) % 2 ? '#3bff8a' : '#9af6ff'); },
+    dwarf(pose, fr, t) { const B = gait(pose, fr).bob, hx = 16, hy = 23 + B;                                                 // миска з чипсами на голові замість ковпака, крихти в бороді
+      for (let i = 0; i < 9; i++) { const w = 18 - i * 1.4; P(hx + 8 - w / 2, hy - 7 + i, w, 1, i < 2 ? '#e8ecf6' : i % 2 ? '#b4bccc' : '#9aa2b4'); px(hx + 8 - w / 2, hy - 7 + i, '#ffffff'); } P(hx - 2, hy - 8, 20, 1, '#d4dae6');
+      [[2, -10], [6, -11], [10, -10], [13, -9]].forEach(([a, b]) => { P(hx + a, hy + b, 3, 2, '#ffd27a'); px(hx + a, hy + b, '#fff0a0'); }); [[4, 14], [9, 17], [12, 13]].forEach(([a, b]) => px(hx + a, hy + b, '#ffd27a')); },
+    whiteRabbit(pose, fr, t) { const B = gait(pose, fr).bob, hx = 16, hy = 14 + B;                                          // вуха зав'язані вузлом, очі-спіральки, зірочки
+      P(hx + 2, hy - 14, 10, 1, '#f6f4fb'); disc(hx + 7, hy - 11, 3, '#f6f4fb'); disc(hx + 7, hy - 11, 1, '#cfcade'); px(hx + 5, hy - 12, '#ffffff');
+      [hx + 6, hx + 11].forEach(e => { P(e - 1, hy + 5, 4, 4, '#ffffff'); px(e, hy + 6, EYE); px(e + 1, hy + 6, EYE); px(e + 1, hy + 7, EYE); px(e, hy + 8, EYE); px(e - 1, hy + 7, EYE); });
+      for (let i = 0; i < 3; i++) { const a = t * 3 + i * 2.1; star(Math.round(hx + 7 + Math.cos(a) * 9), Math.round(hy - 3 + Math.sin(a) * 3), '#ffe27a', 0); } },
+    pussBoots(pose, fr, t) { const g = gait(pose, fr); [[21 + g.bl, GY - g.bu, 1], [27 + g.fl, GY - g.fu, 0]].forEach(([cx, yb, back]) => {   // чоботи загубив у піні — смугасті шкарпетки
+      for (let i = 0; i < 12; i++) P(cx - 2, yb - 12 + i, 5, 1, i % 3 === 0 ? '#ff4fd8' : i % 3 === 1 ? '#ffffff' : '#3be8ff'); P(cx - 3, yb - 13, 7, 1, '#1a1030'); P(cx - 2, yb - 1, 7, 2, back ? '#cfcade' : '#f4f2f8'); px(cx + 4, yb - 2, '#f4f2f8'); }); },
+    quixote(pose, fr, t) { if (pose === 'fall') return; const B = gait(pose, fr).bob, hx = 17, hy = 12 + B, BR = '#e0b84e', B3 = T(BR);   // тазик налазить на очі вм'ятим відром, зірочки
+      for (let i = 0; i < 12; i++) { const w = 15 + Math.min(i, 3); P(hx + 7.5 - w / 2, hy - 4 + i, w, 1, i === 11 ? B3.D : BR); px(hx + 7.5 - w / 2, hy - 4 + i, B3.L); px(hx + 7.5 + w / 2 - 1, hy - 4 + i, B3.D); }
+      P(hx + 3, hy + 1, 4, 2, B3.D); P(hx + 9, hy + 3, 3, 1, B3.D); P(hx + 13, hy + 6, 3, 1, '#1a1030');                      // вм'ятини, щілина
+      for (let i = 0; i < 3; i++) { const a = t * 4 + i * 2.1; star(Math.round(hx + 7 + Math.cos(a) * 11), Math.round(hy - 6 + Math.sin(a) * 2), '#ffe27a', 0); } },
+    sherlock(pose, fr, t) { const B = gait(pose, fr).bob, hx = pose === 'inspect' ? 20 : 17, hy = (pose === 'inspect' ? 16 : 12) + B;   // абажур на голові, бульбашки з люльки
+      for (let i = 0; i < 12; i++) { const w = 12 + i * .9; P(hx + 7.5 - w / 2, hy - 10 + i, w, 1, i % 4 === 3 ? '#e8c060' : '#f4ecd0'); px(hx + 7.5 - w / 2, hy - 10 + i, '#ffffff'); px(hx + 7.5 + w / 2 - 1, hy - 10 + i, '#c8b890'); }
+      for (let i = 0; i < 7; i++) px(hx + 1 + i * 2, hy + 2, '#e8c060'); P(hx + 6, hy - 12, 3, 2, '#e8c060');
+      for (let i = 0; i < 3; i++) { const k = (t * .8 + i / 3) % 1; disc(hx + 17 + Math.round(Math.sin(k * 7) * 2), hy + 13 - Math.round(k * 10), 1, '#bff8ff'); } },
+    robinHood(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B;                                            // стріла крізь шапочку, клаптики лопнутої кульки
+      rod(hx - 6, hy - 2, hx + 18, hy - 2, '#c8a070', 1); P(hx + 18, hy - 3, 3, 3, '#dce0ec'); px(hx + 20, hy - 2, '#ffffff'); P(hx - 7, hy - 4, 2, 5, '#d02a2a'); P(hx - 9, hy - 3, 2, 3, '#f4f0e8');
+      [[8, 30], [30, 36], [36, 24]].forEach(([a, b], i) => P(a, b + B, 2, 2, ['#ff4fd8', '#3be8ff', '#ffe27a'][i])); },
+    munchausen(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B;                                           // сажа після польоту на гарматі піни, перука набакир, димок
+      [[hx + 4, hy + 7], [hx + 11, hy + 9], [hx + 8, hy + 5], [22, 34], [27, 40], [hx - 1, hy + 2]].forEach(([a, b]) => { P(a, b + (b < 28 ? 0 : B), 2, 2, '#2a2228'); px(a + 1, b + (b < 28 ? 0 : B), '#4a4048'); });
+      P(hx - 3, hy - 7, 12, 3, '#f4f2ee'); P(hx - 3, hy - 7, 12, 1, '#ffffff'); smoke(hx + 10, hy - 6, t); face(hx, hy, SK, { eyes: 'wide', mouth: 'grin', noCheek: 1, brow: '#5a3218' }); },
+    stNicholas(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 15 + B; shades(hx, hy);                            // окуляри-«сонце», гавайська гірлянда, коктейль
+      for (let i = 0; i < 9; i++) { disc(16 + i * 2, 27 + B + (i % 2) * 2, 1, ['#ff4fd8', '#ffe27a', '#3bff8a', '#ff7a2a'][i % 4]); px(16 + i * 2, 27 + B + (i % 2) * 2, '#ffffff'); } },
+    merlin(pose, fr, t) { recolor([['#f4f4f8', '#ff9ad8'], ['#cfd0dc', '#e05ab0']]); const B = gait(pose, fr).bob, hx = 17, hy = 15 + B;   // закляття пішло не так: борода рожева, у ній квіти
+      [[4, 14], [9, 20], [6, 25], [12, 16]].forEach(([a, b], i) => { disc(hx + a, hy + b, 1, i % 2 ? '#3be8ff' : '#ffe27a'); px(hx + a, hy + b, '#ffffff'); }); },
+    genie(pose, fr, t) { const b = Math.round(Math.sin(t * 3)), hx = 17, hy = 12 + b; partyHat(hx + 7, hy - 8, 12, '#3be8ff', '#ff4fd8'); shades(hx, hy); },   // ковпачок на тюрбані, окуляри
+    tinMan(pose, fr, t) { const B = gait(pose, fr).bob;                                                                     // обклеєний конфеті, серце світиться, кулька-серце на нитці
+      [[19, 33], [27, 38], [22, 41], [29, 31], [20, 18], [27, 21], [24, 50]].forEach(([a, b], i) => P(a, b + B, 2, 2, ['#ff4fd8', '#3be8ff', '#ffe27a', '#3bff8a'][i % 4]));
+      P(24, 33 + B, 5, 2, Math.floor(t * 4) % 2 ? '#ff8a9a' : '#e0203a'); line(33, 30 + B, 40, 14, '#e8e4f0'); disc(40, 10, 3, '#ff4fd8'); disc(43, 10, 3, '#ff4fd8'); P(38, 11, 8, 3, '#ff4fd8'); P(40, 14, 4, 1, '#ff4fd8'); px(42, 15, '#ff4fd8'); px(39, 8, '#ffffff'); },
+    silver(pose, fr, t) { const B = gait(pose, fr).bob, hx = 17, hy = 13 + B;                                               // знайшов «скарб» під танцполом: диско-трикутка в блискітках, папуга в окулярах
+      for (let i = 0; i < 8; i++) px(hx - 1 + i * 3, hy - 3 + (i % 3), (Math.floor(t * 6) + i) % 3 ? '#ffe27a' : '#ffffff'); P(29 + 2, 21 + B, 4, 2, '#1a1030'); px(30, 21 + B, '#1a1030');
+      P(hx + 7, hy + 11, 6, 1, '#ffd23a'); },
+    cheshire(pose, fr, t) { const sit = pose === 'sit', cx = sit ? 16 : 22, y0 = sit ? 12 : 10;                                 // у сукні Попелюшки: рожева спідничка на тулубі, діадема
+      skirt(cx, y0, y0 + 9, 10, 20, '#f4b4d4', { folds: 4, hem: 1, hemC: '#ffe2f0' }); const hx = sit ? 10 : 18, hy = sit ? 1 : 4; P(hx + 3, hy - 1, 8, 1, '#e8f4ff'); [4, 7, 10].forEach(a => px(hx + a, hy - 2, '#cfeaff')); },
+    kolobok(pose, fr, t) { recolor([['#f0b04a', '#7a4a2a'], ['#ffd27a', '#a8703a'], ['#d8922e', '#5a3418'], ['#b87420', '#3a2010'], ['#ffe8a8', '#c89060']]);   // у шоколаді з посипкою
+      [[18, 40], [27, 38], [22, 50], [30, 48], [16, 47], [25, 44]].forEach(([a, b], i) => P(a, b, 2, 1, ['#ff4fd8', '#3be8ff', '#ffe27a', '#3bff8a'][i % 4])); },
+    firebird(pose, fr, t) { recolor([['#ffa82a', '#c87a3a'], ['#ff6a1a', '#b85a3a'], ['#ffd04a', '#d8a860'], ['#ff8a1a', '#b8703a'], ['#ffc83a', '#d0a060']]);   // мокра після фонтану з пуншем: пір'я тьмяне, краплі
+      for (let i = 0; i < 4; i++) { const k = (t * 1.2 + i / 4) % 1; px(8 + i * 8, 40 + Math.round(k * 14), '#9af6ff'); } },
+    gorynych(pose, fr, t) { const HD = [[29, 11], [33, 21], [20, 4]]; HD.forEach(([hx0, hy0], i) => { const hy = hy0 + Math.round(Math.sin(t * 3 + i * 2));   // дві голови у ковпачках, третя спить
+      if (i < 2) partyHat(hx0 + 4, hy - 1, 9, i ? '#3be8ff' : '#ff4fd8'); else { P(hx0 + 3, hy + 1, 2, 2, '#2a6a3a'); P(hx0 + 2, hy + 2, 4, 1, '#1a3a1a'); px(hx0 + 10, hy - 4 + Math.round(Math.sin(t * 2) * 2), '#bff8ff'); px(hx0 + 12, hy - 7, '#bff8ff'); } }); },
+  };
   // ======================= розміри: [W, H, масштаб] =======================
   // масштаб .75 — HD-піксель, як у Nexi: у кімнаті герої того самого розміру, що й до кроку 16 (36×44 × 1)
   const SIZE = { kolobok: [48, 58, .6], cheshire: [32, 24, .82], pussBoots: [48, 58, .64], dwarf: [48, 58, .58], firebird: [48, 58, .7], gorynych: [48, 58, .8], genie: [48, 58, .8] };
@@ -730,8 +830,8 @@ NX.guestArt = (() => {
     c.putImageData(id, 0, 0);
   }
   function draw(id, pose, fr, t, cv, g = {}) {
-    const [Wd, Hd] = size(id); if (id === 'cheshire') { D.cheshire(pose, fr, t, g, cv); return cv; }   // свій контур — у drawCat
-    canvasFor(cv, Wd, Hd); (D[id] || D.dwarf)(pose, fr, t, g); outline(cv); return cv;
+    const [Wd, Hd] = size(id); if (id === 'cheshire') { D.cheshire(pose, fr, t, g, cv); if (g.look && LOOK.cheshire) { LOOK.cheshire(pose, fr, t, g); outline(cv); } return cv; }   // свій контур — у drawCat
+    canvasFor(cv, Wd, Hd); (D[id] || D.dwarf)(pose, fr, t, g); if (g.look && LOOK[id] && g.look !== 'swim') LOOK[id](pose, fr, t, g); outline(cv); return cv;
   }
   // ======================= кеш кадрів =======================
   // HD-герой — ~500–650 прямокутників на кадр (~0.25 мс), тож готові кадри бережемо: ключ — герой, поза, крок (лише хода),
@@ -746,7 +846,7 @@ NX.guestArt = (() => {
   function frame(id, pose, fr, t, g = {}) {
     if (id === 'cheshire') return draw(id, pose, fr, t, CHC, g);
     const A = ANIM[id] || ANIM._, live = A.p === 'all' || A.p.includes(pose), ph = live ? Math.floor(t * A.R) % A.N : 0, walk = pose === 'walk' || pose === 'run';
-    const key = id + '|' + pose + '|' + (walk ? fr % 4 : 0) + '|' + ph + '|' + (g.nose ? Math.round(g.nose) : 0) + '|' + (g.lostShoe ? 1 : 0);
+    const key = id + '|' + pose + '|' + (walk ? fr % 4 : 0) + '|' + ph + '|' + (g.nose ? Math.round(g.nose) : 0) + '|' + (g.lostShoe ? 1 : 0) + '|' + (g.look || '');
     let cv = CACHE.get(key); if (cv) { CACHE.delete(key); CACHE.set(key, cv); return cv; }
     cv = draw(id, pose, walk ? fr % 4 : 0, live ? ph / A.R : .5, document.createElement('canvas'), Object.assign({}, g, { nose: g.nose ? Math.round(g.nose) : 0 }));
     CACHE.set(key, cv); if (CACHE.size > CAP) CACHE.delete(CACHE.keys().next().value); return cv;
@@ -782,5 +882,7 @@ NX.guestArt = (() => {
     }
     outline(cv); return cv;
   }
-  return { draw, frame, size, drawProp, PROP };
+  /** Образ кожного героя після його сценки на справжній вечірці (party_show.js). */
+  const LOOKS = { babaYaga: 'swim', snowWhite: 'swim', cinderella: 'swim', pinocchio: 'burnt', redHood: 'purple', dwarf: 'bowl', whiteRabbit: 'knot', pussBoots: 'socks', quixote: 'bucket', sherlock: 'lamp', robinHood: 'arrow', munchausen: 'soot', stNicholas: 'hawaii', merlin: 'pink', genie: 'hat', tinMan: 'confetti', silver: 'disco', cheshire: 'dress', kolobok: 'choco', firebird: 'wet', gorynych: 'hats' };
+  return { draw, frame, size, drawProp, PROP, LOOKS };
 })();
