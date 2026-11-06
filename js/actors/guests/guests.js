@@ -61,8 +61,11 @@ NX.guests = (() => {
   // ============================ СЦЕНКИ ============================
   // кожна — функція (g) -> кроки між «зіскочив з порталу» і «пішов назад» (flyer: true — прилітає й відлітає сам)
   const dust = g => () => rnd() < .3 && NX.fx.emit('dust', g.x + g.dir * (14 + rnd() * 10), g.y - 2);
+  /** Nexi реагує (емоція, повертається до гостя), якщо вільний — крок 26 (власник: у кожного гостя — коротка взаємодія з Nexi). */
+  const nexiRe = (g, em, dur = 2) => () => { if (!nexiFree()) return; const n = NX.nexi; n.emote(em, dur); n.dir = g.x > n.x ? 1 : -1; };
+  const overNexi = () => { const n = NX.nexi; return [n.x, Math.max(n.y, NX.room.walkBounds().minY + 10)]; };
   const SCENES = {
-    babaYaga: { flyer: true, steps: g => [{ hop: front() }, { go: anyPt() }, { act: 'sweep', dur: 3.2, tick: dust(g) }, { say: 0 }, { act: 'sweep', dur: 2.2, tick: dust(g) }, { say: 1 },
+    babaYaga: { flyer: true, steps: g => [{ hop: front() }, { go: anyPt() }, { act: 'sweep', dur: 3.2, tick: dust(g) }, { say: 0 }, { go: nearNexi(g) }, { act: 'sweep', dur: 2.2, tick: dust(g), start: nexiRe(g, 'surprise', 2.4) }, { say: 1 },
       { fly: pad(), alt: 46, pose: 'ride', speed: 120 }] },
     snowWhite: { steps: g => { const hide = free(...(rnd() < .5 ? [NX.cfg.SOFA.x + 150, NX.cfg.SOFA.y + 70] : [520, 400])); g.comp = { id: 'dwarf', x: hide[0], y: hide[1], dir: -1, pose: 'stand', hidden: true };
       return [{ go: anyPt() }, { act: 'search', dur: 1.6 }, { say: 0 }, { go: anyPt() }, { act: 'search', dur: 1.2 }, { go: free(hide[0] + 30, hide[1] + 6) }, { face: hide[0] },
@@ -72,38 +75,38 @@ NX.guests = (() => {
         NX.cat.goTo(g.x + side * 18, g.y, () => { g.caught = true; NX.cat.grr(2.2); NX.cat.look(2.6, null, true); NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.6)); }, null, true); } },   // «цап!» і шипить
       { until: () => g.caught, max: 10, pose: 'sit' }, { say: 1 }, { do: () => { g.fade = .45; } }] , speed: 1.4, runBack: true },
     redHood: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'give', dur: 2.2, start: () => { NX.nexi.emote('love', 2); NX.fx.emit('heart', g.x + g.dir * 16, g.y - 40); } }, { say: 0 }, { act: 'cheer', dur: 1 }] },
-    whiteRabbit: { speed: 1.8, steps: g => [{ run: anyPt() }, { act: 'watch', dur: 1.6 }, { say: 0 }, { run: anyPt() }, { act: 'watch', dur: .8 }], runBack: true },
-    kolobok: { speed: 1.4, steps: g => [{ go: anyPt(), pose: 'roll' }, { say: 0 }, { act: 'roll', dur: 1, tick: () => rnd() < .12 && NX.fx.emit('note', g.x, g.y - 22) }, { go: anyPt(), pose: 'roll' },
+    whiteRabbit: { speed: 1.8, steps: g => [{ run: anyPt() }, { act: 'watch', dur: 1.6 }, { say: 0 }, { run: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'watch', dur: 1.4, start: nexiRe(g, 'surprise', 2.2) }, { run: anyPt() }, { act: 'watch', dur: .6 }], runBack: true },   // показує годинник Nexi
+    kolobok: { speed: 1.4, steps: g => [{ go: nearNexi(g), pose: 'roll' }, { act: 'roll', dur: .8, start: nexiRe(g, 'happy', 2) }, { go: anyPt(), pose: 'roll' }, { say: 0 }, { act: 'roll', dur: 1, tick: () => rnd() < .12 && NX.fx.emit('note', g.x, g.y - 22) }, { go: anyPt(), pose: 'roll' },
       { do: () => { if (!NX.cat.free()) return; NX.cat.look(8); NX.cat.goTo(g.x, g.y, () => { NX.cat.look(2.4, null, true); NX.cat.set('pounce', .5, () => NX.cat.set('meow', 1.4)); }, null, true); } }, { say: 1 }, { wait: .5 }], runBack: true, rollBack: true },
     pinocchio: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { say: 0 }, { act: 'stand', dur: 2.6, start: () => NX.nexi.emote('surprise', 2.5), tick: dt => { g.nose = Math.min(9, (g.nose || 0) + dt * 4); } },
       { act: 'cheer', dur: 1, end: () => { g.nose = 0; } }] },
-    pussBoots: { steps: g => [{ go: nearCat() }, { face: () => NX.cat.x }, { act: 'bow', dur: 2.2, start: () => { if (NX.cat.free()) { NX.cat.purr(3); NX.cat.look(4, () => (NX.cat.x + g.x) / 2); } } }, { say: 0 }, { act: 'stand', dur: .6 }] },
-    quixote: { steps: g => [{ go: anyPt() }, { face: 1000 }, { say: 0 }, { run: free(1000 + rnd() * 80, 372), pose: 'charge' }, { act: 'fall', dur: 1.8, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('spark', g.x + g.dir * 16, g.y - 30); } },
+    pussBoots: { steps: g => [{ go: nearCat() }, { face: () => NX.cat.x }, { act: 'bow', dur: 2.2, start: () => { if (NX.cat.free()) { NX.cat.purr(3); NX.cat.look(4, () => (NX.cat.x + g.x) / 2); } } }, { say: 0 }, { go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'bow', dur: 1.6, start: nexiRe(g, 'love', 2) }, { act: 'stand', dur: .4 }] },   // і Nexi кланяється
+    quixote: { steps: g => [{ go: anyPt() }, { face: 1000 }, { say: 0 }, { run: free(1000 + rnd() * 80, 372), pose: 'charge' }, { act: 'fall', dur: 1.8, start: () => { for (let i = 0; i < 8; i++) NX.fx.emit('spark', g.x + g.dir * 16, g.y - 30); nexiRe(g, 'surprise', 2.4)(); } },
       { say: 1 }, { act: 'stand', dur: .6 }] },
-    sherlock: { steps: g => [{ go: nearCat() }, { act: 'inspect', dur: 2.4, tick: dust(g) }, { say: 0 }, { go: anyPt() }, { act: 'inspect', dur: 1.6 }, { say: 1 }, { act: 'stand', dur: .6 }] },
+    sherlock: { steps: g => [{ go: nearCat() }, { act: 'inspect', dur: 2.4, tick: dust(g) }, { say: 0 }, { go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'inspect', dur: 2, start: nexiRe(g, 'surprise', 2.4) }, { say: 1 }, { act: 'stand', dur: .6 }] },   // оглядає Nexi з лупою
     robinHood: { steps: g => { const b = NX.objects.ball; return [{ go: free(b.x + (b.x > 774 ? -110 : 110), b.y) }, { face: () => b.x }, { act: 'aim', dur: 1.4 },
       { do: () => { S.fx.push({ type: 'arrow', x0: g.x + g.dir * 22, y0: g.y - 38, x1: b.x, y1: b.y - 6, t0: NX.time, dur: .35, then: () => { b.kick(g.dir * 260, (rnd() - .5) * 90); for (let i = 0; i < 6; i++) NX.fx.emit('spark', b.x, b.y - 6); } }); } },
       { act: 'aim', dur: .6 }, { say: 0 }, { act: 'cheer', dur: 1 }]; } },
-    munchausen: { flyer: true, steps: g => { const B = NX.room.walkBounds(), far = free(250 + rnd() * 300, B.minY + 70); return [{ fly: far, alt: 70, pose: 'ride', speed: 170, smoke: 1 }, { say: 0 }, { act: 'ride', dur: 1.2, alt: 70 },
+    munchausen: { flyer: true, steps: g => { const B = NX.room.walkBounds(), far = free(250 + rnd() * 300, B.minY + 70); return [{ fly: far, alt: 70, pose: 'ride', speed: 170, smoke: 1 }, { say: 0 }, { fly: overNexi(), alt: 95, pose: 'ride', speed: 170, smoke: 1 }, { act: 'ride', dur: 1, alt: 95, start: nexiRe(g, 'surprise', 2) },
       { fly: pad(), alt: 60, pose: 'ride', speed: 170, smoke: 1 }]; } },
     firebird: { flyer: true, steps: g => { const pts = [anyPt(), anyPt(), anyPt()]; return [{ fly: pts[0], alt: 95, pose: 'fly', speed: 150, trail: 1 }, { fly: pts[1], alt: 70, pose: 'fly', speed: 150, trail: 1 },
-      { do: () => S.props.push({ type: 'feather', x: pts[1][0], y: pts[1][1], until: NX.time + 30 }) }, { say: 0 }, { fly: pts[2], alt: 110, pose: 'fly', speed: 150, trail: 1 }, { fly: pad(), alt: 60, pose: 'fly', speed: 150, trail: 1 }]; } },
+      { do: () => S.props.push({ type: 'feather', x: pts[1][0], y: pts[1][1], until: NX.time + 30 }) }, { say: 0 }, { fly: overNexi(), alt: 90, pose: 'fly', speed: 150, trail: 1 }, { act: 'fly', dur: 1.4, alt: 90, start: nexiRe(g, 'love', 2.2), tick: () => rnd() < .4 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 60, { col: '#ffd27a', vy: 40 }) }, { fly: pts[2], alt: 110, pose: 'fly', speed: 150, trail: 1 }, { fly: pad(), alt: 60, pose: 'fly', speed: 150, trail: 1 }]; } },
     stNicholas: { steps: g => { const h = NX.objects.rug.home, gp = free(h[0] - 70 + rnd() * 140, h[1] + 20); return [{ go: free(gp[0] + 26, gp[1]) }, { face: gp[0] },
       { act: 'give', dur: 1.6, start: () => S.props.push({ type: 'gift', x: gp[0], y: gp[1], until: NX.time + 40 }) }, { say: 0 }, { act: 'cheer', dur: 1, start: () => NX.nexi.emote('love', 2) }]; } },
-    cinderella: { steps: g => [{ go: free(NX.objects.rug.home[0] + (rnd() - .5) * 200, NX.objects.rug.home[1] - 10) }, { act: 'twirl', dur: 3, tick: () => rnd() < .2 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#ffffff' }) },
+    cinderella: { steps: g => [{ go: free(NX.objects.rug.home[0] + (rnd() - .5) * 200, NX.objects.rug.home[1] - 10) }, { act: 'twirl', dur: 3, start: nexiRe(g, 'love', 3), tick: () => rnd() < .2 && NX.fx.emit('spark', g.x + (rnd() - .5) * 30, g.y - 20 - rnd() * 30, { col: '#ffffff' }) },
       { say: 0 }, { do: () => { g.g.lostShoe = true; S.props.push({ type: 'shoe', x: g.x + g.dir * 8, y: g.y + 2, until: NX.time + 35 }); } }], runBack: true },
     merlin: { steps: g => [{ go: nearNexi(g) }, { face: () => NX.nexi.x }, { act: 'cast', dur: 2.6, start: () => NX.nexi.emote('surprise', 2.5),
       tick: () => { const n = NX.nexi; if (rnd() < .35) NX.fx.emit('spark', n.x + (rnd() - .5) * 50, n.y - 70 - rnd() * 30, { col: rnd() < .5 ? '#9af6ff' : '#e2c4ff', vy: 20 }); if (rnd() < .2) NX.fx.emit('snow', n.x + (rnd() - .5) * 60, n.y - 90); } }, { say: 0 }, { act: 'stand', dur: .8 }] },
     genie: { flyer: true, steps: g => { const sp = anyPt(); return [{ fly: sp, alt: 8, pose: 'float', speed: 120 }, { do: () => { g.lamp = { type: 'lamp', x: sp[0] + 4, y: sp[1] + 1, until: Infinity }; S.props.push(g.lamp); } },
-      { say: 0 }, { act: 'cast', dur: 1.8, alt: 8, start: () => NX.city && NX.city.fireworks && NX.city.fireworks(9) }, { say: 1 }, { act: 'float', dur: 1.4, alt: 8 },
+      { say: 0 }, { act: 'cast', dur: 1.8, alt: 8, start: () => { NX.city && NX.city.fireworks && NX.city.fireworks(9); nexiRe(g, 'love', 2.5)(); } }, { say: 1 }, { act: 'float', dur: 1.4, alt: 8 },
       { do: () => { if (g.lamp) g.lamp.until = NX.time; } }, { fly: pad(), alt: 20, pose: 'float', speed: 120 }]; } },
     tinMan: { steps: g => [{ go: nearNexi(g) }, { act: 'rust', dur: 1.2 }, { say: 0 }, { do: () => { if (nexiFree()) { const n = NX.nexi; NX.nexi.walkTo(g.x + (n.x > g.x ? 30 : -30), g.y); g.helped = true; } } },
       { until: () => !g.helped || (!NX.nexi.cur && !NX.nexi.queue.length), max: 7, pose: 'rust' },
       { act: 'rust', dur: 1.2, start: () => { for (let i = 0; i < 6; i++) NX.fx.emit('bubble', g.x - g.dir * 6, g.y - 34 + i * 3, { col: '#ffd27a' }); if (g.helped) NX.nexi.emote('happy', 2); } },
       { act: 'cheer', dur: 1.6 }, { say: 1 }] },
-    silver: { steps: g => [{ go: anyPt() }, { act: 'dig', dur: 3, tick: dust(g) }, { do: () => { g.carry = { type: 'chest', x: g.x + g.dir * 18, y: g.y + 1, until: Infinity }; S.props.push(g.carry); } },
+    silver: { steps: g => [{ go: anyPt() }, { act: 'dig', dur: 3, tick: dust(g) }, { do: () => { nexiRe(g, 'surprise', 2.2)(); g.carry = { type: 'chest', x: g.x + g.dir * 18, y: g.y + 1, until: Infinity }; S.props.push(g.carry); } },
       { say: 0 }, { act: 'cheer', dur: 1.2 }, { say: 'p' }, { do: () => { if (g.carry) g.carry.follow = g; } }] },
-    gorynych: { steps: g => [{ go: anyPt() }, { act: 'stand', dur: 1 }, { act: 'sneeze', dur: 1.3, start: () => { for (let i = 0; i < 10; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); } }, { say: 0 },
+    gorynych: { steps: g => [{ go: anyPt() }, { act: 'stand', dur: 1 }, { act: 'sneeze', dur: 1.3, start: () => { for (let i = 0; i < 10; i++) NX.fx.emit('fire', g.x + g.dir * 34, g.y - 50); nexiRe(g, 'surprise', 2)(); } }, { say: 0 },
       { do: () => { const c = NX.cat; if (Math.abs(c.x - g.x) < 260 && c.alt === 0 && c.free()) { c.grr(1.6); c.look(3.6); c.goTo(...free(c.x + (c.x > g.x ? 160 : -160), c.y + 20), () => c.set('sit', 2), null, true); } } }, { act: 'stand', dur: .8 }] },   // сердито тікає
   };
 

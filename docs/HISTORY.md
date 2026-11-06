@@ -2305,3 +2305,14 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 - **Тексти:** `party.sound` (uk / en / pl / nl).
 - **Перевірки:** uk комп'ютер / телефон — консоль чиста, fps 60; тап по «♪ ЗВУК» на телефоні (Chromium з дозволом autoplay) —
   playing / enabled true; растр з прапорцями.
+
+## Чат «Персонажі» 06.11 — крок 26: у кожній сценці в кімнаті — коротка взаємодія з Nexi
+
+- `guests.js`: `nexiRe(g, em, dur)` — якщо `nexiFree()`: `NX.nexi.emote(em, dur)` і `dir` до гостя; `overNexi()` — точка над
+  Nexi для летунів. Зміни сценок: whiteRabbit — `run: nearNexi`, `watch` 1.4 с (surprise); kolobok — спершу `go: nearNexi`
+  (roll), `roll` .8 с (happy); pussBoots — після Рудика `bow` перед Nexi 1.6 с (love); quixote — surprise при `fall`; sherlock —
+  друга лупа над Nexi 2 с (surprise); munchausen — `fly: overNexi` alt 95, `ride` 1 с (surprise); firebird — `fly: overNexi` alt
+  90, `fly` 1.4 с із золотими іскрами вниз (love); cinderella — love на старті `twirl`; babaYaga — друге підмітання біля Nexi
+  (surprise); silver — surprise при скрині; gorynych — surprise при чханні; genie — love при салюті.
+- Перевірки: `tools/guests/sheet.js ph:` для 12 змінених — без помилок; `roam.js 40` — чисто. На знімках Nexi здебільшого
+  зайнятий задачами, тож гості йшли до запасної точки біля дока — так і задумано (без черги на Nexi).
