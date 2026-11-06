@@ -110,7 +110,7 @@ NX.party = (() => {
   /** Гість: тінь, відбиток у підлозі (перевернутий, тане), спрайт, бабл. */
   function drawGuest(c, g, t) {
     const [GW, GH, K] = A().size(g.id), s = sc(g.z) * K, w = GW * s, h = GH * s, [sx, sy] = gxy(g), alt = g.alt * s, top = sy - alt - h, tq = Math.floor(t * 12) / 12;
-    const img = A().frame(g.id, g.pose, g.fr, tq, g.g); c.imageSmoothingEnabled = false;
+    const img = A().frame(g.id, g.pose, g.fr, tq, g.g); c.imageSmoothingEnabled = false; drawPool(c, g);
     c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.ellipse(sx, sy + 1, w * .3 * Math.max(.3, 1 - alt / 120), 3 * PZ.s(g.z), 0, 0, 7); c.fill();
     c.save(); c.translate(sx, sy + alt); c.scale(g.dir, -1); c.globalAlpha = .26; c.drawImage(img, -w / 2, -h, w, h); c.restore();       // відбиток у глянці
     c.save(); c.translate(sx, sy - alt); c.rotate(g.rot || 0); c.scale(g.dir * (g.sx || 1), 1); c.drawImage(img, -w / 2, -h, w, h); c.restore();
@@ -132,6 +132,30 @@ NX.party = (() => {
     c.fillStyle = '#0a0626ee'; c.beginPath(); c.moveTo(x - 4, by + ph); c.lineTo(x + 4, by + ph); c.lineTo(x, by + ph + 5); c.fill();
     c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, bx + pw / 2, by + ph / 2 + .5); c.restore();
   }
+  // ============================ СТИЛЬ (06.11: «більше графіки»): VJ-ЕКРАН, LED-МАТРИЦЯ, ГОБО, СВІТЛОВІ КАЛЮЖІ ============================
+  const VJ = { cv: document.createElement('canvas'), mode: 0, t0: 0, bars: new Float32Array(32) };
+  /** VJ-екран за пультом: 4 режими по 8 с — еквалайзер, хвилі-плазма, рядок «NEXI» з шевронами, кільця в такт; скан-лінії, вінʼєтка. */
+  function drawScreen(c, t) {
+    const Sc = G().screen, W = 190, H = 63, cv = VJ.cv; if (cv.width !== W) { cv.width = W; cv.height = H; } const x = cv.getContext('2d'), b = beat(), pl = pulse();
+    if (t - VJ.t0 > 8) { VJ.t0 = t; VJ.mode = (VJ.mode + 1) % 4; } x.fillStyle = '#05030f'; x.fillRect(0, 0, W, H);
+    if (VJ.mode === 0) { for (let i = 0; i < 32; i++) { const tgt = (Math.sin(b * 3 + i * .7) * .5 + .5) * (i % 4 ? .6 : 1) * pl + .1; VJ.bars[i] += (tgt - VJ.bars[i]) * .3; const h = VJ.bars[i] * (H - 6), bx = 3 + i * (W - 6) / 32; for (let y = 0; y < h; y += 3) { x.fillStyle = y > h * .75 ? '#ff3b5c' : y > h * .45 ? '#ffe27a' : '#3bff8a'; x.fillRect(bx, H - 3 - y, (W - 6) / 32 - 1.5, 2); } } }
+    else if (VJ.mode === 1) { for (let k = 0; k < 4; k++) { x.strokeStyle = ['#ff4fd8', '#3be8ff', '#b48aff', '#ffe27a'][k]; x.lineWidth = 1.5; x.beginPath(); for (let px = 0; px <= W; px += 3) { const y = H / 2 + Math.sin(px * .05 + t * (1.5 + k * .4) + k) * (10 + k * 4) * (.6 + pl * .4) + Math.sin(px * .11 - t * 2) * 4; px ? x.lineTo(px, y) : x.moveTo(px, y); } x.stroke(); } }
+    else if (VJ.mode === 2) { const txt = 'NEXI ★ ' + NX.t('party.sign') + ' ★ '; x.font = '16px "Press Start 2P", monospace'; const tw = x.measureText(txt).width, off = (t * 60) % tw; x.fillStyle = '#ff4fd8'; x.textBaseline = 'middle'; for (let k = -1; k < 3; k++) x.fillText(txt, k * tw - off, H / 2); x.fillStyle = '#3be8ff'; for (let i = 0; i < 12; i++) { const cx = ((i * 20 + t * 40) % (W + 20)) - 10, yy = (i % 2 ? 8 : H - 8); x.fillRect(cx, yy - 1, 6, 2); x.fillRect(cx + 4, yy - 3, 2, 6); } }
+    else { for (let k = 0; k < 5; k++) { const r = ((b * .5 + k * .2) % 1) * 70; x.strokeStyle = NEON[(k + Math.floor(b / 4)) % 6]; x.lineWidth = 2; x.globalAlpha = 1 - r / 70; x.beginPath(); x.ellipse(W / 2, H / 2, r * 1.6, r * .6, 0, 0, 7); x.stroke(); } x.globalAlpha = 1; x.fillStyle = '#ffffff'; x.fillRect(W / 2 - 1, H / 2 - 1, 2, 2); }
+    x.fillStyle = 'rgba(0,0,0,.35)'; for (let y = 0; y < H; y += 2) x.fillRect(0, y, W, 1); const vg = x.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, W * .7); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.6)'); x.fillStyle = vg; x.fillRect(0, 0, W, H);
+    const [ax, ay] = pt(Sc.x0, Sc.y0, Sc.z), [bx, by] = pt(Sc.x1, Sc.y1, Sc.z); c.imageSmoothingEnabled = false; c.drawImage(cv, ax, ay, bx - ax, by - ay); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .12 + pl * .08; c.fillStyle = NEON[VJ.mode]; c.fillRect(ax - 6, ay - 6, bx - ax + 12, by - ay + 12); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+  }
+  /** LED-матриця на передній панелі пульта: 24×4 точок, біжучі хвилі в такт. */
+  function drawLed(c, t) {
+    const Bt = G().booth, b = beat(), cols = 24, rows = 4, s = PZ.s(Bt.z0); for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const on = Math.sin(i * .6 - b * 3 + j * .9) > .3, [sx, sy] = pt(Bt.x0 + 10 + (i + .5) * (Bt.x1 - Bt.x0 - 20) / cols, Bt.led.y0 + (j + .5) * (Bt.led.y1 - Bt.led.y0) / rows, Bt.z0 - .5); R(c, sx - 1.5 * s, sy - 1.5 * s, 3 * s, 3 * s, on ? NEON[(i + j + Math.floor(b / 2)) % 6] : '#1a1446'); }
+  }
+  /** Гобо-прожектори на рейці: віяло з 6 тонких променів, що обертаються, і візерунок плям на підлозі. */
+  function drawGobos(c, t) {
+    const g = G(); c.save(); c.globalCompositeOperation = 'lighter'; g.gobos.forEach((x, k) => { const src = pt(x, g.CEIL + 16, 150), col = ['#3be8ff', '#ff4fd8', '#ffe27a'][k], a0 = t * (.6 + k * .2) * (k % 2 ? -1 : 1);
+      for (let i = 0; i < 6; i++) { const a = a0 + i * Math.PI / 3, fx = x + Math.cos(a) * 170, fz = 60 + Math.sin(a) * 110, [px, py] = fp(fx, fz); c.globalAlpha = .16; c.strokeStyle = col; c.lineWidth = 1.5; c.beginPath(); c.moveTo(src[0], src[1]); c.lineTo(px, py); c.stroke(); c.globalAlpha = .22; c.fillStyle = col; c.beginPath(); c.ellipse(px, py, 12 * PZ.s(fz), 4 * PZ.s(fz), 0, 0, 7); c.fill(); } }); c.restore();
+  }
+  /** Світлова «калюжа» під гостем — колір від найближчого прожектора, пульсує в такт. */
+  function drawPool(c, g) { const [sx, sy] = gxy(g), s = sc(g.z), col = NEON[(Math.floor((g.x - 400) / 180) + Math.floor(beat() / 8) + 6) % 6]; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .14 + pulse() * .1; c.fillStyle = col; c.beginPath(); c.ellipse(sx, sy + 1, 26 * s, 8 * s, 0, 0, 7); c.fill(); c.restore(); }
   /** Режисер вечірки (кроки 4–6): пари танцюристів, «ура» від Nexi, Рудик на колонці, події раз на ~35 с. */
   function director(t) {
     const idle = S.list.filter(g => !g.trip && !g.mv && !g.fly && g.id !== 'kolobok' && g.id !== 'cheshire' && !(g.pairT && t < g.pairT) && t > g.spT);
@@ -187,18 +211,27 @@ NX.party = (() => {
         x.fillStyle = got ? '#1e1650' : '#0c0a22'; x.fillRect(cx - cw / 2 + 2, cy, cw - 4, ch - 3); x.strokeStyle = got ? '#3be8ff' : '#2a2260'; x.lineWidth = 1; x.strokeRect(cx - cw / 2 + 2.5, cy + .5, cw - 5, ch - 4);
         x.save(); x.beginPath(); x.rect(cx - cw / 2 + 3, cy + 1, cw - 6, ch - 5); x.clip(); if (got) x.drawImage(img, cx - sw / 2, cy + ch - 4 - sh, sw, sh); else { x.globalAlpha = .85; x.filter = 'brightness(0)'; x.drawImage(img, cx - sw / 2, cy + ch - 4 - sh, sw, sh); } x.restore(); }); }
     const [px0, py0] = pt(Po.x0 + 4, Po.y0 + 4, G().ZB - 4.5), [px1, py1] = pt(Po.x1 - 4, Po.y1 - 4, G().ZB - 4.5); c.imageSmoothingEnabled = true; c.drawImage(POSTER, px0, py0, px1 - px0, py1 - py0); c.imageSmoothingEnabled = false;
+    c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .08 + pulse() * .06; c.fillStyle = '#c86aff'; c.fillRect(px0 - 4, py0 - 4, px1 - px0 + 8, py1 - py0 + 8); c.globalAlpha = .25; c.fillStyle = '#000'; c.globalCompositeOperation = 'source-over'; for (let y = py0; y < py1; y += 2) c.fillRect(px0, y, px1 - px0, .6); c.restore();   // голо-світіння й скан-лінії
   }
   /** Велика картка колекції (тап по афіші): спіймані — портрет і ім'я, не спіймані — темний силует БЕЗ підпису (власник, 06.11:
    *  «герої, яких не відкрито, не мають бути підписані — тільки темний силует; відкривати їх можна лише у великій кімнаті»). */
   function drawPosterCard(c, vw, vh) {
-    const ids = NX.guests.IDS, col = NX.guests.collection(), cols = vw > vh ? 5 : 4, rows = Math.ceil(ids.length / cols), cw = Math.min(150, (vw - 40) / cols), ch = Math.min(120, (vh - 120) / rows), W = cw * cols + 24, H = ch * rows + 70, x0 = (vw - W) / 2, y0 = (vh - H) / 2;
-    c.fillStyle = 'rgba(3,2,12,.78)'; c.fillRect(0, 0, vw, vh); R(c, x0, y0, W, H, '#0a0626f2'); c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(x0 + .5, y0 + .5, W - 1, H - 1);
-    P.text(c, `${NX.t('party.poster')}  ${col.length}/${ids.length}`, vw / 2, y0 + 22, '#ff9af0', 10, 'center'); c.imageSmoothingEnabled = false;
-    ids.forEach((id, i) => { const cx = x0 + 12 + (i % cols) * cw + cw / 2, cy = y0 + 36 + Math.floor(i / cols) * ch, got = col.includes(id), img = A().frame(id, 'stand', 0, .5, {}), [GW, GH, K] = A().size(id), sc0 = Math.min((ch - 26) / (GH * K), (cw - 16) / (GW * K)), sw = GW * K * sc0, sh = GH * K * sc0;
-      R(c, cx - cw / 2 + 4, cy, cw - 8, ch - 6, got ? '#161042' : '#0c0a22'); c.strokeStyle = got ? '#3be8ff' : '#241c56'; c.strokeRect(cx - cw / 2 + 4.5, cy + .5, cw - 9, ch - 7);
-      c.save(); if (!got) { c.filter = 'brightness(0)'; c.globalAlpha = .85; } c.drawImage(img, cx - sw / 2, cy + ch - 24 - sh, sw, sh); c.restore();
-      if (got) { c.font = '6px "Press Start 2P", monospace'; let nm = NX.t(`guests.${id}.n`) || id, fs = 6; if (c.measureText(nm).width > cw - 12) fs = 5; P.text(c, nm, cx, cy + ch - 11, '#ffe27a', fs, 'center'); } else P.text(c, '?', cx, cy + ch - 11, '#3a3260', 7, 'center'); });
-    P.text(c, NX.t('party.hint'), vw / 2, y0 + H - 10, '#8a8aa8', 6, 'center');
+    const t = NX.time, ids = NX.guests.IDS, col = NX.guests.collection(), cols = vw > vh ? 5 : 4, rows = Math.ceil(ids.length / cols), cw = Math.min(150, (vw - 40) / cols), ch = Math.min(124, (vh - 140) / rows), W = cw * cols + 28, H = ch * rows + 96, k0 = Math.min(1, (t - (S.posterT || 0)) / .25), x0 = (vw - W) / 2, y0 = (vh - H) / 2, pl = pulse();
+    c.save(); c.fillStyle = 'rgba(3,2,12,.8)'; c.fillRect(0, 0, vw, vh); c.translate(vw / 2, vh / 2); c.scale(.92 + .08 * k0, .92 + .08 * k0); c.translate(-vw / 2, -vh / 2); c.globalAlpha = k0;
+    R(c, x0, y0, W, H, '#07051af0'); c.strokeStyle = '#3be8ff'; c.globalAlpha = k0 * .18; for (let y = y0; y < y0 + H; y += 14) R(c, x0, y, W, 1, '#3be8ff'); for (let x = x0; x < x0 + W; x += 14) R(c, x, y0, 1, H, '#3be8ff'); c.globalAlpha = k0;   // голо-сітка
+    c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(x0 + .5, y0 + .5, W - 1, H - 1); c.lineWidth = 3; c.strokeStyle = '#3be8ff'; for (const [cx, cy, dx, dy] of [[x0, y0, 1, 1], [x0 + W, y0, -1, 1], [x0, y0 + H, 1, -1], [x0 + W, y0 + H, -1, -1]]) { c.beginPath(); c.moveTo(cx, cy + dy * 18); c.lineTo(cx, cy); c.lineTo(cx + dx * 18, cy); c.stroke(); }
+    const ttl = NX.t('party.poster'); P.glow(c, vw / 2, y0 + 26, 120, '#ff4fd8', .25); for (const [dx, dy, cc] of [[-1, 0, '#8a1a7a'], [1, 0, '#8a1a7a'], [0, -1, '#8a1a7a'], [0, 1, '#8a1a7a'], [0, 0, '#fff0fb']]) P.text(c, ttl, vw / 2 + dx, y0 + 30 + dy, cc, 11, 'center');
+    c.imageSmoothingEnabled = false;
+    ids.forEach((id, i) => { const cx = x0 + 14 + (i % cols) * cw + cw / 2, cy = y0 + 48 + Math.floor(i / cols) * ch, got = col.includes(id), img = A().frame(id, 'stand', 0, .5, {}), [GW, GH, K] = A().size(id), sc0 = Math.min((ch - 30) / (GH * K), (cw - 18) / (GW * K)), sw = GW * K * sc0, sh = GH * K * sc0, bw = cw - 8, bh = ch - 6;
+      const g = c.createLinearGradient(0, cy, 0, cy + bh); g.addColorStop(0, got ? '#1c1650' : '#0b0920'); g.addColorStop(1, got ? '#0e0a34' : '#07051a'); c.fillStyle = g; c.fillRect(cx - bw / 2, cy, bw, bh);
+      if (got) { P.glow(c, cx, cy + bh - 24 - sh / 2, sw * .9, NEON[i % 6], .35 + pl * .15); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.strokeRect(cx - bw / 2 + .5, cy + .5, bw - 1, bh - 1); c.lineWidth = 2; for (const [qx, qy, dx, dy] of [[cx - bw / 2, cy, 1, 1], [cx + bw / 2, cy, -1, 1], [cx - bw / 2, cy + bh, 1, -1], [cx + bw / 2, cy + bh, -1, -1]]) { c.beginPath(); c.moveTo(qx, qy + dy * 6); c.lineTo(qx, qy); c.lineTo(qx + dx * 6, qy); c.stroke(); }
+        c.drawImage(img, cx - sw / 2, cy + bh - 24 - sh, sw, sh); const spk = (t * 2 + i) % 6.283; R(c, cx + Math.cos(spk) * sw * .5 - 1, cy + bh - 24 - sh / 2 + Math.sin(spk * 1.7) * sh * .4 - 1, 2, 2, '#ffffff');
+        c.font = '6px "Press Start 2P", monospace'; const nm = NX.t(`guests.${id}.n`) || id, fs = c.measureText(nm).width > bw - 10 ? 5 : 6, nw = Math.min(bw - 4, c.measureText(nm).width * fs / 6 + 10); R(c, cx - nw / 2, cy + bh - 18, nw, 13, '#0a0626'); P.text(c, nm, cx, cy + bh - 8, '#ffe27a', fs, 'center'); }
+      else { c.strokeStyle = '#2a2260'; c.lineWidth = 1; c.strokeRect(cx - bw / 2 + .5, cy + .5, bw - 1, bh - 1); c.save(); c.filter = 'brightness(0)'; c.globalAlpha = k0 * (.8 + Math.sin(t * 7 + i) * .08); c.drawImage(img, cx - sw / 2, cy + bh - 24 - sh, sw, sh); c.restore();
+        c.globalAlpha = k0 * .25; for (let y = cy + 2; y < cy + bh - 2; y += 3) if (Math.sin(y * .7 + t * 9 + i) > .6) R(c, cx - bw / 2 + 2, y, bw - 4, 1, '#3a3270'); c.globalAlpha = k0;   // «перешкоди» над невідкритим
+        P.text(c, '?', cx, cy + bh - 8, '#4a4280', 8, 'center'); } });
+    const pw = W - 60, px0 = x0 + 30, py = y0 + H - 30; R(c, px0, py, pw, 8, '#0f0c2e'); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.strokeRect(px0 + .5, py + .5, pw - 1, 7); const prog = col.length / ids.length; if (prog) { const gg = c.createLinearGradient(px0, 0, px0 + pw * prog, 0); gg.addColorStop(0, '#3be8ff'); gg.addColorStop(1, '#ff4fd8'); c.fillStyle = gg; c.fillRect(px0 + 1, py + 1, pw * prog - 2, 6); }   // шкала колекції
+    P.text(c, `${col.length}/${ids.length}`, x0 + W - 28, py + 7, '#ffe27a', 7, 'right'); P.text(c, NX.t('party.hint'), vw / 2, y0 + H - 11, '#8a8aa8', 6, 'center'); c.restore();
   }
   /** Бармен за стійкою: протирає келихи; гість підійшов — шейкер, потім наливає й віддає келих. Після нього поверх — грані стійки з растра. */
   function drawBartender(c, t) {
@@ -232,7 +265,8 @@ NX.party = (() => {
     const D = G().dance, b = beat(), bi = Math.floor(b), pl = pulse(), cw = (D.x1 - D.x0) / D.cols, rd = (D.z1 - D.z0) / D.rows;
     for (let j = 0; j < D.rows; j++) for (let i = 0; i < D.cols; i++) { const x0 = D.x0 + i * cw, x1 = x0 + cw, z1 = D.z1 - j * rd, z0 = z1 - rd, on = (i + j + bi) % 3 === 0, col = NEON[(i * 3 + j * 5 + Math.floor(b / 4)) % NEON.length];
       poly(c, [fp(x0 + 1.5, z1 - 1.5), fp(x1 - 1.5, z1 - 1.5), fp(x1 - 1.5, z0 + 1.5), fp(x0 + 1.5, z0 + 1.5)]); c.globalAlpha = on ? .5 + .4 * pl : .16; c.fillStyle = col; c.fill(); }
-    c.globalAlpha = 1; poly(c, [fp(D.x0 - 4, D.z1 + 4), fp(D.x1 + 4, D.z1 + 4), fp(D.x1 + 4, D.z0 - 4), fp(D.x0 - 4, D.z0 - 4)]); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.stroke();
+    c.globalAlpha = 1; c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .5 + pl * .4; c.strokeStyle = '#3be8ff'; c.lineWidth = 1.5; for (let i = 0; i <= D.cols; i++) { const x = D.x0 + i * cw; c.beginPath(); c.moveTo(...fp(x, D.z1)); c.lineTo(...fp(x, D.z0)); c.stroke(); } for (let j = 0; j <= D.rows; j++) { const z = D.z1 - j * rd; c.beginPath(); c.moveTo(...fp(D.x0, z)); c.lineTo(...fp(D.x1, z)); c.stroke(); } c.restore();   // LED-сітка танцполу
+    poly(c, [fp(D.x0 - 4, D.z1 + 4), fp(D.x1 + 4, D.z1 + 4), fp(D.x1 + 4, D.z0 - 4), fp(D.x0 - 4, D.z0 - 4)]); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.stroke();
   }
   function drawLights(c, t) {
     const g = G(), pl = pulse(), b = beat(), bi = Math.floor(b);
@@ -270,15 +304,19 @@ NX.party = (() => {
       c.globalAlpha = f.t === 'conf' ? .9 : 1 - f.age / f.ttl; if (f.t === 'note') P.text(c, f.z ? (f.age * 3 % 2 < 1 ? 'z' : 'Z') : f.age * 4 % 2 < 1 ? '♪' : '♫', f.x, f.y, f.col, 8); else R(c, f.x, f.y, f.t === 'conf' ? 3 : 2, 2, f.col); });
     c.globalAlpha = 1;
   }
+  /** Голо-плашка інтерфейсу: темне скло, тонка рамка, кутові дужки, світіння. */
+  function chip(c, x, y, w, h, col) { c.save(); c.fillStyle = '#0a0626e6'; c.fillRect(x, y, w, h); c.strokeStyle = col; c.globalAlpha = .55; c.lineWidth = 1; c.strokeRect(x + .5, y + .5, w - 1, h - 1); c.globalAlpha = 1; c.lineWidth = 2;
+    for (const [cx, cy, dx, dy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]) { c.beginPath(); c.moveTo(cx, cy + dy * 6); c.lineTo(cx, cy); c.lineTo(cx + dx * 6, cy); c.stroke(); }
+    c.globalCompositeOperation = 'lighter'; c.globalAlpha = .12; c.fillStyle = col; c.fillRect(x, y, w, 3); c.restore(); }
   function drawHud(c) {
     const dpr = NX.loop.dpr, vw = innerWidth, vh = innerHeight; c.setTransform(dpr, 0, 0, dpr, 0, 0);
     const vg = c.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * .45, vw / 2, vh / 2, Math.max(vw, vh) * .8); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = vg; c.fillRect(0, 0, vw, vh);   // віньєтка
     const n = S.list.length, total = NX.guests ? NX.guests.IDS.length : 20, s1 = `${NX.t('party.guests')} ${n}/${total}`; c.font = '9px "Press Start 2P", monospace';
-    const w1 = c.measureText(s1).width + 18; R(c, 12, 52, w1, 22, '#0a0626dd'); c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(12.5, 52.5, w1 - 1, 21); P.text(c, s1, 21, 68, '#ffe27a', 9);
+    const w1 = c.measureText(s1).width + 22; chip(c, 12, 52, w1, 24, '#ff4fd8'); P.text(c, s1, 23, 69, '#ffe27a', 9);
     const s2 = NX.t('party.back'); c.font = '9px "Press Start 2P", monospace'; const w2 = c.measureText(s2).width + 20, bx = vw - 12 - w2, by = vh > vw ? 52 : 14;
-    R(c, bx, by, w2, 26, '#0a0626ee'); c.strokeStyle = '#3be8ff'; c.strokeRect(bx + .5, by + .5, w2 - 1, 25); P.text(c, s2, bx + w2 / 2, by + 18, '#3be8ff', 9, 'center'); S.btn = { x: bx, y: by, w: w2, h: 26 };
+    chip(c, bx, by, w2, 26, '#3be8ff'); P.text(c, s2, bx + w2 / 2, by + 18, '#3be8ff', 9, 'center'); S.btn = { x: bx, y: by, w: w2, h: 26 };
     if (NX.partyMusic) { const M = NX.partyMusic, s3 = '♪ ' + NX.t('party.sound'), onM = M.playing; c.font = '9px "Press Start 2P", monospace'; const w3 = c.measureText(s3).width + 20, bx3 = bx - 10 - w3;   // кнопка звуку (музика — party_music.js)
-      R(c, bx3, by, w3, 26, '#0a0626ee'); c.strokeStyle = onM ? '#ffe27a' : '#5a5a7a'; c.strokeRect(bx3 + .5, by + .5, w3 - 1, 25); P.text(c, s3, bx3 + w3 / 2, by + 18, onM ? '#ffe27a' : '#8a8aa8', 9, 'center'); S.btnM = { x: bx3, y: by, w: w3, h: 26 };
+      chip(c, bx3, by, w3, 26, onM ? '#ffe27a' : '#5a5a7a'); P.text(c, s3, bx3 + w3 / 2, by + 18, onM ? '#ffe27a' : '#8a8aa8', 9, 'center'); S.btnM = { x: bx3, y: by, w: w3, h: 26 };
       if (onM) { const bt = beat() % 1; R(c, bx3 + 4, by + 22 - bt * 0, 3, 2, bt < .25 ? '#ffe27a' : '#5a5a7a'); } }
     if (S.posterOpen) drawPosterCard(c, vw, vh);
     if (!n) { const k = S.k * dpr; c.setTransform(k, 0, 0, k, -S.x * k, -S.y * k); const txt = NX.t('party.empty'), words = txt.split(' '), lines = []; let cur = ''; c.font = '8px "Press Start 2P", monospace';   // підказка на порожньому танцполі
@@ -291,7 +329,7 @@ NX.party = (() => {
     const k = S.k * NX.loop.dpr; c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#03020a'; c.fillRect(0, 0, NX.loop.canvas.width, NX.loop.canvas.height);
     c.setTransform(k, 0, 0, k, -S.x * k, -S.y * k); c.imageSmoothingEnabled = false;
     c.drawImage(S.bg.cv, S.bg.x0, S.bg.y0);
-    drawPoster(c); drawTiles(c); drawFog(c); drawCrowd(c, t); drawLights(c, t); drawNexi(c, t); drawBartender(c, t); drawRudyk(c, t);
+    drawPoster(c); drawScreen(c, t); drawTiles(c); drawFog(c); drawCrowd(c, t); drawLights(c, t); drawGobos(c, t); drawNexi(c, t); drawLed(c, t); drawBartender(c, t); drawRudyk(c, t);
     if (S.bub && S.bub.nexi) { const N = nexiPos(); bubble(c, S.bub.text, N.x, N.y - 60, Math.min(1, (S.bub.until - t) * 3)); }
     S.list.slice().sort((a, b) => b.z - a.z).forEach(g => drawGuest(c, g, t));
     drawEvent(c, t); drawFx(c, dt); drawHud(c);
@@ -309,7 +347,7 @@ NX.party = (() => {
       if (x > gx - w / 2 && x < gx + w / 2 && y > top && y < gy - g.alt * s + 3) { const L = NX.t(`guests.${g.id}.t`) || NX.t(`guests.${g.id}.s`) || []; g.ti = ((g.ti == null ? rnd() * L.length | 0 : g.ti + 1)) % Math.max(1, L.length);
         if (L.length) g.bub = { text: L[g.ti], until: NX.time + 2.8 }; if (SPECIAL[g.id] && !g.trip && !g.fly && !g.conga && !g.photo) { g.sp = SPECIAL[g.id]; g.spT = NX.time + 1.6; g.mv = false; } sparks(gx, gy - 30 * s, 6, ['#ff7af0', '#ffffff']); S.fx.push({ t: 'note', x: gx, y: top - 4, vx: 0, vy: -18, g: 0, col: '#ff7af0', ttl: 1.2, age: 0 }); return; } }
     if (S.posterOpen) { S.posterOpen = false; return; }
-    { const Po = G().poster, [ax, ay] = pt(Po.x0, Po.y0, G().ZB - 4), [bx2, by2] = pt(Po.x1, Po.y1, G().ZB - 4); if (x > ax && x < bx2 && y > ay && y < by2) { S.posterOpen = true; return; } }   // тап по афіші — велика картка колекції
+    { const Po = G().poster, [ax, ay] = pt(Po.x0, Po.y0, G().ZB - 4), [bx2, by2] = pt(Po.x1, Po.y1, G().ZB - 4); if (x > ax && x < bx2 && y > ay && y < by2) { S.posterOpen = true; S.posterT = NX.time; return; } }   // тап по афіші — велика картка колекції
     const bb = S.barBox; if (bb && x > bb[0] && x < bb[0] + bb[2] && y > bb[1] && y < bb[1] + bb[3]) { if (!BM.guest) { BM.pose = 'shake'; BM.until = NX.time + 1.6; BM.guest = null; } const L = NX.t('party.barman') || []; if (L.length) BM.bub = { text: L[rnd() * L.length | 0], until: NX.time + 2.6 }; sparks(bb[0] + bb[2] / 2, bb[1] + 10, 5, ['#9af6ff', '#ffffff']); return; }   // тап по бармену
     const cb = S.catBox; if (cb && x > cb[0] && x < cb[0] + cb[2] && y > cb[1] && y < cb[1] + cb[3]) { CAT.pose = 'meow'; CAT.until = NX.time + 1.6; S.fx.push({ t: 'note', x: cb[0] + cb[2] / 2, y: cb[1] - 4, vx: 0, vy: -18, g: 0, col: '#ffb24a', ttl: 1.2, age: 0 }); return; }   // тап по Рудику
     const nb = S.nexiBox; if (nb && x > nb[0] && x < nb[0] + nb[2] && y > nb[1] && y < nb[1] + nb[3]) { const N = nexiPos(); S.hiT = NX.time + 1.6; NX.nexi.emote('love', 2); for (let i = 0; i < 5; i++) S.fx.push({ t: 'note', x: N.x + (rnd() - .5) * 30, y: N.y - 60, vx: (rnd() - .5) * 20, vy: -24, g: 0, col: NEON[i], ttl: 1.4, age: 0 }); }
