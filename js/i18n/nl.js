@@ -44,7 +44,7 @@ NX.i18n.add('nl', {
   portal: { choose: 'WAARHEEN?', dest: { projects: 'Projecten', team: 'Team', clients: 'Klanten' },
     go: { projects: 'Op naar de projecten! Ik check de deadlines.', team: 'Ik kijk even bij het team wie wat doet.', clients: 'Ik vlieg naar de klanten voor nieuwe berichten.' },
     res: { projects: 'Projecten: 3 actief, één deadline morgen. Alles genoteerd.', team: 'Team: 4 mensen online, twee wachten op je antwoord.', clients: 'Klanten: 3 nieuwe aanvragen, twee heb ik al beantwoord.' } },
-  party: { sign: 'NEXI FEEST', dj: 'DJ NEXI', guests: 'GASTEN', back: '← TERUG NAAR DE KAMER', empty: 'Nog niemand. Tik op een gast in de kamer — dan komt die naar het feest!', bar: 'BAR', cake: 'TAART' },
+  party: { best: 'BESTE DANSER ★', poster: 'VRIENDENCOLLECTIE', sign: 'NEXI FEEST', dj: 'DJ NEXI', guests: 'GASTEN', back: '← TERUG NAAR DE KAMER', empty: 'Nog niemand. Tik op een gast in de kamer — dan komt die naar het feest!', bar: 'BAR', cake: 'TAART' },
   guests: { badge: 'VERZAMELD ✓',   // ГОСТІ З ПОРТАЛУ (крок 14, actors/guests/guests.js): ім'я (n), репліки (s), папуга Сільвера (p); t — репліки на тап (крок 17: по черзі, впізнавані — з відсилками до казки)
     babaYaga: { n: 'Baba Jaga', s: ['Oei, wat een stof hier!', 'Ik vlieg weg op mijn bezem!'], t: ['Foei, het ruikt hier naar robot!', 'Hutje, draai je rug naar het bos!', 'Ik vlieg in een vijzel en veeg mijn sporen met de bezem.'] },
     snowWhite: { n: 'Sneeuwwitje', s: ['Dwergje, waar ben je?', 'Daar ben je!'], t: ['Zeven dwergen, en ik zoek er één!', 'Een appel? Nee dank je, al geproefd.', 'Spiegeltje, wie is hier het liefst? Gember!'] },

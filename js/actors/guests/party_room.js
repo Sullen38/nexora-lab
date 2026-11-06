@@ -34,6 +34,7 @@ NX.partyRoom = (() => {
     PINK: pal(['#3a0b38', '#58134f', '#7a1c6d', '#a0288d', '#c63aa8', '#e656c0', '#ff84d4', '#ffc2ec']),
     LILAC: pal(['#2a1a5a', '#3c2878', '#523a98', '#6a50b4', '#8a6ad0', '#ac8ee6', '#cdb4f6', '#ead8ff']),
     CYAN: pal(['#0a3a5a', '#0f5a80', '#1a8ab0', '#2ab8e0', '#3be8ff', '#9af6ff', '#ffffff']),
+    DARK: pal(['#04030c', '#08061a', '#0c0a24', '#120e30', '#18143e']),
     CREAM: pal(['#5a4a3a', '#8a7460', '#b89c84', '#d8c0a8', '#f0dcc8', '#fff4e8']),
   };
   const NEONC = { pink: col('#ff4fd8'), cyan: col('#3be8ff'), lil: col('#c86aff'), gold: col('#ffd27a'), green: col('#3bff8a'), orange: col('#ff9a3a'), white: col('#ffffff') };
@@ -91,7 +92,7 @@ NX.partyRoom = (() => {
     ball: { x: 774, y: 196, z: 260, r: 26 }, sign: { x0: 774 - 210, x1: 774 + 210, y0: 64, y1: 128, z: ZB - 6 },
     lamps: [774 - 420, 774 - 140, 774 + 140, 774 + 420].map(x => ({ x, y: CEIL + 14, z: 150 })),      // прожектори на рейці
     bar: { x0: 1226, x1: 1326, z0: -40, z1: 300, y0: 332 }, barman: { x: 1372, y: 346, z: 150 }, snack: { x0: 150, x1: 262, z0: 40, z1: 270, y0: 338 },
-    crowd: [], rail: { z: -210, y0: 330 },
+    crowd: [], rail: { z: -210, y0: 330 }, poster: { x0: 774 - 560, x1: 774 - 300, y0: 78, y1: 212 }, cat: { x: 774 - 360, y: FLY - 152, z: 240 },   // афіша колекції на задній стіні; Рудик на лівій колонці
     bulbs: [], balloons: [[214, 150, 60, 'pink'], [240, 128, 90, 'cyan'], [268, 158, 40, 'gold'], [1330, 146, 60, 'green'], [1300, 124, 100, 'orange'], [1272, 154, 40, 'lil'], [560, 118, 420, 'pink'], [990, 120, 420, 'cyan']],
   };
   for (let i = 0; i < 18; i++) { const side = i < 9 ? -1 : 1, k = i % 9; GEO.crowd.push({ x: 774 + side * (150 + k * 36 + (k % 2) * 10), z: 176 + (k % 3) * 9, h: 44 + hash(i, 5) * 14, ph: hash(i, 9) * 6, w: 20 + hash(i, 2) * 8 }); }   // натовп-тло обабіч пульта
@@ -125,6 +126,8 @@ NX.partyRoom = (() => {
         c.strokeStyle = '#ff4fd8'; c.lineWidth = 1; c.strokeRect(5.5, 5.5, W - 11, H - 11); const sign = NX.t('party.sign'); c.font = '34px "Press Start 2P", monospace'; let tw = c.measureText(sign).width, fs = 34; if (tw > W - 44) { fs = Math.floor(34 * (W - 44) / tw); }
         for (const [dx, dy, cc] of [[-2, 0, '#8a1a7a'], [2, 0, '#8a1a7a'], [0, -2, '#8a1a7a'], [0, 2, '#8a1a7a'], [-1, 0, '#ff4fd8'], [1, 0, '#ff4fd8'], [0, -1, '#ff4fd8'], [0, 1, '#ff4fd8'], [0, 0, '#fff0fb']]) P.text(c, sign, W / 2 + dx, H / 2 + fs * .42 + dy, cc, fs, 'center'); });
         return (u, v, i, j) => { const cc = t(u, v); if (!cc) return base(u, v, i, j); X.SH.fl = F_EMIT; return cc; }; } }); }
+    // афіша колекції на задній стіні (рамка; портрети — живий шар party.js: drawPoster)
+    { const Po = GEO.poster; ++id; box(L, id, Po.x0, Po.x1, Po.y0, Po.y1, ZB - 4, ZB, { all: mBevel(PAL.MET, 3), front: (q, fw, fh) => { const b = bevel(PAL.MET, q, fw, fh, 3); return (u, v, i, j) => (u * fw > 4 && u * fw < fw - 4 && v * fh > 4 && v * fh < fh - 4) ? ramp(PAL.DARK || PAL.STEEL, .15, i, j) : b(u, v, i, j); } }); }
     // дзеркальна куля на ланцюгу
     { const B = GEO.ball; ++id; X.tube(L, [B.x, CEIL, B.z], [B.x, B.y - B.r, B.z], 2, (u, v, i, j) => ramp(PAL.CHROME, .5 + (Math.sin(v * 90) > 0 ? .2 : -.2), i, j), { id });
       ++id; X.disc(L, [B.x, B.y, B.z], B.r, (u, v, i, j) => { const dx = u - .5, dy = v - .5, d = Math.hypot(dx, dy) * 2, tx = Math.floor(u * 11), ty = Math.floor(v * 11), hv = hash(tx, ty); const q = .35 + .5 * (1 - d) + (hv - .5) * .5 + (dx < 0 && dy < 0 ? .15 : 0); return ((Math.floor(u * 44) % 4 === 0 || Math.floor(v * 44) % 4 === 0) ? ramp(PAL.STEEL, .3, i, j) : ramp(PAL.CHROME, q, i, j)); }, { id }); }
