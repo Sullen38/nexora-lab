@@ -33,7 +33,13 @@ NX.nexi = {
     this.task = { id, title: this.taskOpt ? NX.t(`zones.${id}.${this.taskOpt}.t`) : NX.t('act.' + id + '.title'), color: A.color || '#3be8ff', steps: NX.t('act.' + id + '.steps') || [], prog: 0, auto: !byUser };
   },
   /** Просто піти в точку підлоги (тап по підлозі). */
-  walkTo(x, y) { this.lastCmd = NX.time; NX.cam.unfocus(); this.finishTask(false); this.endTp(); const [cx, cy] = NX.room.clampWalk(x, y); this.queue = [...this.exitRoute(), { walk: [cx, cy], far: 'floor' }, { loc: 'floor' }]; this.cur = null; },
+  /** Тап по підлозі. Кілька тапів поспіль (власник, 06.11: «просто нажав — іде, як завжди; декілька раз підряд — прискорюється до
+   *  місця»): другий тап за 1.6 с — бігом, третій і далі — ривок зі слідом (hurry: 1 — хода / біг за довжиною, 2 — біг, 3+ — ривок). */
+  walkTo(x, y) {
+    const t = NX.time; this.lastCmd = t; this.hurry = t - (this.floorT || -9) < 1.6 ? (this.hurry || 1) + 1 : 1; this.floorT = t;
+    NX.cam.unfocus(); this.finishTask(false); this.endTp(); const [cx, cy] = NX.room.clampWalk(x, y);
+    this.queue = [...this.exitRoute(), { walk: [cx, cy], far: 'floor', hurry: this.hurry }, { loc: 'floor' }]; this.cur = null;
+  },
   /* ---------------- ПЕРЕМІЩЕННЯ ДО ЗОН (06.11) ----------------
    * Власник: «зроби, щоб Nexi трохи швидше переміщався… спосіб переміщення швидшим до нової точки; до кожної зони — окремий
    * ефект переміщення, достатньо швидкий: десь пробіг, десь підлетів, десь телепортація». Перший крок сценарію зони ({walk})
@@ -134,6 +140,7 @@ NX.nexi = {
       a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk); a.pi = 0;
       let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > NX.cfg.RUN_FROM;
       if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
+      if (a.hurry >= 2) a.run = true; if (a.hurry >= 3 && L > 40) a.dash = a.far;         // тапи поспіль по підлозі — біг, далі ривок
     }
     if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); }
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
