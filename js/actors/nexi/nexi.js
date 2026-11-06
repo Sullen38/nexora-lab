@@ -194,7 +194,7 @@ NX.nexi = {
       if (r >= .25 && r < .36 && ok('tools', 'tools')) { this.do('tools', false, { task: NX.ui.zones.pick('tools') }); return; }
       if (r >= .36 && r < .47 && ok('ai', 'aicenter') && !(NX.virus && NX.virus.busy())) { this.do('ai', false, { task: NX.ui.zones.pick('ai') }); return; }   // вірус на столі — не зараз (крок 15)
       if (r < .5) { this.do('sofaWork', false); return; }
-      if (r < .62) { const q = Math.random(); this.do(q < .36 ? 'garden' : q < .64 ? 'feedFish' : q < .82 ? 'upstairs' : 'census', false); return; }   // (· 19) інвентаризація — сканує рослини   // (· 6) доглядає стіни: полив і годування риб; (· 7) другий поверх — заправити дрона
+      if (r < .62) { const q = Math.random(); this.do(q < .3 ? 'garden' : q < .52 ? 'feedFish' : q < .68 ? 'upstairs' : q < .84 ? 'census' : 'harvest', false); return; }   // (· 30) збір врожаю   // (· 19) інвентаризація — сканує рослини   // (· 6) доглядає стіни: полив і годування риб; (· 7) другий поверх — заправити дрона
       const pool = [NX.objects.sofa.pick(), 'petCat', 'dance', 'home', 'wander', 'window', 'kickBall', 'selfie', 'workshop'];
       this.do(pool[Math.random() * pool.length | 0], false);
     }

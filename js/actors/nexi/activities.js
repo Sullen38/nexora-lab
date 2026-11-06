@@ -165,6 +165,23 @@
       L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1.3 } });
       return L; } },
 
+    // ---------- (Декор стін · 30) ЗБІР ВРОЖАЮ: з кошиком на ранці підлітає до правої шахти теплиці (різак), чекає лоток, який
+    // наступним дійде до різака (decor_farm.js nextHarvest), ловить пучок зелені в кошик (decor_vault.js harvestFx), каже, що зібрав,
+    // так двічі; потім на підлогу — кошик повний, «ура». Насіння зі збору й далі летить у сховище (· 20) — це інше. ----------
+    harvest: { color: '#b8ff3a', route() {
+      const F = NX.decorFarm, n = NX.nexi; if (!F || !F.nextHarvest) return [line('harvest')];
+      const f = wallFloor('right'), L = [{ walk: f }, { face: 1 }, line('harvest'), { do: () => { n.basket = 0; } }, { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      let cur = null; const goRow = () => { const nh = F.nextHarvest(NX.time); cur = nh; const W = F.shaftW(nh.row), q = NX.px3d.proj(W); return hoverAt({ x: q[0] + 6, y: q[1] + 2, z: W[2], dir: -1 }); };
+      for (let i = 0; i < 2; i++) {
+        const flyS = { fly: [n.x, n.y] }, faceS = { face: -1 }, W = { pose: 'hoverBasket', dur: 30, got: 0, doneAt: 0 };   // ціль — у момент старту кроку (лотки їдуть)
+        W.tick = () => { if (!cur) return; const hv = F.harvestOf(cur.tr, NX.time);
+          if (hv >= .5 && !W.got) { W.got = 1; n.basket = (n.basket || 0) + 1; if (NX.decorVault && NX.decorVault.harvestFx) NX.decorVault.harvestFx(cur.row, n, NX.time); n.emote('happy', 2); n.say(NX.t('act.harvest.got', { plant: NX.t('decor.guide.sp.farm.' + cur.kind) })); W.doneAt = NX.time + 1.6; }
+          if (W.doneAt && NX.time > W.doneAt) W.dur = 0; };                                                                   // спіймав — крок завершено
+        L.push({ do: () => { const h = goRow(); flyS.fly = h.p; flyS.dy = h.dy; faceS.face = h.d; } }, flyS, faceS, { work: W });
+      }
+      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.harvest.done') }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } }, { do: () => { n.basket = 0; } });
+      return L; } },
+
     // ---------- (Декор стін · 19, · 21) ІНВЕНТАРИЗАЦІЯ: на ранці підлітає до рослин на ближчій стіні (objects/decor_guide.js: врятовані види)
     // і сканує три з них ручним сканером — промінь до рослини, кільце, картка виду відкривається сама (бирки з номерами прибрано · 21). ----------
     census: { color: '#3bff8a', route() {

@@ -39,8 +39,9 @@
       c.globalAlpha = a + fl * .6; const r = Math.max(q.w, q.h) * (.9 + fl * .6); c.drawImage(glowOf(q), q.cx - r, q.cy - r, r * 2, r * 2);
       if (fl) { c.globalAlpha = fl; c.strokeStyle = '#d8ffe8'; c.lineWidth = .5; c.strokeRect(q.x - .6 - (1 - fl) * 2, q.y - .6 - (1 - fl) * 2, q.w + 1.2 + (1 - fl) * 4, q.h + 1.2 + (1 - fl) * 4); }
       if (Math.sin(t * 3 + ph) > .85) { c.globalAlpha = .9; c.fillStyle = '#3bff8a'; c.fillRect(q.cx - .35, q.y + q.h + .1, .7, .4); } }   // LED блимає
-    for (let i = FLY.length - 1; i >= 0; i--) { const f = FLY[i], u = (t - f.t0) / f.dur; if (u >= 1) { FLY.splice(i, 1); if (f.back) f.cap.flash = t; continue; } if (u < 0) continue;
+    for (let i = FLY.length - 1; i >= 0; i--) { const f = FLY[i], u = (t - f.t0) / f.dur; if (u >= 1) { FLY.splice(i, 1); if (f.back && f.cap) f.cap.flash = t; continue; } if (u < 0) continue;
       const e = u * u * (3 - 2 * u), x = f.x0 + (f.x1 - f.x0) * e, y = f.y0 + (f.y1 - f.y0) * e - Math.sin(u * Math.PI) * 14;
+      if (f.bunch) { c.globalAlpha = .95; c.fillStyle = '#3bbf7a'; c.fillRect(x - 2, y - 1.2, 4, 2.4); c.fillStyle = '#9aff6a'; c.fillRect(x - 1.2, y - 2.2, 2.4, 1.4); c.fillRect(x + .4, y - 1.8, 1.2, 1); continue; }   // (· 30) пучок зелені
       c.globalAlpha = .9; c.fillStyle = f.col; c.fillRect(x - .7, y - .7, 1.4, 1.4); c.fillStyle = '#ffffff'; c.fillRect(x - .3, y - .3, .6, .6);
       for (let k = 1; k <= 4; k++) { const uu = Math.max(0, u - k * .05), ee = uu * uu * (3 - 2 * uu); c.globalAlpha = .5 - k * .1; c.fillRect(f.x0 + (f.x1 - f.x0) * ee - .35, f.y0 + (f.y1 - f.y0) * ee - Math.sin(uu * Math.PI) * 14 - .35, .7, .7); } }   // шлейф
     c.restore();
@@ -52,6 +53,8 @@
     get lastKind() { return lastKind; },
     /** Скільки насінин зараз летить (для перевірок). */
     flying() { return FLY.length; },
+    /** (· 30) Пучок зелені з різака ярусу row летить у кошик Nexi (n) — зелений, 1 с. */
+    harvestFx(row, n, t) { const F = NX.decorFarm; if (!F || !F.shaft) return; const fr = F.shaft(row, 'right'); if (!fr) return; const s = NX.room.scaleAt(Math.max(n.depthY(), 352)) / 1.45; FLY.push({ x0: fr[0], y0: fr[1], x1: n.x + n.dir * 10 * s, y1: n.y - 14 * s, t0: t, dur: 1, col: '#9aff6a', cap: null, back: 0, bunch: 1 }); },
     /** Для decor_check.js: нічого поза коробкою шафи (сяйво — світло, насінина — летить над зонами, як краплі дрона). */
   };
 })();

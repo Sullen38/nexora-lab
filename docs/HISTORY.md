@@ -2506,3 +2506,17 @@ Nexi збирає врожай / засіває лотки (сценарій, я
 - `party.js drawLights`: пара над мармітами (`smoke` ліловий, r 2–5, вгору, 2–3 с), світло ламп над баром (3 еліпси lighter .08
   з гойданням sin(t·1.3)), блиск льоду в келихах (`sp` білий .3 с).
 - Перевірки: uk 20 — консоль чиста, растр 546 мс, fps 60.
+## Чат «декор стін · 3» 06.11 — Декор стін · 30: Nexi збирає врожай
+
+> Власник: «Так, продовжуй». Полювання Рудика на метелика й стеження за рибами вже є (· 9), тож узяв давній невиконаний пункт — збір врожаю.
+
+- `decor_farm.js`: `shaftW(row)` (світ, `M.W`), `nextHarvest(t)` (мін. eta до `RUN − 10` з урахуванням `LOOP` і `SPEED[row]`), `harvestOf(tr, t)`.
+- `sprite.js`: `case 'basket'` (плетений кошик у правій руці; `pose.full` — зелень зверху); `poses.js`: `hoverBasket` (ранець, права рука
+  трохи вперед, `p.full = !!NX.nexi.basket`). Перша збірка: `p.full` замість `pose.full` — «p is not defined» у малюванні; виправлено.
+- `activities.js harvest`: до стіни, `line`, присід, `wallHover`; двічі: `{do: goRow}` пише ціль у наступні кроки `flyS` / `faceS`
+  (`fly` мусить бути масивом у момент `begin`), `work W` (hoverBasket, dur 30) з `tick`: `harvestOf ≥ .5` → `basket++`, `harvestFx`,
+  emote, `say(act.harvest.got {plant})`, через 1.6 с `W.dur = 0`; наприкінці — підлога, `act.harvest.done`, cool, cheer, `basket = 0`.
+- `decor_vault.js harvestFx(row, n, t)`: запис у `FLY` з `bunch` — зелений пучок летить від різака в точку кошика (`n.x + dir·10·s,
+  n.y − 14·s`); `draw` малює пучок замість насінини; `cap` може бути null.
+- `nexi.js autolife`: догляд за стінами — garden 30 / feedFish 22 / upstairs 16 / census 16 / harvest 16 %.
+- Перевірки: `/tmp/harvest_test.js` uk / pl / nl: два збори, повернення, консоль чиста; `roam.js 8` — чисто; знімок ×2.

@@ -187,6 +187,7 @@ function renderBot(look, pose, t, cv) {
     case 'mega': BLK(ex - 2, ey - 3, 4, 5, 1, '#e9eefc'); P(ex + 2, ey - 4, 2, 7, '#e9eefc'); P(ex + 4, ey - 5, 1, 9, '#ff4fd8'); break;
     case 'can': BLK(ex - 3, ey - 6, 7, 6, 1, '#3bbf7a'); line(ex + 4, ey - 4, ex + 8, ey - 7, '#3bbf7a', 1); P(ex - 2, ey - 8, 5, 2, '#2a8a5a'); break;
     case 'coin': RR(ex - 1, ey - 4, 4, 4, 1, '#ffc94d'); P(ex, ey - 3, 1, 1, '#ffffff'); break;
+    case 'basket': BLK(ex - 4, ey - 4, 9, 5, 1, '#b8863a'); P(ex - 3, ey - 3, 7, 1, '#8a5a2a'); P(ex - 3, ey - 1, 7, 1, '#8a5a2a'); line(ex - 3, ey - 5, ex + 1, ey - 9, '#8a5a2a', 1); line(ex + 1, ey - 9, ex + 5, ey - 5, '#8a5a2a', 1); if (pose.full) { P(ex - 3, ey - 6, 7, 2, '#3bbf7a'); P(ex - 1, ey - 7, 3, 1, '#9aff6a'); } break;   // (Декор стін · 30) кошик для врожаю (pose.full — із зеленню)
     case 'scanner': BLK(ex - 2, ey - 5, 5, 7, 1, '#c3cbea'); P(ex - 1, ey - 4, 3, 2, Math.floor(t * 6) % 2 ? '#3bff8a' : '#1a8a4a'); P(ex + 3, ey - 3, 2, 1, '#3bff8a'); break;   // (Декор стін · 19) ручний сканер рослин
     case 'tablet': BLK(ex - 4, ey - 6, 9, 7, 1, '#2a2f5e'); P(ex - 3, ey - 5, 7, 5, Math.sin(t * 3) > 0 ? '#3be8ff' : '#2a8cff'); break;
   }

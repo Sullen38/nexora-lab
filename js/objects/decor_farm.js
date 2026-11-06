@@ -170,6 +170,11 @@
     trayAt, TR, T, H, plantSpr,
     /** (· 20) Де шахта ярусу row на екрані (ліва — сівалка, права — різак): [x, y] для сховища насіння (objects/decor_vault.js). */
     shaft(row, side) { return S(side === 'left' ? SH * .5 : T - SH * .5, FARM.rowY(H, row) - 6, MID); },
+    /** (· 30) Світова точка правої шахти ярусу (для Nexi: збір врожаю) — [X, Y, Z]. */
+    shaftW(row) { return M.W(T - SH * .5, FARM.rowY(H, row) - 6, MID); },
+    /** (· 30) Який лоток наступним дійде до різака: {tr, row, kind, eta (с)}. */
+    nextHarvest(t) { let best = null; for (const tr of TR) { const p = (((tr.off + t * SPEED[tr.row]) % LOOP) + LOOP) % LOOP, cut = RUN - 10, eta = (p <= cut ? cut - p : LOOP - p + cut) / SPEED[tr.row]; if (!best || eta < best.eta) best = { tr, row: tr.row, kind: tr.kind, eta }; } return best; },
+    harvestOf(tr, t) { return trayAt(tr, t).harv; },
     /** (· 18) Найближчий до точки екрана лоток (для довідника ботаніка): {kind, s, d} або null. */
     nearTray(x, y, t) { let best = null; for (const tr of TR) { const A = trayAt(tr, t); if (A.hide) continue; const p = S(A.x, A.y - FARM.trayH - 7, MID), d = Math.hypot(p[0] - x, p[1] - y); if (!best || d < best.d) best = { kind: tr.kind, s: A.s, d }; } return best; },
   };
