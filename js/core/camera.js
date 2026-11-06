@@ -89,8 +89,11 @@ NX.cam = {
   /** Телепорт плавно (власник, 06.11: «екран має більш плавно переміщатися, бо зараз смикається»): камера за dur с м'яко
    *  (ease in-out) переїжджає туди, куди дивилася б follow у точці появи, — рушає, щойно Nexi починає танути, і приїздить,
    *  коли він з'являється. Людина гортала (free) чи триває фокус уваги — не чіпає. Поки їде, follow не втручається. */
+  /** Камера стоїть dur с (поки Nexi тане перед телепортом — інакше follow тягнула б її назад до старого місця, а тоді glide —
+   *  уперед: смикання, яке бачив власник). Людина гортала (free) чи триває фокус — не чіпає. */
+  hold(dur) { if (this.free || this.foc || performance.now() < this.dragUntil) return; this.gl = { x0: this.x, x1: this.x, t0: NX.time, dur }; },
   glide(tx, dur) { if (this.free || this.foc || performance.now() < this.dragUntil) return; const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW);
-    const x1 = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max); if (Math.abs(x1 - this.x) < 1) return; this.gl = { x0: this.x, x1, t0: NX.time, dur }; },
+    const x1 = NX.px.clamp(tx - this.viewW / 2, C.ROOM_X0, max); this.gl = { x0: this.x, x1, t0: NX.time, dur }; },   // і коли їхати нікуди — тримає (follow не ганяється за кометою)
   /** Екранні CSS-пікселі -> координати кімнати. */
   toRoom(sx, sy) { return [sx / this.k + this.x, sy / this.k - this.top]; },
   /** Координати кімнати -> екранні CSS-пікселі (для DOM-баблів). */

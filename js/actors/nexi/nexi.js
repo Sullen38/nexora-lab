@@ -157,7 +157,7 @@ NX.nexi = {
       if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
       if (a.hurry >= 2) a.run = true; if (a.hurry >= 3 && L > 40) a.dash = a.far;         // тапи поспіль по підлозі — біг, далі ривок
     }
-    if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); a.near = Math.hypot(a.tp[0] - this.x, a.tp[1] - this.y) < 160; }
+    if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); a.near = Math.hypot(a.tp[0] - this.x, a.tp[1] - this.y) < 160; NX.cam.hold(.25); }   // поки тане — камера стоїть (далі glide з кометою або jump)
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
       a.dur = a.quick || (a.hop ? .45 : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED));   // quick — задана тривалість (С4: зліт у капсулу) if (a.jet) a.arc = Math.min(70, 18 + L * .12);
       if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
