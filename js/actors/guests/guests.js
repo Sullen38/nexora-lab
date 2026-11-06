@@ -114,7 +114,8 @@ NX.guests = (() => {
   function make(id) {
     const sc = SCENES[id], p = pad(), g = { id, x: p[0], y: p[1], dir: -1, pose: 'stand', fr: 0, ft: 0, alt: 0, alpha: 0, zoom: .25, g: {}, cv: document.createElement('canvas'), q: [], cur: null, onPad: true, speed: sc.speed || 1 };
     const back = sc.flyer ? [] : sc.rollBack ? [{ run: front(), pose: 'roll' }, { hop: p }] : [{ [sc.runBack ? 'run' : 'go']: front() }, { hop: p }];   // назад: до брами, на майданчик
-    g.q = [{ appear: 1.9 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, { vanish: 1.6 }];
+    const bye = [{ do: () => { if (!COL.includes(g.id)) return; g.dir = -1; const L = NX.t('guests.bye') || []; if (L.length) g.bub = { text: L[Math.random() * L.length | 0], until: NX.time + 2.4 }; g.byeT = NX.time + 1.6; } }, { until: () => !g.byeT || NX.time > g.byeT, max: 2, pose: 'cheer' }];   // спійманий — на прощання махає: «До зустрічі на вечірці!»
+    g.q = [{ appear: 1.9 }, ...(sc.flyer ? [] : [{ hop: front() }]), ...sc.steps(g), ...back, ...bye, { vanish: 1.6 }];
     S.portalT = NX.time + 2; if (nexiFree()) NX.nexi.emote(['surprise', 'happy', 'idea'][Math.random() * 3 | 0], 2);
     return g;                                                                                                             // підказки «з порталу: …» немає (власник, 03.11): гостя просто видно
   }
