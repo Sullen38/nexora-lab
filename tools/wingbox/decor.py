@@ -361,7 +361,8 @@ def decor_side(L, sgn, C, R, verbose=True):
             cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['w'], Yc + h / 2, Yc - h / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['w'], h=round(h, 2), shy=shy(a - da_, a + da_, .2))))
             sup = dict(Y=Yc + h / 2 - 1.6, id=cid); kind = ITEMS[q]
             if kind[0] == 'plant':
-                hh = h - 3.5; plant_on(sup, f'dc_hxp{q}', a, kind[1], HX['w'] * .5, hh, kind[2], 6., 4, HX['d'] - 3.8, seed=80 + q)   # ближче до краю соти: знизу видно
+                (xq, zq), _, _ = W.at(a, HX['d']); hh = (min(h * 2.3, h - 3.5 + max(0., ys(Yc - h / 2, zq) - 2.5) / s(zq)) if row == 0 else h - 3.5)   # (· 27) верхній ряд: рослина росте з соти вгору, не вище рядка 2.5 (стеля)
+                plant_on(sup, f'dc_hxp{q}', a, kind[1], HX['w'] * (.8 if row == 0 else .5), hh, kind[2], 6., 4, HX['d'] - 3.8, seed=80 + q)   # ближче до краю соти: знизу видно; (· 27) верхній ряд — удвічі вища й ширша (власник: «ледь видно»)
             else: art_on(sup, f'dc_hxa{q}', a, kind[1], HX['w'] * .5, h - 4, 6., HX['d'] - 3.2, seed=q)
         flat('dc_neon', 94., 180., 14., 66., 'neon', d=3.2, glow=1, gr=40)          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
         # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
