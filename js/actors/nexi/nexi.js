@@ -125,8 +125,15 @@ NX.nexi = {
 
   /* ---------------- ВИКОНАННЯ ЧЕРГИ ---------------- */
   update(dt, t) {
-    if (!this.cur && this.queue.length) { this.cur = this.queue.shift(); this.cur._t = 0; this.begin(this.cur); }
-    if (this.cur) { this.cur._t += dt; if (this.step(this.cur, dt)) { this.end(this.cur); this.cur = null; } }
+    // Наступний крок черги починається в тому ж кадрі, де скінчився попередній, а миттєві ({face}, {loc}, {do}, {say}) ідуть
+    // ланцюжком (С4, 06.11: на повільному телефоні кожна зміна кроку коштувала кадр ~0.2 с, а до лабораторії скінів їх вісім)
+    for (let n = 0; n < 8; n++) {
+      if (!this.cur && this.queue.length) { this.cur = this.queue.shift(); this.cur._t = 0; this.begin(this.cur); }
+      if (!this.cur) break;
+      const a = this.cur;
+      a._t += n ? 0 : dt; if (this.step(a, n ? 0 : dt)) { this.end(a); this.cur = null; }
+      if (this.cur) break;                                                   // крок скінчився — наступний починається в цьому ж кадрі
+    }
     if (!this.cur && !this.queue.length && this.task) { this.finishTask(true); }
     if (this.speak) { this.speak.t += dt; this.talking = this.speak.t < this.speak.text.length / 40; if (this.speak.t > this.speak.text.length / 40 + 3.2) { this.speak = null; this.talking = false; NX.ui.hud.bubble(null); } }
     this.autolife(t);
@@ -145,7 +152,7 @@ NX.nexi = {
     }
     if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); }
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
-      a.dur = a.hop ? .45 : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED); if (a.jet) a.arc = Math.min(70, 18 + L * .12);
+      a.dur = a.quick || (a.hop ? .45 : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED));   // quick — задана тривалість (С4: зліт у капсулу) if (a.jet) a.arc = Math.min(70, 18 + L * .12);
       if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
       if (a.dy !== undefined || this.dy != null) a.dz = [this.depthY(), a.dy !== undefined ? a.dy : to[1]]; }   // глибина на дивані: плавно (dy)
     if (a.face) this.dir = a.face;
