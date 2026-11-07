@@ -710,7 +710,7 @@ NX.arc = NX.arc || {};
     (x, y) => { const r = Math.hypot(x, y), a = Math.atan2(y, x); if (hash(Math.round(x), Math.round(y) + 7) > .97 && r < 6) return 2; return (r % 2.2) < .26 || (a > .2 && a < .9 && r < 7) ? 1 : 0; },   // радар
   ];
   SHP['st:dc_hex'] = (G, B) => {
-    const d = B.dc, nc = neonX(d.neon || '#3be8ff'), Ro = B.w / 2, Ri = Ro - 1.6 / .866, dep = B.dep, Yc = (B.yt + B.yb) / 2, pf = PATF[(d.pat || 0) % PATF.length];
+    const d = B.dc, nc = neonX(d.neon || '#3be8ff'), Ro = B.w / 2, Ri = Ro - 2.3 / .866 /* (· 47) товща кромка з неоном — соти читаються окремо */, dep = B.dep, Yc = (B.yt + B.yb) / 2, pf = PATF[(d.pat || 0) % PATF.length];
     const V = (R, k, v) => { const th = k * Math.PI / 3; return G.P(R * Math.cos(th), v, Yc + R * Math.sin(th)); };
     const rU = sub(G.P(1, 0, 0), G.P(0, 0, 0)), nF = sub(G.P(0, 0, 0), G.P(0, 1, 0));
     const dirN = k => { const ph = (k + .5) * Math.PI / 3, cs = Math.cos(ph), sn = Math.sin(ph); return [rU[0] * cs, sn, rU[2] * cs]; };
