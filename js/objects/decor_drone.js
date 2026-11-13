@@ -15,7 +15,8 @@
  * КЕРУВАННЯ: палець / миша на дроні й ведемо — летить за пальцем (камера при цьому не гортається); відпустили — повертається до
  * справ. Короткий тап — «бочка», радіє, картка (objects/decor_guide.js showBot). Слухачі — свої, на canvas у фазі capture:
  * core/camera.js не чіпаємо (дотик по дрону до камери не доходить).
- * Малює objects/decor_live.js (drawCurator) після скла й кромок сот.
+ * Малює objects/decor_live.js (drawCurator) після скла й кромок сот — крок, док-станцію й тінь; сам дрон — верхнім шаром
+ * (об'єкт decorDroneTop, layers з y 1e6): поверх зон, Nexi й усього в кімнаті (власник, 13.11: «має літати поверх всього»).
  * API: NX.decorDrone = { draw(c, t, nt, cells, vx0, vx1, glow), portrait(t) -> canvas (картка), at() -> {x, y} }.
  * ========================================================================== */
 (() => {
@@ -125,9 +126,22 @@
         R(-6.4, .1, 1, .6, (t % 1.2) < .6 ? '#3be8ff' : '#1a6a8a'); R(5.4, .1, 1, .6, (t % 1.2) < .6 ? '#1a6a8a' : '#3be8ff');
         for (let q = 0; q < 5; q++) R(-3.6 + q * 1.5, 1.3, 1.1, .6, q < Math.round(S.charge * 5) ? (on && q === Math.round(S.charge * 5) - 1 && (t % .8) < .4 ? '#eaffea' : '#3bff8a') : '#14301e');
         if (on) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .3 + .12 * Math.sin(t * 4); c.drawImage(glow('#3bff8a').cv, px - 7 * s, py - 6 * s, 14 * s, 12 * s); } } }
+    S.top = { t, vx0, vx1, glow };                                                                                    // сам дрон малюється у верхньому шарі (top) — поверх зон, Nexi й усього в кімнаті
+    if (S.x > vx0 - 30 && S.x < vx1 + 30 && S.y < 150) {                                                                // тінь — лише коли він біля стіни
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = .22; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(S.x + 2.6 * s, S.y + 4.2 * s, w * .34, h * .16, 0, 0, TAU); c.fill();           // тінь на цеглі
+    }
+    c.restore();
+  }
+  // (13.11, власник: «дрон має літати поверх всього») ВЕРХНІЙ ШАР: шлейф, інструменти, порошинки, сяйво й сам дрон малюються після
+  // всіх об'єктів і персонажів (шар з y 1e6 у core/loop.js) — зони, голо-панелі, маніпулятор і Nexi його більше не закривають.
+  // Док-станція й тінь на цеглі лишаються на стіні (draw). Кадр без draw (ліве крило за екраном, перевірка декору) — нічого не малюємо.
+  function top(c, t) {
+    const P = S.top; if (!P || P.t !== t || S.x == null) return; const { vx0, vx1, glow } = P;
+    const s = st(), w = 13 * s, h = w * H / W, g = glow('#3be8ff'), J = S.job, doing = !S.drag && J && S.mode === 'do', u = doing ? Math.min(1, (t - S.t0) / J.dur) : 0;
+    c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
     if (S.x > vx0 - 30 && S.x < vx1 + 30) {
       c.globalCompositeOperation = 'lighter'; for (const p of S.trail) { const f = (t - p.t0) / .45; c.globalAlpha = .5 * (1 - f); c.fillStyle = '#3be8ff'; c.fillRect(p.x - .5 * s, p.y - .5 * s, s, s); }   // шлейф
-      c.globalCompositeOperation = 'source-over'; c.globalAlpha = .22; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(S.x + 2.6 * s, S.y + 4.2 * s, w * .34, h * .16, 0, 0, TAU); c.fill();           // тінь на цеглі
+      c.globalCompositeOperation = 'source-over';
       if (doing && J.E) { const A = J.E.A, ax = A.fl[0], ay0 = A.fl[1] - A.h, ay1 = A.fl[1];
         if (J.kind === 'scan') { const yy = ay0 + (ay1 - ay0) * (.5 + .5 * Math.sin(u * TAU * 2 - Math.PI / 2)); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .2; c.fillStyle = '#3be8ff'; c.beginPath(); c.moveTo(S.x - .5, S.y + h * .42); c.lineTo(S.x + .5, S.y + h * .42); c.lineTo(ax + A.w * .5, yy); c.lineTo(ax - A.w * .5, yy); c.closePath(); c.fill();
           c.globalAlpha = .9; c.fillStyle = '#9af6ff'; c.fillRect(ax - A.w * .5, yy - .25, A.w, .5); c.globalAlpha = .45; c.drawImage(g.cv, ax - A.w * .6, yy - A.w * .6, A.w * 1.2, A.w * 1.2); }
@@ -145,6 +159,7 @@
     c.restore();
   }
 
+  NX.addObject({ id: 'decorDroneTop', layers(t) { return [{ y: 1e6, draw: c => top(c, t) }]; } });
   let PORT = null;
   NX.decorDrone = {
     draw, at: () => ({ x: S.x, y: S.y }), state: S,
