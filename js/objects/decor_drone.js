@@ -61,7 +61,7 @@
   const st = () => S.sc;
 
   function cellPt(E) { const A = E.A, pw = A.pane[2] - A.pane[0], ph = A.pane[3] - A.pane[1]; return { x: A.fc[0] + pw * .08, y: A.pane[1] - ph * .36, E }; }
-  let DSL = null;
+  let DSL = null, DDV = null;
   /** Нахил цегляних рядів біля точки x — із задньої стінки найближчої соти (як у objects/decor_tag.js). */
   function wallSlope(x) {
     const items = NX.decor && NX.decor.items, kit = NX.arc && NX.arc.kit, proj = NX.px3d && NX.px3d.proj; if (!items || !kit || !proj) return 0; let best = 0, bd = 1e9;
@@ -69,7 +69,13 @@
       if (d < bd) { bd = d; let an = Math.atan2(b[1] - a[1], b[0] - a[0]); if (an > Math.PI / 2) an -= Math.PI; if (an < -Math.PI / 2) an += Math.PI; best = an; } }
     return best;
   }
-  function dockPt() { const E = S.cells.find(q => q.kind === 'flask') || S.cells[0], A = E.A, ph = A.pane[3] - A.pane[1]; return { x: A.fc[0] - (A.pane[2] - A.pane[0]) * .42, y: A.pane[1] - ph * 1.38 }; }   // (13.11) вище й лівіше — на вільній цеглі над сотами
+  /** Куди на екрані йде «вглиб до стіни» біля точки x: вектор на 1 од. глибини — з найближчої соти (перед d = 0, стіна d = dep). */
+  function wallDepth(x) {
+    const items = NX.decor && NX.decor.items, kit = NX.arc && NX.arc.kit, proj = NX.px3d && NX.px3d.proj; if (!items || !kit || !proj) return [-.6, .1]; let best = [-.6, .1], bd = 1e9;
+    for (const B of items) { if (B.st !== 'dc_hex') continue; const { P } = kit.basis(B), Yc = (B.yt + B.yb) / 2, a = proj(P(0, 0, Yc)), b = proj(P(0, B.dep, Yc)), d = Math.abs(a[0] - x); if (d < bd) { bd = d; best = [(b[0] - a[0]) / B.dep, (b[1] - a[1]) / B.dep]; } }
+    return best;
+  }
+  function dockPt() { const E = S.cells.find(q => q.kind === 'flask') || S.cells[0], A = E.A, ph = A.pane[3] - A.pane[1]; return { x: A.fc[0] - (A.pane[2] - A.pane[0]) * .3, y: A.pane[1] - ph * 1.38 }; }   // (13.11) вище й лівіше — на вільній цеглі над сотами
   /** Наступна справа: сота зі своєю дією; кожна 4-та — полив ліани; кожна 7-ма — на док заряджатися; уночі — спати на доку. */
   function next(t, nt) {
     const n = S.n++; if (nt > .78 && t - S.wake > 25) { const d = dockPt(); return { kind: 'sleep', x: d.x, y: d.y, dur: 1e9 }; }
@@ -137,19 +143,24 @@
         // (13.11, власник: «трохи меншою та в перспективі, трохи як соти; ще трохи покращ графічно») уся станція — ×.8 і зі зсувом уздовж
         // цегляних рядів (нахил стіни біля неї — із задньої стінки найближчої соти, як у графіті-тегу); майданчик і екран — об'ємні
         // плити: видно спід і торець, що йдуть углиб до стіни (у бік точки сходу) — як коробки сот.
-        if (DSL == null) DSL = wallSlope(px); const DX = 2.6, DY = 1.1;                                                   // DX, DY — зсув задньої грані (углиб)
+        if (DSL == null) { DSL = wallSlope(px); DDV = wallDepth(px); }
+        // (13.11, власник: «неправильна перспектива, не в ту сторону») глибина — туди ж, куди в сот: стіна ЛІВОРУЧ від переду (вектор із
+        // найближчої соти, 4.5 од. глибини), а не праворуч; DX, DY — зсув задньої грані в координатах станції (після нахилу й ×.8)
+        const DX = DDV[0] * 4.5 / .8 / s, DY = DDV[1] * 4.5 / .8 / s - Math.tan(DSL) * DX;
         c.save(); c.translate(px, py); c.transform(.8, .8 * Math.tan(DSL), 0, .8, 0, 0); c.translate(-px, -py);
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = .28; R(-8, 3.6, 17.5, 1.4, '#05020f'); c.globalAlpha = 1;                                      // тінь на цеглі
+        c.save(); c.translate(DX * s, DY * s);                                                                                                      // плита з кабелем — на стіні (вглиб)
         // кабель у стіну з імпульсом
         R(-.45, 7.6, .9, 2, O); R(-.2, 7.6, .4, 1.8, '#2a2a48'); R(-1.1, 9.2, 2.2, 1.1, O); R(-.7, 9.4, 1.4, .6, '#5a5a86'); { const f = (t * .9) % 1; R(-.2, 7.6 + f * 1.4, .4, .5, on ? GR : CY); }
         // настінна плита й кронштейн-ферма
         R(-2.8, 2.6, 5.6, 5.4, O); R(-2.3, 3, 4.6, 4.6, '#34345c'); R(-2.3, 3, 4.6, .5, '#6a6aa8'); R(-1.7, 3.9, .6, .6, '#9a9ac4'); R(1.1, 3.9, .6, .6, '#9a9ac4'); R(-1.7, 6.4, .6, .6, '#9a9ac4'); R(1.1, 6.4, .6, .6, '#9a9ac4');
         R(-.6, 4.6, 1.2, 1.4, on ? GR : (t % 1.6) < .8 ? CY : '#1a6a8a');                                                                                               // вічко стану
-        c.lineCap = 'butt'; for (const sd of [-1, 1]) { c.strokeStyle = O; c.lineWidth = 1.5 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + sd * 2.2 * s, py + 6.6 * s); c.stroke();
-          c.strokeStyle = '#5a5a86'; c.lineWidth = .7 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + sd * 2.2 * s, py + 6.6 * s); c.stroke(); }
+        c.restore();
+        c.lineCap = 'butt'; for (const sd of [-1, 1]) { c.strokeStyle = O; c.lineWidth = 1.5 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + (sd * 2.2 + DX) * s, py + (6.6 + DY) * s); c.stroke();
+          c.strokeStyle = '#5a5a86'; c.lineWidth = .7 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + (sd * 2.2 + DX) * s, py + (6.6 + DY) * s); c.stroke(); }
         // майданчик: скошені краї, світла кромка, неон знизу
-        Q([[-10.2, -.7], [10.2, -.7], [10.2 + DX, -.7 + DY], [10.2 + DX, 3 + DY], [-9.4 + DX, 3 + DY], [-10.2, 2.9]], O);                                            // контур плити з глибиною
-        Q([[-9.4, 2.4], [9.4, 2.4], [9.4 + DX, 2.4 + DY], [-9.4 + DX, 2.4 + DY]], '#17172e'); Q([[9.4, 0], [9.4 + DX, DY], [9.4 + DX, 2.4 + DY], [9.4, 2.4]], '#3e3e6e');   // спід і торець
+        Q([[-10.2, -.7], [10.2, -.7], [10.2, 3], [10.2 + DX, 3 + DY], [-10.2 + DX, 3 + DY], [-10.2 + DX, -.7 + DY]], O);                                            // контур плити з глибиною
+        Q([[-9.4, 2.4], [9.4, 2.4], [9.4 + DX, 2.4 + DY], [-9.4 + DX, 2.4 + DY]], '#17172e'); Q([[-9.4, 0], [-9.4 + DX, DY], [-9.4 + DX, 2.4 + DY], [-9.4, 2.4]], '#3e3e6e');   // спід і торець
         for (let q = 0; q < 4; q++) Q([[-7 + q * 4.6, 2.4], [-5.6 + q * 4.6, 2.4], [-5.6 + q * 4.6 + DX, 2.4 + DY], [-7 + q * 4.6 + DX, 2.4 + DY]], '#24244a');            // ребра жорсткості на споді
         R(-9.4, 0, 18.8, 1, '#6a6a9c'); R(-9.4, 0, 18.8, .35, '#d4d4f4'); R(-9.4, .35, 18.8, .2, '#8a8abc'); R(-9.4, 1, 18.8, 1.4, '#26264a'); R(-9.4, 1, 18.8, .25, '#3a3a66');
         for (let q = 0; q < 3; q++) { R(-9.4 + q * .9, 1.25, .45, 1.15, '#ffd23a'); R(8.95 - q * .9, 1.25, .45, 1.15, '#ffd23a'); }                                        // жовті смуги безпеки на краях
@@ -162,8 +173,8 @@
         // щогла-антена з маячком
         R(-9.9, -6.2, 1.1, 6, O); R(-9.6, -6, .5, 5.8, '#7a7aa8'); R(-10.6, -3.4, 2.5, .9, O); R(-10.3, -3.2, 1.9, .45, '#5a5a86'); R(-10.05, -7.3, 1.4, 1.4, O); R(-9.8, -7.05, .9, .9, (t % 1.4) < .18 ? '#ffffff' : (t % 1.4) < .7 ? '#ff4f6a' : '#6a1a2a');
         // бічний міні-екран із відсотком заряду
-        R(10.2, .6, 1.6, .7, O); Q([[11.2, -4.4], [18.6, -4.4], [18.6 + DX * .5, -4.4 + DY * .5], [18.6 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, 1.2 + DY * .5], [11.2, 1.2]], O);
-        Q([[18.2, -4], [18.2 + DX * .5, -4 + DY * .5], [18.2 + DX * .5, .8 + DY * .5], [18.2, .8]], '#2a2a54'); R(11.6, -4, 6.6, 4.8, '#06163c'); R(11.6, -4, 6.6, .4, '#1a5a8a');
+        R(10.2, .6, 1.6, .7, O); Q([[11.2, -4.4], [18.6, -4.4], [18.6, 1.2], [18.6 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, -4.4 + DY * .5]], O);
+        Q([[11.6, -4], [11.6 + DX * .5, -4 + DY * .5], [11.6 + DX * .5, .8 + DY * .5], [11.6, .8]], '#2a2a54'); Q([[11.6, .8], [18.2, .8], [18.2 + DX * .5, .8 + DY * .5], [11.6 + DX * .5, .8 + DY * .5]], '#141432'); R(11.6, -4, 6.6, 4.8, '#06163c'); R(11.6, -4, 6.6, .4, '#1a5a8a');
         c.globalAlpha = .12; for (let q = 0; q < 6; q++) R(11.6, -3.4 + q * .75, 6.6, .25, CY); c.globalAlpha = .9;                                                          // рядки розгортки
         for (let q = 0; q < 5; q++) { const v = .4 + 1 * (.5 + .5 * Math.sin(t * 2.2 + q * 1.3)); R(12.2 + q * 1.15, -2.2 - v + 1, .7, v, on ? GR : '#1a8ab4'); }          // міні-графік струму
         NX.px.text(c, Math.round(S.charge * 100) + '%', px + 14.9 * s, py - .1 * s, on ? GR : CY, 1.7 * s, 'center'); c.globalAlpha = 1; R(12.1, .2, 5.6 * S.charge, .35, on ? GR : CY);
