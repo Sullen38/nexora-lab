@@ -15,11 +15,12 @@
   const R = 3, TAU = Math.PI * 2, OUT = [8, 22, 14];
   const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
   const SPEC = [
-    // du — зсув уздовж стіни від осі соти (щілина між кромками сусідніх сот видна правіше осі); ext — на скільки од. нижче тіні соти (до зони — запас)
-    { kind: 'ipomoea', under: 'orb', du: 5.6, len: 1, w: 8, seed: 3, ext: 1.5, off: 0 },
-    { kind: 'dischidia', under: 'orb', du: 9.2, len: .72, w: 5.5, seed: 5, ext: 1.5, off: .3 },
-    { kind: 'jadevine', under: 'hourglass', du: .4, len: 1, w: 9, seed: 7, ext: 3.5, off: .12 },
-    { kind: 'thunbergia', under: 'hourglass', du: 5.4, len: .7, w: 7.5, seed: 9, ext: 3.5, off: .42 },
+    // du — зсув уздовж стіни від осі вільної комірки (· 58, власник: «рости по центру й просвічувати крізь соти, що стоять попереду, а не
+    // заходити під них» — ліани на стіні посеред комірки, їх видно крізь скло передніх сот); ext — на скільки од. нижче тіні соти (до зони — запас)
+    { kind: 'ipomoea', under: 'orb', du: -3.2, len: 1, w: 8, seed: 3, ext: 1.5, off: 0 },
+    { kind: 'dischidia', under: 'orb', du: 1.6, len: .72, w: 5.5, seed: 5, ext: 1.5, off: .3 },
+    { kind: 'jadevine', under: 'hourglass', du: -3.4, len: 1, w: 9, seed: 7, ext: 3.5, off: .12 },
+    { kind: 'thunbergia', under: 'hourglass', du: 1.8, len: .7, w: 7.5, seed: 9, ext: 3.5, off: .42 },
   ];
 
   // ---------- малювання виду на полотно (одиниці кімнати; (0, 0) — корінь зверху посередині) ----------

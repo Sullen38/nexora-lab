@@ -35,7 +35,7 @@ NX.input = {
     this.ripples = this.ripples.filter(r => (r.t += 1 / 60) < .8);
     this.ripples.forEach(r => { c.save(); c.globalAlpha = 1 - r.t / .8; c.strokeStyle = '#3be8ff'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(r.x, r.y, 6 + r.t * 30, 2 + r.t * 8, 0, 0, 7); c.stroke(); c.restore(); });
     const h = this.hover; if (!h || typeof h === 'string') { if (h) { const lbl = NX.t(h === 'nexi' ? 'obj.nexiTag' : 'obj.catTag'), x = h === 'nexi' ? NX.nexi.x : NX.cat.x, y = (h === 'nexi' ? NX.nexi.box[1] : NX.cat.y - 30) - 6; this.tag(c, lbl, x, y); } return; }
-    const b = h.box || h.hit; c.save(); c.strokeStyle = '#3be8ff'; c.lineWidth = 1.5; c.shadowColor = '#3be8ff'; c.shadowBlur = 10; c.globalAlpha = .7 + .3 * Math.sin(t * 6); c.strokeRect(b.x, b.y, b.w, b.h); c.restore();
+    const b = h.box || h.hit;                                                                 // (13.11, власник: «рамок, якими виділяється зона, взагалі не має бути — Nexi теж іноді виділяється, не круто») — рамку прибрано, лишився підпис
     this.tag(c, NX.t(h.name).toUpperCase(), b.x + b.w / 2, b.y - 4);
   },
   tag(c, s, x, y) { const P = NX.px; c.font = '5px "Press Start 2P", monospace'; const w = c.measureText(s).width + 8; P.rect(c, x - w / 2, y - 9, w, 11, '#050818ee'); c.strokeStyle = '#3be8ff'; c.lineWidth = .8; c.strokeRect(x - w / 2, y - 9, w, 11); P.text(c, s, x, y - 1, '#3be8ff', 5, 'center'); },
