@@ -24,9 +24,9 @@ const [dir = '/tmp/party', lang = 'uk', who = 'all'] = process.argv.slice(2);
     await p.waitForFunction(() => NX.nexi.cur && NX.nexi.cur.fade, null, { timeout: 30000 }).catch(() => {}); await p.waitForTimeout(500); await p.screenshot({ path: path.join(dir, `trip-${tag}-2.png`) });
     await p.waitForFunction(() => NX.party.on, null, { timeout: 30000 }); await p.waitForTimeout(2000); await p.screenshot({ path: path.join(dir, `party-${tag}-1.png`) });
     await p.waitForTimeout(4000); await p.screenshot({ path: path.join(dir, `party-${tag}-2.png`) }); const f1 = await fps();
-    if (mob) { await p.evaluate(() => { const V = NX.partyRoom.GEO.VIEW; NX.party.S.x = Math.max(V.x0, V.x1 - NX.party.S.viewW); }); await p.waitForTimeout(300); await p.screenshot({ path: path.join(dir, `party-${tag}-3.png`) }); }
-    await p.evaluate(() => { const g = NX.party.S.list[0]; if (g) { const sy = (NX.persp.p(g.x, 372, g.z)[1] - 30 - NX.party.S.y) * NX.party.S.k; const sx = (NX.persp.p(g.x, 372, g.z)[0] - NX.party.S.x) * NX.party.S.k; NX.loop.canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: sx, clientY: sy, bubbles: true })); NX.loop.canvas.dispatchEvent(new PointerEvent('pointerup', { clientX: sx, clientY: sy, bubbles: true })); } });
-    await p.waitForTimeout(600); await p.screenshot({ path: path.join(dir, `party-${tag}-tap.png`) });
+    if (mob) { await p.evaluate(() => { NX.party.S.cam.tx = NX.partyRoom.GEO.VIEW.x1; }); await p.waitForTimeout(300); await p.screenshot({ path: path.join(dir, `party-${tag}-3.png`) }); }
+    await p.evaluate(() => { const g = NX.party.S.list[0]; if (g) { const w = NX.persp.p(g.x, 372, g.z), [sx, sy] = NX.party.toScreen(w[0], w[1] - 30); NX.loop.canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: sx, clientY: sy, pointerId: 1, bubbles: true })); NX.loop.canvas.dispatchEvent(new PointerEvent('pointerup', { clientX: sx, clientY: sy, pointerId: 1, bubbles: true })); } });   // тап по герою: камера наближається й стежить
+    await p.waitForTimeout(1800); await p.screenshot({ path: path.join(dir, `party-${tag}-tap.png`) });
     await p.evaluate(() => NX.party.close()); await p.waitForTimeout(2500); await p.screenshot({ path: path.join(dir, `back-${tag}.png`) }); const f2 = await fps();
     console.log(tag, '| fps party', f1, '| fps room', f2); await ctx.close();
   }

@@ -1,6 +1,6 @@
 /* ============================================================================
  * actors/guests/party_live.js — ЖИВА ВЕЧІРКА (крок 47, 06.11, чат «Персонажі»): дроп у такт, кульки, бульбашки,
- * світні палички, хвиля, балачки, пульс колонок, кіно-камера
+ * світні палички, хвиля, балачки, пульс колонок
  * ----------------------------------------------------------------------------
  * Власник: «вечірку зроби більш живою, покращи в три рази». Усе тут — поверх party.js, через кілька гачків:
  *  tick(t, dt)   — щокадру з director (і під час справжньої вечірки): ДРОП кожні 32 біти (4 біти розгону — стробоскоп
@@ -24,10 +24,10 @@ NX.partyLive = (() => {
   const mkBalloon = (g, i, any) => ({ x: g.XL + 60 + rnd() * (g.XR - g.XL - 120), y: any ? g.CEIL + 30 + rnd() * 70 : 330, z: 120 + rnd() * 280, vx: (rnd() - .5) * 6, col: NEON[i % 6], ph: rnd() * 6, r: 7 + rnd() * 3, pop: 0 });
 
   function tick(t, dt) {
-    if (!Pp || !S().on) return; const s = S(), g = G(), b = Pp.beat(), show = NX.partyShow && NX.partyShow.on, sleep = show && NX.partyShow.SH.phase === 'sleep';
+    if (!Pp || !S().on) return; const s = S(), g = G(), b = Pp.beat(), show = false, sleep = false;   // 13.11: сценарію й сну більше немає
     // ---- ДРОП у такт: розгін 4 біти → дроп (2 біти стрибають усі) ----
     const D = L.drop; if (!sleep) { if (b > D.next - 4 && b < D.next) D.build = (b - (D.next - 4)) / 4; else D.build = 0;
-      if (b >= D.next) { D.next += 32; D.k = 1; s.flashT = t + .14; s.zoom = (s.zoom || 1) + .06; cannons(); s.list.forEach(q => { if (!q.trip && !q.pouf && !q.sleep && !q.rest) q.cheerT = Math.max(q.cheerT || 0, t + 1.6); }); }
+      if (b >= D.next) { D.next += 32; D.k = 1; s.flashT = t + .14; cannons(); s.list.forEach(q => { if (!q.trip && !q.pouf && !q.sleep && !q.rest) q.cheerT = Math.max(q.cheerT || 0, t + 1.6); }); }
       D.k = Math.max(0, D.k - dt * .55); s.dropK = D.k * Math.abs(Math.sin(b * Math.PI)); } else s.dropK = 0;
     // ---- кульки ----
     L.balloons.forEach((B, i) => { if (B.pop) { if (t > B.pop) Object.assign(B, mkBalloon(g, i, false), { pop: 0 }); return; } B.x += B.vx * dt; if (B.x < g.XL + 40 || B.x > g.XR - 40) B.vx = -B.vx; B.y = Math.max(g.CEIL + 24, B.y - 6 * dt); B.ph += dt;
@@ -36,14 +36,12 @@ NX.partyLive = (() => {
     const Sn = g.snack; if (rnd() < .5) L.bubbles.push({ x: Sn.x1 + 10 + rnd() * 20, y: Sn.y0 - 10, z: Sn.z0 + rnd() * 40, vy: 14 + rnd() * 10, r: 2 + rnd() * 3, ph: rnd() * 6, age: 0, ttl: 4 + rnd() * 4 });
     L.bubbles = L.bubbles.filter(bb => { bb.age += dt; bb.y -= bb.vy * dt; bb.x += Math.sin(bb.age * 2 + bb.ph) * 8 * dt; return bb.age < bb.ttl; });
     // ---- балачки: пари вільних гостей поруч ----
-    L.chat = L.chat.filter(ch => t < ch.until && !ch.a.mv && !ch.b.mv); if (!show && rnd() < .01 && L.chat.length < 3) { const free = s.list.filter(q => !q.trip && !q.mv && !q.fly && !q.up && !q.pouf && !q.rest && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && !L.chat.some(ch => ch.a === q || ch.b === q));
+    L.chat = L.chat.filter(ch => t < ch.until && !ch.a.mv && !ch.b.mv); if (!show && rnd() < .01 && L.chat.length < 3) { const free = s.list.filter(q => !q.sc && !q.trip && !q.mv && !q.fly && !q.up && !q.pouf && !q.rest && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && !L.chat.some(ch => ch.a === q || ch.b === q));
       for (const a of free) { const bq = free.find(q => q !== a && Math.abs(q.x - a.x) < 70 && Math.abs(q.z - a.z) < 50); if (bq) { L.chat.push({ a, b: bq, until: t + 6 + rnd() * 5, t0: t }); a.dir = bq.x > a.x ? 1 : -1; bq.dir = -a.dir; a.next = Math.max(a.next, t + 8); bq.next = Math.max(bq.next, t + 8); break; } } }
     // ---- хвиля ----
     const E = s.event; if (E && E.kind === 'wave') { if (!L.wave) { L.wave = { t0: t, order: s.list.filter(q => !q.fly && !q.trip && !q.pouf && !q.rest).sort((a, b2) => a.x - b2.x) }; } const W = L.wave, el = t - W.t0; W.order.forEach((q, i) => { const k = el * 3 - i * .35; q.waveK = k > 0 && k < 1 ? Math.sin(k * Math.PI) : 0; if (el > 6) q.waveK = 0; }); } else if (L.wave) { L.wave.order.forEach(q => { q.waveK = 0; }); L.wave = null; }
     s.glow = !!(E && E.kind === 'glow');
-    // ---- кіно-камера ----
-    if (!show && !E && !s.focus && t > L.camT) { const g2 = G(), spots = [[Pp.floorXZ(.5, .6), 1.22], [[g2.bar.x0 + 120, g2.bar.z0 - 60], 1.25], [[g2.snack.x0 + 140, g2.snack.z0 - 50], 1.25], [[774, g2.balcony.z0 + 20], 1.18]], [[x, z], zoom] = spots[rnd() * spots.length | 0]; const [fx, fy] = Pp.fp(x, z); s.focus = { x: fx, y: fy - 60 * Pp.sc(z), zoom, until: t + 7, cine: true }; }
-    if (s.focus && s.focus.cine && (t > s.focus.until || E || show)) { s.focus = null; L.camT = t + 22 + rnd() * 10; }
+    // кіно-камери більше немає (власник, 13.11: «не треба, щоб воно само приближало») — камерою керує власник (party.js)
   }
   /** Конфеті-гармати з обох боків танцполу (на дропі). */
   function cannons() { const g = G(), s = S(); for (const side of [-1, 1]) { const [sx, sy] = Pp.fp(side < 0 ? g.dance.x0 - 30 : g.dance.x1 + 30, g.dance.z1 + 10); for (let i = 0; i < 26; i++) s.fx.push({ t: 'conf', x: sx, y: sy - 20, vx: -side * (40 + rnd() * 120), vy: -120 - rnd() * 120, g: 90, col: NEON[i % 6], ttl: 3.5, age: 0, ph: rnd() * 6 }); } }
