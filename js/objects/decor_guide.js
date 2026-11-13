@@ -20,7 +20,7 @@
  * входять у реєстр урятованих видів (свій лічильник count).
  * ========================================================================== */
 (() => {
-  const X = NX.px3d, HIDE = 6.5, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly'];   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
+  const X = NX.px3d, HIDE = 6.5, HIDE_ART = 12, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly'];   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
   const $ = id => document.getElementById(id);
   let REG = null, cur = null, timer = 0;
   /** Реєстр видів зі словника: [{grp, kind, no}] і мапа kind -> запис. */
@@ -29,7 +29,7 @@
     for (const grp of GROUPS) { const d = NX.t('decor.guide.sp.' + grp); if (!d || typeof d !== 'object') continue; for (const kind of Object.keys(d)) { const e = { grp, kind, no: list.length + 1 }; list.push(e); by[grp + '.' + kind] = e; } }
     return REG = { list, by, n: list.length };
   }
-  const ART_KINDS = ['orb', 'books', 'terrarium', 'flask', 'scope', 'figure'];                                     // (· 27) речі Nexi в сотах
+  const ART_KINDS = NX.decorArt ? NX.decorArt.KINDS : [];                                                          // (· 27, · 55) речі Nexi в сотах — 13 артефактів (objects/decor_art.js)
   const find = (grp, kind) => grp === 'art' ? (ART_KINDS.includes(kind) ? { grp, kind, no: ART_KINDS.indexOf(kind) + 1 } : null) : (reg().by[grp + '.' + kind] || null);
   const WALL_ALIAS = { fungi: 'shroom', green: 'orchid' };                                                   // тапи decor_live без спрайта рослини -> вид
 
@@ -46,7 +46,7 @@
       if (B.st === 'dc_hex') { HEXC.push(Object.assign({ id: B.id }, box(B))); continue; }                                   // (· 27) комірки сот — для тапу повз вміст
       const art = B.st === 'dc_art' && ART_KINDS.includes(d.kind), kind = d.plant || d.kind;
       if (!kind || (!art && !find('wall', kind)) || live[B.id] || B.st === 'dc_pylon') continue;
-      STAT.push(Object.assign({ kind, grp: art ? 'art' : 'wall', on: B.on || null }, box(B))); }
+      STAT.push(Object.assign({ kind, grp: art ? 'art' : 'wall', on: B.on || null, neon: art && B.on && DC.byId[B.on] && DC.byId[B.on].dc ? DC.byId[B.on].dc.neon : null }, box(B))); }
     return STAT;
   }
 
@@ -77,10 +77,7 @@
       const w = src.width, h = src.height; let x0 = w, y0 = h, x1 = -1, y1 = -1; try { const d = src.getContext('2d').getImageData(0, 0, w, h).data; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch (err) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
       if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; } const sw = x1 - x0 + 1, sh = y1 - y0 + 1, k = Math.min((n - pad * 2) / sw, (n - pad * 2) / sh, 4), dw = sw * k, dh = sh * k; c.drawImage(src, x0, y0, sw, sh, (n - dw) / 2, (n - dh) / 2, dw, dh); };
     try {
-      if (e.grp === 'art') {                                                                                 // (· 27) річ Nexi: шматок зібраної сцени навколо штучки
-        const b = info && info.box, SD = NX.arc.built; if (!b || !SD) return; const S = ['left', 'right'].map(k => SD[k]).find(S => S && S.comp && b.x0 >= S.box[0] && b.x1 <= S.box[2]); if (!S) return;
-        const k = S.comp.width / (S.box[2] - S.box[0]), pad = 1.5, sx = (b.x0 - pad - S.box[0]) * k, sy = (b.y0 - pad - S.box[1]) * k, sw = (b.x1 - b.x0 + pad * 2) * k, sh = (b.y1 - b.y0 + pad * 2) * k, q = Math.min((n - 4) / sw, (n - 4) / sh);
-        c.imageSmoothingEnabled = sw > n; c.drawImage(S.comp, sx, sy, sw, sh, (n - sw * q) / 2, (n - sh * q) / 2, sw * q, sh * q); return; }
+      if (e.grp === 'art') return;                                                                             // (· 55) артефакт соти малює artCard (живий кадр)
       if (e.grp === 'floor' || e.grp === 'garden') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
         if (NX.planters.sprite) { fit(NX.planters.sprite(p), 4); return; }                                               // (· 34) герой перед вікном — власний спрайт
         const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
@@ -96,6 +93,25 @@
     } catch (err) { /* спрайта нема — картка без малюнка */ }
   }
 
+  // ---------- (· 55) картка артефакта: об'єкт цілий, збільшений і ЖИВИЙ ----------
+  /** Полотно 96×96: ніша-сота кольору своєї комірки (контур шестикутника, сяйво, поличка), на ній артефакт ×3 — той самий
+   *  спрайт, що стоїть у кімнаті (NX.decorArt.sprite), кадр за кадром, поки картка відкрита. */
+  let raf = 0;
+  function artCard() {
+    cancelAnimationFrame(raf); if (!cur || cur.e.grp !== 'art' || !NX.decorArt) return; raf = requestAnimationFrame(artCard);
+    const cv = $('guide').querySelector('canvas'), n = 100, m = n / 2, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, neon = (cur.info && cur.info.neon) || '#ffd27a', DA = NX.decorArt;
+    if (cv.width !== n * R) { cv.width = cv.height = n * R; cv.style.width = cv.style.height = n + 'px'; }
+    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, n, n); c.imageSmoothingEnabled = false;
+    c.fillStyle = '#0a0a26'; c.fillRect(0, 0, n, n);
+    const P6 = (q, r) => [m + r * Math.cos(q * Math.PI / 3), m + r * Math.sin(q * Math.PI / 3)], hexP = r => { c.beginPath(); for (let q = 0; q < 6; q++) { const p = P6(q, r); q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.closePath(); };
+    const g = c.createRadialGradient(m, m - 8, 4, m, m, m + 2); g.addColorStop(0, neon + '66'); g.addColorStop(.6, neon + '1c'); g.addColorStop(1, '#0a0a2600'); hexP(48); c.fillStyle = '#12103a'; c.fill(); c.fillStyle = g; c.fill();
+    c.globalAlpha = .55 + .25 * Math.sin(t * 2); c.strokeStyle = neon; c.lineWidth = 2; hexP(47); c.stroke(); c.globalAlpha = .25; c.lineWidth = 1; hexP(42); c.stroke(); c.globalAlpha = 1;
+    const u = (t * .5) % 6, i = Math.floor(u), f = u - i, A = P6(i, 47), B = P6((i + 1) % 6, 47); c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f - 1.5, A[1] + (B[1] - A[1]) * f - 1.5, 3, 3);   // вогник по кромці — як у кімнаті
+    const S = 3, w = DA.W * S, h = DA.H * S, x = m - w / 2, y = 96 - h;                                              // ×3 — цілі пікселі, артефакт увесь у кадрі
+    c.fillStyle = neon; c.globalAlpha = .8; c.fillRect(m - 28, 96, 56, 1); c.globalAlpha = .35; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(m, 96, w * .36, 2.5, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
+    c.drawImage(DA.sprite(cur.e.kind, t), x, y, w, h);
+  }
+
   // ---------- картка ----------
   function render() {
     const el = $('guide'); if (!el || !cur) return; const { e, info } = cur, T = NX.t, R = reg();
@@ -103,7 +119,7 @@
       el.querySelector('b').textContent = T('decor.guide.art.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(2, '0');
       el.querySelector('.gn').textContent = T(`decor.guide.art.items.${e.kind}.n`); el.querySelector('small').textContent = T(`decor.guide.art.items.${e.kind}.d`);
       el.querySelector('.gw').textContent = T('decor.guide.art.kind') + ' · ' + T('decor.guide.art.where'); el.querySelector('.gc').textContent = T('decor.guide.art.count', { n: ART_KINDS.length });
-      el.style.borderColor = '#ffd27a'; drawSprite(e, info); return; }
+      el.style.borderColor = (info && info.neon) || '#ffd27a'; artCard(); return; }
     el.querySelector('b').textContent = T('decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
     const lat = T('decor.guide.latin.' + e.kind); el.querySelector('small').textContent = lat.startsWith('decor.') ? '' : lat;
@@ -115,7 +131,7 @@
   }
   function show(e, info) {
     const el = $('guide'); if (!el || !e) return; cur = { e, info }; render(); el.classList.add('show');
-    clearTimeout(timer); timer = setTimeout(hide, HIDE * 1000);
+    clearTimeout(timer); timer = setTimeout(hide, (e.grp === 'art' ? HIDE_ART : HIDE) * 1000);                    // (· 55) артефакт — довше: є на що дивитись
   }
   function hide() { const el = $('guide'); if (el) el.classList.remove('show'); cur = null; }
   { const el = $('guide'); if (el) el.addEventListener('click', hide); }                                    // розмітка — вище скриптів (index.html)
@@ -150,7 +166,7 @@
       let best = null; for (const S of statics()) if (x >= S.x0 - 1 && x <= S.x1 + 1 && y >= S.y0 - 1 && y <= S.y1 + 1 && (!best || S.a < best.a)) best = S;
       if (!best) { let hx = null; for (const H of HEXC) if (x >= H.x0 && x <= H.x1 && y >= H.y0 && y <= H.y1 && (!hx || H.a < hx.a)) hx = H;   // (· 27) тап по порожньому місцю соти — вміст соти
         if (hx) best = statics().find(S => S.on === hx.id) || null; }
-      if (!best) return false; show(find(best.grp, best.kind), best.grp === 'art' ? { box: best } : null); return true;
+      if (!best) return false; show(find(best.grp, best.kind), best.grp === 'art' ? { box: best, neon: best.neon } : null); return true;
     },
   };
 })();

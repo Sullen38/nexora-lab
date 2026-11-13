@@ -360,35 +360,26 @@
       const at = d => { let k = 1; while (k < pts.length - 1 && L[k] < d) k++; const f = (d - L[k - 1]) / Math.max(.01, L[k] - L[k - 1]); return [pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * f, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * f]; };
       for (let d = 0; d <= L[5]; d += 5) { const q = at(d); c.globalAlpha = .16 + .06 * Math.sin(t * 2.2 + d * .3); c.drawImage(g.cv, q[0] - 6, q[1] - 6, 12, 12); }
       const f = ((t * .22 + (B.dc.seed || 0) * .5) % 1), hd = at(f * L[5]); c.globalAlpha = .9; c.drawImage(g.cv, hd[0] - 5, hd[1] - 5, 10, 10); c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.fillRect(hd[0] - .7, hd[1] - .7, 1.4, 1.4); }
+    // ---------- (Декор стін · 55) АРТЕФАКТИ СОТ — живий піксель-арт (objects/decor_art.js): спрайт стоїть на поличці-дні своєї соти,
+    // видно його лише крізь вікно комірки (кліп по передньому шестикутнику), під ним тінь, за ним — сяйво його кольору; тап по
+    // соті — артефакт підстрибує, спалах і іскри. Той самий спрайт — у картці «РІЧ NEXI» (objects/decor_guide.js). ----------
+    const DA = NX.decorArt;
     for (const B of ART) {
-      const { P } = basis(B), w = B.w, H = B.yb - B.yt, z = P(0, B.dep / 2, B.yb)[2], s = 520 / (520 + z), at = (u, v, y) => proj(P(u, v, y)), k = B.dc.kind;
-      const c0 = at(0, B.dep / 2, B.yb); if (c0[0] < vx0 - 20 || c0[0] > vx1 + 20) continue;
-      const tdt = t - (TP.hex[B.on] || -99), boost = tdt >= 0 && tdt < 2 ? Math.exp(-tdt / .6) : 0;                       // тап по соті: штучка «спрацьовує»
-      if (boost > .02) { const o = at(0, B.dep / 2, B.yb - H * .45), r = Math.max(w, H) * .7 * s * (1 + tdt), g = glow(k === 'figure' ? '#ffd27a' : k === 'flask' || k === 'terrarium' ? '#7aff9a' : '#d8a0ff');
-        c.globalAlpha = .7 * boost; c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
-        for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + B.dc.seed, rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : '#ffd27a'; c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
-      { const NG = { crystal: '#3be8ff', globe: '#3be8ff', lamp: '#ff4fd8', console: '#3bff8a', cube: '#ffd27a', hourglass: '#ffd27a', cup: '#ffd27a' }[k];               // (· 50) нові артефакти: м'яке сяйво в такт
-        if (NG) { const o = at(0, B.dep / 2 - .2, B.yb - H * .5), r = Math.max(w, H) * .55 * s; c.globalAlpha = .18 + .12 * Math.sin(t * 1.9 + (B.dc.seed || 0)); const g = glow(NG, r); c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
-          if (k === 'globe') { const a = t * 1.2, rr = Math.min(w, H - 2) * .5 * s, oc = at(0, B.dep / 2 - .2, B.yb - 2 - Math.min(w, H - 2) * .44); c.globalAlpha = .95; c.fillStyle = '#ffffff'; c.fillRect(oc[0] + Math.cos(a) * rr - .4, oc[1] + Math.sin(a) * rr * .3 - .4, .8, .8); }   // супутник на орбіті
-          if (k === 'hourglass') { const f = (t * .9) % 1, pp = at(0, B.dep / 2 - w * .3, B.yb - H * .5 + f * H * .3); c.globalAlpha = .9 * (1 - f); c.fillStyle = '#ffe9a8'; c.fillRect(pp[0] - .25, pp[1] - .25, .5, .5); } } }                // піщинка падає
-      if (k === 'orb') { const o = at(0, B.dep / 2 - .2, B.yb - 1.6 - w * .36), r = w * .38 * s;
-        c.globalAlpha = .35 + .2 * Math.sin(t * 2.3); const g = glow('#c88aff', r); c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
-        for (let q = 0; q < 3; q++) { const a = t * (1.6 + q * .4) + q * 2.1, x = o[0] + Math.cos(a) * r * .55, y = o[1] + Math.sin(a) * r * .3; c.globalAlpha = .9; c.fillStyle = q === 1 ? '#3be8ff' : '#f0d8ff'; c.fillRect(x - .3, y - .3, .6, .6); } }
-      else if (k === 'flask') { const r = w * .42, yN = B.yb - H * .55, top = yN + (B.yb - yN) * .5;
-        for (let q = 0; q < 5; q++) { const f = ((t * (.5 + .3 * hash(q, 2))) + hash(q, 4)) % 1, y = B.yb - .6 - f * (B.yb - .6 - top), p = at((hash(q, 6) - .5) * r * .9, B.dep / 2 - r - .1, y);
-          c.globalAlpha = .8 * (1 - f); c.fillStyle = '#d8fff0'; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
-        const p = at(0, B.dep / 2 - r, B.yb - (B.yb - yN) * .25), gg = glow('#5af08a', r * s * 1.2); c.globalAlpha = .18 + .1 * Math.sin(t * 1.7); c.drawImage(gg.cv, p[0] - r * s * 1.2, p[1] - r * s * 1.2, r * s * 2.4, r * s * 2.4); }
-      else if (k === 'terrarium') { const r = Math.min(w, H) * .46, o = at(0, B.dep / 2 - .2, B.yb - r);
-        for (let q = 0; q < 4; q++) { const a = t * (.5 + .2 * q) + q * 1.7, x = o[0] + Math.sin(a) * r * s * .5, y = o[1] + Math.cos(a * 1.3) * r * s * .3 - r * s * .1, b = Math.max(0, Math.sin(t * 2 + q * 2));
-          c.globalAlpha = b * .9; const g = glow('#d8ff6a', 1); c.drawImage(g.cv, x - 1, y - 1, 2, 2); } }
-      else if (k === 'scope') { const p = at(-w * .05, B.dep * .3, B.yb - H * .38); c.globalAlpha = .45 + .4 * (.5 + .5 * Math.sin(t * 3.1)); const g = glow('#3be8ff', 2.4); c.drawImage(g.cv, p[0] - 2.4, p[1] - 2.4, 4.8, 4.8);
-        if ((t % 4) < 1.2) { const f = (t % 4) / 1.2; c.globalAlpha = 1 - f; c.fillStyle = '#9af6ff'; c.fillRect(p[0] - .3, p[1] - 1 - f * 3, .6, .6); } }
-      else if (k === 'figure') { const f = ((t % 6.5) / 1.1); if (f < 1) { const pb = 2.6, fh = H - pb - .6, top = at(-w * .45, B.dep / 2, B.yb - pb - .5 - fh), bot = at(w * .45, B.dep / 2, B.yb - pb - .5);
-          const x = top[0] + (bot[0] - top[0]) * f; c.save(); c.beginPath(); c.rect(top[0], top[1], bot[0] - top[0], bot[1] - top[1]); c.clip();
-          const g = c.createLinearGradient(x - 2, 0, x + 2, 0); g.addColorStop(0, 'rgba(255,240,180,0)'); g.addColorStop(.5, 'rgba(255,250,220,.75)'); g.addColorStop(1, 'rgba(255,240,180,0)'); c.globalAlpha = 1; c.fillStyle = g;
-          c.beginPath(); c.moveTo(x - 1.5, top[1]); c.lineTo(x + 1.5, top[1]); c.lineTo(x + .2, bot[1]); c.lineTo(x - 2.8, bot[1]); c.closePath(); c.fill(); c.restore(); } }
-      else if (k === 'books') { const p = at(w / 2 - 1.3, B.dep / 2, B.yb - H * .25); c.globalAlpha = .3 + .25 * Math.sin(t * 1.9); const g = glow('#c88aff', 2.6); c.drawImage(g.cv, p[0] - 2.6, p[1] - 2.6, 5.2, 5.2);
-        for (let q = 0; q < 3; q++) { const f = ((t * .4) + q / 3) % 1, x = p[0] - 1 + Math.sin(q * 3 + t) * 1.2, y = p[1] - 2 - f * 5; c.globalAlpha = (1 - f) * .9; c.fillStyle = '#f0d8ff'; c.fillRect(x - .2, y - .2, .4, .4); } }
+      const HXB = byId[B.on], kind = B.dc.kind; if (!HXB || !DA || !DA.has(kind)) continue;
+      const { P } = basis(HXB), Ro = HXB.w / 2, Ri = Ro - 2.3 / .866, Yc = (HXB.yt + HXB.yb) / 2, dp = HXB.dep * .3;
+      const win = Array.from({ length: 6 }, (_, q) => proj(P(Ri * Math.cos(q * Math.PI / 3), 0, Yc + Ri * Math.sin(q * Math.PI / 3))));
+      const x0 = Math.min(...win.map(q => q[0])), x1 = Math.max(...win.map(q => q[0])); if (x1 < vx0 - 20 || x0 > vx1 + 20) continue;
+      const fl = proj(P(0, dp, Yc + Ri * .866 - .15)), tp = proj(P(0, dp, Yc - Ri * .866)), wl = proj(P(-Ri, dp, Yc)), wr = proj(P(Ri, dp, Yc));
+      const h = Math.min((fl[1] - tp[1]) * .97, Math.abs(wr[0] - wl[0]) * .84 * DA.H / DA.W), w = h * DA.W / DA.H; fl[1] = Math.min(fl[1], (win[1][1] + win[2][1]) / 2 - .2);   // низ спрайта не ховається за кромку
+      const tdt = t - (TP.hex[B.on] || -99), boost = tdt >= 0 && tdt < 2 ? Math.exp(-tdt / .6) : 0, hop = tdt >= 0 && tdt < .5 ? Math.sin(tdt / .5 * Math.PI) * h * .12 : 0;
+      const g = glow(DA.glow(kind)), r = h * .8;
+      c.save(); c.beginPath(); win.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.clip();
+      c.globalAlpha = Math.min(1, .2 + .08 * Math.sin(t * 1.7 + (B.dc.seed || 0)) + .6 * boost); c.drawImage(g.cv, fl[0] - r, fl[1] - h * .5 - r, r * 2, r * 2);
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = .5; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(fl[0], fl[1] - .1, w * .36, h * .05, 0, 0, TAU); c.fill();   // тінь на поличці
+      c.globalAlpha = 1; c.imageSmoothingEnabled = false; c.drawImage(DA.sprite(kind, t + (B.dc.seed || 0) * 1.7 + boost * 2), fl[0] - w / 2, fl[1] - h - hop, w, h);
+      c.restore(); c.imageSmoothingEnabled = true;
+      if (boost > .02) { const o = [fl[0], fl[1] - h * .5];
+        for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + (B.dc.seed || 0), rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : DA.glow(kind); c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
     }
     if (NEON) {                                                                         // неонова вивіска: серце б'ється (подвійний удар), неон інколи мерехтить
       const F = faceOf(NEON); if (F.S1[0] > vx0 && F.S0[0] < vx1) {
