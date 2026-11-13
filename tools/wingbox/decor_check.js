@@ -22,7 +22,7 @@ const HTML = 'file://' + path.resolve(__dirname, '../../dist/nexora-lab.html'), 
     const S = 2, X0 = NX.cfg.ROOM_X0, Y0 = -20, W = Math.round((NX.cfg.ROOM_X1 - X0) * S), H = 420 * S, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const c = cv.getContext('2d'); c.setTransform(S, 0, 0, S, -X0 * S, -Y0 * S); let n = 0;
     for (const sd of ['left', 'right']) { const B = NX.arc.built[sd]; if (B.layers.length === 5) { const l = B.layers[1]; c.drawImage(l.cv, l.x0, l.y0, l.x1 - l.x0, l.y1 - l.y0); B.layers.splice(1, 1); B.comp = null; n++; } }
-    if (NX.objects.wallTag) { NX.objects.wallTag.drawBack(c, 0); NX.objects.wallTag.drawBack = () => {}; }          // (13.11) графіті-тег — теж декор (окремий об'єкт, не шар «біля стіни»): у маску декору, зі сцени прибрати
+    for (const id of ['wallTag', 'reefHolo']) if (NX.objects[id]) { NX.objects[id].drawBack(c, 0); NX.objects[id].drawBack = () => {}; }          // (13.11) графіті-тег — теж декор (окремий об'єкт, не шар «біля стіни»): у маску декору, зі сцени прибрати
     if (NX.decorLive && NX.decorLive.extentTo) NX.decorLive.extentTo(c);                  // (· 4) живе декору (рослини гойдаються, метелики, світлячки) — у крайніх положеннях
     const d = c.getImageData(0, 0, W, H).data, m = new Uint8Array(W * H); for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3] > 60 ? 1 : 0;
     window.DC = { S, X0, Y0, W, H, m }; NX.nexi.layer = () => null; NX.cat.layer = () => null; if (NX.guests) NX.guests.spawn = () => {};

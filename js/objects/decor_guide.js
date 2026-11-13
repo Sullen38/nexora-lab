@@ -22,7 +22,7 @@
 (() => {
   const X = NX.px3d, HIDE = 6.5, HIDE_ART = 12, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly'];   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
   const $ = id => document.getElementById(id);
-  let REG = null, cur = null, timer = 0;
+  let REG = null, cur = null, timer = 0, LAST = null;                                                            // LAST — остання показана картка (· 60: голо-монітор рифу показує скан виду)
   /** Реєстр видів зі словника: [{grp, kind, no}] і мапа kind -> запис. */
   function reg() {
     if (REG) return REG; const list = [], by = {};
@@ -143,7 +143,7 @@
     drawSprite(e, info);
   }
   function show(e, info) {
-    const el = $('guide'); if (!el || !e) return; cur = { e, info }; render(); el.classList.add('show');
+    const el = $('guide'); if (!el || !e) return; cur = { e, info }; LAST = { e, t: NX.time }; render(); el.classList.add('show');
     clearTimeout(timer); timer = setTimeout(hide, (e.grp === 'art' ? HIDE_ART : HIDE) * 1000);                    // (· 55) артефакт — довше: є на що дивитись
   }
   function hide() { const el = $('guide'); if (el) el.classList.remove('show'); cur = null; }
@@ -151,7 +151,7 @@
   NX.i18n.onLang(() => { REG = null; if (cur) render(); });
 
   NX.decorGuide = {
-    reg, statics, show, hide, spots,
+    reg, statics, show, hide, spots, get last() { return LAST; },
     /** (· 59) Тап по дрону-куратору (objects/decor_drone.js). */
     showBot() { show({ grp: 'bot', kind: 'drone', no: 0 }); },
     /** (· 19) Промінь сканера на живий шар (objects/decor_live.js draw). */

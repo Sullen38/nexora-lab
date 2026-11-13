@@ -308,7 +308,9 @@
     return [];
   }
   NX.decorAqua = {
-    residents,
+    residents, map: MR, reef: R,                                                         // (· 60) для objects/decor_reefx.js: косяк, ніч, голо-монітор
+    /** (· 60) Скільки секунд тому почалось годування (−1 — не годують). */
+    feedAge(aq, t) { const E = FEED[aq]; return E ? t - E.t0 : -1; },
     /** До риб (objects/decor.js drawAq). */
     back(fx, aq, A, t) { if (aq === 'reef' && R) reefBack(fx, A, t); else if (aq === 'jelly') jellyBack(fx, A, t); },
     /** Після риб (list — риби кадру: корм, до якого риба доплила, з'їдено). */

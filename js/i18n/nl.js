@@ -20,6 +20,7 @@ NX.i18n.add('nl', {
   sofa: { news: 'NEXORA NEWS • VERKOOP +18% • 3 NIEUWE KLANTEN • NEXI IS WERKNEMER VAN DE MAAND • ' },
   decor: {
     garden: { title: 'TUIN ACHTER DE BANK', count: 'SOORTEN: {n}' },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
+    reefmon: { title: 'RIFLEVEN', temp: 'TEMP', salt: 'ZOUT', saved: 'GERED: {n}', scan: 'SCAN', feed: 'VOEREN' },   // (· 60) голо-монітор рифу (objects/decor_reefx.js)
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
       bot: { head: 'HULPJE VAN NEXI', n: 'Curatordrone', d: 'Zorgt voor de honingraten: poetst het glas, blaast stof weg, zet de aandenkens recht en geeft de klimplanten water. Raak aan en sleep — hij volgt je vinger.', kind: 'DRONE' },   // (· 59) картка дрона-куратора
       art: {   // (· 27) Nexi's aandenkens op de honingraatplanken (objects/decor_guide.js)

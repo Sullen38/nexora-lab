@@ -372,6 +372,10 @@ def decor_side(L, sgn, C, R, verbose=True):
         # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
         # (живі: objects/decor.js); кришка зі світлом зверху, тумба з неоном і вогниками знизу — найбільший, що влазить
         RF = dict(P=14., lid=5., base=7.)
+        # (13.11, власник — скрін із зеленою лінією над табличкою «АНАЛІТИКА»: «акваріум зроби більше до зеленої лінії») низ нижче на
+        # RF_DROP од. екрана: силует зон у цьому будівнику (грані розкладки з полем) закінчується на ~15 од. вище за видиму табличку —
+        # справжнє місце міряє decor_check.js (піксель у піксель): після зміни — none, до таблички праворуч лишається ~4 од.
+        RF_DROP = 12.
         a0, a1 = W.a_of(222.), W.a_of(362.)
         Ytop = -999.
         for k in range(41):                                                             # верх кришки — не вище рядка 5 по всій довжині
@@ -380,7 +384,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         for k in range(41):                                                             # низ тумби — над зонами (біля стіни і спереду)
             a = a0 + (a1 - a0) * k / 40
             for ins in (0., RF['P'] + .3):
-                (x, z), _, _ = W.at(a, ins); Ybot = min(Ybot, Yw(free_y(W.X(a, ins)) - 1, z) - RF['base'])
+                (x, z), _, _ = W.at(a, ins); Ybot = min(Ybot, Yw(free_y(W.X(a, ins)) - 1 + RF_DROP, z) - RF['base'])
         RF.update(top=round(Ytop, 2), bot=round(Ybot, 2))
         segs, tot = arc_segments('dc_rf', min(a0, a1), max(a0, a1), abs(a1 - a0) / 7, RF['P'], RF['bot'] + RF['base'], RF['top'] - RF['lid'], 'dc_reef', extra=RF)
         acc = 0.
@@ -569,6 +573,7 @@ def check_screen(L, items, margin=MARGIN):
     bad = []
     for it in items:
         if it['id'].startswith(INVIS): continue
+        if it['id'].startswith('dc_rf') and not it['id'].startswith('dc_rfp'): continue   # (13.11) риф опущено до таблички за словом власника (RF_DROP): його межу тримає decor_check.js
         px = pxN if it.get('dc', {}).get('noarm') else pxA                           # (· 10) за маніпулятором — можна (він попереду)
         P = hull(screen_poly(it)); xs = [p[0] for p in P]; yy = [p[1] for p in P]
         x0, x1, y0, y1 = min(xs), max(xs), min(yy), max(yy); hit = 0
