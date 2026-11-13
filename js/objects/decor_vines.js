@@ -96,7 +96,7 @@
   }
   const amp = (v, i, n, t) => { const dt = t - v.shake, sh = dt >= 0 && dt < 2.5 ? 2.2 * Math.exp(-dt / .8) * Math.cos(dt * 7) : 0; return (Math.sin(t * 1.05 + v.ph + i * .33) * .85 + sh) * v.s * Math.pow(i / n, 1.4); };
   /** Чи цвіте зараз (цикл 150 с, у кожної свій зсув; цвіте ~70 % часу). */
-  const blooming = (v, t) => ((t / 150 + v.off) % 1) < .7;
+  const blooming = (v, t) => ((t / 150 + v.off) % 1) < .7 || t - (v.wet || -999) < 90;                              // після поливу дроном цвіте ще півтори хвилини
 
   NX.decorVines = {
     KINDS, has: k => !!DRAW[k], lastKind: null,
@@ -109,6 +109,9 @@
       c.restore();
     },
     tap(x, y, t) { for (const v of build()) { const w = v.w * v.s; if (x > v.x - w / 2 - 1 && x < v.x + w / 2 + 1 && y > v.y - 2 && y < v.y + v.L * v.s + 1) { v.shake = t; this.lastKind = v.kind; return true; } } return false; },
+    /** (· 59) Для дрона-куратора: верхівки ліан [{x, y, kind}] і полив k-ї — гойднеться й зацвіте. */
+    spots() { return build().map(v => ({ x: v.x, y: v.y, kind: v.kind })); },
+    water(k, t) { const v = build()[k]; if (v) { v.shake = t; v.wet = t; } },
     /** Портрет виду для картки довідника: верхівка ліани з квітами. */
     sprite(kind) { const sp = SPEC.find(q => q.kind === kind); if (!sp) return null; const L = 15, w = sp.w + 1, a = gen(kind, w, L, sp.seed, false, true), b = gen(kind, w, L, sp.seed, true); a.getContext('2d').drawImage(b, 0, 0); return a; },
     /** Для tools/wingbox/decor_check.js: ліани в крайніх положеннях. */

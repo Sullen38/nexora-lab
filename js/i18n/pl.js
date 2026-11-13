@@ -21,6 +21,7 @@ NX.i18n.add('pl', {
   decor: {
     garden: { title: 'OGRÓD ZA SOFĄ', count: 'GATUNKÓW: {n}' },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      bot: { head: 'POMOCNIK NEXI', n: 'Dron-kustosz', d: 'Dba o plastry: przeciera szkło, zdmuchuje kurz, poprawia pamiątki i podlewa pnącza. Dotknij i prowadź — poleci za palcem.', kind: 'DRON' },   // (· 59) картка дрона-куратора
       art: {   // (· 27) pamiątki Nexi na półkach-plastrach (objects/decor_guide.js)
         head: 'PAMIĄTKA NEXI', kind: 'PAMIĄTKA', where: 'PÓŁKI-PLASTRY', count: 'Pamiątek na półkach: {n}',
         items: { orb: { n: 'Kryształowa kula', d: 'Pierwszy „mózg” Nexi — kula-prototyp na złotej podstawce. Wciąż mieni się.' },

@@ -113,9 +113,21 @@
     c.imageSmoothingEnabled = R !== 1 && R !== 3; c.drawImage(DA.sprite(cur.e.kind, t, 3), x, y, w, h);                     // K = 3: дрібно промальований кадр того самого артефакта, що стоїть у соті
   }
 
+  /** (· 59) Портрет дрона в картці: живий (гвинт крутиться, око блимає), поки картка відкрита. */
+  function botCard() {
+    cancelAnimationFrame(raf); if (!cur || cur.e.grp !== 'bot' || !NX.decorDrone) return; raf = requestAnimationFrame(botCard);
+    const cv = $('guide').querySelector('canvas'), n = 100, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), p = NX.decorDrone.portrait(performance.now() / 1000);
+    if (cv.width !== n * R) { cv.width = cv.height = n * R; cv.style.width = cv.style.height = n + 'px'; }
+    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.fillStyle = '#0a0a26'; c.fillRect(0, 0, n, n); const g = c.createRadialGradient(50, 50, 4, 50, 50, 52); g.addColorStop(0, '#3be8ff44'); g.addColorStop(1, '#0a0a2600'); c.fillStyle = g; c.fillRect(0, 0, n, n);
+    c.imageSmoothingEnabled = R !== 1 && R !== 3; c.drawImage(p, 50 - p.width / 2, 52 - p.height / 2);
+  }
+
   // ---------- картка ----------
   function render() {
     const el = $('guide'); if (!el || !cur) return; const { e, info } = cur, T = NX.t, R = reg();
+    if (e.grp === 'bot') {                                                                                   // (· 59) картка дрона-куратора — така сама, як у всіх
+      el.querySelector('b').textContent = T('decor.guide.bot.head'); el.querySelector('.gn').textContent = T('decor.guide.bot.n'); el.querySelector('small').textContent = T('decor.guide.bot.d');
+      el.querySelector('.gw').textContent = T('decor.guide.bot.kind') + ' · ' + T('decor.guide.art.where'); el.querySelector('.gc').textContent = ''; el.style.borderColor = '#3be8ff'; botCard(); return; }
     if (e.grp === 'art') {                                                                                   // (· 27) картка речі Nexi: назва, підпис-історія, золота рамка
       el.querySelector('b').textContent = T('decor.guide.art.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(2, '0');
       el.querySelector('.gn').textContent = T(`decor.guide.art.items.${e.kind}.n`); el.querySelector('small').textContent = T(`decor.guide.art.items.${e.kind}.d`);
@@ -140,6 +152,8 @@
 
   NX.decorGuide = {
     reg, statics, show, hide, spots,
+    /** (· 59) Тап по дрону-куратору (objects/decor_drone.js). */
+    showBot() { show({ grp: 'bot', kind: 'drone', no: 0 }); },
     /** (· 19) Промінь сканера на живий шар (objects/decor_live.js draw). */
     draw: drawScan,
     /** Куди летіти Nexi сканувати рослини на стіні side: [{kind, x, y, z}] (точка на рослині; z — глибина), 3 випадкові, зліва направо. */

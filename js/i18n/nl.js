@@ -21,6 +21,7 @@ NX.i18n.add('nl', {
   decor: {
     garden: { title: 'TUIN ACHTER DE BANK', count: 'SOORTEN: {n}' },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
+      bot: { head: 'HULPJE VAN NEXI', n: 'Curatordrone', d: 'Zorgt voor de honingraten: poetst het glas, blaast stof weg, zet de aandenkens recht en geeft de klimplanten water. Raak aan en sleep — hij volgt je vinger.', kind: 'DRONE' },   // (· 59) картка дрона-куратора
       art: {   // (· 27) Nexi's aandenkens op de honingraatplanken (objects/decor_guide.js)
         head: 'AANDENKEN VAN NEXI', kind: 'AANDENKEN', where: 'HONINGRAATPLANKEN', count: 'Aandenkens op de planken: {n}',
         items: { orb: { n: 'Kristallen bol', d: 'Nexi\'s eerste "brein" — een prototypebol op een gouden voet. Glanst nog steeds.' },

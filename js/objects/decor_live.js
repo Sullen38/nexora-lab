@@ -365,44 +365,18 @@
   }
   const NIGHT = { lamp: 1, crystal: 1, orb: 1, globe: 1, terrarium: 1 };
   /** (· 57) СПОТИ над сотами й ДРОН-КУРАТОР. Споти: три маленькі світильники на цеглі над верхніми сотами, вузький промінь на соту (удень
-   *  ледь видно, уночі — головне світло стіни). Дрон: літає від соти до соти (свій порядок), зависає над кромкою й водить
-   *  променем по артефакту; камера на нього не реагує. droneAt(t) -> {x, y, A, scan} — де він і яку соту оглядає. */
-  const SPOT_K = ['crystal', 'globe', 'hourglass'], ORDER = [3, 9, 0, 6, 11, 2, 7, 12, 4, 10, 1, 8, 5];
-  let DRN = null;
-  /** (· 58) Дрон-куратор, спрайт 26×18 (удвічі детальніший): хромований корпус-капсула з відблиском, темний візор з бірюзовим оком
-   *  (блимає), два гвинти на кронштейнах (3 кадри обертання), антена з вогником, рожеві неонові смужки, знизу — золота лінза сканера. */
-  const droneSpr = () => { if (DRN) return DRN; DRN = [0, 1, 2, 3].map(f => { const cv = document.createElement('canvas'); cv.width = 26; cv.height = 18; const q = cv.getContext('2d'), R = (x, y, w, h, col) => { q.fillStyle = col; q.fillRect(x, y, w, h); };
-    const O = '#0b0620';
-    R(3, 6, 5, 2, O); R(18, 6, 5, 2, O); R(4, 6, 4, 1, '#8c8cb0'); R(18, 6, 4, 1, '#5a5a86');                                   // кронштейни
-    for (const hx of [3, 21]) { R(hx - 1, 3, 4, 4, O); R(hx, 4, 2, 2, '#c4c4dc'); R(hx, 4, 1, 1, '#ffffff'); const bl = [7, 3, 5, 7][f], c0 = f === 1 ? '#9ad8f0' : '#eaffff'; R(hx + 1 - bl / 2 | 0, 2, bl + 1, 1, c0); if (f !== 1) R(hx - 2, 1, 5, 1, '#bfe8ff55'); }   // гвинти
-    R(7, 4, 12, 10, O); R(6, 6, 14, 6, O); R(8, 5, 10, 8, '#c4c4dc'); R(7, 7, 12, 4, '#c4c4dc'); R(8, 5, 10, 1, '#ffffff'); R(9, 6, 5, 1, '#eeeef8'); R(8, 11, 10, 2, '#8c8cb0'); R(7, 10, 12, 1, '#a8a8c8');   // корпус
-    R(9, 7, 8, 3, '#12283c'); R(9, 7, 8, 1, '#0a1626'); if (f !== 3) { R(11, 8, 4, 1, '#3be8ff'); R(12, 8, 2, 1, '#eaffff'); R(11, 9, 4, 1, '#1a8ac8'); } else R(11, 9, 4, 1, '#3be8ff');   // візор і око (кадр 3 — блимнув)
-    R(7, 9, 1, 2, '#ff4fd8'); R(18, 9, 1, 2, '#ff4fd8');                                                                             // неонові смужки
-    R(12, 1, 2, 3, O); R(12, 2, 1, 2, '#9a9ac4'); R(12, 0, 2, 2, O); R(12, 0, 1, 1, f & 1 ? '#ff3a5a' : '#ff9a9a');                   // антена з вогником
-    R(10, 13, 6, 3, O); R(11, 13, 4, 2, '#c8901e'); R(11, 13, 4, 1, '#f4c842'); R(12, 14, 2, 1, '#fff0a0');                             // лінза сканера
-    R(4, 8, 2, 1 + (f & 1), '#3be8ff'); R(20, 8, 2, 1 + ((f + 1) & 1), '#3be8ff');                                                   // сопла
-    return cv; }); return DRN; };
-  function droneAt(t) {
-    const list = ART.map(artGeo).filter(Boolean); if (list.length < 2) return null; const T = 6.5, n = Math.floor(t / T), f = (t / T) % 1, at = k => { const A = list[ORDER[((k % 13) + 13) % 13] % list.length]; return { A, x: A.fc[0] + (A.pane[2] - A.pane[0]) * .12, y: A.pane[1] - (A.pane[3] - A.pane[1]) * .34 }; };
-    const a = at(n), b = at(n + 1), mv = f > .72 ? (f - .72) / .28 : 0, e = mv * mv * (3 - 2 * mv);
-    return { x: a.x + (b.x - a.x) * e + Math.sin(t * 2.1) * .5, y: a.y + (b.y - a.y) * e - Math.sin(mv * Math.PI) * 5 + Math.sin(t * 3.3) * .4, A: a.A, scan: f > .06 && f < .66 ? (f - .06) / .6 : -1, dir: b.x >= a.x ? 1 : -1 };
-  }
+   *  ледь видно, уночі — головне світло стіни). Дрон-куратор — окремий модуль objects/decor_drone.js (· 59). */
+  const SPOT_K = ['crystal', 'globe', 'hourglass'];
   function drawCurator(c, t, nt, vx0, vx1) {
     c.save(); c.imageSmoothingEnabled = true;
     for (const k of SPOT_K) { const B = ART.find(q => q.dc.kind === k), A = B && artGeo(B); if (!A || A.ceil[0] < vx0 - 30 || A.ceil[0] > vx1 + 30) continue;              // споти: корпус під стелею й конус світла на соту
       const [sx, sy] = A.ceil, hw = (A.pane[2] - A.pane[0]) * .62, ty = A.fc[1] + (A.pane[3] - A.pane[1]) * .3, g = A.sg && A.sgc === c ? A.sg : (A.sgc = c, A.sg = (() => { const q = c.createLinearGradient(0, sy, 0, ty); q.addColorStop(0, 'rgba(255,244,214,.9)'); q.addColorStop(1, 'rgba(255,244,214,0)'); return q; })());
       c.globalCompositeOperation = 'lighter'; c.globalAlpha = .07 + .2 * nt; c.fillStyle = g; c.beginPath(); c.moveTo(sx - .8, sy + 1.6); c.lineTo(sx + .8, sy + 1.6); c.lineTo(A.fc[0] + hw, ty); c.lineTo(A.fc[0] - hw, ty); c.closePath(); c.fill();
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = '#0b0620'; c.fillRect(sx - 1.9, sy - 1.2, 3.8, 3); c.fillStyle = '#3a3a66'; c.fillRect(sx - 1.4, sy - .8, 2.8, 1.4); c.fillStyle = '#6a6aa8'; c.fillRect(sx - 1.4, sy - .8, 2.8, .4); c.fillStyle = nt > .3 ? '#fff4d6' : '#ffe9b0'; c.fillRect(sx - .9, sy + .6, 1.8, .8); }
-    const D = droneAt(t); if (D && D.x > vx0 - 20 && D.x < vx1 + 20) { const s = D.A.s, w = 12 * s, h = w * 18 / 26, g = glow('#3be8ff');
-      if (D.scan >= 0) { const A = D.A, tx = A.fl[0], ty0 = A.fl[1] - A.h, ty1 = A.fl[1], yy = ty0 + (ty1 - ty0) * (.5 + .5 * Math.sin(D.scan * Math.PI * 4 - Math.PI / 2));                      // промінь-сканер водить по артефакту
-        c.globalCompositeOperation = 'lighter'; c.globalAlpha = .2; c.fillStyle = '#3be8ff'; c.beginPath(); c.moveTo(D.x - .5, D.y + h * .42); c.lineTo(D.x + .5, D.y + h * .42); c.lineTo(tx + A.w * .5, yy); c.lineTo(tx - A.w * .5, yy); c.closePath(); c.fill();
-        c.globalAlpha = .9; c.fillStyle = '#9af6ff'; c.fillRect(tx - A.w * .5, yy - .25, A.w, .5); c.globalAlpha = .5; c.fillStyle = '#ffffff'; c.fillRect(tx - A.w * .5 + ((t * 9) % 1) * A.w, yy - .25, 1, .5);
-        c.globalAlpha = .5; c.drawImage(g.cv, tx - A.w * .6, yy - A.w * .6, A.w * 1.2, A.w * 1.2); }
-      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .28 + .1 * Math.sin(t * 5); c.drawImage(g.cv, D.x - w * .7, D.y - w * .45, w * 1.4, w * 1.4);                    // сяйво сопел
-      const fr = (t % 3.7) < .14 ? 3 : Math.floor(t * 18) % 3, tilt = D.scan >= 0 ? Math.sin(t * 1.7) * .05 : D.dir * .22;                                   // у польоті нахиляється вперед
-      c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.translate(D.x, D.y); c.rotate(tilt); c.drawImage(droneSpr()[fr], -w / 2, -h / 2, w, h); c.setTransform(c.getTransform().rotate(-tilt * 180 / Math.PI).translate(-D.x, -D.y)); }
     c.restore();
+    if (NX.decorDrone) NX.decorDrone.draw(c, t, nt, CELLS || (CELLS = ART.map(B => ({ A: artGeo(B), on: B.on, kind: B.dc.kind })).filter(q => q.A)), vx0, vx1, glow);   // (· 59) дрон-куратор — objects/decor_drone.js
   }
+  let CELLS = null;
   function drawArt(c, t, vx0, vx1) {
     c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
     // ---------- (Декор стін · 55, · 56) АРТЕФАКТИ СОТ — живий піксель-арт (objects/decor_art.js). Власник (· 56): «має бути видно, що
