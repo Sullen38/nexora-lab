@@ -109,7 +109,7 @@ NX.boot = (() => {
     living = true;
     const cvs = all('canvas.sp-nexi:not(.sp-refl)'), refl = el.querySelector('canvas.sp-refl'), t0 = performance.now();
     const look = lookNow(); snap();
-    let last = -1;
+    let last = -1, shownBot = false;
     const frame = () => {
       if (NX.boot.done) return;
       const t = (performance.now() - t0) / 1000;
@@ -123,6 +123,7 @@ NX.boot = (() => {
         renderBot(look, p, t, cv);
       });
       if (refl && cvs[0]) { refl.width = cvs[0].width; refl.height = cvs[0].height; refl.getContext('2d').drawImage(cvs[0], 0, 0); }
+      if (!shownBot) { shownBot = true; all('canvas.sp-wait').forEach(cv => cv.classList.remove('sp-wait')); }   // чекав на скін (index.html) — тепер намальований, показуємо
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);

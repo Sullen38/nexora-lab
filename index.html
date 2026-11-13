@@ -40,6 +40,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 #splash canvas.sp-tx{width:0;height:0}
 #splash header:not(.sp-head){min-height:calc(10 * var(--u) + var(--tagh,20px))}   /* лого 7u + відступ 3u + рядок слогана (--tagh ставить unit() нижче) */
 #splash:not(.tx) .sp-bub{visibility:hidden}
+#splash canvas.sp-nexi{transition:opacity .3s}#splash canvas.sp-nexi.sp-wait{opacity:0}   /* Nexi у скіні ще не намальований — з'явиться плавно */
 #splash .sp-v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;
   padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
 /* екранні рядки ЕПТ і віньєтка — поверх усього */
@@ -244,9 +245,12 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   }
   // Nexi — одразу у ТВОЄМУ скіні: js/ui/splash.js зберігає готовий малюнок (nexi-splash: ключ образу, поза, пікселі RGBA у
   // base64); якщо він від того самого образу (nexi-look) й тієї самої пози — малюємо його, інакше — стандартного з PX.nexi.
+  let SKINNED = false; try { const lk = localStorage.getItem('nexi-look'); SKINNED = !!lk && lk !== '{}'; } catch (e) {}   // власник уже вбирав Nexi
   let SNAP = null; try { const c = JSON.parse(localStorage.getItem('nexi-splash') || 'null'); if (c && c.k === (localStorage.getItem('nexi-look') || '') && c.w > 0 && c.h > 0) { const b = atob(c.d); if (b.length === c.w * c.h * 4) { const a = new Uint8ClampedArray(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); SNAP = { p: c.p, img: new ImageData(a, c.w, c.h) }; } } } catch (e) { SNAP = null; }
   qa('canvas.sp-nexi').forEach(cv => { const main = cv.classList.contains('sp-refl') ? el.querySelector('canvas.sp-nexi:not(.sp-refl)') : cv;
-    if (SNAP && SNAP.p === (main.getAttribute('data-pose') || 'stand')) { cv.width = SNAP.img.width; cv.height = SNAP.img.height; cv.getContext('2d').putImageData(SNAP.img, 0, 0); } else art(cv, PX.nexi); });
+    if (SNAP && SNAP.p === (main.getAttribute('data-pose') || 'stand')) { cv.width = SNAP.img.width; cv.height = SNAP.img.height; cv.getContext('2d').putImageData(SNAP.img, 0, 0); }
+    else if (SKINNED) { cv.width = PX.nexi.w; cv.height = PX.nexi.h; cv.classList.add('sp-wait'); }   // скін є, а малюнка ще немає (перший запуск тут) — стандартного Nexi НЕ показуємо: док порожній, Nexi з'явиться у своєму скіні (splash.js live)
+    else art(cv, PX.nexi); });
   qa('canvas.sp-logo').forEach(cv => art(cv, PX.logo, '#3be8ff'));
   qa('canvas.sp-bolt').forEach(cv => art(cv, PX.bolt, '#ffe27a'));
   /** Док-станція (як килим-док у кімнаті): піксельний еліпс — рожевий обідок, темне коло з дизерингом, блакитне кільце, сяйво. */
