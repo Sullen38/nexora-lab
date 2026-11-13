@@ -33,6 +33,8 @@ function poseFor(a,t,moving){
  case'press':{const k=Math.floor(t*4)%2;p.ra={x:5,y:k?0:2};p.la={x:-3,y:6};break}
  case'scan':p.la={x:-5,y:-4};p.ra={x:5,y:-4};p.bob=Math.sin(t*4)>0?-1:0;p.face='surprised';break;
  case'hop':p.ll={dx:0,lift:2};p.rl={dx:0,lift:2};p.la={x:-4,y:-1};p.ra={x:4,y:-1};break;
+ case'slide':p.bob=1;p.hx=1;p.la={x:-7,y:1};p.ra={x:6,y:3};p.ll={dx:-2,lift:0};p.rl={dx:2,lift:0};p.face='happy';break;   // (13.11) на дошці: низька стійка, руки врозліт
+ case'roll':p.bob=2;p.hy=1;p.la={x:-2,y:3};p.ra={x:2,y:3};p.ll={dx:0,lift:2};p.rl={dx:0,lift:2};p.face='happy';break;           // (13.11) колесо: згрупувався
  case'crouch':p.bob=2;p.la={x:-3,y:5};p.ra={x:3,y:5};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};break;
  case'spin':p.la={x:-5,y:-3};p.ra={x:5,y:-3};p.face='happy';p.bob=-1;break;
  case'stretch':{const k=Math.sin(t*2)>0;p.la={x:-3,y:k?-9:-7};p.ra={x:3,y:k?-9:-7};p.bob=k?-1:0;p.face='sleepy';break}
