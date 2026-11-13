@@ -73,9 +73,10 @@ NX.boot = (() => {
     all('canvas.sp-tx').forEach(cv => {
       const [s, col] = textOf(cv), k = scale(cv.dataset.tx), mw = cv.dataset.w === 'p' ? Math.floor((cv.parentNode.clientWidth - 2) / k) : +cv.dataset.w ? Math.floor(cv.dataset.w / k) : 0, key = s + '|' + col + '|' + k + '|' + mw;
       if (cv._k === key && !force) return; cv._k = key;
-      if (!s) { cv.width = cv.height = 1; cv.style.width = cv.style.height = '0px'; return; }
+      if (!s) { cv.width = cv.height = 1; cv.style.width = '0px'; cv.style.height = (cv.dataset.sp === 'step' ? 12 * k : 0) + 'px'; return; }   // рядок кроку тримає свою висоту й порожнім — хмарка не «смикається» між етапами
       txt(cv, s, col, mw); cv.style.width = cv.width * k + 'px'; cv.style.height = cv.height * k + 'px';
     });
+    el.classList.add('tx');                                                          // підписи намальовані — можна показати хмарку (стилі в index.html)
     el.setAttribute('aria-valuetext', T('splash.st.' + (S.stage || 'js')));
   }
   if (el) { el.setAttribute('aria-label', T('splash.aria')); const r = el.querySelector('.sp-retry'); if (r) r.setAttribute('aria-label', T('splash.retry')); }
@@ -84,6 +85,22 @@ NX.boot = (() => {
 
   // ---------- живий Nexi (той самий renderBot, що в кімнаті) ----------
   let living = false, flying = false;
+  /** Образ Nexi, як у кімнаті (main.js): збережений nexi-look поверх стандартного, обличчя — звичайне. */
+  function lookNow() { try { return Object.assign({}, DEFAULT_LOOK, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) { return Object.assign({}, DEFAULT_LOOK); } }
+  /** Запам'ятати малюнок Nexi в поточному скіні для НАСТУПНОГО запуску: inline-скрипт заставки (index.html) покаже його з
+   *  першої ж миті, ще до sprite.js. Кличемо, коли Nexi оживає, і коли сторінку ховають / закривають (скін могли змінити). */
+  function snap() {
+    if (typeof renderBot !== 'function' || typeof poseFor !== 'function') return;
+    try {
+      const pose = POSE0, key = localStorage.getItem('nexi-look') || '';
+      const old = JSON.parse(localStorage.getItem('nexi-splash') || 'null'); if (old && old.k === key && old.p === pose) return;
+      const cv = document.createElement('canvas'); renderBot(lookNow(), poseFor(pose, 0, false), 0, cv);
+      const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let b = ''; for (let i = 0; i < d.length; i += 4096) b += String.fromCharCode.apply(null, d.subarray(i, i + 4096));
+      localStorage.setItem('nexi-splash', JSON.stringify({ k: key, p: pose, w: cv.width, h: cv.height, d: btoa(b) }));
+    } catch (e) {}
+  }
+  const POSE0 = el && (el.querySelector('canvas.sp-nexi:not(.sp-refl)') || { getAttribute() {} }).getAttribute('data-pose') || 'stand';
+  addEventListener('pagehide', snap); document.addEventListener('visibilitychange', () => { if (document.hidden) snap(); });
   /** Оживити Nexi на заставці, щойно є sprite.js і poses.js: поза з data-pose (стоїть / летить на ранці / набирає), у кінці —
    *  радіє, у польоті в кімнату — ранець; варіант A — ще й віддзеркалення в підлозі. ~8 кадрів/с (як у 8-bit; браузер у цей
    *  час будує кімнату), у польоті — щокадру. */
@@ -91,7 +108,7 @@ NX.boot = (() => {
     if (living || !el || typeof renderBot !== 'function' || typeof poseFor !== 'function') return;
     living = true;
     const cvs = all('canvas.sp-nexi:not(.sp-refl)'), refl = el.querySelector('canvas.sp-refl'), t0 = performance.now();
-    let look; try { look = Object.assign({}, DEFAULT_LOOK, JSON.parse(localStorage.getItem('nexi-look') || '{}'), { face: 'standard' }); } catch (e) { look = Object.assign({}, DEFAULT_LOOK); }
+    const look = lookNow(); snap();
     let last = -1;
     const frame = () => {
       if (NX.boot.done) return;

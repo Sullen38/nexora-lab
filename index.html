@@ -35,6 +35,11 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   background:radial-gradient(130% 75% at 50% 40%,#151a5c 0,#0b0f38 40%,#050818 80%);transition:opacity .7s ease;-webkit-user-select:none;user-select:none}
 #splash.out{opacity:0;pointer-events:none}
 #splash canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+/* підписи (.sp-tx) малює js/ui/splash.js трохи пізніше: до того полотно не займає місця (інакше воно 300×150 і все «стрибає»),
+   місце під слоган у шапці тримаємо заздалегідь, а хмарку зі словами Nexi показуємо, щойно слова намальовані (#splash.tx) */
+#splash canvas.sp-tx{width:0;height:0}
+#splash header:not(.sp-head){min-height:calc(10 * var(--u) + var(--tagh,20px))}   /* лого 7u + відступ 3u + рядок слогана (--tagh ставить unit() нижче) */
+#splash:not(.tx) .sp-bub{visibility:hidden}
 #splash .sp-v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;
   padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
 /* екранні рядки ЕПТ і віньєтка — поверх усього */
@@ -237,7 +242,11 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
     for (let j = 0; j < sp.h; j++) for (let i = 0; i < sp.w;) { const ch = d[j * sp.w + i]; if (ch === '.') { i++; continue; } let n = 1; while (i + n < sp.w && d[j * sp.w + i + n] === ch) n++; x.fillStyle = pal ? pal[AL.indexOf(ch)] : col; x.fillRect(i, j, n, 1); i += n; }
     return x;
   }
-  qa('canvas.sp-nexi').forEach(cv => art(cv, PX.nexi));
+  // Nexi — одразу у ТВОЄМУ скіні: js/ui/splash.js зберігає готовий малюнок (nexi-splash: ключ образу, поза, пікселі RGBA у
+  // base64); якщо він від того самого образу (nexi-look) й тієї самої пози — малюємо його, інакше — стандартного з PX.nexi.
+  let SNAP = null; try { const c = JSON.parse(localStorage.getItem('nexi-splash') || 'null'); if (c && c.k === (localStorage.getItem('nexi-look') || '') && c.w > 0 && c.h > 0) { const b = atob(c.d); if (b.length === c.w * c.h * 4) { const a = new Uint8ClampedArray(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); SNAP = { p: c.p, img: new ImageData(a, c.w, c.h) }; } } } catch (e) { SNAP = null; }
+  qa('canvas.sp-nexi').forEach(cv => { const main = cv.classList.contains('sp-refl') ? el.querySelector('canvas.sp-nexi:not(.sp-refl)') : cv;
+    if (SNAP && SNAP.p === (main.getAttribute('data-pose') || 'stand')) { cv.width = SNAP.img.width; cv.height = SNAP.img.height; cv.getContext('2d').putImageData(SNAP.img, 0, 0); } else art(cv, PX.nexi); });
   qa('canvas.sp-logo').forEach(cv => art(cv, PX.logo, '#3be8ff'));
   qa('canvas.sp-bolt').forEach(cv => art(cv, PX.bolt, '#ffe27a'));
   /** Док-станція (як килим-док у кімнаті): піксельний еліпс — рожевий обідок, темне коло з дизерингом, блакитне кільце, сяйво. */
@@ -287,6 +296,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   function unit() {
     const d = devicePixelRatio || 1, t = Math.min(innerWidth / 118, innerHeight / 205), ud = Math.max(2, Math.floor(Math.max(2, Math.min(5, t)) * d + .01));
     U = S.U = ud / d; el.style.setProperty('--u', U.toFixed(4) + 'px');
+    el.style.setProperty('--tagh', (12 * Math.max(1, Math.round(ud * .5)) / d).toFixed(4) + 'px');   // висота рядка малого підпису (12 пікселів шрифту, масштаб «s» — як scale() у js/ui/splash.js)
     const tr = el.querySelector('.sp-track'), nx = el.querySelector('.sp-rider .sp-nexi');
     if (tr) {
       TW = tr.clientWidth; RI = Math.max(0, (nx ? nx.getBoundingClientRect().width / 2 : 0) - (innerWidth - TW) / 2 + 4); el.style.setProperty('--ri', RI.toFixed(1) + 'px');
