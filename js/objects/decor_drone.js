@@ -137,7 +137,7 @@
       // кромкою, «біжучі» посадкові вогні (при заході дрона — збігаються до центру), шкала заряду з 6 поділок, бічний міні-екран із
       // відсотком заряду, щогла-антена з маячком, кабель у стіну з імпульсами; під час зарядки — кільця поля, що підіймаються, іскри
       // на контактах і зелене сяйво; коли дрон летить на док — посадковий промінь-конус.
-      const d = dockPt(), px = d.x, py = d.y + h * .52, on = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode === 'do', coming = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode !== 'do' && !S.drag;
+      const d = dockPt(), px = d.x, py = d.y + h * .52, on = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode === 'do' && !S.drag, coming = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode !== 'do' && !S.drag;
       if (px > vx0 - 24 && px < vx1 + 24) { const R = (x, y, ww, hh, col) => { c.fillStyle = col; c.fillRect(px + x * s, py + y * s, ww * s, hh * s); }, CY = '#3be8ff', GR = '#3bff8a', seg = Math.round(S.charge * 6);
         const Q = (pts, col) => { c.fillStyle = col; c.beginPath(); pts.forEach(([x, y], k) => k ? c.lineTo(px + x * s, py + y * s) : c.moveTo(px + x * s, py + y * s)); c.closePath(); c.fill(); };
         // (13.11, власник: «трохи меншою та в перспективі, трохи як соти; ще трохи покращ графічно») уся станція — ×.8 і зі зсувом уздовж
@@ -146,8 +146,11 @@
         if (DSL == null) { DSL = wallSlope(px); DDV = wallDepth(px); }
         // (13.11, власник: «неправильна перспектива, не в ту сторону») глибина — туди ж, куди в сот: стіна ЛІВОРУЧ від переду (вектор із
         // найближчої соти, 4.5 од. глибини), а не праворуч; DX, DY — зсув задньої грані в координатах станції (після нахилу й ×.8)
-        const DX = DDV[0] * 4.5 / .8 / s, DY = DDV[1] * 4.5 / .8 / s - Math.tan(DSL) * DX;
-        c.save(); c.translate(px, py); c.transform(.8, .8 * Math.tan(DSL), 0, .8, 0, 0); c.translate(-px, -py);
+        // (13.11, власник: «ще трохи меншою та ще більш прикольною») масштаб .8 → .66 (K); прикольне — нижче: тарілка-радар, що крутиться,
+        // гірлянда різнокольорових лампочок під плитою, голограма дрона над майданчиком, поки він у справах, і рука-щіточка, що
+        // натирає його до блиску під час зарядки.
+        const K = .66, DX = DDV[0] * 4.5 / K / s, DY = DDV[1] * 4.5 / K / s - Math.tan(DSL) * DX, away = !on && !coming;
+        c.save(); c.translate(px, py); c.transform(K, K * Math.tan(DSL), 0, K, 0, 0); c.translate(-px, -py);
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = .28; R(-8, 3.6, 17.5, 1.4, '#05020f'); c.globalAlpha = 1;                                      // тінь на цеглі
         c.save(); c.translate(DX * s, DY * s);                                                                                                      // плита з кабелем — на стіні (вглиб)
         // кабель у стіну з імпульсом
@@ -172,6 +175,10 @@
         for (let q = 0; q < 6; q++) R(-5.3 + q * 1.8, 1.35, 1.4, .65, q < seg ? (on && q === seg - 1 && (t % .7) < .35 ? '#eaffea' : seg <= 1 ? '#ff6a5a' : GR) : '#14301e');
         // щогла-антена з маячком
         R(-9.9, -6.2, 1.1, 6, O); R(-9.6, -6, .5, 5.8, '#7a7aa8'); R(-10.6, -3.4, 2.5, .9, O); R(-10.3, -3.2, 1.9, .45, '#5a5a86'); R(-10.05, -7.3, 1.4, 1.4, O); R(-9.8, -7.05, .9, .9, (t % 1.4) < .18 ? '#ffffff' : (t % 1.4) < .7 ? '#ff4f6a' : '#6a1a2a');
+        { const rw = 3 * Math.abs(Math.cos(t * 1.8)) + .5, lit = Math.cos(t * 1.8) > 0; R(-9.35 - rw / 2 - .25, -5.35, rw + .5, 1.5, O); R(-9.35 - rw / 2, -5.1, rw, 1, lit ? '#d4d4f4' : '#6a6a9c'); R(-9.6, -4.9, .5, .5, '#3be8ff'); }   // тарілка-радар крутиться
+        for (let q = 0; q < 7; q++) { const f = (q + .5) / 7, gx = -8 + 16 * f + DX * .5, gy = 3.3 + DY * .5 + Math.sin(f * Math.PI) * 2.2 + Math.sin(t * 1.5 + q) * .12, col = ['#ff4f6a', '#ffd23a', '#3bff8a', '#3be8ff', '#c77dff'][q % 5], lit = (Math.floor(t * 2) + q) % 2 === 0;
+          if (q < 6) { const f2 = (q + 1.5) / 7; c.strokeStyle = O; c.lineWidth = .3 * s; c.beginPath(); c.moveTo(px + gx * s, py + (gy - .2) * s); c.lineTo(px + (-8 + 16 * f2 + DX * .5) * s, py + (3.1 + DY * .5 + Math.sin(f2 * Math.PI) * 2.2) * s); c.stroke(); }
+          R(gx - .55, gy - .15, 1.1, 1.3, O); R(gx - .35, gy + .05, .7, .9, lit ? col : '#3a3a5a'); if (lit) { c.globalAlpha = .35; R(gx - .9, gy - .4, 1.8, 1.8, col); c.globalAlpha = 1; } }   // гірлянда під плитою
         // бічний міні-екран із відсотком заряду
         R(10.2, .6, 1.6, .7, O); Q([[11.2, -4.4], [18.6, -4.4], [18.6, 1.2], [18.6 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, -4.4 + DY * .5]], O);
         Q([[11.6, -4], [11.6 + DX * .5, -4 + DY * .5], [11.6 + DX * .5, .8 + DY * .5], [11.6, .8]], '#2a2a54'); Q([[11.6, .8], [18.2, .8], [18.2 + DX * .5, .8 + DY * .5], [11.6 + DX * .5, .8 + DY * .5]], '#141432'); R(11.6, -4, 6.6, 4.8, '#06163c'); R(11.6, -4, 6.6, .4, '#1a5a8a');
@@ -181,6 +188,17 @@
         c.globalCompositeOperation = 'lighter';
         { const gc = glow(on ? '#3bff8a' : '#3be8ff').cv; c.globalAlpha = .16 + .06 * Math.sin(t * 3); c.drawImage(gc, px - 11 * s, py + .5 * s, 22 * s, 7 * s);         // світло неону на цеглу під плитою
           c.globalAlpha = .22; c.drawImage(gc, px + 10.5 * s, py - 5.5 * s, 9 * s, 8 * s); if ((t % 1.4) < .7) { c.globalAlpha = .5; c.drawImage(glow('#ff4f6a').cv, px - 12.3 * s, py - 9.4 * s, 6 * s, 6 * s); } }   // екран і маячок
+        if (away) { const bob = Math.sin(t * 2) * .5, fl = (.32 + .12 * Math.sin(t * 11)) * (hash(Math.floor(t * 8), 9) > .93 ? .3 : 1), hy = -8.2 + bob;                    // голограма дрона: «я у справах»
+          const g = c.createLinearGradient(0, py, 0, py - 9 * s); g.addColorStop(0, 'rgba(60,232,255,.22)'); g.addColorStop(1, 'rgba(60,232,255,0)'); c.fillStyle = g; c.globalAlpha = 1;
+          c.beginPath(); c.moveTo(px - 1.2 * s, py); c.lineTo(px + 1.2 * s, py); c.lineTo(px + 4.6 * s, py - 9 * s); c.lineTo(px - 4.6 * s, py - 9 * s); c.closePath(); c.fill();
+          c.globalAlpha = fl; R(-2.6, hy, 5.2, .35, CY); R(-2.6, hy + 3.6, 5.2, .35, CY); R(-2.6, hy, .35, 3.9, CY); R(2.25, hy, .35, 3.9, CY);                                  // корпус-контур
+          R(-1.5, hy + 1.3, .9, .9, '#eaffff'); R(.6, hy + 1.3, .9, .9, '#eaffff'); R(-.2, hy - 1.2, .4, 1.2, CY); { const pw = 3.4 * Math.abs(Math.cos(t * 9)) + .6; R(-pw, hy - 1.5, pw * 2, .35, CY); }   // очі, щогла, гвинт
+          R(-3.5, hy + 1.2, .9, 1.4, CY); R(2.6, hy + 1.2, .9, 1.4, CY); c.globalAlpha = fl * .5; for (let q = 0; q < 3; q++) R(-2.2, hy + .8 + q * 1.1 + ((t * 1.5) % 1.1) * 0, 4.4, .2, CY); }
+        if (on) { const sw = Math.sin(t * 5), jx = 9.2, jy = -5.2 + .4 * Math.sin(t * 2.5), tx2 = 5.6 + sw * 1.1, ty2 = -7.4 + .5 * Math.cos(t * 5);                              // рука-щіточка натирає дрона
+          c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.lineCap = 'round';
+          for (const [lw, col] of [[1.3, O], [.6, '#9a9ac4']]) { c.strokeStyle = col; c.lineWidth = lw * s; c.beginPath(); c.moveTo(px + 8.6 * s, py - .2 * s); c.lineTo(px + jx * s, py + jy * s); c.lineTo(px + tx2 * s, py + ty2 * s); c.stroke(); }
+          R(jx - .6, jy - .6, 1.2, 1.2, O); R(jx - .35, jy - .35, .7, .7, '#ffd23a'); R(tx2 - 1.3, ty2 - .9, 1.5, 1.8, O); R(tx2 - 1.1, ty2 - .7, 1.1, 1.4, '#ff8ad8');                 // суглоб і губка
+          c.globalCompositeOperation = 'lighter'; for (let q = 0; q < 3; q++) { const f = (t * 1.4 + q / 3) % 1; c.globalAlpha = 1 - f; const sx2 = tx2 - 1.6 - f * 1.6 + hash(q, 3) * 1.2, sy2 = ty2 - 1.2 + (hash(q, 5) - .5) * 2.4; R(sx2 - .15, sy2 - .5, .3, 1, '#ffffff'); R(sx2 - .5, sy2 - .15, 1, .3, '#ffffff'); } }   // блискітки
         if (coming) { const g = c.createLinearGradient(0, py, 0, py - 22 * s); g.addColorStop(0, 'rgba(60,232,255,.28)'); g.addColorStop(1, 'rgba(60,232,255,0)'); c.fillStyle = g;        // посадковий промінь
           c.beginPath(); c.moveTo(px - 7 * s, py); c.lineTo(px + 7 * s, py); c.lineTo(px + 11 * s, py - 22 * s); c.lineTo(px - 11 * s, py - 22 * s); c.closePath(); c.fill(); }
         if (on) { c.globalAlpha = .3 + .12 * Math.sin(t * 4); c.drawImage(glow('#3bff8a').cv, px - 9 * s, py - 7 * s, 18 * s, 13 * s);
