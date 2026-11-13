@@ -366,7 +366,7 @@
   const NIGHT = { lamp: 1, crystal: 1, orb: 1, globe: 1, terrarium: 1 };
   /** (· 57) СПОТИ над сотами й ДРОН-КУРАТОР. Споти: три маленькі світильники на цеглі над верхніми сотами, вузький промінь на соту (удень
    *  ледь видно, уночі — головне світло стіни). Дрон-куратор — окремий модуль objects/decor_drone.js (· 59). */
-  const SPOT_K = ['crystal', 'globe', 'hourglass'];
+  const SPOT_K = [];   // (13.11, власник: «прибери звідти ті три міні-фонарики, вони там не потрібні») було ['crystal', 'globe', 'hourglass'] — споти над сотами знято
   function drawCurator(c, t, nt, vx0, vx1) {
     c.save(); c.imageSmoothingEnabled = true;
     for (const k of SPOT_K) { const B = ART.find(q => q.dc.kind === k), A = B && artGeo(B); if (!A || A.ceil[0] < vx0 - 30 || A.ceil[0] > vx1 + 30) continue;              // споти: корпус під стелею й конус світла на соту
