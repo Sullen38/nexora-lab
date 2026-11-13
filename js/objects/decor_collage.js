@@ -59,6 +59,7 @@
     { w: 7, h: 7, tilt: .25, sh: 1, draw: note('#ffe27a') }, { w: 7, h: 7, tilt: .25, sh: 1, draw: note('#ff9ad0') }, { w: 7, h: 7, tilt: .25, sh: 1, draw: note('#9affc0') }, { w: 7, h: 7, tilt: .25, sh: 1, draw: note('#9ad8ff') },
     ...['star', 'bolt', 'heart', 'smile', 'leaf', 'paw', 'check', 'warn', 'star', 'heart', 'leaf', 'smile', 'paw', 'bolt'].map(a => ({ w: 7, h: 7, tilt: .5, st: 1, draw: sticker(a) })),
   ];
+  const ON = false;                                                                                                     // (· 54) власник: «дуже наляпано вийшло — поки лишаємо соти»: колаж вимкнено (код лишився; увімкнути — true)
   let D = null, BULBS = null;
   /** Розкладка (раз): вільні прямокутники dc.air (ліве крило, до рифу), перешкоди — екранні рамки сот, висячих, дощок. */
   function layout(H) {
@@ -85,7 +86,7 @@
   NX.decorCollage = {
     get items() { return D; },
     draw(c, t, H) {
-      if (!D) layout(H); if (!D || !D.length) return; const { vx0, vx1 } = H;
+      if (!ON) return; if (!D) layout(H); if (!D || !D.length) return; const { vx0, vx1 } = H;
       c.save(); c.imageSmoothingEnabled = false;
       if (BULBS.length) { c.strokeStyle = '#0a0818'; c.lineWidth = .5; c.beginPath(); BULBS.forEach((b, i) => i ? c.lineTo(b[0], b[1]) : c.moveTo(b[0], b[1])); c.stroke();
         BULBS.forEach((b, i) => { if (b[0] < vx0 - 4 || b[0] > vx1 + 4) return; const on = .45 + .55 * Math.max(0, Math.sin(t * 1.7 + i * 1.3)); c.globalAlpha = on; c.fillStyle = b[2]; c.fillRect(b[0] - .7, b[1], 1.4, 1.8); c.globalAlpha = on * .25; c.beginPath(); c.arc(b[0], b[1] + .9, 3, 0, TAU); c.fill(); }); c.globalAlpha = 1; }
@@ -97,7 +98,7 @@
       c.restore();
     },
     /** Тап по речі колажу: гойднеться. */
-    tap(x, y, t = NX.time) { if (!D) return false; for (let i = D.length - 1; i >= 0; i--) { const d = D[i]; if (x >= d.r[0] && x <= d.r[2] && y >= d.r[1] && y <= d.r[3]) { d.wig = t; return true; } } return false; },
+    tap(x, y, t = NX.time) { if (!ON || !D) return false; for (let i = D.length - 1; i >= 0; i--) { const d = D[i]; if (x >= d.r[0] && x <= d.r[2] && y >= d.r[1] && y <= d.r[3]) { d.wig = t; return true; } } return false; },
     reset() { D = null; },
   };
 })();
