@@ -4,7 +4,7 @@
  * Власник (13.11): «тупо виходить, коли вона починається; краще, щоб ми самі могли спостерігати за персонажами; не треба
  * більше сценарію і щоб воно само приближало; не треба, щоб гості приходили в центр, коли їхня сценка».
  * Було (06.11): при 20/20 — 5-хвилинне шоу: заставка «ПАТІ», усі в ряд, сцени по черзі в центрі з наїздом камери, фінал, сон.
- * ГЛАВИ (власник, 13.11): 1 — зібрати 20 героїв у кімнаті; 2 — «ПАТІ»: вечірка, коли зібрано всіх (заставка ПАТІ на вході,
+ * ГЛАВИ (власник, 13.11): 1 — зібрати 20 героїв у кімнаті; 2 — «ПАТІ»: вечірка, коли зібрано всіх (заголовок PARTY на вході,
  * сценки, нові образи); 3 — «СУПЕР ХІРОУ»: коли зібрано всі образи з вечірки (ще не зроблено).
  * Стало: сценки — частина вечірки глави «ПАТІ». Раз на кілька секунд рушій бере наступну сценку з перетасованої черги, якщо її
  * герой і партнери зараз вільні (не біля бару, не нагорі, не в конзі…): герой лишається ТАМ, ДЕ СТОЇТЬ (сценки біля фуршету
@@ -116,14 +116,30 @@ NX.partyShow = (() => {
       if (k > SCENE_T) end(sc);
     });
   }
-  /** Напис ПАТІ (заставка на вході, коли зібрано всіх 20 — початок глави «ПАТІ»; власник, 13.11: «заставка паті має з'являтися все ж»): великий неоновий текст з мерехтінням, обвідкою й зірками. */
+  /** ЗАГОЛОВОК ГЛАВИ «PARTY» (власник, 13.11: «паті в нас англійською мовою та в стилі 8 біт; цей заголовок — як глава, він
+   *  важливий»): слово PARTY однакове всіма мовами (i18n show.title), намальоване ВЕЛИКИМИ ПІКСЕЛЯМИ — текст 16 px піксельним
+   *  шрифтом переводимо в сітку «є піксель / нема», фарбуємо смугами (жовтий → помаранчевий → рожевий → фіолетовий), темний
+   *  контур і жорстка тінь, далі збільшуємо в ціле число разів без згладжування. Жодного розмиття й світіння. */
+  const TS = { key: '', cv: null }, BANDS = ['#fff7b0', '#ffe27a', '#ffc24a', '#ff9a2a', '#ff6a9a', '#ff4fd8', '#c63ad0', '#8a2ad0'];
+  function titleSprite(s) {
+    if (TS.key === s && TS.cv) return TS.cv; const F = '16px "Press Start 2P", monospace', m = document.createElement('canvas'), mc = m.getContext('2d'); mc.font = F; const cw0 = Math.ceil(mc.measureText('A').width) + 2, w = cw0 * s.length + 2, h = 18;   // крок літери +2 — після потовщення літери не злипаються
+    m.width = w; m.height = h + 1; mc.font = F; mc.textBaseline = 'top'; mc.fillStyle = '#fff'; [...s].forEach((ch, i) => mc.fillText(ch, 1 + i * cw0, 1)); const d = mc.getImageData(0, 0, w, h).data, raw = (x, y) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 110, on = (x, y) => raw(x, y) || raw(x - 1, y) || raw(x, y - 1) || raw(x - 1, y - 1);   // літери товщі на піксель — «жирний» 8-біт
+    const o = document.createElement('canvas'), oc = o.getContext('2d'); o.width = w + 8; o.height = h + 8; let top = h, bot = 0; for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) if (on(x, y)) { top = Math.min(top, y); bot = Math.max(bot, y); }
+    oc.fillStyle = '#3a0a5a'; for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) if (on(x, y)) oc.fillRect(x + 5, y + 5, 1, 1);                                   // жорстка тінь
+    oc.fillStyle = '#12062a'; for (let y = -1; y <= h + 1; y++) for (let x = -1; x <= w + 1; x++) if (!on(x, y) && (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1) || on(x - 1, y - 1) || on(x + 1, y + 1) || on(x - 1, y + 1) || on(x + 1, y - 1))) oc.fillRect(x + 2, y + 2, 1, 1);   // контур
+    for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) if (on(x, y)) { oc.fillStyle = BANDS[Math.min(7, Math.floor((y - top) / Math.max(1, bot - top + 1) * 8))]; oc.fillRect(x + 2, y + 2, 1, 1); }
+    oc.fillStyle = '#ffffff'; for (let x = 0; x <= w; x++) if (on(x, top) && x % 3 === 0) oc.fillRect(x + 2, top + 2, 1, 1);                                              // відблиск по верхньому краю
+    if (document.fonts && document.fonts.check && document.fonts.check(F)) { TS.key = s; TS.cv = o; } return o;                                                         // шрифт ще вантажиться — не кешуємо
+  }
   function drawTitle(c, vw, vh, t) {
-    if (!SH.on || !SH.full || t - SH.t0 > TITLE_T) return; const k = (t - SH.t0) / TITLE_T, a = k < .15 ? k / .15 : k > .8 ? (1 - k) / .2 : 1, s = NX.t('show.title');
-    c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(3,2,10,.55)'; c.fillRect(0, 0, vw, vh); const fs = Math.min(72, vw / 6), y = vh * .42, fl = Math.floor(t * 9) % 11 === 0 ? .5 : 1;
-    c.font = `${fs}px "Press Start 2P", monospace`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.shadowColor = '#ff4fd8'; c.shadowBlur = 40 * fl; c.fillStyle = '#ff4fd8'; c.fillText(s, vw / 2, y); c.shadowBlur = 0; c.fillStyle = '#ffffff'; c.globalAlpha = a * .9 * fl; c.fillText(s, vw / 2, y - 3);
-    c.globalAlpha = a; c.font = `${Math.min(14, vw / 28)}px "Press Start 2P", monospace`; c.fillStyle = '#ffe27a'; c.fillText(NX.t('show.sub'), vw / 2, y + fs * .9);
-    for (let i = 0; i < 12; i++) { const ph = (t * .6 + i / 12) % 1, sx = vw / 2 + Math.cos(i * 2.1 + t) * (fs * 3), sy = y + Math.sin(i * 1.7 + t * .8) * fs * 1.2; c.fillStyle = Pp.NEON[i % 6]; c.globalAlpha = a * (1 - ph); c.fillRect(sx, sy, 4, 4); }
+    if (!SH.on || !SH.full || t - SH.t0 > TITLE_T) return; const el = t - SH.t0, k = el / TITLE_T, a = k > .85 ? Math.max(0, (1 - k) / .15) : 1, s = NX.t('show.title'), sp = titleSprite(s);
+    const z = Math.max(2, Math.floor(Math.min(vw * .9 / sp.width, vh * .26 / sp.height))), tw = sp.width * z, th = sp.height * z, x0 = Math.round((vw - tw) / 2), y0 = Math.round(vh * .4 - th / 2), bar = Math.round(th * .3), port = vw < 500, fs = port ? 7 : 10, sh = fs + 4;
+    c.save(); c.imageSmoothingEnabled = false; c.globalAlpha = a * .62; c.fillStyle = '#03020a'; c.fillRect(0, 0, vw, vh);
+    c.globalAlpha = a; c.fillStyle = '#0a0626'; c.fillRect(0, y0 - bar, vw, th + bar * 2 + sh); for (const yy of [y0 - bar, y0 + th + bar + sh - z]) for (let x = 0; x < vw; x += z * 2) { c.fillStyle = Pp.NEON[(Math.floor(x / (z * 2)) + Math.floor(t * 6)) % 6]; c.fillRect(x, yy, z, z); }   // стрічка з біжучими пікселями
+    const n = Math.min(s.length, Math.floor(el / .12) + 1), cw = sp.width / s.length, blink = el < .12 * s.length + .5 || Math.floor(t * 4) % 8 !== 0;                // літери з'являються по одній
+    if (blink) c.drawImage(sp, 0, 0, Math.ceil(cw * n) + (n === s.length ? 8 : 0), sp.height, x0, y0, (Math.ceil(cw * n) + (n === s.length ? 8 : 0)) * z, th);
+    for (let i = 0; i < 14; i++) { const ph = (t * .5 + i * .37) % 1, sx = Math.round((vw / 2 + Math.cos(i * 2.4) * tw * (.55 + (i % 3) * .08)) / z) * z, sy = Math.round((y0 + th / 2 + Math.sin(i * 1.9) * th * 1.1) / z) * z; if (ph < .5) { c.fillStyle = Pp.NEON[i % 6]; c.fillRect(sx, sy, z, z); if (ph < .25) { c.fillRect(sx - z, sy, z * 3, z); c.fillRect(sx, sy - z, z, z * 3); } } }   // піксельні зірки
+    if (el > .12 * s.length) NX.px.text(c, NX.t('show.sub'), vw / 2, y0 + th + fs + 8, '#ffe27a', fs, 'center');   // підзаголовок — у стрічці, мовою телефона
     c.restore();
   }
   return { start, stop, tick, drawTitle, SH, SCENES, get on() { return SH.on; } };
