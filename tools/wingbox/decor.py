@@ -339,9 +339,9 @@ def decor_side(L, sgn, C, R, verbose=True):
     else:
         # ---------- Л1. Над AI-центром: СОТИ-ПОЛИЦІ (кіберпанк: шестикутні комірки з неоновим кантом, кожна свого кольору й
         # візерунка дна) — у кожній своя річ; і неонова вивіска «Nexi з паростком» (без слів)
-        # (· 47) Власник: «соти зливаються, кожна має бути відособлена, крайня обрізана — зроби більшими»: решітка кроком w=27,
-        # сама сота cw=23 (зазори ~4 між сусідами), 2 ряди, перша колонка повністю в кадрі (X ≥ -40)
-        HX = dict(w=29., cw=24., d=10., a0=88.6, cols=5)
+        # (· 47) Власник: «крайня обрізана, корч прибери, соти більшими» → (· 48) «але всі 10 сот і всі речі назад, без проміжків,
+        # на всю площину»: щільна решітка (сота = крок), більші комірки, 3 ряди, перша колонка повністю в кадрі (X ≥ -18)
+        HX = dict(w=23., cw=23., d=10., a0=89.4, cols=6)
         h = HX['w'] * .866; step = math.degrees(.75 * HX['w'] / (R - HX['d'])); ch = HX['cw'] * .866
         NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8']   # 10 сот — 10 різних неонів
         cells = []
@@ -349,8 +349,8 @@ def decor_side(L, sgn, C, R, verbose=True):
             a = HX['a0'] + k * step
             for row in (0, 1, 2):
                 (x, z), _, _ = W.at(a, HX['d']); X = W.X(a, HX['d'])
-                if X < -18 or row > 1: continue
-                Yc = Yw(12 + h * .55, z) + row * h + (h / 2 if k % 2 else 0)
+                if X < -18: continue
+                Yc = Yw(10 + h * .55, z) + row * h + (h / 2 if k % 2 else 0)
                 yt, yb = ys(Yc - h / 2, z), ys(Yc + h / 2, z)
                 (xw, zw), _, _ = W.at(a, 0); ybw = ys(Yc + h / 2, zw)
                 if yt < 3 or max(yb, ybw) > free_y(X) - 2 or X > 86: continue
@@ -366,7 +366,7 @@ def decor_side(L, sgn, C, R, verbose=True):
                 (xq, zq), _, _ = W.at(a, HX['d']); hh = (min(ch * 2.3, ch - 3.5 + max(0., ys(Yc - ch / 2, zq) - 2.5) / s(zq)) if row == 0 else ch - 3.5)   # (· 27) верхній ряд: рослина росте з соти вгору, не вище рядка 2.5 (стеля)
                 plant_on(sup, f'dc_hxp{q}', a, kind[1], HX['cw'] * (.8 if row == 0 else .62), hh, kind[2], 6., 4, HX['d'] - 3.8, seed=80 + q)   # ближче до краю соти: знизу видно; (· 27) верхній ряд — удвічі вища й ширша (власник: «ледь видно»)
             else: art_on(sup, f'dc_hxa{q}', a, kind[1], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q)
-        flat('dc_neon', 94., 180., 14., 66., 'neon', d=3.2, glow=1, gr=40)          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
+        flat('dc_neon', 99.2, 182.6, 14., 66., 'neon', d=3.2, glow=1, gr=40)   # (· 48) правіше — соти впритул          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
         # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
         # (живі: objects/decor.js); кришка зі світлом зверху, тумба з неоном і вогниками знизу — найбільший, що влазить
         RF = dict(P=14., lid=5., base=7.)
@@ -420,7 +420,8 @@ def decor_side(L, sgn, C, R, verbose=True):
             add(item(W, f'dc_rfp{k}', a, 7.2, 16., Y0, Y0 - h, 'dc_pot', inset=RF['P'] * .5 - 3.6, on=seg['id'], dc=dict(kind=kind, pot=pot_of(pot, 6., 4.), seed=161 + k)))
         # ---------- (· 4) ВИСЯЧІ У ПРОМІЖКАХ (труби під стелею прибрано — власник: «смужки зверху не потрібні»): кожна рослина —
         # на своєму кріпленні: скляна куля на дроті зі стелі, мідний конус-кишеня на цеглі, керамічний «місяць» на стіні
-        hang('dc_hp0', 88.6, 1.5, 56., 'bananas', w=9.6, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))
+        # (· 48) скляну кулю з бананами (dc_hp0, X 88.6) прибрано: соти тепер до самої вивіски, а між вивіскою й кошиком місця нема
+        # hang('dc_hp0', 88.6, 1.5, 56., 'bananas', w=9.6, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))
         hang('dc_hp1', 371.5, 4., 92., 'adansonii', w=15., inset=5.2, seed=192, frm='cone', pot=dict(shape='cone', mat='copper', band='gold', name='cone-copper', pw=9., ph=10.))
         hang('dc_hp2', 292., 2.5, 18., 'dolphins', w=16., inset=4.6, seed=193, frm='moon', pot=dict(shape='moon', mat='ceram', band='pink', name='moon-ceram', pw=10.5, ph=5.2))
         a0, a1 = W.a_of(450., 3.), W.a_of(498., 3.); am = (a0 + a1) / 2; (x, z), _, _ = W.at(am, 3.)
