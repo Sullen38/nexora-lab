@@ -382,7 +382,12 @@ NX.partyRoom = (() => {
     // контур і віддзеркалення в підлозі (все, що стоїть на підлозі або висить на стінах)
     X.outline(L, col('#060313'), 1); bake(L);
     X.reflect(L, i => (i === ID_FLOOR || i === 5 ? null : { y: FLY, h: 60 }), { a: .34, h: 60, emit: 2.2, streak: true });
-    const cv = X.canvas(L); bloom(cv, L); return { cv, x0: L.x0, y0: L.y0 };
+    const cv = X.canvas(L); bloom(cv, L);
+    // ГЛИБИНА ДЛЯ ЖИВОГО ШАРУ (13.11, власник: «герої ходять поверх чогось»): z світу кожного пікселя растра (підлога й порожнє — «дуже далеко»)
+    // і кольори готового растра — party.js домальовує поверх гостя ті пікселі меблів, що ближчі до глядача, ніж він (occlude).
+    const zb = new Float32Array(L.W * L.H), DP = L.dep, IDb = L.id, Dq = X.D; for (let k = 0; k < zb.length; k++) zb[k] = !IDb[k] || IDb[k] === ID_FLOOR || !isFinite(DP[k]) ? 1e9 : Dq * (DP[k] - 1);
+    const px = new Uint32Array(cv.getContext('2d').getImageData(0, 0, L.W, L.H).data.buffer);
+    return { cv, x0: L.x0, y0: L.y0, W: L.W, H: L.H, zb, px };
   }
   return { build, GEO, PAL, NEONC, LIGHTS, lightAt };
 })();
