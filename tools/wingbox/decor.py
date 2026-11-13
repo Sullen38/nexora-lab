@@ -344,18 +344,27 @@ def decor_side(L, sgn, C, R, verbose=True):
         # (· 50) Власник: «усе до акваріума прибираємо — плакат, рослини; лишаємо тільки полички, гарно розподілити по всій області;
         # рослин усередині нема — лише артефакти; може, шаховий порядок». Шахівка на всю стіну від лівого краю до рифу: 8 колонок,
         # у парних — дві соти (верх і низ вільної смуги), у непарних — одна посередині; 12 сот, у кожній свій артефакт.
-        HX = dict(w=24., cw=24., d=10., X0=-5., X1=199., cols=8)
-        ch = HX['cw'] * .866
-        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8', '#ff6ab0', '#9a8aff']   # 12 сот — 12 неонів
-        ITEMS = ['figure', 'crystal', 'orb', 'books', 'globe', 'flask', 'cube', 'scope', 'hourglass', 'terrarium', 'lamp', 'console']
-        cells = []
-        for k in range(HX['cols']):
-            X = HX['X0'] + (HX['X1'] - HX['X0']) * k / (HX['cols'] - 1); a = W.a_of(X, HX['d']); (x, z), _, _ = W.at(a, HX['d']); (xw, zw), _, _ = W.at(a, 0)
+        # (· 51) Власник: шахівка не подобається → «а якщо об'єднати три острівці між собою?»: щільна решітка (сота = крок), три
+        # острівці-трикутники по 3 соти, з'єднані містками по 2 соти — одна безперервна стрічка з 13 сот на всю стіну до рифу.
+        HX = dict(w=21., cw=21., d=10., X0=-4.)
+        ch = HX['cw'] * .866; h = ch; step = math.degrees(.75 * HX['w'] / (R - HX['d'])); aL = W.a_of(HX['X0'], HX['d'])
+        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8', '#ff6ab0', '#9a8aff', '#ffe04a']
+        ITEMS = ['figure', 'crystal', 'orb', 'books', 'globe', 'flask', 'cube', 'scope', 'hourglass', 'terrarium', 'lamp', 'console', 'cup']
+        LAT = [(0, 0), (0, 1), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (5, 0), (6, 1), (7, 0), (8, 0), (8, 1), (9, 0)]   # (колонка, ряд); непарні колонки — на пів соти нижче
+        rel = lambda k, r: (r + (.5 if k % 2 else 0)) * h
+        # стіна — дуга, тож рівна у світі стрічка на екрані «їде» вниз; ведемо її вздовж вільної смуги: у кожної колонки свій зсув
+        # (середина її допустимих меж), згладжений по сусідах — сусідні соти лишаються впритул
+        NC = max(k for k, r in LAT) + 1; rng = [[-1e9, 1e9] for _ in range(NC)]
+        for k, r in LAT:
+            a = aL - k * step; (x, z), _, _ = W.at(a, HX['d']); (xw, zw), _, _ = W.at(a, 0); X = W.X(a, HX['d'])
             hw = HX['cw'] * .5 * s(z) + 1; lim = min(free_y(X + hw * q / 4) for q in range(-4, 5)) - 2.5
-            Yt = max(Yw(7., z), Yw(7., zw)) + ch / 2; Yb = min(Yw(lim, z), Yw(lim, zw)) - ch / 2
-            for Yc in ((Yt, Yb) if k % 2 == 0 else ((Yt + Yb) / 2,)): cells.append((k, a, Yc))
-        for q, (k, a, Yc) in enumerate(cells):
-            da_ = math.degrees(HX['w'] * .4 / R)
+            rng[k][0] = max(rng[k][0], max(Yw(7., z), Yw(7., zw)) + ch / 2 - rel(k, r)); rng[k][1] = min(rng[k][1], min(Yw(lim, z), Yw(lim, zw)) - ch / 2 - rel(k, r))
+        Yk = [(lo_ + hi_) / 2 for lo_, hi_ in rng]
+        for _ in range(4):
+            Yk = [min(max((Yk[max(0, k - 1)] + 2 * Yk[k] + Yk[min(NC - 1, k + 1)]) / 4, rng[k][0]), max(rng[k][0], rng[k][1])) for k in range(NC)]
+        if verbose: print('  HEX strip:', [(round(lo_), round(hi_), round(y)) for (lo_, hi_), y in zip(rng, Yk)], [round(W.X(aL - k * step, HX['d'])) for k in range(NC)])
+        for q, (k, r) in enumerate(LAT):
+            a = aL - k * step; Yc = Yk[k] + rel(k, r); da_ = math.degrees(HX['w'] * .4 / R)
             cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['cw'], Yc + ch / 2, Yc - ch / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['cw'], h=round(ch, 2), shy=shy(a - da_, a + da_, .2))))
             sup = dict(Y=Yc + ch / 2 - 1.6, id=cid)
             art_on(sup, f'dc_hxa{q}', a, ITEMS[q % len(ITEMS)], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q)

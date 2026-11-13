@@ -623,10 +623,12 @@ NX.arc = NX.arc || {};
       G.partF(cylAt(c[0], B.yt + 1.4, mid, r, { kb: .18 }), () => (u, v, i, j) => (v > .55 && Math.abs(u - .5) < .34 * (1 - v) + .07) ? E(ramp(SAND, .7, i, j)) : gl(u, i, j));
       return;
     }
-    if (k === 'lamp') {                                                               // лава-лампа: темні конус і ковпачок, у склі — світні краплі
-      const r = w * .22, LV = pal(['#3a0a4a', '#8a1a8a', '#ff4fd8', '#ffc4f2']);
-      G.part(cylAt(c[0], B.yb - H * .2, B.yb, r * 1.5, { kt: .6 }), 'dark', {}); G.part(cylAt(c[0], B.yt + .3, B.yt + H * .14, r * .8, { kt: .6 }), 'dark', {});
-      G.partF(cylAt(c[0], B.yt + H * .14, B.yb - H * .2, r, { kt: .75 }), () => (u, v, i, j) => { const bl = Math.sin(v * 9 + 1 + (d.seed || 0)) * Math.sin(u * 5 + .6); return bl > .28 ? E(ramp(LV, .6 + bl * .5, i, j)) : E(ramp(LV, .12 + (1 - Math.abs(u - .4) * 2) * .12, i, j)); });
+    if (k === 'lamp') {                                                               // лава-лампа: темна основа й ковпачок, овальне скло зі світними краплями
+      const LV = pal(['#3a0a4a', '#8a1a8a', '#ff4fd8', '#ffc4f2']), rr = Math.min(w * .3, H * .36), cy = B.yb - H * .2 - rr * 1.05;
+      G.part(cylAt(c[0], B.yb - H * .2, B.yb, w * .3, { kt: .55 }), 'dark', {}); G.part(cylAt(c[0], B.yt + .2, cy - rr * .9, w * .14), 'dark', {});
+      G.disc([c[0], cy, c[2] - .2], rr * 1.15, (u, v, i, j) => { const x = (u - .5) * 2, y = (v - .5) * 2; if (Math.abs(x) > .62 * Math.sqrt(Math.max(0, 1 - y * y * .8))) return 0;
+        const b1 = Math.hypot(x + .15, y - .45) < .33, b2 = Math.hypot(x - .12, y + .3) < .24, b3 = Math.hypot(x + .05, y + .72) < .14;
+        return (b1 || b2 || b3) ? E(ramp(LV, .8 - Math.abs(x) * .4, i, j)) : E(ramp(LV, .16 + (1 - Math.abs(x + .2)) * .14, i, j)); });
       return;
     }
     if (k === 'console') {                                                            // ретро-термінал: корпус, зелений екран із графіком, клавіатура
@@ -637,6 +639,14 @@ NX.arc = NX.arc || {};
       G.partF(G.sub(0, B.dep * .32, w * .96, B.dep * .5, B.yb - 1.3, B.yb), Fc => (u, v, i, j) => Fc.k === 'top' && (Math.floor(u * 8) + Math.floor(v * 3)) % 2 ? ramp(PL.CHROME, .5, i, j) : ramp(PL.DARK, .3, i, j));
       return;
     }
+    if (k === 'cup') {                                                                // (· 51) золотий кубок на кам'яній основі, зірка світиться
+      G.part(cylAt(c[0], B.yb - 1.6, B.yb, w * .3), 'stone', { pal: PL.STONE, q: .55 });
+      G.tube([c[0], B.yb - 1.6, c[2] - .3], [c[0], B.yb - H * .42, c[2] - .3], .8, brassT);
+      G.part(cylAt(c[0], B.yt + .5, B.yb - H * .4, w * .36, { kb: .35 }), 'gold', {});
+      G.disc([c[0], B.yt + H * .3, c[2] - w * .36 - .3], 1.5, (u, v) => (Math.abs(u - .5) + Math.abs(v - .5) < .42) ? E(col('#fff6c0')) : 0);
+      return;
+    }
+    // лава-лампа (· 51, перемальовано): скляна колба-диск зі світними краплями на темній ніжці
     if (k === 'figure') {                                                             // ЗОЛОТА СТАТУЕТКА NEXI на мармуровому п'єдесталі
       const pr = w * .3, pb = 2.6;
       G.part(cylAt(c[0], B.yb - pb, B.yb, pr, { kb: 1.1 }), 'stone', { pal: PL.STONE, q: .55 });
