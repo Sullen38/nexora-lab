@@ -61,6 +61,14 @@
   const st = () => S.sc;
 
   function cellPt(E) { const A = E.A, pw = A.pane[2] - A.pane[0], ph = A.pane[3] - A.pane[1]; return { x: A.fc[0] + pw * .08, y: A.pane[1] - ph * .36, E }; }
+  let DSL = null;
+  /** Нахил цегляних рядів біля точки x — із задньої стінки найближчої соти (як у objects/decor_tag.js). */
+  function wallSlope(x) {
+    const items = NX.decor && NX.decor.items, kit = NX.arc && NX.arc.kit, proj = NX.px3d && NX.px3d.proj; if (!items || !kit || !proj) return 0; let best = 0, bd = 1e9;
+    for (const B of items) { if (B.st !== 'dc_hex') continue; const { P } = kit.basis(B), Yc = (B.yt + B.yb) / 2, a = proj(P(-B.w / 2, B.dep, Yc)), b = proj(P(B.w / 2, B.dep, Yc)), d = Math.abs((a[0] + b[0]) / 2 - x);
+      if (d < bd) { bd = d; let an = Math.atan2(b[1] - a[1], b[0] - a[0]); if (an > Math.PI / 2) an -= Math.PI; if (an < -Math.PI / 2) an += Math.PI; best = an; } }
+    return best;
+  }
   function dockPt() { const E = S.cells.find(q => q.kind === 'flask') || S.cells[0], A = E.A, ph = A.pane[3] - A.pane[1]; return { x: A.fc[0] - (A.pane[2] - A.pane[0]) * .42, y: A.pane[1] - ph * 1.38 }; }   // (13.11) вище й лівіше — на вільній цеглі над сотами
   /** Наступна справа: сота зі своєю дією; кожна 4-та — полив ліани; кожна 7-ма — на док заряджатися; уночі — спати на доку. */
   function next(t, nt) {
@@ -125,6 +133,12 @@
       // на контактах і зелене сяйво; коли дрон летить на док — посадковий промінь-конус.
       const d = dockPt(), px = d.x, py = d.y + h * .52, on = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode === 'do', coming = J && (J.kind === 'dock' || J.kind === 'sleep') && S.mode !== 'do' && !S.drag;
       if (px > vx0 - 24 && px < vx1 + 24) { const R = (x, y, ww, hh, col) => { c.fillStyle = col; c.fillRect(px + x * s, py + y * s, ww * s, hh * s); }, CY = '#3be8ff', GR = '#3bff8a', seg = Math.round(S.charge * 6);
+        const Q = (pts, col) => { c.fillStyle = col; c.beginPath(); pts.forEach(([x, y], k) => k ? c.lineTo(px + x * s, py + y * s) : c.moveTo(px + x * s, py + y * s)); c.closePath(); c.fill(); };
+        // (13.11, власник: «трохи меншою та в перспективі, трохи як соти; ще трохи покращ графічно») уся станція — ×.8 і зі зсувом уздовж
+        // цегляних рядів (нахил стіни біля неї — із задньої стінки найближчої соти, як у графіті-тегу); майданчик і екран — об'ємні
+        // плити: видно спід і торець, що йдуть углиб до стіни (у бік точки сходу) — як коробки сот.
+        if (DSL == null) DSL = wallSlope(px); const DX = 2.6, DY = 1.1;                                                   // DX, DY — зсув задньої грані (углиб)
+        c.save(); c.translate(px, py); c.transform(.8, .8 * Math.tan(DSL), 0, .8, 0, 0); c.translate(-px, -py);
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = .28; R(-8, 3.6, 17.5, 1.4, '#05020f'); c.globalAlpha = 1;                                      // тінь на цеглі
         // кабель у стіну з імпульсом
         R(-.45, 7.6, .9, 2, O); R(-.2, 7.6, .4, 1.8, '#2a2a48'); R(-1.1, 9.2, 2.2, 1.1, O); R(-.7, 9.4, 1.4, .6, '#5a5a86'); { const f = (t * .9) % 1; R(-.2, 7.6 + f * 1.4, .4, .5, on ? GR : CY); }
@@ -134,7 +148,12 @@
         c.lineCap = 'butt'; for (const sd of [-1, 1]) { c.strokeStyle = O; c.lineWidth = 1.5 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + sd * 2.2 * s, py + 6.6 * s); c.stroke();
           c.strokeStyle = '#5a5a86'; c.lineWidth = .7 * s; c.beginPath(); c.moveTo(px + sd * 7.4 * s, py + 2.2 * s); c.lineTo(px + sd * 2.2 * s, py + 6.6 * s); c.stroke(); }
         // майданчик: скошені краї, світла кромка, неон знизу
-        R(-10, -.7, 20, 3.5, O); R(-10.6, -.1, 21.2, 2.2, O); R(-9.4, 0, 18.8, 1, '#6a6a9c'); R(-9.4, 0, 18.8, .35, '#c4c4ec'); R(-10, .5, .6, 1, '#6a6a9c'); R(9.4, .5, .6, 1, '#6a6a9c'); R(-9.4, 1, 18.8, 1.4, '#26264a');
+        Q([[-10.2, -.7], [10.2, -.7], [10.2 + DX, -.7 + DY], [10.2 + DX, 3 + DY], [-9.4 + DX, 3 + DY], [-10.2, 2.9]], O);                                            // контур плити з глибиною
+        Q([[-9.4, 2.4], [9.4, 2.4], [9.4 + DX, 2.4 + DY], [-9.4 + DX, 2.4 + DY]], '#17172e'); Q([[9.4, 0], [9.4 + DX, DY], [9.4 + DX, 2.4 + DY], [9.4, 2.4]], '#3e3e6e');   // спід і торець
+        for (let q = 0; q < 4; q++) Q([[-7 + q * 4.6, 2.4], [-5.6 + q * 4.6, 2.4], [-5.6 + q * 4.6 + DX, 2.4 + DY], [-7 + q * 4.6 + DX, 2.4 + DY]], '#24244a');            // ребра жорсткості на споді
+        R(-9.4, 0, 18.8, 1, '#6a6a9c'); R(-9.4, 0, 18.8, .35, '#d4d4f4'); R(-9.4, .35, 18.8, .2, '#8a8abc'); R(-9.4, 1, 18.8, 1.4, '#26264a'); R(-9.4, 1, 18.8, .25, '#3a3a66');
+        for (let q = 0; q < 3; q++) { R(-9.4 + q * .9, 1.25, .45, 1.15, '#ffd23a'); R(8.95 - q * .9, 1.25, .45, 1.15, '#ffd23a'); }                                        // жовті смуги безпеки на краях
+        R(-6.1, 1.2, .3, .3, '#9a9ac4'); R(5.8, 1.2, .3, .3, '#9a9ac4');                                                                                                    // заклепки
         c.globalAlpha = .6 + .4 * Math.sin(t * 3); R(-8.6, 2.45, 17.2, .3, on ? GR : CY); c.globalAlpha = 1;
         // біжучі посадкові вогні (7): у спокої — хвиля, при заході — збігаються до центру, на зарядці — всі зелені
         for (let q = 0; q < 7; q++) { const dq = Math.abs(q - 3), lit = on ? 1 : coming ? (Math.floor(t * 7) % 4 === 3 - dq) : (Math.floor(t * 2.5) % 7 === q); R(-8.2 + q * 2.6, .1, .9, .5, lit ? (on ? GR : '#eaffff') : '#1a4a6a'); }
@@ -143,15 +162,20 @@
         // щогла-антена з маячком
         R(-9.9, -6.2, 1.1, 6, O); R(-9.6, -6, .5, 5.8, '#7a7aa8'); R(-10.6, -3.4, 2.5, .9, O); R(-10.3, -3.2, 1.9, .45, '#5a5a86'); R(-10.05, -7.3, 1.4, 1.4, O); R(-9.8, -7.05, .9, .9, (t % 1.4) < .18 ? '#ffffff' : (t % 1.4) < .7 ? '#ff4f6a' : '#6a1a2a');
         // бічний міні-екран із відсотком заряду
-        R(10.2, .6, 1.6, .7, O); R(11.2, -4.4, 7.4, 5.6, O); R(11.6, -4, 6.6, 4.8, '#06163c'); R(11.6, -4, 6.6, .4, '#1a5a8a'); c.globalAlpha = .9;
-        NX.px.text(c, Math.round(S.charge * 100) + '%', px + 14.9 * s, py - .9 * s, on ? GR : CY, 1.9 * s, 'center'); c.globalAlpha = 1; R(12.1, -.3, 5.6 * S.charge, .45, on ? GR : CY);
+        R(10.2, .6, 1.6, .7, O); Q([[11.2, -4.4], [18.6, -4.4], [18.6 + DX * .5, -4.4 + DY * .5], [18.6 + DX * .5, 1.2 + DY * .5], [11.2 + DX * .5, 1.2 + DY * .5], [11.2, 1.2]], O);
+        Q([[18.2, -4], [18.2 + DX * .5, -4 + DY * .5], [18.2 + DX * .5, .8 + DY * .5], [18.2, .8]], '#2a2a54'); R(11.6, -4, 6.6, 4.8, '#06163c'); R(11.6, -4, 6.6, .4, '#1a5a8a');
+        c.globalAlpha = .12; for (let q = 0; q < 6; q++) R(11.6, -3.4 + q * .75, 6.6, .25, CY); c.globalAlpha = .9;                                                          // рядки розгортки
+        for (let q = 0; q < 5; q++) { const v = .4 + 1 * (.5 + .5 * Math.sin(t * 2.2 + q * 1.3)); R(12.2 + q * 1.15, -2.2 - v + 1, .7, v, on ? GR : '#1a8ab4'); }          // міні-графік струму
+        NX.px.text(c, Math.round(S.charge * 100) + '%', px + 14.9 * s, py - .1 * s, on ? GR : CY, 1.7 * s, 'center'); c.globalAlpha = 1; R(12.1, .2, 5.6 * S.charge, .35, on ? GR : CY);
         c.globalCompositeOperation = 'lighter';
+        { const gc = glow(on ? '#3bff8a' : '#3be8ff').cv; c.globalAlpha = .16 + .06 * Math.sin(t * 3); c.drawImage(gc, px - 11 * s, py + .5 * s, 22 * s, 7 * s);         // світло неону на цеглу під плитою
+          c.globalAlpha = .22; c.drawImage(gc, px + 10.5 * s, py - 5.5 * s, 9 * s, 8 * s); if ((t % 1.4) < .7) { c.globalAlpha = .5; c.drawImage(glow('#ff4f6a').cv, px - 12.3 * s, py - 9.4 * s, 6 * s, 6 * s); } }   // екран і маячок
         if (coming) { const g = c.createLinearGradient(0, py, 0, py - 22 * s); g.addColorStop(0, 'rgba(60,232,255,.28)'); g.addColorStop(1, 'rgba(60,232,255,0)'); c.fillStyle = g;        // посадковий промінь
           c.beginPath(); c.moveTo(px - 7 * s, py); c.lineTo(px + 7 * s, py); c.lineTo(px + 11 * s, py - 22 * s); c.lineTo(px - 11 * s, py - 22 * s); c.closePath(); c.fill(); }
         if (on) { c.globalAlpha = .3 + .12 * Math.sin(t * 4); c.drawImage(glow('#3bff8a').cv, px - 9 * s, py - 7 * s, 18 * s, 13 * s);
           c.strokeStyle = GR; c.lineWidth = .35 * s; for (let q = 0; q < 3; q++) { const f = (t * .55 + q / 3) % 1; c.globalAlpha = .7 * (1 - f); c.beginPath(); c.ellipse(px, py - .4 * s - f * 9 * s, (7.5 - f * 2.5) * s, (1.5 - f * .5) * s, 0, 0, TAU); c.stroke(); }   // кільця поля
           for (const sd of [-1, 1]) if (hash(Math.floor(t * 14), sd + 2) > .55) { c.globalAlpha = .9; c.fillStyle = '#eaffea'; c.fillRect(px + sd * (4 + 2 * hash(Math.floor(t * 14), 5)) * s, py - (.4 + 1.2 * hash(Math.floor(t * 14), 7)) * s, .5 * s, .5 * s); } }   // іскри на контактах
-        c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; } }
+        c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.restore(); } }
     S.top = { t, vx0, vx1, glow };                                                                                    // сам дрон малюється у верхньому шарі (top) — поверх зон, Nexi й усього в кімнаті
     if (S.x > vx0 - 30 && S.x < vx1 + 30 && S.y < 150) {                                                                // тінь — лише коли він біля стіни
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = .22; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(S.x + 2.6 * s, S.y + 4.2 * s, w * .34, h * .16, 0, 0, TAU); c.fill();           // тінь на цеглі
@@ -178,7 +202,7 @@
           c.fillStyle = '#3be8ff'; c.fillRect(ax - 1.2 * s, hy - .5 * s, .9 * s, 1.6 * s); c.fillRect(ax + .3 * s, hy - .5 * s, .9 * s, 1.6 * s); } }
       c.globalCompositeOperation = 'lighter'; for (const p of S.fx) { const f = (t - p.t0) / p.life; c.globalAlpha = 1 - f; c.fillStyle = p.col; c.fillRect(p.x + p.vx * (t - p.t0) - .4 * s, p.y + p.vy * (t - p.t0) - .4 * s, .8 * s, .8 * s); }   // порошинки / туманець
       const asleep = doing && J.kind === 'sleep'; c.globalAlpha = (asleep ? .1 : .26) + .08 * Math.sin(t * 5); c.drawImage(g.cv, S.x - w * .6, S.y - w * .2, w * 1.2, w * 1.2);                       // сяйво лампи
-      const rl = t - S.roll, roll = rl >= 0 && rl < .6 ? rl / .6 * TAU : 0, tilt = Math.max(-.38, Math.min(.38, S.vx * .011)) + roll, bob = (asleep ? .25 : .6) * s * Math.sin(t * (asleep ? 1.2 : 3.1));
+      const rl = t - S.roll, roll = rl >= 0 && rl < .6 ? rl / .6 * TAU : 0, tilt = Math.max(-.38, Math.min(.38, S.vx * .011)) + roll + (doing && (J.kind === 'dock' || J.kind === 'sleep') ? (DSL || 0) * .7 : 0),   /* на доку стоїть уздовж нахиленого майданчика */ bob = (asleep ? .25 : .6) * s * Math.sin(t * (asleep ? 1.2 : 3.1));
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.translate(S.x, S.y + bob); c.rotate(tilt); c.drawImage(spr(emoOf(t), asleep ? 0 : Math.floor(t * 20) % 3), -w / 2, -h / 2, w, h); c.rotate(-tilt); c.translate(-S.x, -S.y - bob);
       if (asleep) { c.globalAlpha = .8; c.fillStyle = '#9af6ff'; for (let q = 0; q < 2; q++) { const f = (t * .5 + q * .5) % 1; c.globalAlpha = .8 * (1 - f); c.fillRect(S.x + (4 + f * 3) * s, S.y - (5 + f * 6) * s, (1 + q * .4) * s, .5 * s); } }   // «z-z»
     }
