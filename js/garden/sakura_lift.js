@@ -13,10 +13,12 @@
  *     розміру екрана — висота еліпса залежить від нього); сітка — як у дивану: 1 піксель = 0.5·k одиниці кімнати;
  *   • сакура-бонсай по центру: стовбур із корінням на моховому горбку (один растр) і хмари цвіту (другий — ледь
  *     гойдається); щокадру лише живе — пелюстки, що падають, іскорки в кроні, сяйво, LED диска;
+ *   • (13.11, «зроби цей острів ще краще») ставок із двома коропами й лотосом, кам'яний ліхтар із теплим світлом, бамбук,
+ *     метелик довкола крони, світлячки; острівець пружинить, коли Nexi на нього приземляється;
  *   • foot — слід на підлозі: Nexi, Рудик і м'ячик обходять острівець (world/room.js: route), тап по підлозі на ньому —
  *     Nexi стає поруч, а не зверху;
- *   • ЛІФТ: тап по острівцю чи сакурі (або слово в діалозі — i18n kw.sakura) → сценарій `sakura`: Nexi підходить до доку,
- *     застрибує на камінь праворуч від сакури, острівець із ним і деревом опускається в шахту (стіни з неоновими кільцями;
+ *   • ЛІФТ: тап по острівцю чи сакурі (або слово в діалозі — i18n kw.sakura) → сценарій `sakura`: Nexi з будь-якого
+ *     місця стрибає на камінь праворуч від сакури високою дугою із сальто (jump; здалеку — спершу розгін у бік острівця), острівець із ним і деревом опускається в шахту (стіни з неоновими кільцями;
  *     усе, що нижче переднього краю шахти, закриває підлога — шар-заслона перемальовує її шматок). Унизу:
  *       – є ботанічний сад (чат «Ботанічний сад»: NX.garden.enter) — викликаємо NX.garden.enter(lift); далі веде він, назад —
  *         lift.back() (острівець піднімається, Nexi зістрибує);
@@ -35,13 +37,14 @@
   const STONE = ['#2e2a52', '#514b82', '#7d77ae', '#a8a2d2'];
   const BARK = ['#24101c', '#44222f', '#6a3a48', '#925868'];
   const BLS = ['#74205c', '#a83484', '#dc56a4', '#ff84c2', '#ffaed8', '#ffd4ec', '#fff2f9'];
+  const WAT = ['#052436', '#0a3f54', '#116278', '#249aac', '#7fe3ec'];
   const OUT = '#12082a';
   const A = 132, TH = 8, TW = 92, TB = [46, 68];                     // півширина диска (px), товщина борту (px); растр дерева й точка його основи
   const clampI = (v, n) => Math.max(0, Math.min(n - 1, Math.round(v)));
 
   /** Диск-острівець: верх (еліпс A×B) і борт товщиною TH. Повертає полотно й точку центру верху в ньому. */
   function buildDisc(B) {
-    const top = 8, W = 2 * A + 4, H = top + 2 * B + TH + 3, r = Raster(W, H), X0 = A + 2, Y0 = top + B;
+    const top = 16, W = 2 * A + 4, H = top + 2 * B + TH + 3, r = Raster(W, H), X0 = A + 2, Y0 = top + B;
     const moss = (x, y) => { const u = (x + .5 - X0) / A, v = (y + .5 - Y0) / B; return Math.sqrt(u * u + v * v) < .88; };
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       const u = (x + .5 - X0) / A, v = (y + .5 - Y0) / B, rr = u * u + v * v;
@@ -57,28 +60,44 @@
         r.set(x, y, s < 1.2 ? MET[3] : s < 2.4 ? MET[1] : s < 4.6 ? LED : s < 5.6 ? MET[0] : (x - X0 + 1200) % 24 === 0 ? '#070920' : Math.abs(u) > .8 ? '#0b0f2c' : '#141a44');
       }
     }
+    // ставок (ліворуч-спереду): вода темніша вглиб, берег із камінців; латаття з лотосом. Коропи й відблиски — щокадру
+    const pond = { dx: -64, y: Math.round(.26 * B), rx: 32, ry: Math.max(4, B * .4) }, inPond = (x, y, m = 1.25) => { const ex = (x + .5 - X0 - pond.dx) / pond.rx, ey = (y + .5 - Y0 - pond.y) / pond.ry; return ex * ex + ey * ey < m; };
+    for (let y = Math.floor(Y0 + pond.y - pond.ry - 2); y <= Y0 + pond.y + pond.ry + 2; y++) for (let x = X0 + pond.dx - pond.rx - 3; x <= X0 + pond.dx + pond.rx + 3; x++) {
+      const ex = (x + .5 - X0 - pond.dx) / pond.rx, ey = (y + .5 - Y0 - pond.y) / pond.ry, e = ex * ex + ey * ey + (hash(x, y + 40) - .5) * .14; if (e > 1.14 || !moss(x, y)) continue;
+      r.set(x, y, e > .9 ? (hash(x + 7, y) < .4 ? STONE[1 + (hash(x, y + 3) * 2 | 0)] : SOIL[1]) : WAT[clampI(1.3 + ey * 1.5 + BAYER[(y & 3) * 4 + (x & 3)] * 1.1 + (ey < -.55 ? -1 : 0), WAT.length)]); }
+    [[-78, -.2, 1], [-52, .35, 0], [-66, .5, 0]].forEach(([dx, f, lotus]) => { const x = X0 + dx, y = Math.round(Y0 + pond.y + f * pond.ry); r.rect(x - 2, y, 5, 2, MOSS[5]); r.rect(x - 1, y - 1, 3, 1, MOSS[6]); r.set(x + 2, y, WAT[1]);
+      if (lotus) { r.rect(x - 1, y - 2, 3, 2, BLS[4]); r.set(x, y - 3, BLS[5]); r.set(x, y - 1, '#ffe27a'); } });
     // камені: плита, на яку стає Nexi (праворуч від сакури), і два менші
     const slab = (dx, fy, rx, ry) => { const cx = X0 + dx, cy = Y0 + fy * B; for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
       const ex = (x + .5 - cx) / rx, ey = (y + .5 - cy) / ry, e = ex * ex + ey * ey; if (e > 1 || !moss(x, y)) continue;
       r.set(x, y, STONE[ey < -.45 ? 3 : e > .72 && ey > 0 ? 0 : ey < .05 ? 2 : 1]); } };
     slab(80, .08, 21, Math.max(3, B * .36)); slab(47, .52, 9, Math.max(2, B * .2)); slab(108, -.2, 8, Math.max(2, B * .18));
-    [[-40, .58], [-22, -.62], [20, .66], [-100, -.18], [62, -.6]].forEach(([dx, fy]) => { const x = X0 + dx, y = Math.round(Y0 + fy * B); r.rect(x, y, 3, 2, STONE[1]); r.set(x, y, STONE[3]); r.set(x + 1, y, STONE[2]); });
+    [[-18, .78], [-8, -.7], [40, .74], [-110, -.3], [56, -.62]].forEach(([dx, fy]) => { const x = X0 + dx, y = Math.round(Y0 + fy * B); r.rect(x, y, 3, 2, STONE[1]); r.set(x, y, STONE[3]); r.set(x + 1, y, STONE[2]); });
     // трава: пучки на моху й уздовж заднього краю
     for (let i = 0; i < 30; i++) { const a = hash(i, 5) * 6.283, q = .28 + hash(i, 6) * .58, x = Math.round(X0 + Math.cos(a) * q * A), y = Math.round(Y0 + Math.sin(a) * q * B);
-      if (!moss(x, y) || (x - X0 > 56 && x - X0 < 104 && Math.abs(y - Y0) < B * .5)) continue;
+      if (!moss(x, y) || inPond(x, y) || (x - X0 > 56 && x - X0 < 104 && Math.abs(y - Y0) < B * .5)) continue;
       const hgt = 2 + (hash(i, 7) * 3 | 0); for (let j = 0; j < hgt; j++) r.set(x, y - j, MOSS[j > 1 ? 6 : 5]); r.set(x + 1, y, MOSS[5]); r.set(x + 1, y - 1, MOSS[4]); r.set(x - 1, y, MOSS[3]); }
     for (let dx = -A + 10; dx < A - 10; dx += 5) { if (hash(dx, 9) < .35) continue; const u = dx / A, y = Math.round(Y0 - B * Math.sqrt(1 - u * u) * .93), hgt = 2 + (hash(dx, 3) * 4 | 0);
       for (let j = 0; j < hgt; j++) r.set(X0 + dx + (j > 2 ? 1 : 0), y - j, MOSS[j > 2 ? 6 : 4 + (j & 1)]); r.set(X0 + dx + 2, y, MOSS[4]); r.set(X0 + dx + 2, y - 1, MOSS[5]); }
     // квіти (хрестик із серединкою) й опалі пелюстки
     for (let i = 0; i < 26; i++) { const a = hash(i, 1) * 6.283, q = .16 + hash(i, 2) * .68, x = Math.round(X0 + Math.cos(a) * q * A), y = Math.round(Y0 + Math.sin(a) * q * B);
-      if (!moss(x, y) || Math.abs(x - X0) < 26 || (x - X0 > 54 && x - X0 < 106)) continue;
+      if (!moss(x, y) || inPond(x, y) || Math.abs(x - X0) < 26 || (x - X0 > 54 && x - X0 < 106)) continue;
       const col = ['#fff2f9', '#ff9ad8', '#ffe27a', '#8af0ff'][i % 4]; r.set(x - 1, y, col); r.set(x + 1, y, col); r.set(x, y - 1, col); r.set(x, y + 1, col); r.set(x, y, i % 4 === 2 ? '#ff9a3a' : '#ffe27a'); }
     for (let i = 0; i < 16; i++) { const a = hash(i, 11) * 6.283, q = hash(i, 12) * .8, x = Math.round(X0 + Math.cos(a) * q * A * .6), y = Math.round(Y0 + Math.sin(a) * q * B); if (moss(x, y)) { r.set(x, y, BLS[4]); r.set(x + 1, y, BLS[3]); } }
-    // світні гриби (ліворуч): ніжка й блакитна шапка; сяйво — щокадру
-    const mush = [[-76, -.1], [-64, .34], [-90, .26]].map(([dx, fy]) => { const x = X0 + dx, y = Math.round(Y0 + fy * B);
+    [[-70, .1], [-44, .2], [-84, .36]].forEach(([dx, fy]) => r.rect(X0 + dx, Math.round(Y0 + fy * B), 2, 1, BLS[5]));   // пелюстки на воді
+    // бамбук (позаду плити): три стебла з вузлами й листям
+    [[76, -.5, 16], [83, -.62, 21], [91, -.46, 13]].forEach(([dx, fy, hg], i) => { const x = X0 + dx, y = Math.round(Y0 + fy * B);
+      for (let j = 0; j < hg; j++) { r.set(x, y - j, j % 5 === 4 ? MOSS[2] : MOSS[5]); r.set(x + 1, y - j, j % 5 === 4 ? MOSS[1] : MOSS[3]); }
+      [[-1, -1], [-2, -2], [-3, -2], [2, -1], [3, -2], [4, -2], [0, -1]].forEach(([ax, ay]) => r.set(x + ax, y - hg + 2 + ay + (i & 1), MOSS[6])); [[-2, 4], [-3, 5], [3, 6], [4, 7]].forEach(([ax, ay]) => r.set(x + ax, y - hg + ay, MOSS[5])); });
+    // кам'яний ліхтар (ліворуч, за ставком): основа, ніжка, вогнище з віконцем, дашок; тепле світло — щокадру
+    const lx = X0 - 92, ly = Math.round(Y0 - .42 * B);
+    r.rect(lx - 3, ly - 1, 7, 2, STONE[1]); r.rect(lx - 1, ly - 6, 3, 5, STONE[2]); r.rect(lx - 1, ly - 6, 1, 5, STONE[3]); r.rect(lx - 3, ly - 7, 7, 1, STONE[1]); r.rect(lx - 3, ly - 12, 7, 5, STONE[2]); r.rect(lx - 3, ly - 12, 1, 5, STONE[3]);
+    r.rect(lx - 1, ly - 11, 3, 3, '#ffd27a'); r.set(lx, ly - 10, '#fff6c8'); r.rect(lx - 5, ly - 14, 11, 2, STONE[1]); r.rect(lx - 4, ly - 15, 9, 1, STONE[3]); r.rect(lx - 1, ly - 17, 3, 2, STONE[2]);
+    // світні гриби: ніжка й блакитна шапка; сяйво — щокадру
+    const mush = [[-112, -.02], [-104, .26], [26, .7]].map(([dx, fy]) => { const x = X0 + dx, y = Math.round(Y0 + fy * B);
       r.set(x, y, '#c3cbea'); r.set(x, y - 1, '#c3cbea'); r.set(x, y - 2, '#e9eefc'); r.rect(x - 2, y - 4, 5, 2, '#3be8ff'); r.rect(x - 1, y - 5, 3, 1, '#8af0ff'); r.set(x - 1, y - 4, '#d8fbff'); return [dx, y - 4 - Y0]; });
     outline(r, OUT);
-    return { cv: r.canvas(), X0, Y0, mush };
+    return { cv: r.canvas(), X0, Y0, mush, pond, lamp: [-92, ly - 10 - Y0] };
   }
 
   /** Сакура-бонсай: стовбур і гілки з корінням на моховому горбку; окремо — хмари цвіту. Основа — TB. */
@@ -97,7 +116,7 @@
     outline(tr, OUT);
     const blob = (cx, cy, rx, ry, seed) => { for (let y = Math.floor(cy - ry - 1); y <= cy + ry + 1; y++) for (let x = Math.floor(cx - rx - 1); x <= cx + rx + 1; x++) {
       const ex = (x + .5 - cx) / rx, ey = (y + .5 - cy) / ry; if (ex * ex + ey * ey + (hash(x + seed, y) - .5) * .5 > 1) continue;
-      const h = hash(x * 3 + seed, y * 7); bl.set(x, y, h > .94 ? BLS[6] : h < .05 && ey > 0 ? BLS[0] : BLS[clampI(3.7 - ey * 2 - ex * .8 + BAYER[(y & 3) * 4 + (x & 3)] * 1.5 + (h - .5), BLS.length)]); } };
+      const h = hash(x * 3 + seed, y * 7); bl.set(x, y, h > .94 ? BLS[6] : h < .05 && ey > 0 ? BLS[0] : BLS[clampI(3.5 - ey * 2.7 - ex * .9 + BAYER[(y & 3) * 4 + (x & 3)] * 1.5 + (h - .5), BLS.length)]); } };
     [[bx - 29, by - 29, 12, 7, 1], [bx - 15, by - 47, 14, 8.5, 2], [bx + 1, by - 54, 15, 8.5, 3], [bx + 16, by - 46, 13, 7.5, 4], [bx + 25, by - 37, 10, 6, 5], [bx + 9, by - 32, 6, 3.5, 6], [bx - 34, by - 22, 5, 3, 7], [bx - 6, by - 36, 6, 3.5, 8]].forEach(b => blob(...b));
     outline(bl, OUT);
     return { trunk: tr.canvas(), bloom: bl.canvas() };
@@ -108,6 +127,7 @@
     id: 'sakura', name: 'obj.sakura', act: 'sakura',
     cx: 768, cy: 470, k: 1, U: .5, RX: 66, RY: 12, h: 4, D: 80,      // центр і радіуси (кімната), k — перспектива, U — од. на піксель, h — висота борту, D — глибина спуску
     drop: 0,                                                         // 0 — нагорі, 1 — унизу
+    bob: 0, bobV: 0, aboard: false, jumpA: null,                     // пружина острівця (просідає, коли Nexi приземлився); Nexi на борту; крок стрибка, що триває
     layout() {
       const R = NX.objects.rug, [x, y] = R.center, k = P.depthK(y);
       this.cx = x; this.cy = y; this.k = k; this.U = .5 * k; this.RX = (R.rx - 84) * k; this.RY = R.ry * k * (1 - 3 / 5.5); this.h = TH * this.U;
@@ -118,46 +138,79 @@
       const B = Math.max(8, Math.round(this.RY / this.U)); if (B !== discB) { discB = B; DISC = buildDisc(B); }
       if (!TREE) TREE = buildTree();
     },
-    /** Де Nexi стоїть на острівці (камінь праворуч від сакури) і звідки застрибує (док). */
+    /** Де Nexi стоїть на острівці (камінь праворуч від сакури). */
     stand() { return [this.cx + 40 * this.k, this.cy - this.h]; },
-    approach() { return NX.objects.rug.home; },
+    /** Куди зістрибує: док праворуч, дзеркально ліворуч або перед острівцем — щоразу інакше. */
+    exitPoint() { const [hx, hy] = NX.objects.rug.home, r = Math.random(); return NX.room.clampWalk(...(r < .4 ? [hx, hy] : r < .7 ? [2 * this.cx - hx, hy] : [this.cx + 30 * this.k, this.cy + this.RY + 18 * this.k])); },
+    /** СТРИБОК ІЗ САЛЬТО (власник, 13.11: «щоб міг з будь-якого місця прикольно стрибати на острівець, а не підбігати справа»):
+     *  присід, висока дуга з того місця, де Nexi стоїть, до точки to (масив або функція) — одне чи два сальто довкола середини тіла
+     *  (n.roll) або «дзиґа» (pose spin), слід із пелюсток. o.dy — глибина в кінці (на острівці), o.land — що зробити при приземленні. */
+    jump(to, o = {}) {
+      const n = NX.nexi, k = this.k; let fr, H, flips, spin, sgn, kicked;
+      const w = { pose: 'crouch', dur: 1,
+        start: () => { if (typeof to === 'function') to = to(); fr = [n.x, n.y]; const L = Math.hypot(to[0] - fr[0], to[1] - fr[1]); kicked = false;
+          w.dur = .16 + Math.max(.6, Math.min(1.05, .45 + L / 380)); H = Math.max(46, Math.min(104, 40 + L * .28)) * k; sgn = to[0] >= fr[0] ? 1 : -1;
+          spin = Math.random() < .25; flips = L > 120 * k && Math.random() < .45 ? 2 : 1; this.jumpA = step; this.aboard = false; o.start && o.start(); },
+        tick: (dt, q) => { const q0 = .16 / w.dur; if (q < q0) { n.pose = 'crouch'; return; }
+          if (!kicked) { kicked = true; NX.nexiPhys.kick(3); for (let i = 0; i < 6; i++) NX.fx.emit('dust', n.x, n.y); NX.fx.emit('ring', n.x, n.y, { col: BLS[4], r0: 3, gr: 40, ttl: .35 }); }
+          const e = (q - q0) / (1 - q0), g = P.lerp(fr[1], to[1], e), es = e * e * (3 - 2 * e);
+          n.x = P.lerp(fr[0], to[0], e); n.gy = g; n.dy = o.dy != null ? P.lerp(fr[1], o.dy, e) : g; n.y = g - Math.sin(e * Math.PI) * H; n.air = true;
+          if (spin) { n.pose = 'spin'; n.dir = Math.floor(NX.time * 14) % 2 ? 1 : -1; n.roll = 0; } else { n.pose = 'jump'; n.dir = sgn; n.roll = sgn * 6.2832 * flips * es; }
+          if (Math.random() < .7) NX.fx.emit('spark', n.x + (Math.random() - .5) * 10, n.y - 22 * k, { col: Math.random() < .5 ? BLS[4] : BLS[5], vx: -sgn * 20, vy: 12, g: 50, ttl: .7, s: 1.5 }); },
+        end: () => { n.x = to[0]; n.y = n.gy = to[1]; n.dy = o.dy != null ? o.dy : null; n.air = false; n.roll = 0; n.dir = sgn; this.jumpA = null; o.land && o.land(); } };
+      const step = { work: w }; return step;
+    },
+    /** План заходу: далеко — розгін у бік острівця й відштовхування за ~130 од. до нього; близько — стрибок просто з місця. */
+    plan() { const n = NX.nexi, st = this.stand(), dx = n.x - st[0], dy = n.y - st[1], L = Math.hypot(dx, dy) || 1, R = (118 + Math.random() * 30) * this.k, steps = [];
+      if (L > R * 1.25) steps.push({ walk: NX.room.clampWalk(st[0] + dx / L * R, st[1] + dy / L * R), dash: true });
+      steps.push(this.jump(st, { dy: st[1], land: () => this.land() })); n.queue.unshift(...steps); },
     /** Тап по сакурі (вона вища за слід острівця) — те саме, що по острівцю. */
     tapFirst(x, y) { const w = 37 * this.U, top = this.cy - this.h - 64 * this.U; if (this.drop || Math.abs(x - this.cx) > w || y < top || y > this.cy - this.RY) return false; return this.onTap(); },
     onTap() { if (NX.nexi.loc !== 'lift') NX.nexi.do('sakura'); return true; },
     petals(n = 14) { const r = Math.random; for (let i = 0; i < n; i++) NX.fx.emit('spark', this.cx + (r() - .5) * 60 * this.k, this.cy - this.h - r() * 30 * this.k + this.drop * this.D, { col: r() < .5 ? BLS[4] : BLS[5], vx: (r() - .5) * 50, vy: -20 - r() * 30, g: 60, ttl: 1.1, s: 1.5 }); },
-    land() { NX.nexiPhys.land(3); this.petals(10); },
+    land() { const n = NX.nexi; NX.nexiPhys.land(3.4); this.petals(16); this.bobV = 30 * this.k; this.aboard = true; n.loc = 'lift'; NX.fx.emit('ring', n.x, n.y, { col: BLS[4], r0: 4, gr: 60, ttl: .45 }); },
     /** Крок поїздки: q 0..1, dir +1 — вниз, −1 — вгору. Nexi їде разом з острівцем. */
-    ride(q, dir) { const e = q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q), n = NX.nexi; this.drop = dir > 0 ? e : 1 - e; n.y = n.gy = this.stand()[1] + this.drop * this.D; },
+    ride(q, dir) { const e = q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q), n = NX.nexi; this.drop = dir > 0 ? e : 1 - e; n.y = n.gy = this.stand()[1] + this.drop * this.D + this.bob; },
     /** Унизу: є сад — далі веде він (NX.garden.enter(lift)); ні — сценарій сам піднімає острівець. */
     arrive() { this.petals(18); if (NX.garden && NX.garden.enter) { NX.nexi.queue = []; NX.garden.enter(this); } },
     /** Кроки повернення нагору (сценарій і NX.garden — lift.back()). */
-    upSteps() { const n = NX.nexi; return [{ work: { pose: 'stand', dur: 2.2, tick: (dt, q) => this.ride(q, -1) } }, { hop: this.approach(), hi: 22 * this.k }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('happy', 2.5) }]; },
-    back() { const n = NX.nexi; n.loc = 'lift'; n.x = this.stand()[0]; n.dy = this.stand()[1]; this.ride(0, -1); n.alpha = 1; n.zoom = 1; n.queue = this.upSteps(); n.cur = null; },
+    upSteps() { const n = NX.nexi; return [{ work: { pose: 'stand', dur: 2.2, tick: (dt, q) => this.ride(q, -1) } }, this.jump(() => this.exitPoint()), { loc: 'floor' }, { face: 1 }, { do: () => n.emote('happy', 2.5) }]; },
+    back() { const n = NX.nexi; n.loc = 'lift'; n.x = this.stand()[0]; n.dy = this.stand()[1]; this.aboard = true; this.ride(0, -1); n.alpha = 1; n.zoom = 1; n.queue = this.upSteps(); n.cur = null; },
     update(dt) {
-      if (NX.acts && !NX.acts.sakura) NX.acts.sakura = { color: '#ff86c4', route: () => { const st = this.stand();
-        return [{ walk: this.approach() }, { hop: st, hi: 22 * this.k, dy: st[1] }, { do: () => this.land() }, { loc: 'lift' }, { face: 1 }, { say: NX.pick('act.sakura.lines') },
+      if (NX.acts && !NX.acts.sakura) NX.acts.sakura = { color: '#ff86c4', route: () => {
+        return [{ do: () => this.plan() }, { loc: 'lift' }, { face: 1 }, { say: NX.pick('act.sakura.lines') },
           { work: { pose: 'wave', dur: 2.6, tick: (d, q) => this.ride(q, 1) } }, { do: () => this.arrive() }, { wait: 1 },
           ...this.upSteps(), { say: NX.pick('act.sakura.soon') }]; } };
-      if (this.drop > 0 && NX.nexi.loc !== 'lift') this.drop = Math.max(0, this.drop - dt / 1.2);       // поїздку перервали — острівець сам нагору
+      const n = NX.nexi;
+      if (this.drop > 0 && n.loc !== 'lift') this.drop = Math.max(0, this.drop - dt / 1.2);            // поїздку перервали — острівець сам нагору
+      if (this.jumpA && n.cur !== this.jumpA) { this.jumpA = null; n.roll = 0; n.air = false; if (n.y < n.gy) n.y = n.gy; }   // стрибок перервали — на підлогу, без нахилу
+      if (this.bob || this.bobV) { this.bobV += (-190 * this.bob - 13 * this.bobV) * dt; this.bob += this.bobV * dt; if (Math.abs(this.bob) < .03 && Math.abs(this.bobV) < .6) this.bob = this.bobV = 0; }
+      if (this.aboard && n.loc !== 'lift') this.aboard = false;
+      if (this.aboard && !this.jumpA) n.y = n.gy = this.stand()[1] + this.drop * this.D + this.bob;      // Nexi стоїть на острівці й рухається разом із ним
     },
     /** Позаду всіх: шахта (коли острівець їде) і сам диск. */
     drawBack(c, t) {
       if (!DISC) return;
-      const { cx, cy, RX, RY, U, k } = this, d = this.drop * this.D, Kk = NX.cam.k * (NX.loop.dpr || 1), X = Math.round(cx * Kk) / Kk, Y = Math.round((cy + d) * Kk) / Kk;
-      if (d > 0) {                                                                    // шахта: темне дно, задня стіна з неоновими кільцями
+      const { cx, cy, RX, RY, U, k } = this, dd = this.drop * this.D, d = dd + this.bob, Kk = NX.cam.k * (NX.loop.dpr || 1), X = Math.round(cx * Kk) / Kk, Y = Math.round((cy + d) * Kk) / Kk;
+      if (dd > 0) {                                                                    // шахта: темне дно, задня стіна з неоновими кільцями
         c.save(); c.beginPath(); c.ellipse(cx, cy, RX, RY, 0, 0, 7); c.clip();
         const g = c.createLinearGradient(0, cy - RY, 0, cy + RY); g.addColorStop(0, '#1a1146'); g.addColorStop(1, '#04030c'); c.fillStyle = g; c.fillRect(cx - RX, cy - RY, RX * 2, RY * 2);
-        c.lineWidth = 1.2 * k; for (let z = 5 * k, i = 0; z < d; z += 9 * k, i++) { c.strokeStyle = i % 2 ? `rgba(255,79,216,${.5 + .25 * Math.sin(t * 4 + i)})` : `rgba(59,232,255,${.55 + .25 * Math.sin(t * 4 + i)})`; c.beginPath(); c.ellipse(cx, cy + z, RX - 1, RY, 0, Math.PI, 2 * Math.PI); c.stroke(); }
+        c.lineWidth = 1.2 * k; for (let z = 5 * k, i = 0; z < dd; z += 9 * k, i++) { c.strokeStyle = i % 2 ? `rgba(255,79,216,${.5 + .25 * Math.sin(t * 4 + i)})` : `rgba(59,232,255,${.55 + .25 * Math.sin(t * 4 + i)})`; c.beginPath(); c.ellipse(cx, cy + z, RX - 1, RY, 0, Math.PI, 2 * Math.PI); c.stroke(); }
         c.restore();
         P.glow(c, cx, cy + RY * .3, RX * .8, 'rgba(255,120,200,.7)', this.drop * (.28 + .08 * Math.sin(t * 3)));   // рожеве сяйво саду з глибини
       }
       c.save(); c.imageSmoothingEnabled = false; c.translate(X, Y); c.scale(U, U);
       c.drawImage(DISC.cv, -DISC.X0, -(DISC.Y0 + TH));
+      const pd = DISC.pond;                                                           // живе у ставку: два коропи кружляють, відблиски на воді
+      for (let i = 0; i < 2; i++) { const a = t * (i ? -.7 : .55) + i * 2.4, fx = Math.round(pd.dx + Math.cos(a) * pd.rx * .55), fy = Math.round(pd.y - TH + Math.sin(a) * pd.ry * .42), hd = (i ? 1 : -1) * Math.sin(a) > 0 ? 1 : -1;
+        c.fillStyle = i ? '#fff2f9' : '#ff9a3a'; c.fillRect(fx - 1, fy, 3, 1); c.fillStyle = i ? '#ff5a4a' : '#ffe27a'; c.fillRect(fx + hd, fy, 1, 1); c.fillStyle = i ? '#ffd4ec' : '#ffc27a'; c.fillRect(fx - hd * 2, fy + (Math.floor(t * 6 + i) % 2 ? -1 : 0), 1, 1); }
+      for (let i = 0; i < 3; i++) { const sI = Math.floor(t * .9 + i * .41); if ((t * .9 + i * .41) % 1 < .3) { c.fillStyle = WAT[4]; c.fillRect(Math.round(pd.dx + (hash(i, sI) - .5) * pd.rx * 1.3), Math.round(pd.y - TH + (hash(i + 5, sI) - .3) * pd.ry * .9), 2, 1); } }
       c.globalCompositeOperation = 'lighter';                                         // живе: LED у канавці борту з бігучим вогником, сяйво грибів
       c.strokeStyle = `rgba(59,232,255,${.45 + .25 * Math.sin(t * 2.4)})`; c.lineWidth = 2; c.beginPath(); c.ellipse(0, -TH + 3.4, A - 1, discB, 0, .12, Math.PI - .12); c.stroke();
       const a = .12 + ((t * .16) % 1) * (Math.PI - .24); c.strokeStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(0, -TH + 3.4, A - 1, discB, 0, a, a + .1); c.stroke();
       c.restore();
       DISC.mush.forEach(([mx, my], i) => P.glow(c, cx + mx * U, cy + d + (my - TH) * U, 7 * k, 'rgba(59,232,255,.7)', .35 + .15 * Math.sin(t * 2 + i * 2)));
+      P.glow(c, cx + DISC.lamp[0] * U, cy + d + (DISC.lamp[1] - TH) * U, 11 * k, 'rgba(255,196,110,.85)', .42 + .1 * Math.sin(t * 7) * Math.sin(t * 2.3));   // ліхтар мерехтить
     },
     /** Сакура — шар із глибиною (хто позаду острівця — за нею); заслона — підлога перед шахтою поверх того, що опустилось. */
     layers(t) {
@@ -167,7 +220,7 @@
       return L;
     },
     drawTree(c, t) {
-      const { cx, cy, U, k } = this, d = this.drop * this.D, Kk = NX.cam.k * (NX.loop.dpr || 1), X = Math.round(cx * Kk) / Kk, Y = Math.round((cy - this.h + 1 + d) * Kk) / Kk;
+      const { cx, cy, U, k } = this, d = this.drop * this.D + this.bob, Kk = NX.cam.k * (NX.loop.dpr || 1), X = Math.round(cx * Kk) / Kk, Y = Math.round((cy - this.h + 1 + d) * Kk) / Kk;
       P.glow(c, cx, Y - 40 * U, 34 * k, 'rgba(255,120,200,.6)', .2 + .06 * Math.sin(t * 1.6));
       c.save(); c.imageSmoothingEnabled = false; c.translate(X, Y); c.scale(U, U); c.translate(-TB[0], -TB[1]);
       c.drawImage(TREE.trunk, 0, 0); c.drawImage(TREE.bloom, Math.round(Math.sin(t * 1.1) * .8), 0);       // крона ледь гойдається
@@ -176,7 +229,14 @@
         const T = 3.2 + hash(i, 21) * 2.4, q = (t / T + hash(i, 22)) % 1, x = 14 + hash(i, 23) * 64 + Math.sin(q * 6 + i) * 5 + q * 6, y = 22 + q * q * 48;
         c.globalAlpha = q > .85 ? (1 - q) / .15 : 1; c.fillStyle = i % 2 ? BLS[4] : BLS[5]; c.fillRect(Math.round(x), Math.round(y), 2, 1); c.fillStyle = BLS[3]; c.fillRect(Math.round(x) + (Math.sin(q * 20 + i) > 0 ? 1 : 0), Math.round(y) + 1, 1, 1);
       }
+      c.globalAlpha = 1;                                                              // метелик кружляє довкола крони
+      const bxx = Math.round(46 + Math.cos(t * .6) * 34), byy = Math.round(26 + Math.sin(t * 1.2) * 9 + Math.sin(t * 5) * 1.5), op = Math.floor(t * 9) % 2;
+      c.fillStyle = '#8af0ff'; c.fillRect(bxx - (op ? 2 : 1), byy - 1, op ? 2 : 1, 2); c.fillRect(bxx + 1, byy - 1, op ? 2 : 1, 2); c.fillStyle = '#d8fbff'; c.fillRect(bxx - (op ? 2 : 1), byy - 1, 1, 1); c.fillStyle = OUT; c.fillRect(bxx, byy - 1, 1, 2);
       c.restore();
+      for (let i = 0; i < 5; i++) {                                                   // світлячки над островом
+        const fx = cx + (Math.sin(t * .4 + i * 2.1) * 56 + Math.sin(t * 1.3 + i) * 6) * U, fy = Y - (30 + Math.cos(t * .33 + i * 1.7) * 18 + Math.sin(t * .9 + i * 3) * 4) * U, a = .5 + .5 * Math.sin(t * 3 + i * 4);
+        P.glow(c, fx, fy, 4 * k, 'rgba(232,255,138,.9)', .5 * a); c.fillStyle = `rgba(240,255,170,${.4 + .6 * a})`; c.fillRect(fx - .35 * k, fy - .35 * k, .7 * k, .7 * k);
+      }
     },
     /** Підлога перед шахтою (усе нижче її переднього краю): шматок передньої підлоги, віддзеркалення дивану й кола килима —
      *  ще раз, поверх острівця, сакури й Nexi, що опустились. Малий clip, лише під час поїздки. */
