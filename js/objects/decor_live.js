@@ -361,6 +361,10 @@
       if (boost > .02) { const o = at(0, B.dep / 2, B.yb - H * .45), r = Math.max(w, H) * .7 * s * (1 + tdt), g = glow(k === 'figure' ? '#ffd27a' : k === 'flask' || k === 'terrarium' ? '#7aff9a' : '#d8a0ff');
         c.globalAlpha = .7 * boost; c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
         for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + B.dc.seed, rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : '#ffd27a'; c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
+      { const NG = { crystal: '#3be8ff', globe: '#3be8ff', lamp: '#ff4fd8', console: '#3bff8a', cube: '#ffd27a', hourglass: '#ffd27a' }[k];               // (· 50) нові артефакти: м'яке сяйво в такт
+        if (NG) { const o = at(0, B.dep / 2 - .2, B.yb - H * .5), r = Math.max(w, H) * .55 * s; c.globalAlpha = .18 + .12 * Math.sin(t * 1.9 + (B.dc.seed || 0)); const g = glow(NG, r); c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
+          if (k === 'globe') { const a = t * 1.2, rr = Math.min(w, H - 2) * .5 * s, oc = at(0, B.dep / 2 - .2, B.yb - 2 - Math.min(w, H - 2) * .44); c.globalAlpha = .95; c.fillStyle = '#ffffff'; c.fillRect(oc[0] + Math.cos(a) * rr - .4, oc[1] + Math.sin(a) * rr * .3 - .4, .8, .8); }   // супутник на орбіті
+          if (k === 'hourglass') { const f = (t * .9) % 1, pp = at(0, B.dep / 2 - w * .3, B.yb - H * .5 + f * H * .3); c.globalAlpha = .9 * (1 - f); c.fillStyle = '#ffe9a8'; c.fillRect(pp[0] - .25, pp[1] - .25, .5, .5); } } }                // піщинка падає
       if (k === 'orb') { const o = at(0, B.dep / 2 - .2, B.yb - 1.6 - w * .36), r = w * .38 * s;
         c.globalAlpha = .35 + .2 * Math.sin(t * 2.3); const g = glow('#c88aff', r); c.drawImage(g.cv, o[0] - r, o[1] - r, r * 2, r * 2);
         for (let q = 0; q < 3; q++) { const a = t * (1.6 + q * .4) + q * 2.1, x = o[0] + Math.cos(a) * r * .55, y = o[1] + Math.sin(a) * r * .3; c.globalAlpha = .9; c.fillStyle = q === 1 ? '#3be8ff' : '#f0d8ff'; c.fillRect(x - .3, y - .3, .6, .6); } }

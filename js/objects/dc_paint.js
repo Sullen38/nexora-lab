@@ -594,6 +594,49 @@ NX.arc = NX.arc || {};
       G.disc(G.P(-w * .05, B.dep * .3, B.yb - H * .38), .6, () => E(N.cyan[2]));                // підсвітка предметного столика
       return;
     }
+    // ---------- (Декор стін · 50) нові артефакти для сот: кристали, голо-глобус, куб-головоломка, пісочний годинник, лава-лампа, ретро-термінал ----------
+    if (k === 'crystal') {                                                            // друза світних кристалів на темній основі
+      const CR = pal(['#0a2a5a', '#1a6ad8', '#3be8ff', '#c8ffff']);
+      G.part(cylAt(c[0], B.yb - 1.2, B.yb, w * .36), 'dark', {});
+      for (const [dx, hh, r] of [[-.22, .55, .1], [.03, .92, .13], [.25, .68, .09]]) G.partF(cylAt(c[0] + dx * w, B.yb - 1.2 - H * hh * .9, B.yb - 1.1, w * r, { kt: .12 }), () => (u, v, i, j) => E(ramp(CR, .95 - v * .5 - Math.abs(u - .35) * .8, i, j)));
+      return;
+    }
+    if (k === 'globe') {                                                              // голографічний глобус: сітка паралелей і меридіанів над проектором
+      G.part(cylAt(c[0], B.yb - 1.4, B.yb, w * .28), 'dark', {});
+      const r = Math.min(w, H - 2) * .44, cy = B.yb - 2 - r;
+      G.disc([c[0], cy, c[2] - .2], r, (u, v, i, j) => { const x = (u - .5) * 2, y = (v - .5) * 2, rr = Math.hypot(x, y); if (rr > .9) return E(N.cyan[2]);
+        const lat = Math.abs((((y * 2.5) % 1) + 1) % 1 - .5) < .1, lon = Math.abs((((x / Math.sqrt(Math.max(.05, 1 - y * y))) * 2) % 1 + 1) % 1 - .5) < .1;
+        return (lat || lon) ? E(N.cyan[1]) : ((i + j) % 2 ? col('#0a2a4a') : 0); });
+      return;
+    }
+    if (k === 'cube') {                                                               // куб-головоломка: 3×3 світні клітинки на кожній грані
+      const sz = Math.min(w * .72, H * .78), CC = ['#ff4fd8', '#3be8ff', '#ffd27a', '#3bff8a', '#ff9a3a', '#c86aff'];
+      G.partF(G.sub(0, B.dep / 2, sz, sz * .8, B.yb - sz, B.yb), Fc => (u, v, i, j) => { const gx = Math.floor(u * 3), gy = Math.floor(v * 3), fu = u * 3 - gx, fv = v * 3 - gy;
+        if (fu < .13 || fv < .13 || fu > .87 || fv > .87) return ramp(PL.DARK, .2, i, j);
+        return E(col(CC[(gx * 2 + gy * 3 + (Fc.k === 'front' ? 0 : Fc.k === 'top' ? 1 : 2) + (d.seed || 0)) % 6])); });
+      return;
+    }
+    if (k === 'hourglass') {                                                          // пісочний годинник: золоті денця, скло, світний пісок
+      const r = w * .3, mid = B.yb - H * .5, SAND = pal(['#6a3a0a', '#c8801a', '#ffd27a', '#fff0c0']), gl = (u, i, j) => Math.abs(u - .3) < .06 ? col('#e8f6ff') : ramp(PL.GLASS, .45, i, j);
+      G.part(cylAt(c[0], B.yb - 1.1, B.yb, r * 1.15), 'gold', {}); G.part(cylAt(c[0], B.yt + .3, B.yt + 1.4, r * 1.15), 'gold', {});
+      G.partF(cylAt(c[0], mid, B.yb - 1.1, r, { kt: .18 }), () => (u, v, i, j) => v > .45 ? E(ramp(SAND, .85 - (v - .45) - Math.abs(u - .5) * .5, i, j)) : gl(u, i, j));
+      G.partF(cylAt(c[0], B.yt + 1.4, mid, r, { kb: .18 }), () => (u, v, i, j) => (v > .55 && Math.abs(u - .5) < .34 * (1 - v) + .07) ? E(ramp(SAND, .7, i, j)) : gl(u, i, j));
+      return;
+    }
+    if (k === 'lamp') {                                                               // лава-лампа: темні конус і ковпачок, у склі — світні краплі
+      const r = w * .22, LV = pal(['#3a0a4a', '#8a1a8a', '#ff4fd8', '#ffc4f2']);
+      G.part(cylAt(c[0], B.yb - H * .2, B.yb, r * 1.5, { kt: .6 }), 'dark', {}); G.part(cylAt(c[0], B.yt + .3, B.yt + H * .14, r * .8, { kt: .6 }), 'dark', {});
+      G.partF(cylAt(c[0], B.yt + H * .14, B.yb - H * .2, r, { kt: .75 }), () => (u, v, i, j) => { const bl = Math.sin(v * 9 + 1 + (d.seed || 0)) * Math.sin(u * 5 + .6); return bl > .28 ? E(ramp(LV, .6 + bl * .5, i, j)) : E(ramp(LV, .12 + (1 - Math.abs(u - .4) * 2) * .12, i, j)); });
+      return;
+    }
+    if (k === 'console') {                                                            // ретро-термінал: корпус, зелений екран із графіком, клавіатура
+      const L0 = pal(['#04200c', '#0a5a1a', '#3bff8a', '#c8ffd8']);
+      G.partF(G.sub(0, B.dep / 2, w * .9, B.dep * .7, B.yb - H * .82, B.yb - 1.3), Fc => { const L = lit(Fc.n, A.centre(Fc)); return (u, v, i, j) => {
+        if (Fc.k === 'front' && u > .1 && u < .9 && v > .12 && v < .82) { const y = .62 - .3 * Math.sin(u * 7 + (d.seed || 0)) * (.4 + u * .6); return Math.abs(v - y) < .06 ? E(L0[3]) : (j % 2 ? E(L0[1]) : E(L0[0])); }
+        return ramp(PL.STEEL, .34 * L + .14, i, j); }; });
+      G.partF(G.sub(0, B.dep * .32, w * .96, B.dep * .5, B.yb - 1.3, B.yb), Fc => (u, v, i, j) => Fc.k === 'top' && (Math.floor(u * 8) + Math.floor(v * 3)) % 2 ? ramp(PL.CHROME, .5, i, j) : ramp(PL.DARK, .3, i, j));
+      return;
+    }
     if (k === 'figure') {                                                             // ЗОЛОТА СТАТУЕТКА NEXI на мармуровому п'єдесталі
       const pr = w * .3, pb = 2.6;
       G.part(cylAt(c[0], B.yb - pb, B.yb, pr, { kb: 1.1 }), 'stone', { pal: PL.STONE, q: .55 });

@@ -341,31 +341,24 @@ def decor_side(L, sgn, C, R, verbose=True):
         # візерунка дна) — у кожній своя річ; і неонова вивіска «Nexi з паростком» (без слів)
         # (· 47) Власник: «крайня обрізана, корч прибери, соти більшими» → (· 48) «але всі 10 сот і всі речі назад, без проміжків,
         # на всю площину»: щільна решітка (сота = крок), більші комірки, 3 ряди, перша колонка повністю в кадрі (X ≥ -18)
-        HX = dict(w=23., cw=23., d=10., a0=89.4, cols=6)
-        h = HX['w'] * .866; step = math.degrees(.75 * HX['w'] / (R - HX['d'])); ch = HX['cw'] * .866
-        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8']   # 10 сот — 10 різних неонів
+        # (· 50) Власник: «усе до акваріума прибираємо — плакат, рослини; лишаємо тільки полички, гарно розподілити по всій області;
+        # рослин усередині нема — лише артефакти; може, шаховий порядок». Шахівка на всю стіну від лівого краю до рифу: 8 колонок,
+        # у парних — дві соти (верх і низ вільної смуги), у непарних — одна посередині; 12 сот, у кожній свій артефакт.
+        HX = dict(w=24., cw=24., d=10., X0=-5., X1=199., cols=8)
+        ch = HX['cw'] * .866
+        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8', '#ff6ab0', '#9a8aff']   # 12 сот — 12 неонів
+        ITEMS = ['figure', 'crystal', 'orb', 'books', 'globe', 'flask', 'cube', 'scope', 'hourglass', 'terrarium', 'lamp', 'console']
         cells = []
-        for k in range(HX['cols'] + 2):
-            a = HX['a0'] + k * step
-            for row in (0, 1, 2):
-                (x, z), _, _ = W.at(a, HX['d']); X = W.X(a, HX['d'])
-                if X < -18: continue
-                Yc = Yw(10 + h * .55, z) + row * h + (h / 2 if k % 2 else 0)
-                yt, yb = ys(Yc - h / 2, z), ys(Yc + h / 2, z)
-                (xw, zw), _, _ = W.at(a, 0); ybw = ys(Yc + h / 2, zw)
-                if yt < 3 or max(yb, ybw) > free_y(X) - 2 or X > 86: continue
-                cells.append((k, row, a, Yc))
-        ITEMS = [('plant', 'bonsai', 'gold'), ('art', 'orb'), ('plant', 'succ', 'pink'), ('art', 'books'), ('plant', 'cactus2', 'stone'),
-                 ('art', 'terrarium'), ('plant', 'sansevieria', 'black'), ('art', 'flask'), ('art', 'scope'), ('art', 'figure')]
-        cells = sorted(cells, key=lambda c: (c[0], c[1]))[:len(ITEMS)]
-        for q, (k, row, a, Yc) in enumerate(cells):
+        for k in range(HX['cols']):
+            X = HX['X0'] + (HX['X1'] - HX['X0']) * k / (HX['cols'] - 1); a = W.a_of(X, HX['d']); (x, z), _, _ = W.at(a, HX['d']); (xw, zw), _, _ = W.at(a, 0)
+            hw = HX['cw'] * .5 * s(z) + 1; lim = min(free_y(X + hw * q / 4) for q in range(-4, 5)) - 2.5
+            Yt = max(Yw(7., z), Yw(7., zw)) + ch / 2; Yb = min(Yw(lim, z), Yw(lim, zw)) - ch / 2
+            for Yc in ((Yt, Yb) if k % 2 == 0 else ((Yt + Yb) / 2,)): cells.append((k, a, Yc))
+        for q, (k, a, Yc) in enumerate(cells):
             da_ = math.degrees(HX['w'] * .4 / R)
             cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['cw'], Yc + ch / 2, Yc - ch / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['cw'], h=round(ch, 2), shy=shy(a - da_, a + da_, .2))))
-            sup = dict(Y=Yc + ch / 2 - 1.6, id=cid); kind = ITEMS[q]
-            if kind[0] == 'plant':
-                (xq, zq), _, _ = W.at(a, HX['d']); hh = (min(ch * 2.3, ch - 3.5 + max(0., ys(Yc - ch / 2, zq) - 2.5) / s(zq)) if row == 0 else ch - 3.5)   # (· 27) верхній ряд: рослина росте з соти вгору, не вище рядка 2.5 (стеля)
-                plant_on(sup, f'dc_hxp{q}', a, kind[1], HX['cw'] * (.8 if row == 0 else .62), hh, kind[2], 6., 4, HX['d'] - 3.8, seed=80 + q)   # ближче до краю соти: знизу видно; (· 27) верхній ряд — удвічі вища й ширша (власник: «ледь видно»)
-            else: art_on(sup, f'dc_hxa{q}', a, kind[1], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q)
+            sup = dict(Y=Yc + ch / 2 - 1.6, id=cid)
+            art_on(sup, f'dc_hxa{q}', a, ITEMS[q % len(ITEMS)], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q)
         flat('dc_neon', 99.2, 182.6, 14., 66., 'neon', d=3.2, glow=1, gr=40)   # (· 48) правіше — соти впритул          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
         # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
         # (живі: objects/decor.js); кришка зі світлом зверху, тумба з неоном і вогниками знизу — найбільший, що влазить
@@ -479,6 +472,10 @@ def decor_side(L, sgn, C, R, verbose=True):
         light('dc_lt_reef', 292., 46., 'clamp', 50, inset=7.)
         light('dc_lt_jelly', 406., 120., 'neon', 48, inset=CL['r'] + CL['gap'])
         light('dc_lt_hex', 30., 40., 'neon', 30, inset=7.)
+        # (· 50) усе, що було між сотами й рифом (вивіска, кошик, корита, платицеріум) і їхні тіні — прибрано; місце — під соти
+        REM = {'dc_neon', 'dc_basket', 'dc_tr0', 'dc_tr1', 'dc_stag'}
+        out[:] = [it for it in out if it['id'] not in REM and it.get('on') not in REM]
+        light('dc_lt_hex2', 150., 40., 'neon', 30, inset=7.)
     # ---------- (· 4) ЖИВІ РОСЛИНИ (власник: «рослини пишніші й живіші»): що гойдається (dc.sway — objects/dc_paint.js не кладе
     # цю частину в растр, objects/decor.js малює її щокадру): висячі — від кріплення, звиси з антресолі, корита, рослини на
     # антресолі — лише НАД поруччям (поруччя попереду; межа — висота поручня на екрані в їхніх межах), кокедами, аквапоніка
