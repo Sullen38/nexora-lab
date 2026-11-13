@@ -344,7 +344,7 @@
     for (const p of HANG) { const cv = spriteOf(p), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, by = cv.base[1] / S, sh = Math.sin(t * .55 + p.seed) * .022 + Math.sin(t * 1.7 + p.seed * 3) * .006;
       px(c, p.x - 1.5, y + 2, 3, 3, '#0c1026'); px(c, p.x - .8, y + 3, 1.6, 2, PAL.silver);                                                             // гачок
       c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, HOOK_Y); c.transform(1, 0, sh, 1, 0, 0); c.drawImage(cv, -bx, -by, w, h);
-      if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-bx, -by, w, h); } c.restore(); }
+      c.restore(); }   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
   }
   // ---------- (· 41) ЖИТТЯ ЛИСТЯ: новий листок після поливу, пожовклий листок падає на кант, Nexi прибирає (prune); гекон; гроу-лампа; роса ----------
   const LEAFY = HEROES.filter(p => p.young), FALLEN = [], LIFE = { nextOld: 240 + Math.random() * 120 };
@@ -444,7 +444,7 @@
         c.drawImage(cv, -bx, -byy, w, h);
         if (p.back) { c.globalAlpha = .12 + .05 * night; c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#2a3a8a'; c.fillRect(-bx, -byy, w, h); }   // серпанок на задньому шарі — глибина
         if (p.kind === 'cereus' && night > .05) { const bl = spriteOf(p, 'cereusBloom'); c.globalAlpha = night; c.drawImage(bl, -bl.base[0] / S, -bl.base[1] / S, bl.width / S, bl.height / S); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.25 + .1 * Math.sin(t * 2)); c.fillStyle = '#fff6c0'; c.beginPath(); c.arc(-4, -p.h * .7 + 2, 9, 0, TAU); c.fill(); }   // (· 36) цереус квітне вночі
-        if (p.flash != null && t - p.flash < .8) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - (t - p.flash) / .8) * .3; c.fillStyle = '#fff'; c.fillRect(-bx, -byy, w, h); } c.restore(); }
+        c.restore(); }   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
       drawLife(c, t, LK); drawGecko(c, t, night); drawPanel(c, t, LK); c.restore();
       drawPetals(c, t); drawVisitors(c, t, night); drawDew(c, t);
       if (night > .05) for (let i = 0; i < 7; i++) { const ph = t * (.25 + .08 * (i % 3)) + i * 1.7, x = JAR.x0 + 14 + ((i * 37 + Math.sin(ph) * 22 + 400) % (JAR.x1 - JAR.x0 - 28)), y = top - 24 - (i % 4) * 16 + Math.sin(ph * 1.6) * 9, a = night * (.35 + .65 * Math.max(0, Math.sin(ph * 3 + i)));   // світлячки над жардиньєром уночі

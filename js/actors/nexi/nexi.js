@@ -272,7 +272,7 @@ NX.nexi = {
     }
     if (this.fxNow !== 'none' && t > this.fxUntil) this.fxNow = 'none';
     if (t > this.nextFx && this.fxNow === 'none') {
-      this.nextFx = t + 22 + Math.random() * 18; const fx = ['rain', 'snow', 'sparks', 'aura', 'fire', 'water', 'neon', 'energy', 'trail', 'rain'][Math.random() * 10 | 0];
+      this.nextFx = t + 22 + Math.random() * 18; const fx = ['rain', 'snow', 'sparks', 'aura', 'fire', 'water', 'aura', 'energy', 'trail', 'rain'][Math.random() * 10 | 0];
       this.fxNow = fx; this.fxUntil = t + 6 + Math.random() * 3;
       const react = { rain: 'sad', snow: 'happy', fire: 'surprise', sparks: 'love', aura: 'cool', water: 'happy', neon: 'cool', energy: 'idea' }[fx]; if (react) setTimeout(() => this.emote(react, 2.5), 400);
     }
@@ -349,7 +349,7 @@ NX.nexi = {
         NX.px.rect(c, cx - 12, cy + 8, 24, 1, this.fxNow === 'rain' ? '#3a4070' : '#8a93b8'); NX.px.rect(c, cx - 6, cy, 6, 1, '#ffffff'); c.restore();
         if (Math.random() < .5) NX.fx.emit(this.fxNow === 'rain' ? 'rain' : 'snow', cx + (Math.random() - .5) * 22, cy + 9, this.fxNow === 'rain' ? { vy: 120, ttl: (Y - cy - 10) / 120 } : { vy: 16, ttl: (Y - cy - 10) / 16 });
       }
-      if (this.fxNow === 'neon') { c.save(); c.globalAlpha = this.alpha; c.strokeStyle = Math.floor(t * 3) % 2 ? '#ff4fd8' : '#3be8ff'; c.lineWidth = 1.2; c.shadowColor = c.strokeStyle; c.shadowBlur = 8; c.strokeRect(X - w * .42, Y - top - 3, w * .84, top + 5); c.restore(); }
+      // (13.11, власник: «можна без цих обводок, рамок — не хочу цього») рамку ефекту neon довкола Nexi прибрано; сам ефект — частинки NX.fx.skin
       const gl = this.mood && t < this.moodT && { happy: '♪', love: '♥', surprise: '!', idea: '!?', sleepy: 'z', sad: '...', angry: '#!', cool: '*' }[this.mood]; if (gl) NX.px.text(c, gl, X + w * .3, Y - top - 4, '#ffe27a', 6);
       this.box = this.rot ? [X - top * .6, Y - w * .5, top * 1.2, w * .6] : [X - w * .4, Y - top, w * .8, top];
       this.headScreen = NX.cam.toScreen(X, Y - (this.rot ? w * .4 : top));
