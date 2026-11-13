@@ -747,6 +747,36 @@ NX.arc = NX.arc || {};
     }
   };
 
+  // ================= (Декор стін · 52) НЕОНОВА ТРУБКА між острівцями сот і СМІШНІ МІНІ-ПЛАКАТИ =================
+  /** Точки трубки в осях речі (u — уздовж стіни, y — висота): сходинка посередині. Ті самі — у objects/decor_live.js (імпульс). */
+  NX.arc.tubePts = B => { const w = B.w, ym = (B.yt + B.yb) / 2, a = (B.yb - B.yt) * .32 * ((B.dc.seed || 0) % 2 ? -1 : 1); return [[-w / 2, ym + a], [-w * .2, ym + a], [-w * .08, ym - a], [w * .08, ym - a], [w * .2, ym + a], [w / 2, ym + a]]; };
+  SHP['st:dc_tube'] = (G, B) => {
+    const cc = neonX(B.dc.col || '#ff4fd8'), v = B.dep * .45, pts = NX.arc.tubePts(B).map(([u, y]) => G.P(u, v, y));
+    for (const k of [1, 4]) { const [u, y] = NX.arc.tubePts(B)[k]; G.tube(G.P(u, B.dep, y), pts[k], .7, chromeT); }                   // кронштейни до цегли
+    for (let k = 1; k < pts.length; k++) G.tube(pts[k - 1], pts[k], 2.2, (u) => E(Math.abs(u - .5) < .22 ? cc[2] : cc[1]));
+  };
+  /** Піксельний спрайт із рядків-масок: символ → колір (pal), '.' — порожньо; клітинка p од. */
+  const sprM = (c, rows, pal, x0, y0, p) => rows.forEach((row, j) => { for (let i = 0; i < row.length; i++) { const col_ = pal[row[i]]; if (col_) { c.fillStyle = col_; c.fillRect(x0 + i * p, y0 + j * p, p + .02, p + .02); } } });
+  const miniPoster = (bg, frame, rows, pal) => (c, fw, fh) => {
+    c.fillStyle = bg; c.fillRect(0, 0, fw, fh); c.fillStyle = 'rgba(255,255,255,.05)'; for (let y = 1; y < fh; y += 1.2) c.fillRect(.6, y, fw - 1.2, .3);
+    const p = Math.min((fw - 2.4) / rows[0].length, (fh - 2.4) / rows.length); sprM(c, rows, pal, (fw - rows[0].length * p) / 2, (fh - rows.length * p) / 2, p);
+    A.neonRect(c, .7, .7, fw - 1.4, fh - 1.4, frame, .28, .8);
+  };
+  // 0 — «кіт-бос»: рудий кіт у короні й темних окулярях; 1 — «без багів»: жук у червоному колі з рискою;
+  // 2 — «кава = життя»: чашка з парою і серцем; 3 — «кактус на відпочинку»: кактус в окулярях із коктейлем
+  PAINT.dc_mp0 = miniPoster('#1a0c3a', '#ffd27a', [
+    '..y.y.y.....', '..yyyyy.....', '.o.....o....', '.oo...oo....', '.ooooooo....', '.ooooooo....', '.kkkokkk....', '.kkkokkk....', '.ooopooo....', '.oowwwoo....', '..ooooo.....', '............', '..h.h.h.....', '............'].map(r => r.padEnd(9, '.').slice(0, 9)),
+    { y: '#ffd23a', o: '#ff8a3a', k: '#101018', p: '#ff6ab0', w: '#fff0e0', h: '#ff4fd8' });
+  PAINT.dc_mp1 = miniPoster('#0c1a2a', '#ff3a5a', [
+    '..rrrrr..', '.r.....r.', 'r.a...ar.', 'r..ggg.rr', 'r.agggr.r', 'r..grg..r', 'r.argga.r', 'rr.ggg..r', '.r.....r.', '..rrrrr..'],
+    { r: '#ff3a5a', g: '#3bff8a', a: '#1a8a4a' });
+  PAINT.dc_mp2 = miniPoster('#2a0c2a', '#ff4fd8', [
+    '..s..s...', '.s..s....', '..s..s...', '.........', 'wwwwwww..', 'wwhwhwwbb', 'wwhhhww.b', 'wwwhwwwbb', 'wwwwwww..', '.wwwww...', 'ccccccccc'],
+    { s: '#d8e8ff', w: '#f0f0ff', h: '#ff3a6a', b: '#f0f0ff', c: '#8a5a3a' });
+  PAINT.dc_mp3 = miniPoster('#0a2a2a', '#3be8ff', [
+    '....g....', '...ggg...', 'g..ggg..g', 'g.kkgkk.g', 'gggkgkggg', '..gggg...', '...ggg...', '...ggg.yp', '...ggg.yy', '..ttttt.y', '..ttttt..', '...ttt...'],
+    { g: '#3bd86a', k: '#101018', t: '#d8703a', y: '#ffd23a', p: '#ff4fd8' });
+
   // ================= СОТИ-ПОЛИЦІ (шестигранні комірки) =================
   /** Візерунок задньої стінки соти pat (0..9 — кожна сота свій): 0 — нічого, 1 — лінія, 2 — вогник. x, y — од. від середини. */
   const PATF = [

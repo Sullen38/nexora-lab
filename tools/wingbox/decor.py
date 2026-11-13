@@ -344,30 +344,37 @@ def decor_side(L, sgn, C, R, verbose=True):
         # (· 50) Власник: «усе до акваріума прибираємо — плакат, рослини; лишаємо тільки полички, гарно розподілити по всій області;
         # рослин усередині нема — лише артефакти; може, шаховий порядок». Шахівка на всю стіну від лівого краю до рифу: 8 колонок,
         # у парних — дві соти (верх і низ вільної смуги), у непарних — одна посередині; 12 сот, у кожній свій артефакт.
-        # (· 51) Власник: шахівка не подобається → «а якщо об'єднати три острівці між собою?»: щільна решітка (сота = крок), три
-        # острівці-трикутники по 3 соти, з'єднані містками по 2 соти — одна безперервна стрічка з 13 сот на всю стіну до рифу.
-        HX = dict(w=21., cw=21., d=10., X0=-4.)
-        ch = HX['cw'] * .866; h = ch; step = math.degrees(.75 * HX['w'] / (R - HX['d'])); aL = W.a_of(HX['X0'], HX['d'])
-        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8', '#ff6ab0', '#9a8aff', '#ffe04a']
-        ITEMS = ['figure', 'crystal', 'orb', 'books', 'globe', 'flask', 'cube', 'scope', 'hourglass', 'terrarium', 'lamp', 'console', 'cup']
-        LAT = [(0, 0), (0, 1), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (5, 0), (6, 1), (7, 0), (8, 0), (8, 1), (9, 0)]   # (колонка, ряд); непарні колонки — на пів соти нижче
+        # (· 52) Власник обрав схему «неонові трубки»: три острівці по 4 соти (2×2), між ними — світні трубки по цеглі; у проміжках
+        # «обіграти області»: смішні міні-плакати (без слів) і рослини. Острівець ставиться за екранним X лівої колонки, по висоті —
+        # посередині вільної смуги над зонами; GP — проміжки (ліва межа, права, середина по висоті, низ) для трубок, плакатів, рослин.
+        HX = dict(w=17., cw=17., d=10.)
+        ch = HX['cw'] * .866; h = ch; step = math.degrees(.75 * HX['w'] / (R - HX['d']))
+        NEONS = ['#ff4fd8', '#3be8ff', '#c86aff', '#3bff8a', '#ff9a3a', '#ffd27a', '#ff3a5a', '#b8ff3a', '#3a7aff', '#3affd8', '#ff6ab0', '#9a8aff']
+        ITEMS = ['figure', 'crystal', 'orb', 'books', 'globe', 'flask', 'cube', 'scope', 'hourglass', 'terrarium', 'lamp', 'cup']
         rel = lambda k, r: (r + (.5 if k % 2 else 0)) * h
-        # стіна — дуга, тож рівна у світі стрічка на екрані «їде» вниз; ведемо її вздовж вільної смуги: у кожної колонки свій зсув
-        # (середина її допустимих меж), згладжений по сусідах — сусідні соти лишаються впритул
-        NC = max(k for k, r in LAT) + 1; rng = [[-1e9, 1e9] for _ in range(NC)]
-        for k, r in LAT:
-            a = aL - k * step; (x, z), _, _ = W.at(a, HX['d']); (xw, zw), _, _ = W.at(a, 0); X = W.X(a, HX['d'])
-            hw = HX['cw'] * .5 * s(z) + 1; lim = min(free_y(X + hw * q / 4) for q in range(-4, 5)) - 2.5
-            rng[k][0] = max(rng[k][0], max(Yw(7., z), Yw(7., zw)) + ch / 2 - rel(k, r)); rng[k][1] = min(rng[k][1], min(Yw(lim, z), Yw(lim, zw)) - ch / 2 - rel(k, r))
-        Yk = [(lo_ + hi_) / 2 for lo_, hi_ in rng]
-        for _ in range(4):
-            Yk = [min(max((Yk[max(0, k - 1)] + 2 * Yk[k] + Yk[min(NC - 1, k + 1)]) / 4, rng[k][0]), max(rng[k][0], rng[k][1])) for k in range(NC)]
-        if verbose: print('  HEX strip:', [(round(lo_), round(hi_), round(y)) for (lo_, hi_), y in zip(rng, Yk)], [round(W.X(aL - k * step, HX['d'])) for k in range(NC)])
-        for q, (k, r) in enumerate(LAT):
-            a = aL - k * step; Yc = Yk[k] + rel(k, r); da_ = math.degrees(HX['w'] * .4 / R)
-            cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['cw'], Yc + ch / 2, Yc - ch / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['cw'], h=round(ch, 2), shy=shy(a - da_, a + da_, .2))))
-            sup = dict(Y=Yc + ch / 2 - 1.6, id=cid)
-            art_on(sup, f'dc_hxa{q}', a, ITEMS[q % len(ITEMS)], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q)
+        q = 0; EDG = []
+        for X0i in (-9., 87., 181.):
+            aL = W.a_of(X0i, HX['d']); lo, hi = -1e9, 1e9; xs = []
+            for k in (0, 1):
+                for r in (0, 1):
+                    a = aL - k * step; (x, z), _, _ = W.at(a, HX['d']); (xw, zw), _, _ = W.at(a, 0); X = W.X(a, HX['d'])
+                    hw = HX['cw'] * .5 * s(z) + 1; lim = min(free_y(X + hw * n_ / 4) for n_ in range(-4, 5)) - 2.5; xs += [X - hw, X + hw]
+                    lo = max(lo, max(Yw(7., z), Yw(7., zw)) + ch / 2 - rel(k, r)); hi = min(hi, min(Yw(lim, z), Yw(lim, zw)) - ch / 2 - rel(k, r))
+            Y0 = (lo + hi) / 2 if lo <= hi else lo
+            for k in (0, 1):
+                for r in (0, 1):
+                    a = aL - k * step; Yc = Y0 + rel(k, r); da_ = math.degrees(HX['w'] * .4 / R)
+                    cid = f'dc_hx{q}'; add(item(W, cid, a, HX['d'], HX['cw'], Yc + ch / 2, Yc - ch / 2, 'dc_hex', inset=.6, dc=dict(neon=NEONS[q % len(NEONS)], pat=q, w=HX['cw'], h=round(ch, 2), shy=shy(a - da_, a + da_, .2))))
+                    art_on(dict(Y=Yc + ch / 2 - 1.6, id=cid), f'dc_hxa{q}', a, ITEMS[q % len(ITEMS)], HX['cw'] * .62, ch - 4, 6., HX['d'] - 3.2, seed=q); q += 1
+            EDG.append((min(xs) - 12, max(xs) + 2))                                         # на екрані сота тягнеться лівіше (видно її глибину)
+        GP = []
+        for g, (gL, gR) in enumerate(((EDG[0][1] + 3, EDG[1][0] - 3), (EDG[1][1] + 3, EDG[2][0] - 3))):
+            lim = min(free_y(gL + (gR - gL) * n_ / 8) for n_ in range(9)) - 2.5; ym = (7. + lim) / 2
+            flat(f'dc_tube{g}', gL - 1, gR + 1, ym - 3.5, ym + 3.5, 'dc_tube', d=2.6, dc=dict(col=['#ff4fd8', '#3be8ff'][g], seed=g))   # неонова трубка між острівцями
+            GP.append((gL, gR, ym, lim))
+        if verbose: print('  HEX islands:', [(round(a_), round(b_)) for a_, b_ in EDG], 'gaps:', [tuple(round(v) for v in g_) for g_ in GP])
+        (gL, gR, ym, lim) = GP[0]; flat('dc_mp0', gR - 17, gR - 2, 9., ym - 6, 'dc_poster', d=1.2); flat('dc_mp1', gR - 17, gR - 2, ym + 6, lim - 1, 'dc_poster', d=1.2)   # міні-плакати (objects/dc_paint.js PAINT.dc_mp*)
+        (gL, gR, ym, lim) = GP[1]; flat('dc_mp2', gL + 2, gL + 17, 9., ym - 6, 'dc_poster', d=1.2); flat('dc_mp3', gL + 2, gL + 17, ym + 6, lim - 1, 'dc_poster', d=1.2)
         flat('dc_neon', 99.2, 182.6, 14., 66., 'neon', d=3.2, glow=1, gr=40)   # (· 48) правіше — соти впритул          # неон: Nexi з паростком (без слів; стиль neon — рожевий кант і рожеве світло на стіну)
         # ---------- Л2. РИФ над аналітикою (акваріум №1): вигнута панорамна скляна стінка вздовж дуги, кораловий риф, рибки
         # (живі: objects/decor.js); кришка зі світлом зверху, тумба з неоном і вогниками знизу — найбільший, що влазить
@@ -404,7 +411,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         flat('dc_poster0', 447., 501., 10., 88., 'dc_poster', d=2.4)
         neon, poster = [it for it in out if it['id'] == 'dc_neon'][0], out[-1]
         # ---------- (· 3) Л5. ВИСЯЧИЙ КОШИК між неоном і рифом: нефролепіс каскадом, кошик на трьох ланцюжках зі стелі
-        hang('dc_basket', 201., 1.5, 73.5, 'bostonfern', w=33., inset=11., seed=101, frm='chain', pot=pot_of('basket', 9.5, 6.))
+        hang('dc_basket', GP[1][1] - 10., 1.5, GP[1][2] - 6., 'bostonfern', w=19., inset=8., seed=101, frm='chain', pot=pot_of('basket', 7.5, 4.8))   # (· 52) у другому проміжку між острівцями сот, над трубкою
         basket = out[-1]
         # ---------- (· 3) Л6. ДВА КОРИТА під неоновою вивіскою: зі стіни звисають діхондра «срібний водоспад» і мюленбекія
         for k, (X0, X1, kind) in enumerate(((103., 137., 'dichondra'), (142., 176., 'muehlenbeckia'))):
@@ -423,7 +430,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         # ---------- (· 4) ВИСЯЧІ У ПРОМІЖКАХ (труби під стелею прибрано — власник: «смужки зверху не потрібні»): кожна рослина —
         # на своєму кріпленні: скляна куля на дроті зі стелі, мідний конус-кишеня на цеглі, керамічний «місяць» на стіні
         # (· 48) скляну кулю з бананами (dc_hp0, X 88.6) прибрано: соти тепер до самої вивіски, а між вивіскою й кошиком місця нема
-        # hang('dc_hp0', 88.6, 1.5, 56., 'bananas', w=9.6, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))
+        hang('dc_hp0', GP[0][0] + 9., 1.5, GP[0][2] - 7., 'bananas', w=9.6, inset=4.6, seed=191, frm='orb', pot=dict(shape='orb-glass', mat='glass', band='cyan', name='orb-glass', pw=8.2, ph=8.2))   # (· 52) повернулась: перший проміжок, над трубкою
         hang('dc_hp1', 371.5, 4., 92., 'adansonii', w=15., inset=5.2, seed=192, frm='cone', pot=dict(shape='cone', mat='copper', band='gold', name='cone-copper', pw=9., ph=10.))
         hang('dc_hp2', 292., 2.5, 18., 'dolphins', w=16., inset=4.6, seed=193, frm='moon', pot=dict(shape='moon', mat='ceram', band='pink', name='moon-ceram', pw=10.5, ph=5.2))
         a0, a1 = W.a_of(450., 3.), W.a_of(498., 3.); am = (a0 + a1) / 2; (x, z), _, _ = W.at(am, 3.)
@@ -472,7 +479,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             sg_ = min(dsegs, key=lambda q: abs((q['dc']['sa'] + q['dc']['sb']) / 2 - a)); sup = dict(Y=round(dYc - dr * .78, 2), id=sg_['id'])
             h = min(16., sup['Y'] - Yw(roof(X - 7.5, X + 7.5) + 1.6, z))
             plant_on(sup, 'dc_drp0', a, 'flytrap', round(w, 2), round(h, 2), 'jade', 3.6, 2.6, DI, seed=5)
-        stag = flatw('dc_stag', 181., 200., 77.4, min(free_y(X) for X in (181., 190.5, 200.)) - 1.2, 'dc_art', 5.6, d=5., dc=dict(kind='staghorn', plant='staghorn', seed=141))
+        stag = flatw('dc_stag', GP[0][0] + 1., GP[0][0] + 19., GP[0][2] + 6.5, GP[0][3] - .3, 'dc_art', 5.6, d=5., dc=dict(kind='staghorn', plant='staghorn', seed=141))   # (· 52) платицеріум — у першому проміжку під трубкою
         wshadow(stag, dy=2., k=.38)
         # ---------- (· 3) ОБ'ЄМ: тіні на стіні й кольорове світло акваріумів і сот
         wshadow(neon, dy=3.); wshadow(poster, dy=3.); wshadow(basket, dy=5., rnd=1, top=.2)
@@ -482,7 +489,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         light('dc_lt_jelly', 406., 120., 'neon', 48, inset=CL['r'] + CL['gap'])
         light('dc_lt_hex', 30., 40., 'neon', 30, inset=7.)
         # (· 50) усе, що було між сотами й рифом (вивіска, кошик, корита, платицеріум) і їхні тіні — прибрано; місце — під соти
-        REM = {'dc_neon', 'dc_basket', 'dc_tr0', 'dc_tr1', 'dc_stag'}
+        REM = {'dc_neon', 'dc_tr0', 'dc_tr1'}
         out[:] = [it for it in out if it['id'] not in REM and it.get('on') not in REM]
         light('dc_lt_hex2', 150., 40., 'neon', 30, inset=7.)
     # ---------- (· 4) ЖИВІ РОСЛИНИ (власник: «рослини пишніші й живіші»): що гойдається (dc.sway — objects/dc_paint.js не кладе

@@ -354,6 +354,12 @@
         for (const [sc, al, lw] of [[1, fl, 1.1], [1 + dt * .9, fl * .6, .7]]) { c.globalAlpha = Math.min(1, al); c.lineWidth = lw; c.beginPath(); hexP(sc).forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.stroke(); }
       }
     }
+    for (const B of items) { if (B.st !== 'dc_tube' || !NX.arc.tubePts) continue;                                          // (· 52) неонові трубки між острівцями: сяйво вздовж і імпульс, що біжить
+      const { P } = basis(B), pts = NX.arc.tubePts(B).map(([u, y]) => proj(P(u, B.dep * .45, y))); if (pts[5][0] < vx0 - 20 || pts[0][0] > vx1 + 20) continue;
+      const g = glow(B.dc.col || '#ff4fd8'), L = [0]; for (let k = 1; k < pts.length; k++) L.push(L[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
+      const at = d => { let k = 1; while (k < pts.length - 1 && L[k] < d) k++; const f = (d - L[k - 1]) / Math.max(.01, L[k] - L[k - 1]); return [pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * f, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * f]; };
+      for (let d = 0; d <= L[5]; d += 5) { const q = at(d); c.globalAlpha = .16 + .06 * Math.sin(t * 2.2 + d * .3); c.drawImage(g.cv, q[0] - 6, q[1] - 6, 12, 12); }
+      const f = ((t * .22 + (B.dc.seed || 0) * .5) % 1), hd = at(f * L[5]); c.globalAlpha = .9; c.drawImage(g.cv, hd[0] - 5, hd[1] - 5, 10, 10); c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.fillRect(hd[0] - .7, hd[1] - .7, 1.4, 1.4); }
     for (const B of ART) {
       const { P } = basis(B), w = B.w, H = B.yb - B.yt, z = P(0, B.dep / 2, B.yb)[2], s = 520 / (520 + z), at = (u, v, y) => proj(P(u, v, y)), k = B.dc.kind;
       const c0 = at(0, B.dep / 2, B.yb); if (c0[0] < vx0 - 20 || c0[0] > vx1 + 20) continue;
