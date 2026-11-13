@@ -481,7 +481,8 @@
       if (!M.px) M.px = M.cv.getContext('2d').getImageData(0, 0, M.cv.width, M.cv.height);
       const i = Math.floor((x - M.x) / M.w * M.cv.width), j = Math.floor((y - M.y) / M.h * M.cv.height); if (i < 0 || j < 0 || i >= M.cv.width || j >= M.cv.height || M.px.data[(j * M.cv.width + i) * 4 + 3] < 128) continue;
       TP.aq = { aq, x, y, t0: t }; hit = 'aq'; break; }
-    if (!hit && NX.planters && NX.planters.tap(x, y)) hit = 'planter';                  // (· 31) вазони перед вікном — картка виду
+    if (!hit && NX.planters && NX.planters.tap(x, y)) hit = 'planter';
+    if (!hit && NX.decorCollage && NX.decorCollage.tap(x, y, t)) hit = 'collage';                                      // (· 53) річ колажу гойднеться                  // (· 31) вазони перед вікном — картка виду
     if (!hit && NX.decorVault && NX.decorVault.tap(x, y, t)) hit = 'vault';                  // (· 20) капсула сховища — картка виду ферми
     if (!hit && NX.decorGuide && NX.decorGuide.tapStatic(x, y, t)) hit = 'guide';     // (· 18) нерухомі рослини (соти, витки, корч…) — лише картка довідника
     if (hit) { TP.marks.push({ x, y, t0: t }); if (NX.decorGuide) NX.decorGuide.tap(hit, x, y, t, hit === 'plant' ? LPhit : null); }   // (· 18) картка врятованого виду
@@ -618,7 +619,7 @@
       const m = c.getTransform(); c.__base = [m.a, m.b, m.c, m.d, m.e, m.f];
       T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); });
       T('led', () => drawLED(c, t, vx0, vx1));
-      T('art', () => drawArt(c, t, vx0, vx1));
+      T('art', () => { if (NX.decorCollage) NX.decorCollage.draw(c, t, { items, proj, basis, vx0, vx1 }); drawArt(c, t, vx0, vx1); });   // (· 53) колаж довкола сот — під сяйвом сот
       T('rudik', () => drawRudik(c, t, vx0, vx1));
       T('plants', () => drawPlants(c, t, vx0, vx1));
       T('guide', () => { if (NX.decorGrow) NX.decorGrow.draw(c, t, vx0, vx1); if (NX.decorGuide) NX.decorGuide.draw(c, t); if (NX.decorVault) NX.decorVault.draw(c, t, vx0, vx1); });   // (· 22) паростки й квіти після поливу;   // (· 19) промінь сканера Nexi; (· 20) сховище насіння: сяйво капсул, насінини                              // (· 19) бирки видів і промінь сканера
