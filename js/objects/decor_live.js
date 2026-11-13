@@ -334,6 +334,20 @@
       const k = hash(B.dc.pat || 0, 3), dt = t - (TP.hex[B.id] || -99), fl = dt >= 0 && dt < 1.6 ? Math.exp(-dt / .45) : 0;
       const a = .07 + .09 * (.5 + .5 * Math.sin(t * (.7 + k * .6) + k * 9)) + .9 * fl, r = B.w * .5 * (520 / (520 + P(0, 0, 0)[2])) * (1 + .7 * fl), g = glow(B.dc.neon || '#3be8ff');
       c.globalAlpha = Math.min(1, a); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2);
+      { // ---------- (Декор стін · 49) ЖИВІ СОТИ: вогник біжить по неоновій кромці, хвиля світла проходить по всій решітці, відблиск
+        // ковзає по склу, у комірці плавають порошинки ----------
+        const Ro = B.w / 2, Yc = (B.yt + B.yb) / 2, nc = B.dc.neon || '#3be8ff', V6 = Array.from({ length: 6 }, (_, q) => proj(P(Ro * .93 * Math.cos(q * Math.PI / 3), -.2, Yc + Ro * .93 * Math.sin(q * Math.PI / 3))));
+        const at = u => { const q = ((u % 6) + 6) % 6, i = Math.floor(q), f = q - i, A = V6[i], Bq = V6[(i + 1) % 6]; return [A[0] + (Bq[0] - A[0]) * f, A[1] + (Bq[1] - A[1]) * f]; };
+        const u0 = t * (.55 + .35 * k) * (k > .5 ? 1 : -1) + k * 17; c.lineCap = 'round'; c.strokeStyle = nc;
+        for (let q = 0; q < 7; q++) { const a0 = at(u0 - q * .16), a1 = at(u0 - (q + 1) * .16); c.globalAlpha = .85 * (1 - q / 7); c.lineWidth = 1.3 - q * .12; c.beginPath(); c.moveTo(a0[0], a0[1]); c.lineTo(a1[0], a1[1]); c.stroke(); }   // хвіст вогника
+        const hd = at(u0); c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.fillRect(hd[0] - .6, hd[1] - .6, 1.2, 1.2);
+        const wv = ((t * .11) % 1) * 260 - 60, wk = Math.exp(-Math.pow((p[0] - wv) / 16, 2));                                          // хвиля: раз на ~9 с зліва направо, кромка спалахує
+        if (wk > .03) { c.globalAlpha = wk * .9; c.lineWidth = 1.5; c.beginPath(); V6.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.stroke(); c.globalAlpha = wk * .35; c.drawImage(g.cv, p[0] - r * 1.5, p[1] - r * 1.5, r * 3, r * 3); }
+        const gp = ((t * .16 + k * 3.7) % 1) * 4 - 1; if (gp > -.3 && gp < 1.3) { c.save(); c.beginPath(); V6.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.clip();        // відблиск по склу: коса смуга проїжджає комірку
+          const x = p[0] - r + gp * r * 2; c.globalAlpha = .22; c.fillStyle = '#eaffff'; c.beginPath(); c.moveTo(x, p[1] - r); c.lineTo(x + 2.2, p[1] - r); c.lineTo(x - 3.8, p[1] + r); c.lineTo(x - 6, p[1] + r); c.closePath(); c.fill(); c.globalAlpha = .12; c.fillRect(x + 3.4, p[1] - r, .8, r * 2); c.restore(); }
+        for (let q = 0; q < 4; q++) { const f = ((t * (.05 + .03 * hash(q, k * 9)) + hash(q, B.dc.pat || 0)) % 1), m = proj(P((hash(q, 5 + (B.dc.pat || 0)) - .5) * Ro * 1.1 + Math.sin(t * .8 + q * 2) * 1.2, B.dep * (.25 + .5 * hash(q, 8)), Yc + Ro * .7 - f * Ro * 1.4));   // порошинки пливуть угору
+          c.globalAlpha = .75 * Math.sin(f * Math.PI); c.fillStyle = q % 2 ? '#ffffff' : nc; c.fillRect(m[0] - .35, m[1] - .35, .7, .7); }
+      }
       if (fl > .03) {                                                                    // тап: неонова кромка соти спалахує й «розходиться» кільцем
         const Ro = B.w / 2, Yc = (B.yt + B.yb) / 2, hexP = sc => Array.from({ length: 6 }, (_, q) => proj(P(Ro * sc * Math.cos(q * Math.PI / 3), -.2, Yc + Ro * sc * Math.sin(q * Math.PI / 3))));
         c.strokeStyle = B.dc.neon || '#3be8ff'; c.lineJoin = 'round';
