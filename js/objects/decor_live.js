@@ -327,8 +327,58 @@
 
   // =============================== ШТУЧКИ В СОТАХ, НЕОН ===============================
   const ART = items.filter(B => B.st === 'dc_art' && B.id.startsWith('dc_hxa')), HEX = items.filter(B => B.st === 'dc_hex'), NEON = byId.dc_neon, GREEN = byId.dc_green;
+  /** (· 56) Геометрія артефакта в соті — рахується один раз: передній зовнішній / внутрішній шестикутники (fo, fi), точка на поличці
+   *  посеред глибини (fl), розмір спрайта (w, h), стінки-скло, звернені до нас (glass). */
+  const AG = {};
+  function artGeo(B) {
+    if (AG[B.id] !== undefined) return AG[B.id]; const HXB = byId[B.on], DA = NX.decorArt; if (!HXB || !DA || !DA.has(B.dc.kind)) return AG[B.id] = null;
+    const { P } = basis(HXB), Ro = HXB.w / 2, Ri = Ro - 2.3 / .866, Yc = (HXB.yt + HXB.yb) / 2, dep = HXB.dep, dp = dep * .42;
+    const hx = (R, v) => Array.from({ length: 6 }, (_, q) => proj(P(R * Math.cos(q * Math.PI / 3), v, Yc + R * Math.sin(q * Math.PI / 3))));
+    const fo = hx(Ro, 0), fi = hx(Ri, 0), bo = hx(Ro, dep), all = fo.concat(bo);
+    const inPoly = (x, y, p) => { let ins = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > y) !== (p[j][1] > y) && x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) ins = !ins; return ins; };
+    const fl = proj(P(0, dp, Yc + Ri * .866 - .1)), tp = proj(P(0, dp, Yc - Ri * .866)), wl = proj(P(-Ri, dp, Yc)), wr = proj(P(Ri, dp, Yc));
+    const h = Math.min((fl[1] - tp[1]) * .9, Math.abs(wr[0] - wl[0]) * .8 * DA.H / DA.W), L = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], glass = [];
+    for (let k = 0; k < 6; k++) { const k1 = (k + 1) % 6, q = [fo[k], fo[k1], bo[k1], bo[k]];
+      if (inPoly((q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4, fo)) continue;          // ця стінка — за артефактом (видно крізь вікно)
+      glass.push({ q, sh: [L(fo[k], fo[k1], .2), L(fo[k], fo[k1], .34), L(bo[k], bo[k1], .62), L(bo[k], bo[k1], .48)] }); }
+    return AG[B.id] = { fo, fi, fl, h, w: h * DA.W / DA.H, glass, nc: HXB.dc.neon || '#3be8ff', x0: Math.min(...all.map(q => q[0])), x1: Math.max(...all.map(q => q[0])) };
+  }
+  /** (· 56) Передня кромка соти, вирізана з готового злиття крила (S.comp) у власне полотенце — кладеться поверх артефакта.
+   *  Перевирізається, коли злиття змінилось (нове полотно) і раз на кілька секунд (світло декору домальовується в злиття). */
+  function rimOf(A) {
+    const SB = NX.arc.built; if (!SB) return null; const S = [SB.left, SB.right].find(S => S && S.comp && A.fo[0][0] >= S.box[0] && A.fo[0][0] <= S.box[2]); if (!S) return null;
+    const now = performance.now(); if (A.rim && A.rim.comp === S.comp && now - A.rim.at < 4000) return A.rim;
+    const kx = S.comp.width / (S.box[2] - S.box[0]), ky = S.comp.height / (S.box[3] - S.box[1]), x = Math.min(...A.fo.map(q => q[0])) - .5, y = Math.min(...A.fo.map(q => q[1])) - .5, w = Math.max(...A.fo.map(q => q[0])) + .5 - x, h = Math.max(...A.fo.map(q => q[1])) + .5 - y;
+    const cv = (A.rim && A.rim.cv) || document.createElement('canvas'); cv.width = Math.ceil(w * kx); cv.height = Math.ceil(h * ky); const c = cv.getContext('2d');
+    c.setTransform(kx, 0, 0, ky, -x * kx, -y * ky); c.beginPath(); for (const pl of [A.fo, A.fi]) { pl.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); } c.clip('evenodd');
+    c.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]);
+    return A.rim = { cv, x, y, w: cv.width / kx, h: cv.height / ky, comp: S.comp, at: now + Math.random() * 1500 };
+  }
   function drawArt(c, t, vx0, vx1) {
     c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
+    // ---------- (Декор стін · 55, · 56) АРТЕФАКТИ СОТ — живий піксель-арт (objects/decor_art.js). Власник (· 56): «має бути видно, що
+    // артефакти знаходяться ВСЕРЕДИНІ сот, зараз вони поверхневі». Тому: 1) спрайт стоїть на поличці посеред ГЛИБИНИ соти (не біля
+    // вікна), під ним тінь, за ним сяйво його кольору; видно його крізь скло; 2) поверх нього —
+    // скло бічних стінок, що звернені до нас (тон кольору соти, косий відблиск, хромові ребра); 3) ПЕРЕДНЯ КРОМКА сот повертається
+    // зверху (вирізана з готового злиття крила, rimOf) — рама перекриває артефакт там, де вона ближче до нас. Малюється ДО сяйва й вогників
+    // сот — ті лягають уже на скло. Тап по соті — артефакт підстрибує, спалах, іскри. Той самий спрайт — у картці (decor_guide.js). ----------
+    const DA = NX.decorArt, path = p => { c.beginPath(); p.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); };
+    for (const B of ART) {
+      const A = artGeo(B), kind = B.dc.kind; if (!A || A.x1 < vx0 - 20 || A.x0 > vx1 + 20) continue;
+      const { fl, h, w } = A, tdt = t - (TP.hex[B.on] || -99), boost = tdt >= 0 && tdt < 2 ? Math.exp(-tdt / .6) : 0, hop = tdt >= 0 && tdt < .5 ? Math.sin(tdt / .5 * Math.PI) * h * .12 : 0;
+      const g = glow(DA.glow(kind)), r = h * .8;
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, .22 + .08 * Math.sin(t * 1.7 + (B.dc.seed || 0)) + .6 * boost); c.drawImage(g.cv, fl[0] - r, fl[1] - h * .5 - r, r * 2, r * 2);
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = .55; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(fl[0], fl[1] - .1, w * .4, h * .06, 0, 0, TAU); c.fill();   // тінь на поличці
+      c.globalAlpha = 1; c.imageSmoothingQuality = 'high'; c.drawImage(DA.sprite(kind, t + (B.dc.seed || 0) * 1.7 + boost * 2), fl[0] - w / 2, fl[1] - h - hop, w, h);
+      for (const q of A.glass) {                                                                                     // скло стінок, звернених до нас: тон кольору соти, косий відблиск, хромові ребра
+        c.globalAlpha = .13; c.fillStyle = A.nc; path(q.q); c.fill(); c.globalAlpha = .2; c.fillStyle = '#eaffff'; path(q.sh); c.fill();
+        c.globalAlpha = .6; c.strokeStyle = '#cfe0ff'; c.lineWidth = .45; c.beginPath(); c.moveTo(q.q[0][0], q.q[0][1]); c.lineTo(q.q[3][0], q.q[3][1]); c.lineTo(q.q[2][0], q.q[2][1]); c.lineTo(q.q[1][0], q.q[1][1]); c.stroke(); }
+      if (boost > .02) { const o = [fl[0], fl[1] - h * .5];
+        for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + (B.dc.seed || 0), rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : DA.glow(kind); c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
+    }
+    c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;                                                       // передні кромки ВСІХ сот — поверх усіх артефактів (кромка сусіда теж ближча)
+    for (const B of ART) { const A = artGeo(B); if (!A || A.x1 < vx0 - 20 || A.x0 > vx1 + 20) continue; const R = rimOf(A); if (R) c.drawImage(R.cv, R.x, R.y, R.w, R.h); }
+    c.globalCompositeOperation = 'lighter';
     for (const B of HEX) {                                                              // неон соти «дихає» — кожна у свій такт
       const { P } = basis(B), p = proj(P(0, B.dep * .35, (B.yt + B.yb) / 2)); if (p[0] < vx0 - 20 || p[0] > vx1 + 20) continue;
       const k = hash(B.dc.pat || 0, 3), dt = t - (TP.hex[B.id] || -99), fl = dt >= 0 && dt < 1.6 ? Math.exp(-dt / .45) : 0;
@@ -360,27 +410,6 @@
       const at = d => { let k = 1; while (k < pts.length - 1 && L[k] < d) k++; const f = (d - L[k - 1]) / Math.max(.01, L[k] - L[k - 1]); return [pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * f, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * f]; };
       for (let d = 0; d <= L[5]; d += 5) { const q = at(d); c.globalAlpha = .16 + .06 * Math.sin(t * 2.2 + d * .3); c.drawImage(g.cv, q[0] - 6, q[1] - 6, 12, 12); }
       const f = ((t * .22 + (B.dc.seed || 0) * .5) % 1), hd = at(f * L[5]); c.globalAlpha = .9; c.drawImage(g.cv, hd[0] - 5, hd[1] - 5, 10, 10); c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.fillRect(hd[0] - .7, hd[1] - .7, 1.4, 1.4); }
-    // ---------- (Декор стін · 55) АРТЕФАКТИ СОТ — живий піксель-арт (objects/decor_art.js): спрайт стоїть на поличці-дні своєї соти,
-    // видно його лише крізь вікно комірки (кліп по передньому шестикутнику), під ним тінь, за ним — сяйво його кольору; тап по
-    // соті — артефакт підстрибує, спалах і іскри. Той самий спрайт — у картці «РІЧ NEXI» (objects/decor_guide.js). ----------
-    const DA = NX.decorArt;
-    for (const B of ART) {
-      const HXB = byId[B.on], kind = B.dc.kind; if (!HXB || !DA || !DA.has(kind)) continue;
-      const { P } = basis(HXB), Ro = HXB.w / 2, Ri = Ro - 2.3 / .866, Yc = (HXB.yt + HXB.yb) / 2, dp = HXB.dep * .3;
-      const win = Array.from({ length: 6 }, (_, q) => proj(P(Ri * Math.cos(q * Math.PI / 3), 0, Yc + Ri * Math.sin(q * Math.PI / 3))));
-      const x0 = Math.min(...win.map(q => q[0])), x1 = Math.max(...win.map(q => q[0])); if (x1 < vx0 - 20 || x0 > vx1 + 20) continue;
-      const fl = proj(P(0, dp, Yc + Ri * .866 - .15)), tp = proj(P(0, dp, Yc - Ri * .866)), wl = proj(P(-Ri, dp, Yc)), wr = proj(P(Ri, dp, Yc));
-      const h = Math.min((fl[1] - tp[1]) * .97, Math.abs(wr[0] - wl[0]) * .84 * DA.H / DA.W), w = h * DA.W / DA.H; fl[1] = Math.min(fl[1], (win[1][1] + win[2][1]) / 2 - .2);   // низ спрайта не ховається за кромку
-      const tdt = t - (TP.hex[B.on] || -99), boost = tdt >= 0 && tdt < 2 ? Math.exp(-tdt / .6) : 0, hop = tdt >= 0 && tdt < .5 ? Math.sin(tdt / .5 * Math.PI) * h * .12 : 0;
-      const g = glow(DA.glow(kind)), r = h * .8;
-      c.save(); c.beginPath(); win.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.clip();
-      c.globalAlpha = Math.min(1, .2 + .08 * Math.sin(t * 1.7 + (B.dc.seed || 0)) + .6 * boost); c.drawImage(g.cv, fl[0] - r, fl[1] - h * .5 - r, r * 2, r * 2);
-      c.globalCompositeOperation = 'source-over'; c.globalAlpha = .5; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(fl[0], fl[1] - .1, w * .36, h * .05, 0, 0, TAU); c.fill();   // тінь на поличці
-      c.globalAlpha = 1; c.imageSmoothingEnabled = false; c.drawImage(DA.sprite(kind, t + (B.dc.seed || 0) * 1.7 + boost * 2), fl[0] - w / 2, fl[1] - h - hop, w, h);
-      c.restore(); c.imageSmoothingEnabled = true;
-      if (boost > .02) { const o = [fl[0], fl[1] - h * .5];
-        for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + (B.dc.seed || 0), rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : DA.glow(kind); c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
-    }
     if (NEON) {                                                                         // неонова вивіска: серце б'ється (подвійний удар), неон інколи мерехтить
       const F = faceOf(NEON); if (F.S1[0] > vx0 && F.S0[0] < vx1) {
         const nd = t - TP.neon, fast = nd >= 0 && nd < 3.5, m = affOf(F), sc = Math.min(F.fw, F.fh) / 40, hx = F.fw * .82, hy = F.fh * .28, k = (fast ? t * 2.2 : t) % 1.25, beat = Math.max(0, Math.sin(Math.min(1, k / .18) * Math.PI)) + .7 * Math.max(0, Math.sin(Math.min(1, Math.max(0, k - .24) / .18) * Math.PI));

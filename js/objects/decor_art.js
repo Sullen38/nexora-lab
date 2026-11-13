@@ -9,7 +9,7 @@
  *   • стоїть у своїй соті в кімнаті — objects/decor_live.js (drawArt) малює його у вікні комірки;
  *   • показується цілим і збільшеним у картці «РІЧ NEXI» — objects/decor_guide.js.
  * Який артефакт у якій соті — tools/wingbox/decor.py (ITEMS, dc.kind у dc_hxaN). Тексти карток — i18n decor.guide.art.items.
- * API: NX.decorArt = { KINDS, W, H, has(kind), sprite(kind, t) -> canvas (кадр кешується, FPS кадрів/с), glow(kind) -> колір }.
+ * API: NX.decorArt = { KINDS, W, H, has(kind), sprite(kind, t, K = 2) -> canvas (W·K)×(H·K) (кадр кешується, FPS кадрів/с), glow(kind) }.
  * ========================================================================== */
 (() => {
   const W = 28, H = 30, FPS = 10, TAU = Math.PI * 2;
@@ -21,27 +21,31 @@
   const hash = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
   const OUT = u32('#0b0620');
 
-  /** Полотно-буфер артефакта. */
-  function board() {
-    const buf = new Uint32Array(W * H);
+  /** Полотно-буфер артефакта: логічна сітка W×H, кожен логічний піксель — K×K справжніх. Фігури (rect / ell / poly / fill)
+   *  рахуються в справжніх пікселях — що більший K, то плавніші краї й тонші переходи світла; set / line / star — блоками K×K. */
+  function board(K) {
+    const WK = W * K, HK = H * K, buf = new Uint32Array(WK * HK);
     const S = {
       sy: 1,                                                                                         // вертикальне «перекидання» (пісочний годинник)
       clear() { buf.fill(0); S.sy = 1; },
-      set(x, y, c) { x = Math.floor(x); y = Math.floor(y); if (S.sy !== 1) y = Math.floor(15 + (y + .5 - 15) * S.sy); if (x < 0 || y < 0 || x >= W || y >= H || c == null) return; buf[y * W + x] = U(c); },
-      get(x, y) { return x < 0 || y < 0 || x >= W || y >= H ? 0 : buf[y * W + x]; },
-      rect(x, y, w, h, f) { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) S.set(x + i, y + j, typeof f === 'function' ? f(x + i, y + j, w > 1 ? i / (w - 1) : 0, h > 1 ? j / (h - 1) : 0) : f); },
-      ell(cx, cy, rx, ry, f) { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const u = (x + .5 - cx) / rx, v = (y + .5 - cy) / ry; if (u * u + v * v <= 1) S.set(x, y, typeof f === 'function' ? f(x, y, u, v) : f); } },
+      px(X, Y, c) { if (c == null) return; if (S.sy !== 1) Y = Math.floor(15 * K + (Y + .5 - 15 * K) * S.sy); if (X < 0 || Y < 0 || X >= WK || Y >= HK) return; buf[Y * WK + X] = U(c); },
+      set(x, y, c) { if (c == null) return; x = Math.floor(x) * K; y = Math.floor(y) * K; for (let j = 0; j < K; j++) for (let i = 0; i < K; i++) S.px(x + i, y + j, c); },
+      /** Прямокутник логічних пікселів x0..x1 × y0..y1: f(fx, fy, x, y) — fx, fy — точні логічні координати центра справжнього пікселя. */
+      fill(x0, y0, x1, y1, f) { for (let Y = y0 * K; Y < (y1 + 1) * K; Y++) for (let X = x0 * K; X < (x1 + 1) * K; X++) { const fx = (X + .5) / K, fy = (Y + .5) / K; S.px(X, Y, f(fx, fy, Math.floor(fx), Math.floor(fy))); } },
+      rect(x, y, w, h, f) { if (typeof f !== 'function') { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) S.set(x + i, y + j, f); return; } S.fill(x, y, x + w - 1, y + h - 1, (fx, fy, xi, yi) => f(xi, yi, (fx - x) / w, (fy - y) / h)); },
+      ell(cx, cy, rx, ry, f) { S.fill(Math.floor(cx - rx), Math.floor(cy - ry), Math.ceil(cx + rx), Math.ceil(cy + ry), (fx, fy, xi, yi) => { const u = (fx - cx) / rx, v = (fy - cy) / ry; return u * u + v * v <= 1 ? (typeof f === 'function' ? f(xi, yi, u, v) : f) : null; }); },
       poly(p, f) { let x0 = 99, y0 = 99, x1 = -99, y1 = -99; for (const q of p) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }
-        for (let y = Math.floor(y0); y <= y1; y++) for (let x = Math.floor(x0); x <= x1; x++) { const px = x + .5, py = y + .5; let ins = false;
+        S.fill(Math.floor(x0), Math.floor(y0), Math.ceil(x1), Math.ceil(y1), (px, py, xi, yi) => { let ins = false;
           for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > py) !== (p[j][1] > py) && px < (p[j][0] - p[i][0]) * (py - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) ins = !ins;
-          if (ins) S.set(x, y, typeof f === 'function' ? f(x, y, (px - x0) / Math.max(1, x1 - x0), (py - y0) / Math.max(1, y1 - y0)) : f); } },
+          return ins ? (typeof f === 'function' ? f(xi, yi, (px - x0) / Math.max(1, x1 - x0), (py - y0) / Math.max(1, y1 - y0), px, py) : f) : null; }); },
       line(x0, y0, x1, y1, c) { const n = Math.ceil(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0))) || 1; for (let k = 0; k <= n; k++) S.set(Math.round(x0 + (x1 - x0) * k / n), Math.round(y0 + (y1 - y0) * k / n), c); },
       /** Темний контур довкола намальованого (після тіла, перед іскрами). */
-      out() { const o = []; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (!buf[y * W + x] && (S.get(x - 1, y) || S.get(x + 1, y) || S.get(x, y - 1) || S.get(x, y + 1))) o.push(y * W + x); for (const q of o) buf[q] = OUT; S.sy = 1; },
+      out() { const g = (x, y) => x < 0 || y < 0 || x >= WK || y >= HK ? 0 : buf[y * WK + x];
+        for (let n = K >= 3 ? 2 : 1; n--;) { const o = []; for (let y = 0; y < HK; y++) for (let x = 0; x < WK; x++) if (!buf[y * WK + x] && (g(x - 1, y) || g(x + 1, y) || g(x, y - 1) || g(x, y + 1))) o.push(y * WK + x); for (const q of o) buf[q] = OUT; } S.sy = 1; },
       /** Блиск-зірочка: ph 0..1 — фаза (спалахує й гасне). */
       star(x, y, ph, c = '#ffffff') { const k = Math.sin(Math.max(0, Math.min(1, ph)) * Math.PI); if (k < .25) return; S.set(x, y, c); if (k > .6) { S.set(x - 1, y, c); S.set(x + 1, y, c); S.set(x, y - 1, c); S.set(x, y + 1, c); } },
       /** Косий відблиск проїжджає по намальованому (золото, скло): s — фаза 0..1, лише рядки y0..y1. */
-      shine(s, y0 = 0, y1 = H - 1, c = '#fffbe0') { const d = s * 80 - 16; for (let y = y0; y <= y1; y++) for (let x = 0; x < W; x++) { const v = buf[y * W + x]; if (v && v !== OUT && Math.abs(x + y - d) < 1.6) buf[y * W + x] = mix(v, c, .75); } },
+      shine(s, y0 = 0, y1 = H - 1, c = '#fffbe0') { const d = s * 80 - 16; for (let y = y0 * K; y < (y1 + 1) * K; y++) for (let x = 0; x < WK; x++) { const v = buf[y * WK + x]; if (v && v !== OUT && Math.abs((x + y) / K - d) < 1.6) buf[y * WK + x] = mix(v, c, .75); } },
       buf,
     };
     return S;
@@ -81,9 +85,9 @@
     /** Книжки й кристал-підпірка: кристал пульсує, над ним злітають іскри. */
     books(S, t) {
       const B = [[2, 4, 21, ['#6a1020', '#b02038', '#e84a5a']], [6, 3, 17, ['#102a6a', '#2050b8', '#4a86f0']], [9, 4, 23, ['#0e4a2a', '#1e8a48', '#48c878']], [13, 3, 19, ['#6a4a08', '#c89018', '#f8d040']], [16, 4, 21, ['#3a1a6a', '#6a3ab8', '#a070f0']]];
-      for (const [x, w, h, P] of B) { S.rect(x, 30 - h, w, h, (px, py, u) => u < .01 ? P[2] : px === x + w - 1 ? P[0] : P[1]); S.rect(x, 33 - h, w, 1, '#ffe9b0'); S.rect(x, 26, w, 1, '#ffe9b0'); S.set(x + 1, 36 - h, '#ffe9b0'); S.rect(x, 30 - h, w, 1, mix(P[2], '#ffffff', .4)); }
+      for (const [x, w, h, P] of B) { S.rect(x, 30 - h, w, h, (px, py, u) => u < .26 ? P[2] : u > .76 ? P[0] : P[1]); S.rect(x, 33 - h, w, 1, '#ffe9b0'); S.rect(x, 26, w, 1, '#ffe9b0'); S.set(x + 1, 36 - h, '#ffe9b0'); S.rect(x, 30 - h, w, 1, mix(P[2], '#ffffff', .4)); }
       const k = .5 + .5 * Math.sin(t * 2.2), C = ['#3a0a7a', '#7a2ad8', '#b46aff', '#ecd0ff'];
-      S.poly([[21, 30], [20.5, 19], [23.5, 11], [26.5, 19], [26, 30]], (x, y) => { const l = x < 23 ? .72 : x < 24 ? .98 : .36; return mix(tone(C, l), '#ffffff', k * (x === 23 ? .6 : .18)); });
+      S.poly([[21, 30], [20.5, 19], [23.5, 11], [26.5, 19], [26, 30]], (x, y, u, v, fx) => { const l = fx < 23 ? .72 : fx < 24 ? .98 : .36; return mix(tone(C, l), '#ffffff', k * (fx >= 23 && fx < 24 ? .6 : .18)); });
       S.out();
       for (let q = 0; q < 4; q++) { const f = (t * .35 + q / 4) % 1; S.star(22 + Math.round(Math.sin(q * 3 + t) * 2.4) + (q % 2), 10 - f * 9, 1 - f, q % 2 ? '#ecd0ff' : '#ffffff'); }
     },
@@ -105,8 +109,8 @@
     /** Колба з сироваткою: рідина хлюпає, бульбашки піднімаються, над горлечком пара. */
     flask(S, t) {
       const hw = y => y < 12 ? 2 : y > 25 ? 9.5 - (y - 25) * 1.2 : 2 + (y - 12) / 13 * 7.5, L = ['#0a5a2a', '#18a04a', '#4ae07a', '#a8ffc0'];
-      for (let y = 4; y <= 27; y++) for (let x = 3; x <= 24; x++) { const dx = Math.abs(x + .5 - 14), h = hw(y); if (dx > h) continue; const lv = 17 + Math.round(Math.sin(x * .8 + t * 2.6) * .9);
-        if (dx > h - 1 || y === 27) S.set(x, y, x < 14 ? '#d8f4ff' : '#8ac8e8'); else if (y >= lv) S.set(x, y, y === lv ? L[3] : tone(L, .75 - (x - 5) / 26 - (y - lv) * .012)); else S.set(x, y, '#12283c'); }
+      S.fill(3, 4, 24, 27, (fx, fy) => { const dx = Math.abs(fx - 14), y = fy - .5, h = hw(y); if (dx > h) return null; const lv = 17 + Math.sin(fx * .8 + t * 2.6) * .9;
+        if (dx > h - 1 || fy > 27) return fx < 14 ? '#d8f4ff' : '#8ac8e8'; if (y >= lv) return y < lv + 1 ? L[3] : tone(L, .75 - (fx - 5) / 26 - (y - lv) * .012); return '#12283c'; });
       S.rect(11, 3, 6, 1, '#e8f8ff'); S.rect(6, 20, 1, 4, '#d8fff0'); S.set(7, 19, '#d8fff0');
       S.out();
       for (let q = 0; q < 5; q++) { const f = (t * (.4 + .25 * hash(q, 2)) + hash(q, 4)) % 1, y = 26 - f * 9; S.set(14 + (hash(q, 6) - .5) * 12 * (1 - f * .5), y, f > .85 ? '#ffffff' : '#d8fff0'); }
@@ -128,8 +132,8 @@
     cup(S, t) {
       S.rect(8, 27, 12, 3, (x, y, u) => tone(['#2a160a', '#4a2a12', '#6e421e', '#946030'], .9 - u * .7)); S.rect(12, 28, 4, 1, GOLD[3]);
       S.rect(11, 26, 6, 1, gold); S.rect(13, 21, 2, 5, gold); S.rect(12, 23, 4, 1, GOLD[3]);
-      for (const sd of [-1, 1]) for (let a = -1.3; a <= 1.3; a += .12) { S.set(14 + sd * (8 + Math.cos(a) * 3.4), 12 + Math.sin(a) * 4.6, sd < 0 ? GOLD[3] : GOLD[1]); S.set(14 + sd * (7.2 + Math.cos(a) * 3.4), 12 + Math.sin(a) * 4.6, sd < 0 ? GOLD[2] : GOLD[0]); }   // ручки
-      for (let y = 6; y <= 21; y++) { const h = y < 9 ? 7.5 : 7.5 * Math.sqrt(Math.max(0, 1 - Math.pow((y - 9) / 12.6, 2))); for (let x = 5; x <= 22; x++) { const dx = x + .5 - 14; if (Math.abs(dx) <= h) S.set(x, y, y === 6 ? GOLD[4] : tone(GOLD, .62 - dx / Math.max(1, h) * .42 - (y - 6) * .012)); } }
+      S.fill(1, 6, 26, 18, (fx, fy) => { const sd = fx < 14 ? -1 : 1, r = Math.hypot((fx - (14 + sd * 7.6)) / 3.9, (fy - 12) / 5); return r > .68 && r < 1.02 && sd * (fx - 14) > 6.4 ? tone(GOLD, (sd < 0 ? .78 : .42) - (r - .68) * .9) : null; });   // ручки
+      S.fill(5, 6, 22, 21, (fx, fy) => { const dx = fx - 14, h = fy < 9.5 ? 7.5 : 7.5 * Math.sqrt(Math.max(0, 1 - Math.pow((fy - 9.5) / 12.6, 2))); return Math.abs(dx) > h ? null : fy < 7 ? GOLD[4] : tone(GOLD, .62 - dx / Math.max(1, h) * .42 - (fy - 6) * .012); });
       S.ell(14, 13, 2.3, 3.4, (x, y, u, v) => u < 0 ? '#3ac85a' : '#1e8a48'); S.line(14, 10, 14, 16, '#a8ffc0');                                            // листок-емблема
       S.out(); S.shine((t * .33) % 1, 5, 26);
       S.star(4, 5, (t * .8) % 1.8); S.star(23, 8, (t * .8 + .6) % 1.8, '#fff0a0'); S.star(20, 3, (t * .8 + 1.2) % 1.8);
@@ -138,9 +142,9 @@
     lamp(S, t) {
       S.poly([[8, 30], [20, 30], [17.5, 22], [10.5, 22]], chrome); S.poly([[11.5, 1], [16.5, 1], [17.5, 5], [10.5, 5]], chrome);
       const BL = [0, 1, 2].map(q => [14 + Math.sin(t * .45 + q * 1.9) * 1.6, 13 + Math.sin(t * (.32 + .09 * q) + q * 2.1) * 6.6, 1.5 + .45 * hash(q, 3)]);
-      for (let y = 5; y <= 21; y++) { const h = 3.2 + (y - 5) / 16 * 3.3; for (let x = 6; x <= 21; x++) { const dx = x + .5 - 14; if (Math.abs(dx) > h) continue;
-        let f = y > 20 ? 1.2 : y > 19 ? .55 : y < 6 ? 1.1 : 0; for (const [bx, by, br] of BL) f += br * br / (Math.pow(x + .5 - bx, 2) + Math.pow((y + .5 - by) * .85, 2) + .01);
-        const edge = Math.abs(dx) > h - 1; S.set(x, y, f > 2 ? '#ffd0f4' : f > 1 ? (edge ? '#e040b8' : '#ff5ad0') : edge ? (dx < 0 ? '#b890ff' : '#5a2aa8') : tone(['#2a0a4a', '#40128a', '#5a1eb0'], (y - 5) / 16)); } }
+      S.fill(6, 5, 21, 21, (fx, fy) => { const h = 3.2 + (fy - 5.5) / 16 * 3.3, dx = fx - 14; if (Math.abs(dx) > h) return null;
+        let f = fy > 20.5 ? 1.2 : fy > 19.5 ? .55 : fy < 6.5 ? 1.1 : 0; for (const [bx, by, br] of BL) f += br * br / (Math.pow(fx - bx, 2) + Math.pow((fy - by) * .85, 2) + .01);
+        const edge = Math.abs(dx) > h - 1; return f > 2 ? '#ffd0f4' : f > 1 ? (edge ? '#e040b8' : '#ff5ad0') : edge ? (dx < 0 ? '#b890ff' : '#5a2aa8') : tone(['#2a0a4a', '#40128a', '#5a1eb0'], (fy - 5.5) / 16); });
       S.rect(9, 9, 1, 6, '#e8d8ff');
       S.out();
     },
@@ -150,9 +154,9 @@
       S.sy = fl ? Math.cos(fl * Math.PI) : 1; if (Math.abs(S.sy) < .12) S.sy = S.sy < 0 ? -.12 : .12;
       S.rect(6, 4, 1, 22, GOLD[1]); S.rect(21, 4, 1, 22, GOLD[0]);
       const hw = y => y < 15 ? .9 + 6.4 * Math.pow(Math.max(0, (14 - y) / 10), .75) : .9 + 6.4 * Math.pow(Math.max(0, (y - 15) / 10), .75);
-      for (let y = 4; y <= 25; y++) for (let x = 6; x <= 21; x++) { const dx = Math.abs(x + .5 - 14), h = hw(y); if (dx > h) continue;
+      S.fill(6, 4, 21, 25, (fx, fy, x) => { const dx = Math.abs(fx - 14), y = fy - .5, h = hw(y); if (dx > h) return null;
         const top = y < 15, sand = top ? y >= 5 + p * 9.5 + dx * .35 : y >= 25.5 - p * 7.5 + dx * .75;
-        S.set(x, y, dx > h - 1 && !(y > 13 && y < 17) ? (x < 14 ? '#d8f4ff' : '#8ac8e8') : sand ? tone(SAND, .9 - dx / 7 + ((x + y) % 3 === 0 ? -.3 : 0)) : '#14263c'); }
+        return dx > h - 1 && !(y > 13 && y < 17) ? (fx < 14 ? '#d8f4ff' : '#8ac8e8') : sand ? tone(SAND, .9 - dx / 7 + ((x + Math.floor(fy)) % 3 === 0 ? -.3 : 0)) : '#14263c'; });
       if (p > 0 && p < 1) for (let y = 15; y < 25; y++) if ((y + Math.floor(t * 14)) % 3) S.set(14, y, SAND[2]);
       S.rect(5, 2, 18, 2, (x, y, u, v) => tone(GOLD, .95 - u * .6 - v * .2)); S.rect(5, 26, 18, 2, (x, y, u, v) => tone(GOLD, .9 - u * .6 - v * .2)); S.rect(6, 28, 3, 1, GOLD[0]); S.rect(19, 28, 3, 1, GOLD[0]);
       S.out();
@@ -162,13 +166,13 @@
     cube(S, t) {
       const COL = ['#ff3a5a', '#3be8ff', '#ffe04a', '#3bff8a', '#ff9a3a', '#f0f0ff'], n = Math.floor(t / 1.5), fr = t / 1.5 - n, L = n % 3, tw = fr < .22;
       S.rect(10, 28, 8, 2, (x, y, u) => tone(DARK, .8 - u * .6));
-      for (let y = 2; y <= 28; y++) for (let x = 1; x <= 26; x++) { const dx = x + .5 - 14, dy = y + .5 - 15.5; let f = -1, a, b;
+      S.fill(1, 2, 26, 28, (fx, fy) => { const dx = fx - 14, dy = fy - 15.5; let f = -1, a, b;
         a = (dx / 4 - dy / 2) / 2; b = (-dx / 4 - dy / 2) / 2; if (a >= 0 && a < 3 && b >= 0 && b < 3) f = 0;
         else if (dx >= 0) { a = dx / 4; b = (dy + 2 * a) / 4; if (a < 3 && b >= 0 && b < 3) f = 1; } else { a = -dx / 4; b = (dy + 2 * a) / 4; if (a < 3 && b >= 0 && b < 3) f = 2; }
-        if (f < 0) continue; const i = Math.floor(a), j = Math.floor(b), fa = a - i, fb = b - j;
-        if (fa < .14 || fb < .16) { S.set(x, y, '#0b0620'); continue; }
-        const mv = f ? j === L : i === L, id = (Math.floor(hash(f * 9 + i, j + 3) * 6) + (mv ? n : 0) + (f === 2 && mv ? 2 : 0)) % 6;
-        S.set(x, y, mix(mix(COL[id], '#0b0620', f === 0 ? 0 : f === 2 ? .2 : .44), '#ffffff', mv && tw ? .55 * (1 - fr / .22) : 0)); }
+        if (f < 0) return null; const i = Math.floor(a), j = Math.floor(b), fa = a - i, fb = b - j;
+        if (fa < .13 || fb < .13 || fa > .93 || fb > .93) return '#0b0620';
+        const mv = f ? j === L : i === L, id = (Math.floor(hash(f * 9 + i, j + 3) * 6) + (mv ? n : 0) + (f === 2 && mv ? 2 : 0)) % 6, gl = fa + fb < .62 ? .25 : 0;      // блік у кутку наліпки
+        return mix(mix(mix(COL[id], '#0b0620', f === 0 ? 0 : f === 2 ? .2 : .44), '#ffffff', gl), '#ffffff', mv && tw ? .55 * (1 - fr / .22) : 0); });
       S.out(); S.star(14, 3, (t * .5) % 2.4);
     },
     /** Голо-глобус: планета з материками обертається над проєктором, супутник літає по орбіті. */
@@ -187,9 +191,9 @@
     /** Кристали енергії: світло хвилею піднімається гранями, іскри злітають. */
     crystal(S, t) {
       S.poly([[3, 30], [25, 30], [22, 24], [6, 24]], (x, y, u, v) => (x * 3 + y * 5) % 7 === 0 ? '#5a4c98' : tone(['#1a1432', '#2c2452', '#42377a'], .9 - u * .7));
-      const cr = (cx, hw, tip, sh, base, lean, P, off) => S.poly([[cx + lean, tip], [cx + hw + lean * .6, sh], [cx + hw, base], [cx - hw, base], [cx - hw + lean * .6, sh]], (x, y) => {
-        const mid = cx + lean * Math.max(0, (base - y) / (base - tip)), l = (x + .5 < mid ? .7 : .34) + (y < sh ? .2 : 0) + (Math.abs(x + .5 - mid) < .6 ? .3 : 0), band = base - ((t * .5 + off) % 1) * (base - tip + 4);
-        return mix(tone(P, l), '#ffffff', Math.abs(y - band) < 1.3 ? .6 : 0); });
+      const cr = (cx, hw, tip, sh, base, lean, P, off) => S.poly([[cx + lean, tip], [cx + hw + lean * .6, sh], [cx + hw, base], [cx - hw, base], [cx - hw + lean * .6, sh]], (x, y, u, v, fx, fy) => {
+        const mid = cx + lean * Math.max(0, (base - fy) / (base - tip)), l = (fx < mid ? .7 : .34) + (fy < sh ? .2 : 0) + (Math.abs(fx - mid) < .5 ? .3 : 0), band = base - ((t * .5 + off) % 1) * (base - tip + 4);
+        return mix(tone(P, l), '#ffffff', Math.abs(fy - band) < 1.3 ? .6 : 0); });
       cr(8, 2.6, 11, 15, 26, -2, ['#5a0a5a', '#a01aa0', '#ff4fd8', '#ffb0f0', '#ffffff'], .3);
       cr(20.5, 3, 7, 12, 26, 1.5, ['#2a0a6a', '#5a2ad8', '#9a6aff', '#d8c0ff', '#ffffff'], .65);
       cr(14, 4, 1, 8, 27, 0, ['#0a4a7a', '#1a8ac8', '#3be8ff', '#b0f8ff', '#ffffff'], 0);
@@ -217,10 +221,11 @@
   const GLOW = { figure: '#ffd27a', orb: '#c88aff', books: '#c88aff', terrarium: '#d8ff6a', flask: '#5af08a', scope: '#3be8ff', cup: '#ffd27a', lamp: '#ff4fd8', hourglass: '#ffd27a', cube: '#ffe04a', globe: '#3be8ff', crystal: '#3be8ff', console: '#3bff8a' };
 
   const CACHE = {};
-  /** Кадр артефакта в час t: полотно W×H (перемальовується FPS разів на секунду, між ними — той самий кадр). */
-  function sprite(kind, t) {
-    if (!ART[kind]) return null; let e = CACHE[kind];
-    if (!e) { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); e = CACHE[kind] = { cv, c, im: c.createImageData(W, H), S: board(), fr: -1 }; }
+  /** Кадр артефакта в час t: полотно (W·K)×(H·K). K — деталізація: 2 — у соті в кімнаті, 3 — у картці (той самий малюнок,
+   *  дрібніше промальований). Кадр перемальовується FPS разів на секунду, між ними — той самий. */
+  function sprite(kind, t, K = 2) {
+    if (!ART[kind]) return null; const key = kind + K; let e = CACHE[key];
+    if (!e) { const cv = document.createElement('canvas'); cv.width = W * K; cv.height = H * K; const c = cv.getContext('2d'); e = CACHE[key] = { cv, c, im: c.createImageData(W * K, H * K), S: board(K), fr: -1 }; }
     const fr = Math.floor(t * FPS); if (fr === e.fr) return e.cv; e.fr = fr;
     e.S.clear(); ART[kind](e.S, fr / FPS); new Uint32Array(e.im.data.buffer).set(e.S.buf); e.c.putImageData(e.im, 0, 0); return e.cv;
   }

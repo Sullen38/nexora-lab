@@ -109,7 +109,7 @@
     const u = (t * .5) % 6, i = Math.floor(u), f = u - i, A = P6(i, 47), B = P6((i + 1) % 6, 47); c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f - 1.5, A[1] + (B[1] - A[1]) * f - 1.5, 3, 3);   // вогник по кромці — як у кімнаті
     const S = 3, w = DA.W * S, h = DA.H * S, x = m - w / 2, y = 96 - h;                                              // ×3 — цілі пікселі, артефакт увесь у кадрі
     c.fillStyle = neon; c.globalAlpha = .8; c.fillRect(m - 28, 96, 56, 1); c.globalAlpha = .35; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(m, 96, w * .36, 2.5, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
-    c.drawImage(DA.sprite(cur.e.kind, t), x, y, w, h);
+    c.imageSmoothingEnabled = R !== 1 && R !== 3; c.drawImage(DA.sprite(cur.e.kind, t, 3), x, y, w, h);                     // K = 3: дрібно промальований кадр того самого артефакта, що стоїть у соті
   }
 
   // ---------- картка ----------

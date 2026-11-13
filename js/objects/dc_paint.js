@@ -799,52 +799,47 @@ NX.arc = NX.arc || {};
     const rU = sub(G.P(1, 0, 0), G.P(0, 0, 0)), nF = sub(G.P(0, 0, 0), G.P(0, 1, 0));
     const dirN = k => { const ph = (k + .5) * Math.PI / 3, cs = Math.cos(ph), sn = Math.sin(ph); return [rU[0] * cs, sn, rU[2] * cs]; };
     const BASE = pal(['#0a0820', '#120e30', '#1a1542', '#241c56', '#30266c', '#3e3284', '#50429e']), tint = mixc(BASE[3], nc[0], .6), line = mixc(BASE[5], nc[1], .55);
-    /** Декор стін · 55 (13.11, власник: «вдоскональ соти — зроби їх об'ємнішими»): сота — НІША-ВІТРИНА. Було (· 26, · 49): скляні
-     *  прозорі стінки — крізь них видно сусідів, форма губилась. Тепер у кожної грані своє світло: корпус зовні — глянцевий
-     *  димчастий (верхні грані світлі, нижні темні, тонка неонова жилка, косий відблиск), усередині — глибина: стінки темнішають
-     *  до задньої стінки, «стеля» з LED-лінійкою, поличка-дно зі світловою плямою, на задній стінці — пляма світла від LED і
-     *  затемнені кути; кромка з фаскою (верх світлий, низ у тіні); на цеглі — тінь усієї соти, зсунута вниз. Сам артефакт —
-     *  живий піксель-арт (objects/decor_art.js), його малює живий шар (objects/decor_live.js) у вікні комірки. */
-    const gloss = (x, dd, per, o = 0) => { const dg = ((x - dd * .8 + o) % per + per) % per; return dg < .34; };
-    // задня стінка: візерунок, неонове кільце по периметру, пляма світла від LED під «стелею», затемнені кути
+    /** Декор стін · 26 (06.11, чат «Зони», власник: «зроби соти скляними, щоб просвічувалось, що всередині»): скляна стінка комірки — тонка хромова
+     *  рама по краях, діагональний відблиск, рідкий тонований дизеринг у колір неону, решта пікселів прозорі (0) — крізь стінки видно
+     *  вміст соти (рослину чи штучку) і візерунок задньої стінки. Lb — освітленість стінки (трохи густіший дизеринг на світлих). */
+    /** Декор стін · 56 (13.11, власник: «соти краще прозорими все ж; має бути видно, що артефакти ВСЕРЕДИНІ сот»): · 55 зробив стінки
+     *  глухими — повернуто скло (· 26, · 49). Від · 55 лишились лише ознаки об'єму, що не заважають прозорості: фаска кромки (верх
+     *  світлий, низ у тіні), пляма світла від LED на задній стінці й тінь усієї соти на цеглі. Артефакт стоїть У СЕРЕДИНІ об'єму —
+     *  його, передню кромку поверх нього й скло бічних стінок малює живий шар (objects/decor_live.js, drawArt). */
+    const glassW = (len, dp, Lb) => (u, v, i, j) => {
+      const x = u * len, dd = v * dp;
+      if (dd < .4 || dd > dp - .4) return ramp(PL.CHROME, .62 - v * .2, i, j);
+      if (x < .3 || x > len - .3) return ramp(PL.CHROME, .5, i, j);
+      const dg = ((x - dd * .8) % 13 + 13) % 13; if (dg < .3) return col('#d8f4ff');                                   // (· 49) один відблиск на стінку, рідший дизеринг — скло чистіше
+      return (i + 3 * j) % (Lb > .2 ? 9 : 11) === 0 ? mixc(col('#9ad8f0'), nc[1], .45) : 0;
+    };
+    // задня стінка з візерунком (тьмяно підсвічена неоном комірки)
     const bp = [0, 1, 2, 3, 4, 5].map(k => V(Ri + .05, k, dep - .3)), O = G.P(-Ri, dep - .3, Yc - Ri * .866);
     G.face(bp, O, sub(G.P(Ri, dep - .3, Yc - Ri * .866), O), [0, 2 * Ri * .866, 0], (u, v, i, j) => {
-      const x = (u - .5) * 2 * Ri, y = (v - .5) * 2 * Ri * .866, p = pf(x, y);
-      const lp = Math.max(0, 1 - Math.hypot(x * .8, y + Ri * .3) / (Ri * 1.05)), vg = .16 + .5 * lp;
-      const ed = Ri * .866 - Math.max(Math.abs(y), Math.abs(x) * .866 + Math.abs(y) * .5);                              // відстань до краю шестикутника
-      if (ed < .55) return E(nc[1]); if (ed < 1.2) return mixc(ramp(BASE, vg + .12, i, j), nc[1], .5); if (ed < 2.8) return mixc(ramp(BASE, vg * .5, i, j), nc[0], .4);
-      if (p === 2) return E(nc[(i + j) % 3 ? 1 : 2]); if (p === 1) return mixc(ramp(BASE, vg + .12, i, j), line, .6);
-      return mixc(ramp(BASE, vg, i, j), tint, .22 + .3 * lp);
+      const x = (u - .5) * 2 * Ri, y = (v - .5) * 2 * Ri * .866, p = pf(x, y), vg = .34 + .36 * Math.max(0, 1 - Math.hypot(x * .8, y + Ri * .3) / (Ri * 1.05)) + (1 - v) * .1;
+      const ed = Ri * .866 - Math.max(Math.abs(y), Math.abs(x) * .866 + Math.abs(y) * .5);                              // (· 49) відстань до краю шестикутника: неонове кільце по периметру задньої стінки
+      if (ed < .55) return E(nc[1]); if (ed < 1.3) return mixc(ramp(BASE, vg + .1, i, j), nc[1], .55); if (ed < 2.4 && (i + j) % 2) return mixc(ramp(BASE, vg, i, j), nc[0], .5);
+      if (p === 2) return E(nc[(i + j) % 3 ? 1 : 2]); if (p === 1) return mixc(ramp(BASE, vg + .15, i, j), line, .7);
+      return mixc(ramp(BASE, vg, i, j), tint, .3);
     }, nF);
-    { // тінь усієї соти на цеглі: шестикутник, зсунутий униз (світло зі стелі), густіша біля соти; на зони не лягає (shy)
+    { // (· 55) тінь усієї соти на цеглі: шестикутник, зсунутий униз (світло зі стелі), густіша біля соти; на зони не лягає (shy)
       const Rs = Ro * 1.1, dy = 3.4, dx = .8, lim = d.shy || 1e9, Vs = k => { const th = k * Math.PI / 3; return G.P(Rs * Math.cos(th) + dx, dep + .4, Math.min(lim, Yc + dy + Rs * Math.sin(th))); };
       const Os = G.P(-Rs + dx, dep + .4, Yc + dy - Rs * .866), hs = 2 * Rs * .866;
       G.face([0, 1, 2, 3, 4, 5].map(Vs), Os, sub(G.P(Rs + dx, dep + .4, Yc + dy - Rs * .866), Os), [0, hs, 0], (u, v, i, j) => {
-        const y = (v - .5) * hs, x = (u - .5) * 2 * Rs, ed = Rs * .866 - Math.max(Math.abs(y), Math.abs(x) * .866 + Math.abs(y) * .5), a = .62 * Math.min(1, ed / 3.2);
+        const y = (v - .5) * hs, x = (u - .5) * 2 * Rs, ed = Rs * .866 - Math.max(Math.abs(y), Math.abs(x) * .866 + Math.abs(y) * .5), a = .5 * Math.min(1, ed / 3.2);
         if (a <= BAY[(j & 3) * 4 + (i & 3)] + .5) return 0; X.SH.fl |= X.F_NOOUT; return SHADOW; }, nF); }
     for (let k = 0; k < 6; k++) {
       const k1 = (k + 1) % 6, n = dirN(k), ni = n.map(q => -q), Lo = lit(n, V(Ro, k, 0)), Li = lit(ni, V(Ri, k, 0)), tp = -n[1];   // tp: 1 — грань дивиться вгору, -1 — униз
-      const i0 = V(Ri, k, 0), i1 = V(Ri, k1, 0), i3 = V(Ri, k, dep - .3);                    // внутрішня стінка ніші: темнішає вглиб, «стеля» з LED, дно-поличка зі світловою плямою
+      const i0 = V(Ri, k, 0), i1 = V(Ri, k1, 0), i3 = V(Ri, k, dep - .3);                    // внутрішня стінка: СКЛО (декор · 26) — LED-смужка під «стелею», рама, відблиск, решта прозора
       G.face([i0, i1, V(Ri, k1, dep - .3), i3], i0, sub(i1, i0), sub(i3, i0), (u, v, i, j) => {
-        const x = u * Ri, dd = v * (dep - .3), ao = 1 - .6 * v;
-        if (dd < .35) return ramp(PL.CHROME, .5 + .25 * tp, i, j);
-        if (k === 4) { if (v > .1 && v < .26 && u > .1 && u < .9) return E(((x * 2) | 0) % 3 ? nc[2] : nc[1]); return mixc(ramp(BASE, .12 + .1 * (1 - v), i, j), nc[0], .3); }
-        if (k === 1) { if (v < .1) return E(nc[1]); const pool = Math.max(0, 1 - Math.hypot((u - .5) * 2.2, (v - .45) * 2.4));
-          return mixc(ramp(BASE, .34 + .5 * pool - v * .12, i, j), nc[1], .1 + .22 * pool); }
-        if (gloss(x, dd, 9, k * 2.3) && v < .8) return mixc(ramp(BASE, .8, i, j), nc[2], .5);                           // відблиск глянцевої стінки
-        return mixc(ramp(BASE, (.3 + .14 * tp + .12 * Li) * ao, i, j), nc[0], .22 + .2 * (1 - v));
+        if (k === 4 && v > .06 && v < .15 && u > .12 && u < .88) return E(nc[2]);
+        if (k === 1) { if (v < .1) return E(nc[1]); if (v < .16) return ramp(PL.CHROME, .7, i, j); return mixc(ramp(BASE, .5 - v * .25, i, j), nc[0], .22 + .2 * (1 - v)); }   // (· 49) дно — суцільна поличка з неоновим переднім краєм
+        return glassW(Ri, dep - .3, .22 * Li)(u, v, i, j);
       }, ni);
-      const o0 = V(Ro, k, 0), o1 = V(Ro, k1, 0), o3 = V(Ro, k, dep);                          // зовнішня стінка корпусу: глянцеве димчасте тіло, своє світло в кожної грані
-      G.face([o0, o1, V(Ro, k1, dep), o3], o0, sub(o1, o0), sub(o3, o0), (u, v, i, j) => {
-        const x = u * Ro, dd = v * dep, sh = .36 + .24 * tp + .12 * Lo;
-        if (dd < .45) return ramp(PL.CHROME, .62 + .28 * tp, i, j); if (dd > dep - .45) return ramp(PL.DARK, .1, i, j);
-        if (x < .32 || x > Ro - .32) return ramp(PL.CHROME, .42 + .25 * tp, i, j);
-        if (Math.abs(dd - dep * .34) < .32) return E(nc[1]);                                                              // неонова жилка довкола корпусу
-        if (gloss(x, dd, 11, k * 3.1) && tp > -.4) return mixc(ramp(BASE, .85, i, j), nc[2], .45);
-        return mixc(ramp(BASE, sh - v * .12, i, j), nc[0], .16 + .16 * Math.max(0, tp));
-      }, n);
-      G.face([o0, o1, i1, i0], o0, sub(o1, o0), sub(i0, o0), (u, v, i, j) => {               // кромка з фаскою: хром (верх світлий, низ у тіні) — НЕОН — темна внутрішня фаска
-        if (v < .22) return ramp(PL.CHROME, .66 + .3 * tp - v, i, j); if (v > .8) return ramp(PL.DARK, .12 + .1 * tp, i, j);
+      const o0 = V(Ro, k, 0), o1 = V(Ro, k1, 0), o3 = V(Ro, k, dep);                          // зовнішня стінка: СКЛО (декор · 26) — хромова рама по краях, відблиск навскіс
+      G.face([o0, o1, V(Ro, k1, dep), o3], o0, sub(o1, o0), sub(o3, o0), (u, v, i, j) => { const g = glassW(Ro, dep, .3 * Lo)(u, v, i, j); return g || ((i + 2 * j) % 4 === 0 ? mixc(BASE[1], nc[0], .3) : 0); }, n);   // (· 49) зовнішня стінка — димчасте скло (шахівка): сусідні соти не «змішуються»
+      G.face([o0, o1, i1, i0], o0, sub(o1, o0), sub(i0, o0), (u, v, i, j) => {               // кромка: хром — НЕОН — хром
+        if (v < .22) return ramp(PL.CHROME, .66 + .3 * tp - v, i, j); if (v > .8) return ramp(PL.CHROME, .34 + .2 * tp, i, j);   // (· 55) фаска: верх світлий, низ у тіні
         if (v > .3 && v < .7) return E(v > .42 && v < .58 ? nc[2] : nc[1]);
         return ramp(PL.DARK, .25, i, j);
       }, nF);
