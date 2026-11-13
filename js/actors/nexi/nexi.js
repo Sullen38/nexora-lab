@@ -46,9 +46,22 @@ NX.nexi = {
    *    flash — (власник, 13.11: «щоб він ще іноді як флеш міг рухатися і блискавку після себе лишати») надшвидкий біг: за ним
    *            лишається ламана жовто-біла блискавка з відгалуженнями (мерехтить і гасне за 0,7 с) і напівпрозорі «відбитки»
    *            самого Nexi; на фініші — спалах іскор (в обхід меблів);
-   *    blink — мерехтіння: 3–5 миттєвих коротких стрибків зигзагом, на кожному місці лишається фіолетовий відбиток і кільце;
+   *    blink — мерехтіння: черга миттєвих коротких стрибків зигзагом (крок ≈ 64 од.), на кожному місці лишається фіолетовий
+   *            відбиток;
    *    twist — вихор: мчить, крутячись дзиґою, довкола кружляють частинки (в обхід меблів).
+   *  ЧІТКІСТЬ (власник, 13.11: «покращи ще його рухи, щоб усе було чітко»):
+   *   - кожен спосіб має ЧАС у дорозі, а не швидкість: MOVE_V — середня швидкість, MOVE_T — межі часу; будь-яка відстань —
+   *     не довше ≈ 1,2 с (раніше через усю кімнату — до 3 с, на ранці — 3,5 с);
+   *   - рух ПЛАВНИЙ: розгін на початку й гальмування в кінці (EZ — та сама крива, що в камери), по шляху в обхід меблів — за
+   *     пройденою довжиною; на старті — пружний поштовх, на фініші — сплющення й пил;
+   *   - КАМЕРА телефона їде разом із ним (cam.glide на той самий час і тією ж кривою) — Nexi не вилітає за край екрана
+   *     (раніше флеш, ранець і мерехтіння випереджали камеру);
+   *   - колесо обертається за пройденим шляхом — ціле число обертів, на фініші стоїть рівно; на ранці й у стрибках розмір і
+   *     глибина — за точкою підлоги під ним (не «меншає» вгорі дуги й не ховається за меблі).
    *  NX.nexi.forceMove = 'roll' — завжди цей спосіб (для перевірки). */
+  MOVE_V: { dash: 430, slide: 470, roll: 400, twist: 430, flash: 950, leap: 400, jet: 430 }, MOVE_T: { flash: [.28, .7], def: [.35, 1.2] },
+  moveTime(st, L) { const [a, b] = this.MOVE_T[st] || this.MOVE_T.def; return Math.max(a, Math.min(b, L / this.MOVE_V[st])); },
+  EZ(q) { return q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q); },
   MOVES: ['dash', 'slide', 'roll', 'leap', 'jet', 'tp', 'flash', 'blink', 'twist'], bolt: [], ghosts: [], MOVE_MIN: 70, moveBag: [], moveLast: null,
   nextMove() {
     if (this.forceMove) return this.forceMove;
@@ -80,7 +93,7 @@ NX.nexi = {
     return R;
   },
   /** Нова команда посеред телепорту — Nexi одразу видно (інакше лишився б напівпрозорим). */
-  endTp() { const a = this.cur; if (a && (a.tp || a.blink)) { this.alpha = 1; this.zoom = 1; } if (a && (a.leap || a.arc)) { this.y = this.gy; if (a.leap) this.dy = null; }   // перервали в повітрі — на підлогу
+  endTp() { const a = this.cur; if (a && (a.tp || a.blink)) { this.alpha = 1; this.zoom = 1; } if (a && (a.leap || a.arc)) { this.y = this.gy; if (a.leap || a.jet === 'floor') this.dy = null; }   // перервали в повітрі — на підлогу
     this.comet = null; this.roll = 0; this.board = false; this.air = false; },
   /** Частинки переміщень: телепорт (burst — сплеск на початку й у точці появи). */
   tpFx(a, x, y, burst) {
@@ -196,18 +209,19 @@ NX.nexi = {
       a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk); a.pi = 0;
       let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > NX.cfg.RUN_FROM;
       if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
+      if (a.style) { a.L = L; a.T = this.moveTime(a.style, L); a.cum = []; let c = 0, o = a.from; a.path.forEach(q => { c += Math.hypot(q[0] - o[0], q[1] - o[1]); a.cum.push(c); o = q; });   // спосіб тапу: час у дорозі й довжини відрізків шляху
+        a.turns = Math.max(1, Math.round(L / 115)); NX.cam.glide(a.walk[0], a.T); NX.nexiPhys.kick(2.2); for (let i = 0; i < 4; i++) NX.fx.emit('dust', this.x, this.y); }
     }
     if (a.tp) { a.from = [this.x, this.y]; this.dy = null; this.tpFx(a, this.x, this.y, true); a.near = Math.hypot(a.tp[0] - this.x, a.tp[1] - this.y) < 160; NX.cam.hold(.25); }   // поки тане — камера стоїть (далі glide з кометою або jump)
-    if (a.blink) {                                                                    // (13.11) мерехтіння: точки зигзагом від місця до цілі (кожна — на підлозі)
-      const to = a.blink, L = Math.hypot(to[0] - this.x, to[1] - this.y), n = Math.max(3, Math.min(5, Math.round(L / 110))), nx = -(to[1] - this.y) / (L || 1), ny = (to[0] - this.x) / (L || 1);
-      a.from = [this.x, this.y]; a.pts = []; for (let i = 1; i <= n; i++) { const k = i / n, o = i < n ? (i % 2 ? 1 : -1) * 26 : 0; a.pts.push(i < n ? NX.room.clampWalk(this.x + (to[0] - this.x) * k + nx * o, this.y + (to[1] - this.y) * k + ny * o * .5, 'nexi') : to); }
-      a.i = -1; a.dur = .13 * n; this.dy = null; NX.cam.glide(to[0], a.dur);
+    if (a.blink) {                                                                    // (13.11) мерехтіння: короткі миттєві стрибки зигзагом (крок BLINK_STEP) уздовж плавного ходу — камера телефона встигає
+      const to = a.blink; a.from = [this.x, this.y]; a.L = Math.hypot(to[0] - this.x, to[1] - this.y); a.dur = Math.max(.4, Math.min(.75, a.L / 900)); a.i = 0; this.dy = null; NX.cam.glide(to[0], a.dur);
     }
     if (a.fly || a.hop) { a.from = [this.x, this.y]; const to = a.fly || a.hop, L = Math.hypot(to[0] - this.x, to[1] - this.y);
-      a.dur = a.quick || (a.hop ? .45 : a.leap ? Math.max(.4, L / (NX.cfg.DASH_SPEED * 1.15)) : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED));   // quick — задана тривалість (С4: зліт у капсулу)
+      a.dur = a.quick || (a.hop ? .45 : a.leap ? this.moveTime('leap', L) : a.jet === 'floor' ? this.moveTime('jet', L) : a.jet ? Math.max(.45, L / (NX.cfg.FLY_SPEED * 2.4)) : Math.max(.5, L / NX.cfg.FLY_SPEED));   // quick — задана тривалість (С4: зліт у капсулу)
       if (a.jet) a.arc = Math.min(70, 18 + L * .12);                                       // підліт дугою (рядок був випадково в коментарі — дуги не було)
       if (a.leap) { a.leap = a.over ? 1 : Math.max(1, Math.min(4, Math.round(L / 150))); a.lh = a.over ? Math.min(84, 40 + L * .08) : Math.min(46, 22 + L / a.leap * .12);   // на шляху меблі — один високий стрибок через них
-        a.b = 0; NX.nexiPhys.kick(2.8); }   // стрибки: кількість і висота — за довжиною
+        a.b = 0; NX.nexiPhys.kick(2.8); }
+      if (a.leap || a.jet === 'floor') NX.cam.glide(to[0], a.dur);                         // камера — разом із ним   // стрибки: кількість і висота — за довжиною
       if (a.fly) for (let i = 0; i < 6; i++) NX.fx.emit('dust', this.x, this.y);
       if (a.leap) this.dy = this.y;
       if (!a.leap && (a.dy !== undefined || this.dy != null)) a.dz = [this.depthY(), a.dy !== undefined ? a.dy : to[1]]; }   // глибина на дивані: плавно (dy)
@@ -220,16 +234,24 @@ NX.nexi = {
     if (a.work) { const w = a.work; if (w.back) this.back = true; if (w.obj) { NX.objects[w.obj].active = true; NX.objects[w.obj].prog = 0; } w.start && w.start(); }
   },
   step(a, dt) {
+    if (a.walk && a.T) {                                                              // СПОСІБ ТАПУ: плавно (розгін — гальмування) за пройденою довжиною шляху
+      this.dy = null; const sty = a.style, q = Math.min(1, a._t / a.T), e = this.EZ(q), sl = e * a.L; let i = 0; while (i < a.cum.length - 1 && a.cum[i] < sl) i++;
+      const A = i ? a.path[i - 1] : a.from, B = a.path[i], l0 = i ? a.cum[i - 1] : 0, sg = (a.cum[i] - l0) || 1, f = Math.min(1, (sl - l0) / sg);
+      this.x = A[0] + (B[0] - A[0]) * f; this.y = this.gy = A[1] + (B[1] - A[1]) * f; if (Math.abs(B[0] - A[0]) > 1) this.dir = a.d = Math.sign(B[0] - A[0]);
+      this.pose = { dash: 'run', flash: 'run', twist: 'spin' }[sty] || sty; this.board = sty === 'slide'; if (sty === 'roll') this.roll = (a.d || this.dir) * e * a.turns * 6.28319;   // колесо: оберти — за шляхом
+      if (q > .04 && q < .97) { if (sty === 'flash' || sty === 'twist') this.styleFx(a, sty, a.d || this.dir); else this.trailFx(sty === 'dash' ? a.dash : sty); }
+      if (sty === 'twist') this.dir = Math.floor(a._t * 16) % 2 ? 1 : -1;
+      if (q < 1) return false;
+      const [tx, ty] = a.walk; this.x = tx; this.y = this.gy = ty; this.roll = 0; this.board = false; if (a.d) this.dir = a.d; NX.nexiPhys.land(sty === 'flash' ? 3.2 : 2.4); for (let j = 0; j < 6; j++) NX.fx.emit('dust', tx, ty);
+      if (sty === 'flash') { this.bolt.push({ x: tx, y: ty - 18 * NX.room.scaleAt(ty) / 1.45, t: NX.time, a }); NX.fx.emit('ring', tx, ty, { col: '#ffe27a', r0: 4, gr: 56 }); for (let j = 0; j < 12; j++) NX.fx.emit('spark', tx, ty - Math.random() * 30, { vx: (Math.random() - .5) * 160, vy: -20 - Math.random() * 90, col: Math.random() < .6 ? '#ffe27a' : '#ffffff', ttl: .45 }); this.emote('cool', 1.6); }
+      return true;
+    }
     if (a.walk) {
       this.dy = null;
-      const [tx, ty] = a.path ? a.path[a.pi] : a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sty = a.style && a.style !== 'dash' ? a.style : null, sp = (a.dash ? NX.cfg.DASH_SPEED * ({ flash: 2.6, twist: 1.2 }[sty] || (sty ? 1.15 : 1)) : a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
-      this.pose = { flash: 'run', twist: 'spin' }[sty] || sty || (a.run || a.dash ? 'run' : 'walk'); if (Math.abs(dx) > 1) this.dir = a.d = Math.sign(dx);
-      if (sty === 'flash' || sty === 'twist') { this.styleFx(a, sty, a.d || this.dir); if (sty === 'twist') this.dir = Math.floor(a._t * 16) % 2 ? 1 : -1; }
-      this.board = sty === 'slide'; if (sty === 'roll') this.roll = (this.roll || 0) + this.dir * dt * 15;                   // дошка під ногами / колесо (≈ 2,4 оберта за секунду)
-      if (a.dash && sty !== 'flash' && sty !== 'twist') this.trailFx(sty || a.dash);
-      if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; if (a.path && a.pi < a.path.length - 1) { a.pi++; return false; } if (sty) { this.roll = 0; this.board = false; NX.nexiPhys.land(sty === 'flash' ? 3.2 : 2.2); for (let i = 0; i < 5; i++) NX.fx.emit('dust', this.x, this.y); if (a.d) this.dir = a.d;
-          if (sty === 'flash') { this.bolt.push({ x: tx, y: ty - 18 * NX.room.scaleAt(ty) / 1.45, t: NX.time, a }); NX.fx.emit('ring', tx, ty, { col: '#ffe27a', r0: 4, gr: 56 }); for (let i = 0; i < 12; i++) NX.fx.emit('spark', tx, ty - Math.random() * 30, { vx: (Math.random() - .5) * 160, vy: -20 - Math.random() * 90, col: Math.random() < .6 ? '#ffe27a' : '#ffffff', ttl: .45 }); this.emote('cool', 1.6); } }
-        return true; }   // кут обходу — далі до наступної точки
+      const [tx, ty] = a.path ? a.path[a.pi] : a.walk, dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), sp = (a.dash ? NX.cfg.DASH_SPEED : a.run ? NX.cfg.RUN_SPEED : NX.cfg.WALK_SPEED) * dt;
+      this.pose = a.run || a.dash ? 'run' : 'walk'; if (Math.abs(dx) > 1) this.dir = Math.sign(dx);
+      if (a.dash) this.trailFx(a.dash);
+      if (d <= sp) { this.x = tx; this.y = ty; this.gy = ty; if (a.path && a.pi < a.path.length - 1) { a.pi++; return false; } return true; }   // кут обходу — далі до наступної точки
       this.x += dx / d * sp; this.y += dy / d * sp; this.gy = this.y; return false;
     }
     if (a.spin) { this.dir = Math.floor(a._t * 12) % 2 ? 1 : -1; this.pose = 'spin'; if (a._t >= a.spin) { this.dir = 1; return true; } return false; }
@@ -248,12 +270,14 @@ NX.nexi = {
       this.alpha = 1; this.zoom = 1; this.dir = a.tp[0] >= a.from[0] ? 1 : -1; NX.nexiPhys.land(2.4); return true;
     }
     if (a.blink) {
-      const n = a.pts.length, i = Math.min(n - 1, Math.floor(a._t / .13)), q = (a._t - i * .13) / .13, F = NX.fx;
-      if (i !== a.i) { const ox = this.x, oy = this.y; this.ghosts.push({ x: ox, y: oy, d: this.dir, t: NX.time, ttl: .45, col: 1 }); F.emit('ring', ox, oy, { col: '#b06bff', r0: 3, gr: 30, ttl: .3 });
-        a.i = i; const P = a.pts[i]; if (Math.abs(P[0] - ox) > 2) this.dir = Math.sign(a.blink[0] - a.from[0]) || this.dir; this.x = P[0]; this.y = this.gy = P[1]; const ph = NX.nexiPhys; ph.px = null; ph.vx = ph.vy = 0; ph.kick(1.8);
-        for (let j = 0; j < 6; j++) F.emit('bit', this.x + (Math.random() - .5) * 20, this.y - Math.random() * 34, { vx: (Math.random() - .5) * 60, vy: -20 - Math.random() * 40, col: Math.random() < .6 ? '#b06bff' : '#ffffff', ttl: .35 }); }
-      this.pose = 'jump'; this.alpha = a._t >= a.dur ? 1 : .35 + .65 * Math.min(1, q * 2.5); this.zoom = 1;
-      if (a._t >= a.dur) { this.alpha = 1; NX.nexiPhys.land(2.6); F.emit('ring', this.x, this.y, { col: '#b06bff', r0: 4, gr: 50 }); return true; }
+      const q = Math.min(1, a._t / a.dur), ST = 64, n = Math.max(1, Math.round(a.L / ST)), i = q >= 1 ? n : Math.round(this.EZ(q) * n), F = NX.fx, to = a.blink;
+      if (i !== a.i) { const ox = this.x, oy = this.y, k = i / n, zz = i < n ? (i % 2 ? -9 : 9) : 0; a.i = i;                                  // стрибок: відбиток і кільце на старому місці
+        this.ghosts.push({ x: ox, y: oy, d: this.dir, t: NX.time, ttl: .4, col: 1 }); if (i % 2 || i === n) F.emit('ring', ox, oy, { col: '#b06bff', r0: 3, gr: 26, ttl: .28 });
+        const P = i < n ? NX.room.clampWalk(a.from[0] + (to[0] - a.from[0]) * k, a.from[1] + (to[1] - a.from[1]) * k + zz, 'nexi') : to; if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
+        this.x = P[0]; this.y = this.gy = P[1]; const ph = NX.nexiPhys; ph.px = null; ph.vx = ph.vy = 0; a.jt = a._t;
+        for (let j = 0; j < 3; j++) F.emit('bit', this.x + (Math.random() - .5) * 20, this.y - Math.random() * 34, { vx: (Math.random() - .5) * 60, vy: -20 - Math.random() * 40, col: Math.random() < .6 ? '#b06bff' : '#ffffff', ttl: .3 }); }
+      this.pose = 'jump'; this.zoom = 1; this.alpha = q >= 1 ? 1 : .45 + .55 * Math.min(1, (a._t - (a.jt || 0)) / .05);
+      if (q >= 1) { this.alpha = 1; NX.nexiPhys.land(2.6); F.emit('ring', this.x, this.y, { col: '#b06bff', r0: 4, gr: 50 }); return true; }
       return false;
     }
     if (a.hop && a._t < .12) { this.pose = 'crouch'; return false; }                   // присід перед стрибком
@@ -261,7 +285,7 @@ NX.nexi = {
     if (a.fly || a.hop) {
       const to = a.fly || a.hop, k = Math.min(1, (a._t - (a.hop ? .12 : 0)) / a.dur);
       if (a.leap) {                                                                    // (13.11) високі стрибки: рівний хід уперед, дуга на кожен стрибок, тінь і глибина — по підлозі
-        const n = a.leap, b = Math.min(n, Math.floor(k * n)), gx = NX.px.lerp(a.from[0], to[0], k), g = NX.px.lerp(a.from[1], to[1], k), up = Math.sin((k * n - Math.min(b, n - 1)) * Math.PI);
+        const n = a.leap, ek = this.EZ(k), b = Math.min(n, Math.floor(k * n)), gx = NX.px.lerp(a.from[0], to[0], ek), g = NX.px.lerp(a.from[1], to[1], ek), up = Math.sin((k * n - Math.min(b, n - 1)) * Math.PI);
         this.x = gx; this.gy = this.dy = g; this.y = g - Math.max(0, up) * a.lh * NX.room.scaleAt(g) / 1.45; this.air = true; this.pose = up > .25 ? 'jump' : 'crouch';
         if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
         if (b !== a.b) { a.b = b; NX.nexiPhys.land(3); NX.fx.emit('ring', gx, g, { col: '#ffe27a', r0: 3, gr: 34, ttl: .35 }); for (let i = 0; i < 5; i++) NX.fx.emit('dust', gx, g); if (b < n) NX.nexiPhys.kick(2.4); }
@@ -270,7 +294,7 @@ NX.nexi = {
       }
       const e = a.hop ? k : (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);   // плавний розгін/гальмування ранця
       this.x = NX.px.lerp(a.from[0], to[0], e); this.y = NX.px.lerp(a.from[1], to[1], e) - (a.hop ? Math.sin(k * Math.PI) * (a.hi || 14) : a.arc ? Math.sin(e * Math.PI) * a.arc : 0);
-      if (a.arc) { this.gy = NX.px.lerp(a.from[1], to[1], e); this.trailFx(a.jet === 'floor' ? 'jetFloor' : a.jet); }        // підліт дугою: тінь — по підлозі під ним
+      if (a.arc) { this.gy = NX.px.lerp(a.from[1], to[1], e); if (a.jet === 'floor') this.dy = k >= 1 ? null : this.gy; this.trailFx(a.jet === 'floor' ? 'jetFloor' : a.jet); }        // підліт дугою: тінь — по підлозі під ним
       if (a.dz) this.dy = k >= 1 ? (a.dy !== undefined ? a.dy : null) : NX.px.lerp(a.dz[0], a.dz[1], e);
       this.pose = a.hop ? 'hop' : 'fly'; if (Math.abs(to[0] - a.from[0]) > 2) this.dir = Math.sign(to[0] - a.from[0]);
       if (k >= 1) NX.nexiPhys.land(a.hop ? 3.2 : 2.2);
