@@ -10,7 +10,7 @@
  * Малюється drawBack після растру крил (тег підключено після decor_live.js).
  * ========================================================================== */
 (() => {
-  const TAU = Math.PI * 2, S = 3, CFG = { x: 186, y: 78, w: 76 };                                                       // центр тегу на екрані (од. кімнати) і його ширина
+  const TAU = Math.PI * 2, S = 3, CFG = { x: 185, y: 75, w: 60 };                                                       // центр тегу на екрані (од. кімнати) і його ширина
   // літери: adv — крок, s — штрихи (ламані; згладжуються), одиниці: висота рядка 10, базова лінія y = 10
   const GL = {
     N: { adv: 5.6, s: [[[0, 10.4], [.4, .4], [3.9, 10], [4.6, -1.4]]] },
@@ -36,7 +36,7 @@
     const ix = UW - GL.i.adv + .2 + 1.6; for (const [a, b] of [[[ix - 1.5, 2], [ix + 1.5, 2]], [[ix, .5], [ix, 3.5]], [[ix - 1, 1], [ix + 1, 3]], [[ix + 1, 1], [ix - 1, 3]]]) strokes.push([[a, b], YEL, .6]);   // зірка над i
     strokes.push([[[-1.6, 14.4], [UW * .4, 13.2], [UW * .7, 14]], INK, .8]);                                                                                   // другий, короткий розчерк
     strokes.push([[[-3.4, 1], [-2.2, 3.4]], PINK, .8], [[[-4.6, 3.2], [-3, 4.6]], PINK, .8], [[[UW + 3, .4], [UW + 4.2, -1.6]], CYAN, .8], [[[UW + 4.4, 2.2], [UW + 6, 1.2]], CYAN, .8]);   // штрихи-акценти
-    for (const [dx, len, w] of [[.3, 5.6, 1], [UW * .2, 2.4, .7], [UW * .36, 4, .9], [UW * .52, 2, .6], [UW * .66, 3.2, .8], [UW * .8, 6.4, 1], [UW - 1, 3, .8]]) strokes.push([[[dx, 10.4], [dx + .08, 10.6 + len]], INK, w], [[[dx + .08, 10.6 + len], [dx + .08, 10.9 + len]], INK, w + .5]);   // патьоки з краплею на кінці
+    for (const [dx, len, w] of [[.3, 3.6, 1], [UW * .2, 1.8, .7], [UW * .36, 3, .9], [UW * .52, 1.6, .6], [UW * .66, 2.4, .8], [UW * .8, 4, 1], [UW - 1, 2.2, .8]]) strokes.push([[[dx, 10.4], [dx + .08, 10.6 + len]], INK, w], [[[dx + .08, 10.6 + len], [dx + .08, 10.9 + len]], INK, w + .5]);   // патьоки з краплею на кінці
     for (let k = 0; k < 12; k++) { const bx = hash(k, 1) * UW, by = 2 + hash(k, 2) * 9, r = 4 + hash(k, 3) * 4, g = c.createRadialGradient(bx, by, 0, bx, by, r); g.addColorStop(0, 'rgba(7,5,12,.22)'); g.addColorStop(1, 'rgba(7,5,12,0)'); c.fillStyle = g; c.fillRect(bx - r, by - r, r * 2, r * 2); }   // чорний напил від балона
     for (let k = 0; k < 140; k++) { c.fillStyle = 'rgba(7,5,12,.55)'; c.fillRect(-5 + hash(k, 5) * (UW + 10), -5 + hash(k, 6) * 22, .34, .34); }
     for (const [pts, col, w] of strokes) { c.strokeStyle = col; c.lineWidth = w; path(c, pts); c.stroke(); }
@@ -53,7 +53,8 @@
     id: 'wallTag', span: [CFG.x - CFG.w, CFG.x + CFG.w],
     drawBack(c, t) {
       if (CFG.x + CFG.w < NX.cam.x || CFG.x - CFG.w > NX.cam.x + NX.cam.viewW) return; if (!SPR) build(); if (ANG == null) ANG = Math.min(slope(), 0) - .15;                              // помітний нахил: тег «лізе» вгору праворуч
-      c.save(); c.imageSmoothingEnabled = false; c.translate(CFG.x, CFG.y); c.rotate(ANG); c.globalCompositeOperation = 'multiply'; c.globalAlpha = .82; c.drawImage(SPR.cv, -SPR.w / 2, -SPR.h / 2, SPR.w, SPR.h);   // multiply: шви й фактура цегли проступають крізь фарбу
+      c.save(); c.beginPath(); c.rect(152, 58, 66, 34); c.clip();                                                       // (власник: «щоб не заходило ні на що — тільки на цеглі») страховка: лише вільна цегла між ліаною, рифом і табличками
+      c.imageSmoothingEnabled = false; c.translate(CFG.x, CFG.y); c.rotate(ANG); c.globalCompositeOperation = 'multiply'; c.globalAlpha = .82; c.drawImage(SPR.cv, -SPR.w / 2, -SPR.h / 2, SPR.w, SPR.h);   // multiply: шви й фактура цегли проступають крізь фарбу
       c.restore();
     },
   });
