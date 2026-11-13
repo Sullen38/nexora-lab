@@ -234,6 +234,18 @@
       L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } });
       return L; } },
 
+    // ---------- (Декор стін · 57) ОГЛЯД КОЛЕКЦІЇ: на ранці підлітає до сот над AI-центром і оглядає три артефакти — промінь сканера,
+    // артефакт «спрацьовує» (своя реакція, як від тапу), картка «РІЧ NEXI» відкривається сама (objects/decor_guide.js: artSpots / scanArt). ----------
+    curate: { color: '#ffd27a', route() {
+      const G = NX.decorGuide, n = NX.nexi, S = G && G.artSpots ? G.artSpots('left') : []; if (!S.length) return [line('curate')];
+      const f = wallFloor('left'), hand = () => { const s = sprK(n.depthY()), d = sideOf(-1); return [n.x + d * 25 * s, n.y - 20 * s]; };
+      const L = [{ walk: f }, { face: 1 }, line('curate'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
+      S.forEach(sp => { const h = hoverAt({ x: sp.x + 18, y: sp.y + 14, z: sp.z, dir: -1 });   // праворуч і нижче сот — соти видно, промінь іде вгору до артефакта
+        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { do: () => { const [hx, hy] = hand(); G.scanArt(hx, hy, sp, NX.time, 1.9); } },
+          { work: { pose: 'hoverScan', dur: 1.9, tick: (dt, k) => { const [hx, hy] = hand(); G.scanTick(hx, hy, NX.time, k); } } }, { do: () => { G.scanEnd(); n.emote('love', 1.2); } }, { work: { pose: 'hoverLook', dur: 1.4 } }); });
+      L.push({ fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('cool', 2) }, { work: { pose: 'cheer', dur: 1.3 } });
+      return L; } },
+
     // ---------- (Декор стін · 7) ДРУГИЙ ПОВЕРХ: на ранці злітає до антресолі — двері пілона відчиняються, ліхтар спалахує (вітають);
     // кличе дрона-поливальника (махає лійкою) і доливає йому води; дрон — «бочка», серце, і летить щедро поливати рослини антресолі.
     // Стати на саму антресоль Nexi не може: він вищий (≈ 60 од.), ніж від плити до стелі (≈ 50), а двері пілона — йому до пояса;

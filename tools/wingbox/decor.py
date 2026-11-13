@@ -482,7 +482,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         light('dc_lt_jelly', 406., 120., 'neon', 48, inset=CL['r'] + CL['gap'])
         light('dc_lt_hex', 30., 40., 'neon', 30, inset=7.)
         # (· 50) усе, що було між сотами й рифом (вивіска, кошик, корита, платицеріум) і їхні тіні — прибрано; місце — під соти
-        REM = {'dc_neon', 'dc_tr0', 'dc_tr1'}
+        REM = {'dc_neon', 'dc_tr0', 'dc_tr1', 'dc_hp0', 'dc_stag'}   # (· 57) кулю з бананами й платицеріум прибрано — між сотами ростуть ліани (objects/decor_vines.js)
         out[:] = [it for it in out if it['id'] not in REM and it.get('on') not in REM]
         light('dc_lt_hex2', 150., 40., 'neon', 30, inset=7.)
     # ---------- (· 4) ЖИВІ РОСЛИНИ (власник: «рослини пишніші й живіші»): що гойдається (dc.sway — objects/dc_paint.js не кладе

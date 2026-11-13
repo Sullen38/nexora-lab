@@ -82,6 +82,7 @@
         if (NX.planters.sprite) { fit(NX.planters.sprite(p), 4); return; }                                               // (· 34) герой перед вікном — власний спрайт
         const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
+      if (e.grp === 'wall' && NX.decorVines && NX.decorVines.has(e.kind)) { fit(NX.decorVines.sprite(e.kind), 3); return; }   // (· 57) ліана між сотами — власний спрайт
       if (e.grp === 'wall') { const sp = NX.arc.dcSpec && NX.arc.dcSpec[e.kind], r = sp && NX.arc.dcPlant(sp); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'farm') { const S = NX.decorFarm && NX.decorFarm.plantSpr(e.kind, info && info.s != null ? info.s : 1); if (S) fit(S.cv); return; }
@@ -145,13 +146,18 @@
     scanSpots(side, n = 3) { const all = spots().filter(g => side === 'left' ? g.cx < 774 : g.cx >= 774), pick = []; while (all.length && pick.length < n) pick.push(all.splice(Math.random() * all.length | 0, 1)[0]); return pick.sort((a, b) => a.cx - b.cx).map(g => ({ kind: g.kind, x: g.cx, y: g.cy, z: g.z })); },
     /** Nexi сканує: промінь від руки (hx, hy) до рослини виду kind, dur с; на половині — картка виду відкривається. */
     scanFrom(hx, hy, kind, t, dur = 1.6) { const g = spots().find(q => q.kind === kind); if (!g) return; SCAN = { x0: hx, y0: hy, x1: g.cx, y1: g.cy, t0: t, dur, kind }; },
-    scanTick(hx, hy, t, k) { if (!SCAN) return; SCAN.x0 = hx; SCAN.y0 = hy; if (k > .45 && !SCAN.done) { SCAN.done = 1; show(find('wall', SCAN.kind)); } },
+    scanTick(hx, hy, t, k) { if (!SCAN) return; SCAN.x0 = hx; SCAN.y0 = hy; if (k > .45 && !SCAN.done) { SCAN.done = 1; if (SCAN.art) { const TP = NX.decorLive && NX.decorLive.TP; if (TP && SCAN.art.on) TP.hex[SCAN.art.on] = t; show(find('art', SCAN.art.kind), { neon: SCAN.art.neon }); } else show(find('wall', SCAN.kind)); } },
+    /** (· 57) Nexi оглядає колекцію (activities.js curate): артефакти сот на стіні side -> [{kind, x, y, z, on, neon}], n випадкових зліва направо. */
+    artSpots(side, n = 3) { const all = statics().filter(S => S.grp === 'art' && (side === 'left' ? S.x0 < 774 : S.x0 >= 774)), pick = []; while (all.length && pick.length < n) pick.push(all.splice(Math.random() * all.length | 0, 1)[0]); return pick.sort((a, b) => a.x0 - b.x0).map(S => ({ kind: S.kind, x: (S.x0 + S.x1) / 2, y: (S.y0 + S.y1) / 2, z: S.z, on: S.on, neon: S.neon })); },
+    /** Промінь від руки Nexi до артефакта sp; на половині — артефакт «спрацьовує» (як від тапу) і відкривається його картка. */
+    scanArt(hx, hy, sp, t, dur = 1.9) { SCAN = { x0: hx, y0: hy, x1: sp.x, y1: sp.y, t0: t, dur, art: sp }; },
     scanEnd() { SCAN = null; },
     /** Тап, який уже влучив у декор (objects/decor_live.js tap): hit — що саме, L — рослина LP (hit 'plant'). */
     tap(hit, x, y, t, L) {
       if (hit === 'plant' && L && L.e && L.e.sp) return show(find('wall', L.e.sp.kind));
       if (WALL_ALIAS[hit]) return show(find('wall', WALL_ALIAS[hit]));
       if (hit === 'hex') return void this.tapStatic(x, y);
+      if (hit === 'vine' && NX.decorVines) return show(find('wall', NX.decorVines.lastKind));                          // (· 57) ліана між сотами
       if (hit === 'vault' && NX.decorVault) return show(find('farm', NX.decorVault.lastKind));
       if (hit === 'planter' && NX.planters) return show(find('garden', NX.planters.lastKind) || find('floor', NX.planters.lastKind));                   // (· 31) вазон перед вікном                   // (· 20) капсула сховища насіння                                                   // рослина в соті (бонсай, ехеверія, кактус, сансев'єрія)
       if (hit === 'farm' && NX.decorFarm && NX.decorFarm.nearTray) { const tr = NX.decorFarm.nearTray(x, y, t); if (tr && tr.d < 30) return show(find('farm', tr.kind), tr); return; }

@@ -341,18 +341,54 @@
     for (let k = 0; k < 6; k++) { const k1 = (k + 1) % 6, q = [fo[k], fo[k1], bo[k1], bo[k]];
       if (inPoly((q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4, fo)) continue;          // ця стінка — за артефактом (видно крізь вікно)
       glass.push({ q, sh: [L(fo[k], fo[k1], .2), L(fo[k], fo[k1], .34), L(bo[k], bo[k1], .62), L(bo[k], bo[k1], .48)] }); }
-    return AG[B.id] = { fo, fi, fl, h, w: h * DA.W / DA.H, glass, nc: HXB.dc.neon || '#3be8ff', x0: Math.min(...all.map(q => q[0])), x1: Math.max(...all.map(q => q[0])) };
+    const fx0 = Math.min(...fi.map(q => q[0])), fx1 = Math.max(...fi.map(q => q[0])), fy0 = Math.min(...fi.map(q => q[1])), fy1 = Math.max(...fi.map(q => q[1]));
+    return AG[B.id] = { fo, fi, fl, h, w: h * DA.W / DA.H, glass, bb: [Math.min(...all.map(q => q[0])) - .6, Math.min(...all.map(q => q[1])) - .6, Math.max(...all.map(q => q[0])) + .6, Math.max(...all.map(q => q[1])) + .6], pane: [fx0, fy0, fx1, fy1], fc: [(fx0 + fx1) / 2, (fy0 + fy1) / 2], ceil: [(fx0 + fx1) / 2, Math.min(...all.map(q => q[1])) - 3.2 * (fx1 - fx0) / (2 * Ri)], s: (fx1 - fx0) / (2 * Ri), nc: HXB.dc.neon || '#3be8ff', x0: Math.min(...all.map(q => q[0])), x1: Math.max(...all.map(q => q[0])) };
   }
-  /** (· 56) Передня кромка соти, вирізана з готового злиття крила (S.comp) у власне полотенце — кладеться поверх артефакта.
-   *  Перевирізається, коли злиття змінилось (нове полотно) і раз на кілька секунд (світло декору домальовується в злиття). */
+  /** (· 56, · 57) «Скло й рама» соти одним полотенцем — кладеться поверх артефакта: скло бічних стінок, звернених до нас (тон кольору
+   *  соти, косий відблиск, хромові ребра), передня шибка (ледь тонована, два косі відблиски) і ПЕРЕДНЯ КРОМКА, вирізана з готового
+   *  злиття крила (S.comp). Збирається раз; перезбирається, коли злиття змінилось і раз на кілька секунд (світло декору
+   *  домальовується в злиття). Так на кадр — одне drawImage на соту замість кліпів і заливок. */
   function rimOf(A) {
     const SB = NX.arc.built; if (!SB) return null; const S = [SB.left, SB.right].find(S => S && S.comp && A.fo[0][0] >= S.box[0] && A.fo[0][0] <= S.box[2]); if (!S) return null;
     const now = performance.now(); if (A.rim && A.rim.comp === S.comp && now - A.rim.at < 4000) return A.rim;
-    const kx = S.comp.width / (S.box[2] - S.box[0]), ky = S.comp.height / (S.box[3] - S.box[1]), x = Math.min(...A.fo.map(q => q[0])) - .5, y = Math.min(...A.fo.map(q => q[1])) - .5, w = Math.max(...A.fo.map(q => q[0])) + .5 - x, h = Math.max(...A.fo.map(q => q[1])) + .5 - y;
+    const kx = S.comp.width / (S.box[2] - S.box[0]), ky = S.comp.height / (S.box[3] - S.box[1]), [x, y, x1, y1] = A.bb, w = x1 - x, h = y1 - y;
     const cv = (A.rim && A.rim.cv) || document.createElement('canvas'); cv.width = Math.ceil(w * kx); cv.height = Math.ceil(h * ky); const c = cv.getContext('2d');
-    c.setTransform(kx, 0, 0, ky, -x * kx, -y * ky); c.beginPath(); for (const pl of [A.fo, A.fi]) { pl.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); } c.clip('evenodd');
+    const path = (p, close = 1) => { c.beginPath(); p.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); if (close) c.closePath(); };
+    c.setTransform(kx, 0, 0, ky, -x * kx, -y * ky);
+    for (const q of A.glass) { c.globalAlpha = .13; c.fillStyle = A.nc; path(q.q); c.fill(); c.globalAlpha = .2; c.fillStyle = '#eaffff'; path(q.sh); c.fill();
+      c.globalAlpha = .6; c.strokeStyle = '#cfe0ff'; c.lineWidth = .45; path([q.q[0], q.q[3], q.q[2], q.q[1]], 0); c.stroke(); }
+    { const [px0, py0, px1, py1] = A.pane, pw = px1 - px0; c.save(); path(A.fi); c.clip(); c.globalAlpha = .06; c.fillStyle = '#bfe8ff'; c.fillRect(px0, py0, pw, py1 - py0);
+      c.globalAlpha = .13; c.fillStyle = '#ffffff'; for (const [f, wd] of [[.16, .1], [.34, .04]]) path([[px0 + pw * (f + .22), py0], [px0 + pw * (f + .22 + wd), py0], [px0 + pw * (f + wd), py1], [px0 + pw * f, py1]]), c.fill(); c.restore(); }
+    c.globalAlpha = 1; c.beginPath(); for (const pl of [A.fo, A.fi]) { pl.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); } c.clip('evenodd');
     c.drawImage(S.comp, S.box[0], S.box[1], S.box[2] - S.box[0], S.box[3] - S.box[1]);
     return A.rim = { cv, x, y, w: cv.width / kx, h: cv.height / ky, comp: S.comp, at: now + Math.random() * 1500 };
+  }
+  const NIGHT = { lamp: 1, crystal: 1, orb: 1, globe: 1, terrarium: 1 };
+  /** (· 57) СПОТИ над сотами й ДРОН-КУРАТОР. Споти: три маленькі світильники на цеглі над верхніми сотами, вузький промінь на соту (удень
+   *  ледь видно, уночі — головне світло стіни). Дрон: літає від соти до соти (свій порядок), зависає над кромкою й водить
+   *  променем по артефакту; камера на нього не реагує. droneAt(t) -> {x, y, A, scan} — де він і яку соту оглядає. */
+  const SPOT_K = ['crystal', 'globe', 'hourglass'], ORDER = [3, 9, 0, 6, 11, 2, 7, 12, 4, 10, 1, 8, 5];
+  let DRN = null;
+  const droneSpr = () => { if (DRN) return DRN; DRN = [0, 1].map(f => { const cv = document.createElement('canvas'); cv.width = 11; cv.height = 8; const q = cv.getContext('2d'), R = (x, y, w, h, col) => { q.fillStyle = col; q.fillRect(x, y, w, h); };
+    R(2, 2, 7, 5, '#0b0620'); R(3, 3, 5, 3, '#c4c4dc'); R(3, 3, 5, 1, '#eeeef8'); R(4, 4, 3, 2, '#12283c'); R(5, 4, 1, 1, '#3be8ff'); R(5, 5, 1, 1, '#9af6ff'); R(5, 6, 1, 1, '#ffd27a'); R(1, 2, 1, 1, '#5c5c9a'); R(9, 2, 1, 1, '#5c5c9a');
+    if (f) { R(0, 1, 3, 1, '#d8f4ff'); R(8, 1, 3, 1, '#d8f4ff'); } else { R(1, 1, 1, 1, '#d8f4ff'); R(9, 1, 1, 1, '#d8f4ff'); } return cv; }); return DRN; };
+  function droneAt(t) {
+    const list = ART.map(artGeo).filter(Boolean); if (list.length < 2) return null; const T = 6.5, n = Math.floor(t / T), f = (t / T) % 1, at = k => { const A = list[ORDER[((k % 13) + 13) % 13] % list.length]; return { A, x: A.fc[0] + (A.pane[2] - A.pane[0]) * .12, y: A.pane[1] - (A.pane[3] - A.pane[1]) * .2 }; };
+    const a = at(n), b = at(n + 1), mv = f > .72 ? (f - .72) / .28 : 0, e = mv * mv * (3 - 2 * mv);
+    return { x: a.x + (b.x - a.x) * e + Math.sin(t * 2.1) * .5, y: a.y + (b.y - a.y) * e - Math.sin(mv * Math.PI) * 5 + Math.sin(t * 3.3) * .4, A: a.A, scan: f > .06 && f < .66 ? (f - .06) / .6 : -1, dir: b.x >= a.x ? 1 : -1 };
+  }
+  function drawCurator(c, t, nt, vx0, vx1) {
+    c.save(); c.imageSmoothingEnabled = true;
+    for (const k of SPOT_K) { const B = ART.find(q => q.dc.kind === k), A = B && artGeo(B); if (!A || A.ceil[0] < vx0 - 30 || A.ceil[0] > vx1 + 30) continue;              // споти: корпус під стелею й конус світла на соту
+      const [sx, sy] = A.ceil, hw = (A.pane[2] - A.pane[0]) * .62, ty = A.fc[1] + (A.pane[3] - A.pane[1]) * .3, g = A.sg && A.sgc === c ? A.sg : (A.sgc = c, A.sg = (() => { const q = c.createLinearGradient(0, sy, 0, ty); q.addColorStop(0, 'rgba(255,244,214,.9)'); q.addColorStop(1, 'rgba(255,244,214,0)'); return q; })());
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .07 + .2 * nt; c.fillStyle = g; c.beginPath(); c.moveTo(sx - .8, sy + 1.6); c.lineTo(sx + .8, sy + 1.6); c.lineTo(A.fc[0] + hw, ty); c.lineTo(A.fc[0] - hw, ty); c.closePath(); c.fill();
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = '#0b0620'; c.fillRect(sx - 1.9, sy - 1.2, 3.8, 3); c.fillStyle = '#3a3a66'; c.fillRect(sx - 1.4, sy - .8, 2.8, 1.4); c.fillStyle = '#6a6aa8'; c.fillRect(sx - 1.4, sy - .8, 2.8, .4); c.fillStyle = nt > .3 ? '#fff4d6' : '#ffe9b0'; c.fillRect(sx - .9, sy + .6, 1.8, .8); }
+    const D = droneAt(t); if (D && D.x > vx0 - 20 && D.x < vx1 + 20) { const s = D.A.s, w = 7.5 * s, h = w * 8 / 11;
+      if (D.scan >= 0) { const A = D.A, tx = A.fl[0], ty0 = A.fl[1] - A.h, ty1 = A.fl[1], yy = ty0 + (ty1 - ty0) * (.5 + .5 * Math.sin(D.scan * Math.PI * 4 - Math.PI / 2));                      // промінь-сканер водить по артефакту
+        c.globalCompositeOperation = 'lighter'; c.globalAlpha = .16; c.fillStyle = '#3be8ff'; c.beginPath(); c.moveTo(D.x, D.y + h * .4); c.lineTo(tx - A.w * .5, yy); c.lineTo(tx + A.w * .5, yy); c.closePath(); c.fill();
+        c.globalAlpha = .8; c.fillStyle = '#9af6ff'; c.fillRect(tx - A.w * .5, yy - .2, A.w, .4); }
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.imageSmoothingEnabled = false; c.drawImage(droneSpr()[Math.floor(t * 14) & 1], D.x - w / 2, D.y - h / 2, w, h); }
+    c.restore();
   }
   function drawArt(c, t, vx0, vx1) {
     c.save(); c.globalCompositeOperation = 'lighter'; c.imageSmoothingEnabled = true;
@@ -360,24 +396,30 @@
     // артефакти знаходяться ВСЕРЕДИНІ сот, зараз вони поверхневі». Тому: 1) спрайт стоїть на поличці посеред ГЛИБИНИ соти (не біля
     // вікна), під ним тінь, за ним сяйво його кольору; видно його крізь скло; 2) поверх нього —
     // скло бічних стінок, що звернені до нас (тон кольору соти, косий відблиск, хромові ребра); 3) ПЕРЕДНЯ КРОМКА сот повертається
-    // зверху (вирізана з готового злиття крила, rimOf) — рама перекриває артефакт там, де вона ближче до нас. Малюється ДО сяйва й вогників
+    // зверху (одним полотенцем зі склом стінок і шибкою, rimOf) — рама перекриває артефакт там, де вона ближче до нас. Малюється ДО сяйва й вогників
     // сот — ті лягають уже на скло. Тап по соті — артефакт підстрибує, спалах, іскри. Той самий спрайт — у картці (decor_guide.js). ----------
+    if (NX.decorVines) NX.decorVines.draw(c, t, vx0, vx1);                                                            // (· 57) ліани між сотами — під артефактами й кромками сот
+    const nt = NX.daylight ? 1 - NX.daylight.v(t) : 0;                                                               // 0 — день, 1 — ніч
     const DA = NX.decorArt, path = p => { c.beginPath(); p.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); };
     for (const B of ART) {
       const A = artGeo(B), kind = B.dc.kind; if (!A || A.x1 < vx0 - 20 || A.x0 > vx1 + 20) continue;
       const { fl, h, w } = A, tdt = t - (TP.hex[B.on] || -99), boost = tdt >= 0 && tdt < 2 ? Math.exp(-tdt / .6) : 0, hop = tdt >= 0 && tdt < .5 ? Math.sin(tdt / .5 * Math.PI) * h * .12 : 0;
-      const g = glow(DA.glow(kind)), r = h * .8;
-      c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, .22 + .08 * Math.sin(t * 1.7 + (B.dc.seed || 0)) + .6 * boost); c.drawImage(g.cv, fl[0] - r, fl[1] - h * .5 - r, r * 2, r * 2);
+      const g = glow(DA.glow(kind)), r = h * .8, pop = tdt >= 0 && tdt < 1.6 ? 1 + .14 * Math.sin(Math.min(1, tdt / 1.6) * Math.PI) : 1, hh = h * pop, ww = w * pop;   // тап: артефакт «виїздить» уперед
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, (.22 + .08 * Math.sin(t * 1.7 + (B.dc.seed || 0))) * (1 + 1.1 * nt) + .6 * boost); c.drawImage(g.cv, fl[0] - r, fl[1] - h * .5 - r, r * 2, r * 2);
+      if (nt > .05 && NIGHT[kind]) { const rr = h * 2.3; c.globalAlpha = nt * (.2 + .06 * Math.sin(t * 1.3 + (B.dc.seed || 0))); c.drawImage(g.cv, fl[0] - rr, fl[1] - h * .4 - rr, rr * 2, rr * 2); }   // (· 57) уночі лампа, кристали, куля, глобус кидають колір на цеглу
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = .55; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(fl[0], fl[1] - .1, w * .4, h * .06, 0, 0, TAU); c.fill();   // тінь на поличці
-      c.globalAlpha = 1; c.imageSmoothingQuality = 'high'; c.drawImage(DA.sprite(kind, t + (B.dc.seed || 0) * 1.7 + boost * 2), fl[0] - w / 2, fl[1] - h - hop, w, h);
-      for (const q of A.glass) {                                                                                     // скло стінок, звернених до нас: тон кольору соти, косий відблиск, хромові ребра
-        c.globalAlpha = .13; c.fillStyle = A.nc; path(q.q); c.fill(); c.globalAlpha = .2; c.fillStyle = '#eaffff'; path(q.sh); c.fill();
-        c.globalAlpha = .6; c.strokeStyle = '#cfe0ff'; c.lineWidth = .45; c.beginPath(); c.moveTo(q.q[0][0], q.q[0][1]); c.lineTo(q.q[3][0], q.q[3][1]); c.lineTo(q.q[2][0], q.q[2][1]); c.lineTo(q.q[1][0], q.q[1][1]); c.stroke(); }
+      c.globalAlpha = 1; c.imageSmoothingQuality = 'high'; c.drawImage(DA.sprite(kind, t + (B.dc.seed || 0) * 1.7, 2, tdt >= 0 && tdt < 2.2 ? tdt : -1), fl[0] - ww / 2, fl[1] - hh - hop, ww, hh);
+      { // (· 57) ПЕРЕДНЯ ШИБКА жива (сама шибка — у полотенці rimOf): повільно пропливає відсвіт міста (рожевий і бірюзовий); тап — світла
+        // крайка шибки від'їжджає вбік і вертається. Усе — в прямокутнику між верхньою й нижньою гранями вікна (без кліпу).
+        const [px0, py0, px1, py1] = A.pane, pw = px1 - px0, ix0 = px0 + pw * .25, iw = pw * .5, sl = tdt >= 0 && tdt < 1.8 ? Math.sin(Math.min(1, tdt / 1.8) * Math.PI) : 0;
+        const cf = (t * .07 + (B.dc.seed || 0) * .13) % 1; c.globalAlpha = .08 * Math.sin(cf * Math.PI); c.fillStyle = '#ff4fd8'; c.fillRect(ix0 + iw * cf * .8, py0 + .6, iw * .14, py1 - py0 - 1.2); c.fillStyle = '#3be8ff'; c.fillRect(ix0 + iw * (cf * .8 + .2), py0 + .6, iw * .07, py1 - py0 - 1.2);
+        if (sl > .02) { c.globalAlpha = .75; c.fillStyle = '#eaffff'; c.fillRect(ix0 + iw * sl - .25, py0 + .6, .5, py1 - py0 - 1.2); c.globalAlpha = .12; c.fillRect(ix0 + iw * sl, py0 + .6, iw * (1 - sl), py1 - py0 - 1.2); } }
       if (boost > .02) { const o = [fl[0], fl[1] - h * .5];
         for (let q = 0; q < 8; q++) { const aa = q / 8 * TAU + (B.dc.seed || 0), rr = tdt * 9 + 1; c.globalAlpha = boost; c.fillStyle = q % 2 ? '#ffffff' : DA.glow(kind); c.fillRect(o[0] + Math.cos(aa) * rr - .3, o[1] + Math.sin(aa) * rr * .7 - .3, .6, .6); } }
     }
-    c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;                                                       // передні кромки ВСІХ сот — поверх усіх артефактів (кромка сусіда теж ближча)
+    c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;                                                       // скло й передні кромки ВСІХ сот — поверх усіх артефактів (кромка сусіда теж ближча)
     for (const B of ART) { const A = artGeo(B); if (!A || A.x1 < vx0 - 20 || A.x0 > vx1 + 20) continue; const R = rimOf(A); if (R) c.drawImage(R.cv, R.x, R.y, R.w, R.h); }
+    drawCurator(c, t, nt, vx0, vx1);
     c.globalCompositeOperation = 'lighter';
     for (const B of HEX) {                                                              // неон соти «дихає» — кожна у свій такт
       const { P } = basis(B), p = proj(P(0, B.dep * .35, (B.yt + B.yb) / 2)); if (p[0] < vx0 - 20 || p[0] > vx1 + 20) continue;
@@ -503,6 +545,7 @@
       TP.aq = { aq, x, y, t0: t }; hit = 'aq'; break; }
     if (!hit && NX.planters && NX.planters.tap(x, y)) hit = 'planter';
     if (!hit && NX.decorCollage && NX.decorCollage.tap(x, y, t)) hit = 'collage';                                      // (· 53) річ колажу гойднеться                  // (· 31) вазони перед вікном — картка виду
+    if (!hit && NX.decorVines && NX.decorVines.tap(x, y, t)) hit = 'vine';                                             // (· 57) ліана між сотами — гойднеться, картка виду
     if (!hit && NX.decorVault && NX.decorVault.tap(x, y, t)) hit = 'vault';                  // (· 20) капсула сховища — картка виду ферми
     if (!hit && NX.decorGuide && NX.decorGuide.tapStatic(x, y, t)) hit = 'guide';     // (· 18) нерухомі рослини (соти, витки, корч…) — лише картка довідника
     if (hit) { TP.marks.push({ x, y, t0: t }); if (NX.decorGuide) NX.decorGuide.tap(hit, x, y, t, hit === 'plant' ? LPhit : null); }   // (· 18) картка врятованого виду
@@ -620,7 +663,7 @@
     extentTo(c) {
       buildPlants(1e9); const m0 = c.getTransform(), base = [m0.a, m0.b, m0.c, m0.d, m0.e, m0.f]; c.save(); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
       for (const L of LP) for (const q of [Math.round(L.N / 4), Math.round(L.N * 3 / 4)]) { renderPlant(L, q, 1.2); c.setTransform(...mul(base, L.M)); c.drawImage(L.cv, -L.pad, L.r0); }
-      c.setTransform(m0); c.fillStyle = '#fff';
+      c.setTransform(m0); c.fillStyle = '#fff'; if (NX.decorVines) NX.decorVines.extentTo(c);                             // (· 57) ліани між сотами
       for (let k = 0; k < 2400; k++) { const t = k * .05;
         for (const L of LP) if (L.e.sp.kind === 'flytrap' && L.meta) { const st = trapAt(L, t); if (st.fly) { const p = plantPt(L, st.fly[0], st.fly[1]); c.fillRect(p[0] - 1, p[1] - .7, 2, 1.4); } }
         if (k % 8 === 0) { const S = snailAt(t * 4); if (S) c.fillRect(S.x - 1.8 * S.s, S.y - 2.3 * S.s, 3.6 * S.s, 2.4 * S.s); }
