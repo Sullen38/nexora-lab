@@ -4,7 +4,9 @@
  * Власник (13.11): «тупо виходить, коли вона починається; краще, щоб ми самі могли спостерігати за персонажами; не треба
  * більше сценарію і щоб воно само приближало; не треба, щоб гості приходили в центр, коли їхня сценка».
  * Було (06.11): при 20/20 — 5-хвилинне шоу: заставка «ПАТІ», усі в ряд, сцени по черзі в центрі з наїздом камери, фінал, сон.
- * Стало: сценки — частина звичайної вечірки. Раз на кілька секунд рушій бере наступну сценку з перетасованої черги, якщо її
+ * ГЛАВИ (власник, 13.11): 1 — зібрати 20 героїв у кімнаті; 2 — «ПАТІ»: вечірка, коли зібрано всіх (заставка ПАТІ на вході,
+ * сценки, нові образи); 3 — «СУПЕР ХІРОУ»: коли зібрано всі образи з вечірки (ще не зроблено).
+ * Стало: сценки — частина вечірки глави «ПАТІ». Раз на кілька секунд рушій бере наступну сценку з перетасованої черги, якщо її
  * герой і партнери зараз вільні (не біля бару, не нагорі, не в конзі…): герой лишається ТАМ, ДЕ СТОЇТЬ (сценки біля фуршету
  * й бару — біля них), партнери підходять до нього кроком; одночасно йдуть 1–2 сценки в різних місцях. Камеру не чіпаємо —
  * нею керує власник (party.js). Над героєм сценки — зірочка; репліки — субтитрами, лише коли герой у кадрі.
@@ -13,9 +15,9 @@
  * Гачки в party.js: roster → start; director → tick; updGuest: гостя з g.sc веде цей файл.
  * ========================================================================== */
 NX.partyShow = (() => {
-  const SH = { on: false, act: [], next: 0, queue: [] };                         // act — сценки, що йдуть зараз; queue — перетасована черга номерів
+  const SH = { on: false, full: false, t0: 0, act: [], next: 0, queue: [] };                         // act — сценки, що йдуть зараз; queue — перетасована черга номерів
   let Pp = null;                                                                  // party.js: { S, G, gxy, fp, pt, sc, sparks, floorXZ, NEON, nexiPos }
-  const rnd = Math.random, SCENE_T = 12, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rnd = Math.random, SCENE_T = 12, TITLE_T = 4, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const say = (g, i) => { const L = NX.t(`show.s.${g.id}`) || []; if (L[i]) g.bub = { text: L[i], until: NX.time + 3, up: !!(g.sc && g !== g.sc.g) }; };   // партнер — бабл вище, щоб не накривав бабл героя
   const byId = id => Pp.S.list.find(g => g.id === id);
   /** Крок гостя до (tx, tz); true — дійшов. */
@@ -74,8 +76,8 @@ NX.partyShow = (() => {
   ];
 
   const busy = g => g.sc || g.trip || g.up || g.pouf || g.rest || g.conga || g.photo || g.hockey || g.sing || g.fan || g.y != null;
-  /** Початок вечірки (party.js roster): черга порожня, перша сценка — за кілька секунд. */
-  function start(P_) { Pp = P_ || Pp; SH.on = true; SH.act = []; SH.queue = []; SH.next = NX.time + 6 + rnd() * 4; }
+  /** Початок вечірки (party.js roster). full — зібрано всіх 20: це глава «ПАТІ» — заставка, далі сценки; інакше — звичайна вечірка без сценок. */
+  function start(P_, full) { Pp = P_ || Pp; SH.on = true; SH.full = !!full; SH.t0 = NX.time; SH.act = []; SH.queue = []; SH.next = NX.time + TITLE_T + 3 + rnd() * 3; if (full && NX.nexi) NX.nexi.emote('love', 2); }
   function stop() { SH.act.slice().forEach(end); SH.on = false; }
   /** Кінець сценки: учасники вільні — далі їх веде party.js (танець там, де стоять). */
   function end(sc) {
@@ -99,7 +101,7 @@ NX.partyShow = (() => {
   }
   /** Кадр (party.js director): почати нову сценку, вести ті, що йдуть. */
   function tick(t, dt) {
-    if (!SH.on || !Pp) return;
+    if (!SH.on || !Pp || !SH.full) return;   // сценки й нові образи — лише в главі «ПАТІ» (20/20)
     const max = Pp.S.list.length >= 12 ? 2 : 1; if (t > SH.next && SH.act.length < max) { SH.next = t + 4 + rnd() * 5; tryStart(t); }
     SH.act.slice().forEach(sc => {
       const all = [sc.g, ...sc.p];
@@ -114,5 +116,15 @@ NX.partyShow = (() => {
       if (k > SCENE_T) end(sc);
     });
   }
-  return { start, stop, tick, SH, SCENES, get on() { return SH.on; } };
+  /** Напис ПАТІ (заставка на вході, коли зібрано всіх 20 — початок глави «ПАТІ»; власник, 13.11: «заставка паті має з'являтися все ж»): великий неоновий текст з мерехтінням, обвідкою й зірками. */
+  function drawTitle(c, vw, vh, t) {
+    if (!SH.on || !SH.full || t - SH.t0 > TITLE_T) return; const k = (t - SH.t0) / TITLE_T, a = k < .15 ? k / .15 : k > .8 ? (1 - k) / .2 : 1, s = NX.t('show.title');
+    c.save(); c.globalAlpha = a; c.fillStyle = 'rgba(3,2,10,.55)'; c.fillRect(0, 0, vw, vh); const fs = Math.min(72, vw / 6), y = vh * .42, fl = Math.floor(t * 9) % 11 === 0 ? .5 : 1;
+    c.font = `${fs}px "Press Start 2P", monospace`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.shadowColor = '#ff4fd8'; c.shadowBlur = 40 * fl; c.fillStyle = '#ff4fd8'; c.fillText(s, vw / 2, y); c.shadowBlur = 0; c.fillStyle = '#ffffff'; c.globalAlpha = a * .9 * fl; c.fillText(s, vw / 2, y - 3);
+    c.globalAlpha = a; c.font = `${Math.min(14, vw / 28)}px "Press Start 2P", monospace`; c.fillStyle = '#ffe27a'; c.fillText(NX.t('show.sub'), vw / 2, y + fs * .9);
+    for (let i = 0; i < 12; i++) { const ph = (t * .6 + i / 12) % 1, sx = vw / 2 + Math.cos(i * 2.1 + t) * (fs * 3), sy = y + Math.sin(i * 1.7 + t * .8) * fs * 1.2; c.fillStyle = Pp.NEON[i % 6]; c.globalAlpha = a * (1 - ph); c.fillRect(sx, sy, 4, 4); }
+    c.restore();
+  }
+  return { start, stop, tick, drawTitle, SH, SCENES, get on() { return SH.on; } };
 })();

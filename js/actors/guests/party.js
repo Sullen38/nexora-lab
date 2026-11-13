@@ -58,7 +58,7 @@ NX.party = (() => {
     ids.forEach((id, i) => { const row = n <= 7 ? 1 : i % 3, col = n <= 7 ? i : Math.floor(i / 3), per = n <= 7 ? n : Math.ceil(n / 3), u = (col + .5) / per, v = [.15, .5, .85][row] || .5;
       const [x, z] = floorXZ(u, v), g = { id, x, z, tx: x, tz: z, dir: x < 774 ? 1 : -1, ph: rnd(), fr: 0, ft: 0, alt: 0, pose: 'stand', next: NX.time + 3 + rnd() * 8, spT: 0, g: {}, fly: FLYER[id] || null, u, v };
       if (g.fly) g.alt = 30 + rnd() * 10; g.style = STYLES[(id.length + i) % STYLES.length]; g.styleT = NX.time + 10 + rnd() * 10; S.list.push(g); });
-    if (NX.partyShow) NX.partyShow.start(SHOW_API);   // сценки героїв на місцях (party_show.js) — завжди, без сценарію (власник, 13.11)
+    const full = NX.guests && NX.guests.full && NX.guests.full() && n >= NX.guests.IDS.length; if (NX.partyShow) NX.partyShow.start(SHOW_API, full);   // 20/20 — глава «ПАТІ»: заставка й сценки на місцях (party_show.js)
     S.pair = null; S.event = null; S.eventT = NX.time + 25; CAT.until = 0; S.upNext = 0; S.hockey = null; S.hockeyNext = 0; S.karaoke = null; S.karaokeNext = 0; G().poufs.forEach(p => { p.busy = false; });
   }
   const sparks = (x, y, n, cols) => { for (let i = 0; i < n; i++) S.fx.push({ t: 'sp', x: x + (rnd() - .5) * 30, y: y - rnd() * 30, vx: (rnd() - .5) * 40, vy: -20 - rnd() * 40, g: 60, col: cols[i % cols.length], ttl: .6 + rnd() * .5, age: 0 }); };
@@ -417,6 +417,7 @@ NX.party = (() => {
     if (NX.partyLive) NX.partyLive.drawDim(c, vw, vh);
     drawSubs(c, vw, vh);
     if (S.flashT && NX.time < S.flashT) { c.save(); c.globalAlpha = (S.flashT - NX.time) * 2.5; c.fillStyle = '#ffffff'; c.fillRect(0, 0, vw, vh); c.restore(); }   // спалах (сцени справжньої вечірки)
+    if (NX.partyShow) NX.partyShow.drawTitle(c, vw, vh, NX.time);   // заставка «ПАТІ» (20/20)
     if (NX.cards && NX.cards.on) NX.cards.draw(c, vw, vh, NX.time);   // сторінка карток / картка героя (cards.js)
     if (!n && S.tf) { const T = S.tf; c.setTransform(T.k, 0, 0, T.k, NX.loop.canvas.width / 2 - T.cxw * T.k, NX.loop.canvas.height * .55 - T.cyw * T.k); const txt = NX.t('party.empty'), words = txt.split(' '), lines = []; let cur = ''; c.font = '8px "Press Start 2P", monospace';   // підказка на порожньому танцполі
       words.forEach(w => { const tr = cur ? cur + ' ' + w : w; if (c.measureText(tr).width > Math.min(380, S.viewW - 40) && cur) { lines.push(cur); cur = w; } else cur = tr; }); lines.push(cur);
