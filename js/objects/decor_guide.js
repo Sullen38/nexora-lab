@@ -71,11 +71,13 @@
 
   // ---------- спрайт виду на полотно картки ----------
   function drawSprite(e, info) {
-    const cv = $('guide').querySelector('canvas'); if (!cv) return; const n = 64, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))); cv.width = cv.height = n * R; cv.style.width = cv.style.height = n + 'px';   /* рослини: полотно скидається щоразу */
-    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, n, n); c.imageSmoothingEnabled = false;
+    const cv = $('guide').querySelector('canvas'); if (!cv) return; const n = CW, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))); if (e.grp === 'art' || e.grp === 'bot') return; fitCanvas(cv, CW, CH, R);
+    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, CW, CH); stage(c, 1.2, '#3be8ff'); c.imageSmoothingEnabled = false;   // (· 63) та сама сцена, що в артефактів
     const fit = (src, pad = 6) => {                                                                          // обрізати порожнє навколо спрайта й вписати в полотно
       const w = src.width, h = src.height; let x0 = w, y0 = h, x1 = -1, y1 = -1; try { const d = src.getContext('2d').getImageData(0, 0, w, h).data; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch (err) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
-      if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; } const sw = x1 - x0 + 1, sh = y1 - y0 + 1, k = Math.min((n - pad * 2) / sw, (n - pad * 2) / sh, 4), dw = sw * k, dh = sh * k; c.drawImage(src, x0, y0, sw, sh, (n - dw) / 2, (n - dh) / 2, dw, dh); };
+      if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; } const sw = x1 - x0 + 1, sh = y1 - y0 + 1, aw = CW - 16 - pad * 2, ah = PY - 8 - pad; let k = Math.min(aw / sw, ah / sh, 6); if (k > 1) k = Math.floor(k * R) / R;   /* цілі пікселі екрана — без каші */
+      const dw = sw * k, dh = sh * k; c.globalAlpha = .28; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(CW / 2, PY, Math.min(34, dw * .4), 3, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
+      c.drawImage(src, x0, y0, sw, sh, Math.round((CW - dw) / 2), Math.round(PY - 2 - dh - Math.max(0, (ah - dh) * .35)), dw, dh); };
     try {
       if (e.grp === 'art') return;                                                                             // (· 55) артефакт соти малює artCard (живий кадр)
       if (e.grp === 'floor' || e.grp === 'garden') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
@@ -90,7 +92,7 @@
       if (S) { fit(S.cv); return; }
       if (info && info.aq) {                                                                                  // нерухомі мешканці: шматок живого шару акваріума навколо точки
         const M = NX.decor.MK[info.aq]; if (!M || !M.out) return; const Rd = M.out.width / M.w, r = Math.max(6, info.r || 6), sx = (info.x - r - M.x) * Rd, sy = (info.y - r - M.y) * Rd;
-        c.imageSmoothingEnabled = true; c.drawImage(M.out, sx, sy, 2 * r * Rd, 2 * r * Rd, 2, 2, n - 4, n - 4); }
+        c.imageSmoothingEnabled = true; c.drawImage(M.out, sx, sy, 2 * r * Rd, 2 * r * Rd, 14, 14, CW - 28, CW - 28); }
     } catch (err) { /* спрайта нема — картка без малюнка */ }
   }
 
@@ -107,6 +109,23 @@
    *  плавні краї й тонкі переходи світла), 10 кадрів/с — жива. За нею — велика неонова сота з вогником по кромці й сяйво кольору
    *  соти; під нею — круглий постамент із двома неоновими кільцями й відблиском; річ ледь «плаває»; довкола мерехтять іскри.
    *  Щойно картка відкрилась — артефакт грає свою реакцію на тап (u). */
+  /** (· 63, власник 14.11: «треба, щоб розмірами співпадало все») УСІ картки довідника — одного розміру: полотно CW×CH (116×132) і та
+   *  сама сцена — велика сота, сяйво, постамент із неоновими кільцями. Артефакт, рослина, риба, медуза й дрон стоять на ній однаково;
+   *  відрізняється лише колір: у артефактів — свій (ART_COL), у врятованих видів і дрона — бірюза довідника. */
+  const CW = 116, CH = 132, PY = 119;
+  function stage(c, t, neon) { const w = CW, h = CH, m = w / 2;
+    const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#0c0a2e'); bg.addColorStop(1, '#070518'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
+    const cy = 60, P6 = (q, r) => [m + r * Math.cos(q * Math.PI / 3 + Math.PI / 6), cy + r * Math.sin(q * Math.PI / 3 + Math.PI / 6)], hexP = r => { c.beginPath(); for (let q = 0; q < 6; q++) { const p = P6(q, r); q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.closePath(); };
+    const g = c.createRadialGradient(m, cy - 6, 4, m, cy, 62); g.addColorStop(0, neon + '70'); g.addColorStop(.55, neon + '22'); g.addColorStop(1, neon + '00'); hexP(57); c.fillStyle = '#14113e'; c.fill(); c.fillStyle = g; c.fill();
+    c.save(); hexP(57); c.clip(); c.globalAlpha = .07; c.fillStyle = neon; for (let y = 4; y < h; y += 4) c.fillRect(0, y, w, 1); c.restore();                                  // тонкі рядки — «вітрина»
+    c.globalAlpha = .6 + .25 * Math.sin(t * 2); c.strokeStyle = neon; c.lineWidth = 2; hexP(56); c.stroke(); c.globalAlpha = .22; c.lineWidth = 1; hexP(50); c.stroke(); c.globalAlpha = 1;
+    { const u = (t * .5) % 6, i = Math.floor(u), f = u - i, A = P6(i, 56), B = P6((i + 1) % 6, 56); c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f - 1.5, A[1] + (B[1] - A[1]) * f - 1.5, 3, 3); }   // вогник по кромці — як у кімнаті
+    // постамент: тінь, диск, два неонові кільця, відблиск
+    const py = PY; c.fillStyle = '#05020f'; c.globalAlpha = .5; c.beginPath(); c.ellipse(m, py + 4, 44, 7, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
+    c.fillStyle = '#1c1a4a'; c.beginPath(); c.ellipse(m, py + 2.5, 40, 6.5, 0, 0, 6.2832); c.fill(); c.fillStyle = '#2c2a6a'; c.beginPath(); c.ellipse(m, py, 40, 6.5, 0, 0, 6.2832); c.fill();
+    c.strokeStyle = neon; c.lineWidth = 1.5; c.globalAlpha = .9; c.beginPath(); c.ellipse(m, py, 40, 6.5, 0, 0, 6.2832); c.stroke(); c.lineWidth = 1; c.globalAlpha = .35 + .25 * Math.sin(t * 3); c.beginPath(); c.ellipse(m, py, 30, 4.6, 0, 0, 6.2832); c.stroke();
+    { const a = t * 1.2; c.globalAlpha = .9; c.fillStyle = '#ffffff'; c.fillRect(m + Math.cos(a) * 40 - 1, py + Math.sin(a) * 6.5 - 1, 2, 2); } c.globalAlpha = 1;                 // вогник по кільцю
+  }
   let artT0 = 0, artK = '';
   /** (· 62, власник 14.11: «зроби кожну карточку в кольорі якомусь унікальному, підходящому під артефакт») Свій колір картки в
    *  кожного з 13 артефактів — рамка, сяйво, заголовок, сота й постамент: золото статуетки, індиго кулі, червоний корінців книжок,
@@ -119,20 +138,10 @@
   function tint(el, col) { el.style.borderColor = col; el.style.boxShadow = col ? `0 0 18px ${col}55, inset 0 0 22px ${col}1c` : ''; el.style.background = col ? `linear-gradient(120deg, ${col}26, #060a24f2 58%)` : ''; el.querySelector('b').style.color = col || ''; el.querySelector('.gw').style.color = col || ''; el.querySelector('canvas').style.borderColor = col ? col + '99' : ''; }
   function artCard() {
     cancelAnimationFrame(raf); if (!cur || cur.e.grp !== 'art' || !NX.decorArt) return; raf = requestAnimationFrame(artCard);
-    const cv = $('guide').querySelector('canvas'), w = 116, h = 132, m = w / 2, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, DA = NX.decorArt, kind = cur.e.kind, neon = artCol(kind, t);
+    const cv = $('guide').querySelector('canvas'), w = CW, h = CH, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, DA = NX.decorArt, kind = cur.e.kind, neon = artCol(kind, t);
     if (artK !== kind) { artK = kind; artT0 = t; } fitCanvas(cv, w, h, R); if (kind === 'cube') tint($('guide'), neon);
     const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, w, h); c.imageSmoothingEnabled = false;
-    const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#0c0a2e'); bg.addColorStop(1, '#070518'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
-    const cy = 60, P6 = (q, r) => [m + r * Math.cos(q * Math.PI / 3 + Math.PI / 6), cy + r * Math.sin(q * Math.PI / 3 + Math.PI / 6)], hexP = r => { c.beginPath(); for (let q = 0; q < 6; q++) { const p = P6(q, r); q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.closePath(); };
-    const g = c.createRadialGradient(m, cy - 6, 4, m, cy, 62); g.addColorStop(0, neon + '70'); g.addColorStop(.55, neon + '22'); g.addColorStop(1, neon + '00'); hexP(57); c.fillStyle = '#14113e'; c.fill(); c.fillStyle = g; c.fill();
-    c.save(); hexP(57); c.clip(); c.globalAlpha = .07; c.fillStyle = neon; for (let y = 4; y < h; y += 4) c.fillRect(0, y, w, 1); c.restore();                                  // тонкі рядки — «вітрина»
-    c.globalAlpha = .6 + .25 * Math.sin(t * 2); c.strokeStyle = neon; c.lineWidth = 2; hexP(56); c.stroke(); c.globalAlpha = .22; c.lineWidth = 1; hexP(50); c.stroke(); c.globalAlpha = 1;
-    { const u = (t * .5) % 6, i = Math.floor(u), f = u - i, A = P6(i, 56), B = P6((i + 1) % 6, 56); c.fillStyle = '#ffffff'; c.fillRect(A[0] + (B[0] - A[0]) * f - 1.5, A[1] + (B[1] - A[1]) * f - 1.5, 3, 3); }   // вогник по кромці — як у кімнаті
-    // постамент: тінь, диск, два неонові кільця, відблиск
-    const py = 119; c.fillStyle = '#05020f'; c.globalAlpha = .5; c.beginPath(); c.ellipse(m, py + 4, 44, 7, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
-    c.fillStyle = '#1c1a4a'; c.beginPath(); c.ellipse(m, py + 2.5, 40, 6.5, 0, 0, 6.2832); c.fill(); c.fillStyle = '#2c2a6a'; c.beginPath(); c.ellipse(m, py, 40, 6.5, 0, 0, 6.2832); c.fill();
-    c.strokeStyle = neon; c.lineWidth = 1.5; c.globalAlpha = .9; c.beginPath(); c.ellipse(m, py, 40, 6.5, 0, 0, 6.2832); c.stroke(); c.lineWidth = 1; c.globalAlpha = .35 + .25 * Math.sin(t * 3); c.beginPath(); c.ellipse(m, py, 30, 4.6, 0, 0, 6.2832); c.stroke();
-    { const a = t * 1.2; c.globalAlpha = .9; c.fillStyle = '#ffffff'; c.fillRect(m + Math.cos(a) * 40 - 1, py + Math.sin(a) * 6.5 - 1, 2, 2); } c.globalAlpha = 1;                 // вогник по кільцю
+    stage(c, t, neon); const m = CW / 2, py = PY;
     // сам артефакт — цілий, ×4, у справжніх пікселях; ледь плаває над постаментом
     const S = 4, sw = DA.W * S, sh = DA.H * S, bob = Math.round(Math.sin(t * 1.6) * 1.5 * R) / R, x = m - sw / 2, y = py - 1 - sh + bob, u = t - artT0;
     c.globalAlpha = .28; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(m, py, sw * .3 - bob * 2, 3, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
@@ -146,10 +155,9 @@
   /** (· 59) Портрет дрона в картці: живий (гвинт крутиться, око блимає), поки картка відкрита. */
   function botCard() {
     cancelAnimationFrame(raf); if (!cur || cur.e.grp !== 'bot' || !NX.decorDrone) return; raf = requestAnimationFrame(botCard);
-    const cv = $('guide').querySelector('canvas'), n = 100, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), p = NX.decorDrone.portrait(performance.now() / 1000);
-    fitCanvas(cv, n, n, R);
-    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.fillStyle = '#0a0a26'; c.fillRect(0, 0, n, n); const g = c.createRadialGradient(50, 50, 4, 50, 50, 52); g.addColorStop(0, '#3be8ff44'); g.addColorStop(1, '#0a0a2600'); c.fillStyle = g; c.fillRect(0, 0, n, n);
-    c.imageSmoothingEnabled = R !== 1 && R !== 3; c.drawImage(p, 50 - p.width / 2, 52 - p.height / 2);
+    const cv = $('guide').querySelector('canvas'), R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, p = NX.decorDrone.portrait(t); fitCanvas(cv, CW, CH, R);
+    const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, CW, CH); stage(c, t, '#3be8ff');                                                       // (· 63) та сама сцена й розмір, що в усіх
+    c.imageSmoothingEnabled = R !== 1 && R !== 3; c.drawImage(p, Math.round(CW / 2 - p.width / 2), Math.round(PY - 14 - p.height + Math.sin(t * 1.6) * 2));
   }
 
   // ---------- картка ----------
