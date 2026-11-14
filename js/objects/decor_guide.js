@@ -108,10 +108,19 @@
    *  соти; під нею — круглий постамент із двома неоновими кільцями й відблиском; річ ледь «плаває»; довкола мерехтять іскри.
    *  Щойно картка відкрилась — артефакт грає свою реакцію на тап (u). */
   let artT0 = 0, artK = '';
+  /** (· 62, власник 14.11: «зроби кожну карточку в кольорі якомусь унікальному, підходящому під артефакт») Свій колір картки в
+   *  кожного з 13 артефактів — рамка, сяйво, заголовок, сота й постамент: золото статуетки, індиго кулі, червоний корінців книжок,
+   *  листяний зелений тераріуму, м'ята сироватки, сталевий блакитний мікроскопа, бурштин кубка, малина лава-лампи, пісок годинника,
+   *  бірюза глобуса, орхідея кристалів, лайм термінала; куб — переливається всіма своїми кольорами. */
+  const ART_COL = { figure: '#ffc93a', orb: '#6a7dff', books: '#ff5a5a', terrarium: '#7ad84a', flask: '#2affb0', scope: '#9ab4ff', cup: '#ffa030', lamp: '#ff4f7a', hourglass: '#d9a860', globe: '#3be8ff', crystal: '#e59aff', console: '#b8ff3a' };
+  const CUBE = ['#ff5a5a', '#ffa030', '#ffe14a', '#4ae06a', '#3be8ff', '#6a7dff'];
+  function artCol(kind, t) { if (kind !== 'cube') return ART_COL[kind] || '#ffd27a'; const u = (t * .5) % CUBE.length, i = Math.floor(u), f = u - i, a = CUBE[i], b = CUBE[(i + 1) % CUBE.length], ch = (h, k) => parseInt(h.slice(1 + k * 2, 3 + k * 2), 16);
+    return '#' + [0, 1, 2].map(k => Math.round(ch(a, k) + (ch(b, k) - ch(a, k)) * f).toString(16).padStart(2, '0')).join(''); }
+  function tint(el, col) { el.style.borderColor = col; el.style.boxShadow = col ? `0 0 18px ${col}55, inset 0 0 22px ${col}1c` : ''; el.style.background = col ? `linear-gradient(120deg, ${col}26, #060a24f2 58%)` : ''; el.querySelector('b').style.color = col || ''; el.querySelector('.gw').style.color = col || ''; el.querySelector('canvas').style.borderColor = col ? col + '99' : ''; }
   function artCard() {
     cancelAnimationFrame(raf); if (!cur || cur.e.grp !== 'art' || !NX.decorArt) return; raf = requestAnimationFrame(artCard);
-    const cv = $('guide').querySelector('canvas'), w = 116, h = 132, m = w / 2, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, neon = (cur.info && cur.info.neon) || '#ffd27a', DA = NX.decorArt, kind = cur.e.kind;
-    if (artK !== kind) { artK = kind; artT0 = t; } fitCanvas(cv, w, h, R);
+    const cv = $('guide').querySelector('canvas'), w = 116, h = 132, m = w / 2, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))), t = performance.now() / 1000, DA = NX.decorArt, kind = cur.e.kind, neon = artCol(kind, t);
+    if (artK !== kind) { artK = kind; artT0 = t; } fitCanvas(cv, w, h, R); if (kind === 'cube') tint($('guide'), neon);
     const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, w, h); c.imageSmoothingEnabled = false;
     const bg = c.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#0c0a2e'); bg.addColorStop(1, '#070518'); c.fillStyle = bg; c.fillRect(0, 0, w, h);
     const cy = 60, P6 = (q, r) => [m + r * Math.cos(q * Math.PI / 3 + Math.PI / 6), cy + r * Math.sin(q * Math.PI / 3 + Math.PI / 6)], hexP = r => { c.beginPath(); for (let q = 0; q < 6; q++) { const p = P6(q, r); q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.closePath(); };
@@ -145,7 +154,7 @@
 
   // ---------- картка ----------
   function render() {
-    const el = $('guide'); if (!el || !cur) return; const { e, info } = cur, T = NX.t, R = reg();
+    const el = $('guide'); if (!el || !cur) return; const { e, info } = cur, T = NX.t, R = reg(); el.style.boxShadow = el.style.background = ''; el.querySelector('b').style.color = el.querySelector('.gw').style.color = el.querySelector('canvas').style.borderColor = '';   // (· 62) колір картки артефакта не лишається на інших картках
     if (e.grp === 'bot') {                                                                                   // (· 59) картка дрона-куратора — така сама, як у всіх
       el.querySelector('b').textContent = T('decor.guide.bot.head'); el.querySelector('.gn').textContent = T('decor.guide.bot.n'); el.querySelector('small').textContent = T('decor.guide.bot.d');
       el.querySelector('.gw').textContent = T('decor.guide.bot.kind') + ' · ' + T('decor.guide.art.where'); el.querySelector('.gc').textContent = ''; el.style.borderColor = '#3be8ff'; botCard(); return; }
@@ -153,7 +162,7 @@
       el.querySelector('b').textContent = T('decor.guide.art.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(2, '0');
       el.querySelector('.gn').textContent = T(`decor.guide.art.items.${e.kind}.n`); el.querySelector('small').textContent = T(`decor.guide.art.items.${e.kind}.d`);
       el.querySelector('.gw').textContent = T('decor.guide.art.kind') + ' · ' + T('decor.guide.art.where'); el.querySelector('.gc').textContent = T('decor.guide.art.count', { n: ART_KINDS.length });
-      el.style.borderColor = (info && info.neon) || '#ffd27a'; artCard(); return; }
+      tint(el, artCol(e.kind, performance.now() / 1000)); artCard(); return; }
     el.querySelector('b').textContent = T('decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
     const lat = T('decor.guide.latin.' + e.kind); el.querySelector('small').textContent = lat.startsWith('decor.') ? '' : lat;
