@@ -55,19 +55,41 @@
   // СТИЛІ (вибір власника; NX.wallTag.set(назва)): hand — гострий хендстайл; throw — «бабл»: товсті округлі літери з чорним контуром
   // і світлою заливкою, тінь; stencil — трафарет: рубані літери з перемичками й напилом по краях; mop — жирний маркер-«швабра»
   // одним рухом із довгими патьоками
-  let STYLE = 'marker', SPR = null, ANG = null;
+  // (14.11, власник надіслав приклад тегу срібним маркером: «тег зроби в такому стилі і трохи вирівняй його») стиль flow: підпис
+  // однією плавною лінією світлою «срібною» фарбою — гострий розгін-прапорець у першій літері, малі літери зв'язані, велика петля-
+  // овал наприкінці, що вертається назад, зигзаг-підкреслення, риска над словом і три крапки. Літери свої, не з прикладу. Тег лежить
+  // майже рівно (нахил −.03 замість підйому праворуч).
+  const FLOW = [
+    [[-3.6, 5.6], [-3.6, 5.6], [4.2, .4], [4.2, .4], [1.3, 10.6], [1.3, 10.6], [2.3, 3.2], [6.3, 10.1], [6.3, 10.1], [7.1, 1.4]],                    // N з прапорцем
+    [[7.7, 7.5], [10.3, 6.3], [9.7, 4.3], [8.1, 4.6], [7.5, 7.7], [8.5, 10], [11.2, 8.5]],                                                         // e
+    [[11.1, 4.2], [14.5, 10.4]], [[15.2, 3.4], [10.5, 11.8]],                                                                                       // x
+    [[17.7, 4.4], [15.9, 6.8], [16.5, 9.8], [18.5, 9.6], [19.3, 6.6], [17.9, 4.4], [20.7, 5.3], [21.1, 10.2]],                                      // o → r
+    [[21.1, 6.7], [22.7, 4.4], [24.3, 5.2]],
+    [[27.5, 5], [25.7, 4.4], [24.5, 7.2], [25.3, 9.8], [27.1, 9], [27.7, 4.4], [28.3, 10.1]],                                                      // a
+    [[30.6, 10.5], [33.1, -1.2], [35.1, 10.3]], [[29.6, 7.1], [36.5, 5.8]],                                                                         // A
+    [[37.5, 4.6], [37.9, 10], [41, 6], [44.2, 1.4], [47.8, 2.8], [47.2, 7.6], [42.2, 9.8], [37.6, 9.3]],                                            // i → велика петля
+    [[40.5, 11.2], [22, 12.3], [8, 13.1], [8, 13.1], [19, 14.3], [19, 14.3], [10.5, 15.4]],                                                         // зигзаг-підкреслення
+    [[18.1, -5.4], [18.3, -2.4]], [[37.3, 1.2], [37.5, 2.5]],                                                                                       // риска над словом, крапка над i
+  ], FLOW_W = 48, FLOW_DOTS = [[2.6, 12.7], [5.2, 12], [46.4, 10.6]];
+  let STYLE = 'flow', SPR = null, ANG = null;
   const sharp = (c, pts) => { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); };
   const soft = (c, pts) => { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length - 1; i++) c.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2); const L = pts[pts.length - 1]; c.lineTo(L[0], L[1]); };
   function build() {
     const ST = { marker: { G: GM, word: 'NEXORA AI', gap: .25, sl: .16, vy: 1.3, pt: 5.4, pb: 4.4 }, hand: { G: GL, word: 'NEXORA AI', gap: .85, sl: .34, vy: 1.2, pt: 3, pb: 4.4 }, throw: { G: GLOW, word: 'Nexora Ai', gap: -.5, sl: .12, vy: 1.25, pt: 3.4, pb: 3.4 },
+      flow: { G: GLOW, word: '', gap: 0, sl: .18, vy: 1.12, pt: 6.6, pb: 6.6 },
       stencil: { G: GL, word: 'NEXORA AI', gap: 1.5, sl: 0, vy: 1.05, pt: 3.6, pb: 3.6 }, mop: { G: GLOW, word: 'Nexora Ai', gap: .2, sl: .26, vy: 1.1, pt: 3.4, pb: 8 } }[STYLE];
-    const { G, word, gap, sl, vy: VY, pt: PADT, pb: PADB } = ST, UW = [...word].reduce((a, ch) => a + G[ch].adv + gap, 0), PADX = 3.4, UH = (10 + PADT + PADB) * VY;
+    const { G, word, gap, sl, vy: VY, pt: PADT, pb: PADB } = ST, UW = STYLE === 'flow' ? FLOW_W : [...word].reduce((a, ch) => a + G[ch].adv + gap, 0), PADX = STYLE === 'flow' ? 5 : 3.4, UH = (10 + PADT + PADB) * VY;
     const f = CFG.w / (UW + PADX * 2), W = CFG.w, H = UH * f, cv = document.createElement('canvas'); cv.width = Math.ceil(W * S); cv.height = Math.ceil(H * S);
     const c = cv.getContext('2d'), hash = NX.art.hash; c.scale(S * f, S * f * VY); c.translate(PADX, PADT);
     const INK = '#07050c', L = []; let x = 0; for (const ch of word) { for (const st of G[ch].s) L.push(st.map(([px, py]) => [x + px - (py - 10) * sl, py])); x += G[ch].adv + gap; }
     const haze = (n, a) => { for (let k = 0; k < n; k++) { const bx = hash(k, 1) * UW, by = 1 + hash(k, 2) * 9, r = 3 + hash(k, 3) * 3, g = c.createRadialGradient(bx, by, 0, bx, by, r); g.addColorStop(0, 'rgba(7,5,12,' + a + ')'); g.addColorStop(1, 'rgba(7,5,12,0)'); c.fillStyle = g; c.fillRect(bx - r, by - r, r * 2, r * 2); } };
     const pores = n => { c.globalCompositeOperation = 'destination-out'; for (let k = 0; k < n; k++) { c.globalAlpha = .3 + .5 * hash(k, 8); c.fillRect(-4 + hash(k, 11) * (UW + 8), -3 + hash(k, 12) * 20, .3, .3); } c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; };
     let mul = true;
+    if (STYLE === 'flow') { mul = false; c.lineCap = 'round'; c.lineJoin = 'round'; const sk = pts => pts.map(([px, py]) => [px - (py - 10) * sl, py]);
+      for (const [col, lw, ox, oy] of [['rgba(10,6,24,.5)', 1.45, .28, .32], ['#9fb0c2', 1.12, 0, 0], ['#e9f1f8', .5, -.14, -.16]]) { c.strokeStyle = col; c.lineWidth = lw;      // тінь, срібло, блік
+        for (const pts of FLOW) { soft(c, sk(pts).map(([px, py]) => [px + ox, py + oy])); c.stroke(); } }
+      for (const [dx, dy] of FLOW_DOTS) { const q = sk([[dx, dy]])[0]; c.fillStyle = '#9fb0c2'; c.beginPath(); c.arc(q[0], q[1], .55, 0, TAU); c.fill(); c.fillStyle = '#e9f1f8'; c.beginPath(); c.arc(q[0] - .12, q[1] - .14, .26, 0, TAU); c.fill(); }
+      pores(520); }
     if (STYLE === 'marker') { c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = INK;
       const E = [ell(UW * .46, -3.2, 3.4, 1.25, .5, 6.6, 16),                                                               // німб
         [[-3, 1.2], [-2.2, 3.6]], [[-1.6, .4], [-.8, 2.8]],                                                               // лапки
@@ -96,7 +118,7 @@
       pores(260); }
     SPR = { cv, w: W, h: H, mul };
   }
-  NX.wallTag = { set(st) { STYLE = st; SPR = null; }, get style() { return STYLE; } };
+  NX.wallTag = { set(st) { STYLE = st; SPR = null; ANG = null; }, get style() { return STYLE; } };
   function slope() {                                                                                                     // нахил цегляних рядів біля тегу — із задньої стінки найближчої соти
     const items = NX.decor && NX.decor.items, kit = NX.arc && NX.arc.kit, proj = NX.px3d && NX.px3d.proj; if (!items || !kit || !proj) return 0; let best = 0, bd = 1e9;
     for (const B of items) { if (B.st !== 'dc_hex') continue; const { P } = kit.basis(B), Yc = (B.yt + B.yb) / 2, a = proj(P(-B.w / 2, B.dep, Yc)), b = proj(P(B.w / 2, B.dep, Yc)), d = Math.abs((a[0] + b[0]) / 2 - CFG.x);
@@ -106,7 +128,7 @@
   NX.addObject({
     id: 'wallTag', span: [CFG.x - CFG.w, CFG.x + CFG.w],
     drawBack(c, t) {
-      if (CFG.x + CFG.w < NX.cam.x || CFG.x - CFG.w > NX.cam.x + NX.cam.viewW) return; if (!SPR) build(); if (ANG == null) ANG = Math.min(slope(), 0) - .1;                              // помітний нахил: тег «лізе» вгору праворуч
+      if (CFG.x + CFG.w < NX.cam.x || CFG.x - CFG.w > NX.cam.x + NX.cam.viewW) return; if (!SPR) build(); if (ANG == null) ANG = STYLE === 'flow' ? -.03 : Math.min(slope(), 0) - .1;                              // помітний нахил: тег «лізе» вгору праворуч
       c.save(); c.beginPath(); c.rect(152, 56, 66, 37); c.clip();                                                       // (власник: «щоб не заходило ні на що — тільки на цеглі») страховка: лише вільна цегла між ліаною, рифом і табличками
       c.imageSmoothingEnabled = false; c.translate(CFG.x, CFG.y); c.rotate(ANG); if (SPR.mul) { c.globalCompositeOperation = 'multiply'; c.globalAlpha = STYLE === 'marker' ? .9 : .82; } else c.globalAlpha = .96; c.drawImage(SPR.cv, -SPR.w / 2, -SPR.h / 2, SPR.w, SPR.h);   // multiply: шви й фактура цегли проступають крізь фарбу
       c.restore();
