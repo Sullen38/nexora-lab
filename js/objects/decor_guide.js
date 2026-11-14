@@ -75,9 +75,15 @@
     const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, CW, CH); stage(c, 1.2, '#3be8ff'); c.imageSmoothingEnabled = false;   // (· 63) та сама сцена, що в артефактів
     const fit = (src, pad = 6) => {                                                                          // обрізати порожнє навколо спрайта й вписати в полотно
       const w = src.width, h = src.height; let x0 = w, y0 = h, x1 = -1, y1 = -1; try { const d = src.getContext('2d').getImageData(0, 0, w, h).data; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch (err) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
-      if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; } const sw = x1 - x0 + 1, sh = y1 - y0 + 1, aw = CW - 16 - pad * 2, ah = PY - 8 - pad; let k = Math.min(aw / sw, ah / sh, 6); if (k > 1) k = Math.floor(k * R) / R;   /* цілі пікселі екрана — без каші */
+      if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
+      // (14.11, власник: «якщо це якась ліана — то тільки її шматок у картці») довга вузька рослина: беремо верхній фрагмент (висота = 1.5 ширини), низ тане
+      let frag = false; if ((y1 - y0 + 1) > (x1 - x0 + 1) * 1.9) { y1 = y0 + Math.round((x1 - x0 + 1) * 1.5); frag = true; }
+      const sw = x1 - x0 + 1, sh = y1 - y0 + 1, aw = CW - 16 - pad * 2, ah = PY - 8 - pad; let k = Math.min(aw / sw, ah / sh, 6); if (k > 1) k = Math.floor(k * R) / R;   /* цілі пікселі екрана — без каші */
       const dw = sw * k, dh = sh * k; c.globalAlpha = .28; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(CW / 2, PY, Math.min(34, dw * .4), 3, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
-      c.drawImage(src, x0, y0, sw, sh, Math.round((CW - dw) / 2), Math.round(PY - 2 - dh - Math.max(0, (ah - dh) * .35)), dw, dh); };
+      if (!frag) { c.drawImage(src, x0, y0, sw, sh, Math.round((CW - dw) / 2), Math.round(PY - 2 - dh - Math.max(0, (ah - dh) * .35)), dw, dh); return; }
+      const o = document.createElement('canvas'); o.width = sw; o.height = sh; const oc = o.getContext('2d'); oc.drawImage(src, x0, y0, sw, sh, 0, 0, sw, sh);                     // фрагмент: нижня чверть плавно зникає
+      const g = oc.createLinearGradient(0, sh * .72, 0, sh); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); oc.globalCompositeOperation = 'destination-out'; oc.fillStyle = g; oc.fillRect(0, sh * .72, sw, sh * .28 + 1);
+      c.drawImage(o, Math.round((CW - dw) / 2), Math.round(PY - 6 - dh), dw, dh); };
     try {
       if (e.grp === 'art') return;                                                                             // (· 55) артефакт соти малює artCard (живий кадр)
       if (e.grp === 'floor' || e.grp === 'garden') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
@@ -85,7 +91,7 @@
         const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'wall' && NX.decorVines && NX.decorVines.has(e.kind)) { fit(NX.decorVines.sprite(e.kind), 3); return; }   // (· 57) ліана між сотами — власний спрайт
-      if (e.grp === 'wall') { const sp = NX.arc.dcSpec && NX.arc.dcSpec[e.kind], r = sp && NX.arc.dcPlant(sp); if (!r) return;
+      if (e.grp === 'wall') { const sp = (NX.arc.dcSpec && NX.arc.dcSpec[e.kind]) || { kind: e.kind, w: 16, h: 14, seed: 8, lit: 1, pad: 8 }, r = NX.arc.dcPlant(sp); if (!r) return;   // (14.11) виду нема серед предметів розкладки (гриби пілона) — спрайт за типовим розміром
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'farm') { const S = NX.decorFarm && NX.decorFarm.plantSpr(e.kind, info && info.s != null ? info.s : 1); if (S) fit(S.cv); return; }
       const S = NX.decor.frame && (NX.decor.SPR[e.kind] || (NX.decor.JELLY && NX.decor.JELLY[e.kind])) ? NX.decor.frame(e.kind, 0) : null;
@@ -217,7 +223,11 @@
         let best = null, bd = 1e9;
         for (const f of NX.decor.crewAt(aq, t)) { const d = Math.hypot(f.x - x, f.y - y) - Math.max(f.w, f.h) * .35; if (d < bd) { bd = d; best = { e: find(aq, f.kind), info: null }; } }
         if (NX.decorAqua && NX.decorAqua.residents) for (const r of NX.decorAqua.residents(aq, t)) { const d = Math.hypot(r.x - x, r.y - y) - r.r * .5; if (d < bd) { bd = d; best = { e: find(aq, r.kind), info: { aq, x: r.x, y: r.y, r: r.r } }; } }
-        if (best && best.e && bd < 9) show(best.e, best.info); }
+        if (best && best.e && bd < 9) return show(best.e, best.info);
+        // (14.11, власник: «не всі рослини тапаються») тап по склу акваріума, де немає мешканця поруч, а перед склом висить рослина
+        // (дельфіни й монстера Адансона над рифом, дикий виноград між акваріумами): раніше — нічого; тепер — картка цієї рослини
+        let L = null; for (const q of (NX.decorLive ? NX.decorLive.LP : [])) if (q.e && q.e.sp && x >= q.x0 + 2 && x <= q.x1 - 2 && y >= q.y0 - 1 && y <= q.y1 + 1 && (!L || (q.x1 - q.x0) * (q.y1 - q.y0) < (L.x1 - L.x0) * (L.y1 - L.y0))) L = q;
+        if (L) { L.shake = t; return show(find('wall', L.e.sp.kind)); } this.tapStatic(x, y); }
     },
     /** Тап повз живе: чи влучив у нерухому рослину (соти, витки на цеглі, даваллія, платицеріум, монстера антресолі…). -> true */
     tapStatic(x, y) {
