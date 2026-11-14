@@ -1,6 +1,6 @@
 /* js/i18n/pl.js — POLSKI */
 NX.i18n.add('pl', {
-  ui: { brand: '© 2026 Nexora AI · Nexi™',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
+  ui: { brand: '© 2026 Nexora AI · Nexi™', turn: 'OBRÓĆ TELEFON PIONOWO',   // (захист бренду, docs/BRAND.md) маркування в кутку екрана
     result: 'WYNIK', resultAuto: 'NEXI ZROBIŁ SAM', photo: 'ZDJĘCIE ZAPISANE 📸', tagline: '8-BITOWY ASYSTENT AI', hint: 'DOTKNIJ STREFY, KANAPY LUB OKNA — NEXI TAM PÓJDZIE. NOWY WYGLĄD — W STREFIE SKÓRKI. DOTKNIJ KOTA — POGŁASZCZ.', dialog: 'CZAT Z NEXI', ask: 'Napisz do Nexi...', labTitle: 'STWÓRZ SWOJEGO NEXI', random: 'LOSOWO', reset: 'RESET', task: 'ZADANIE', free: 'CZAS WOLNY', close: 'Zamknij', send: 'Wyślij', room: 'Pokój Nexi', lab: 'Laboratorium skórek', prev: 'Poprzedni', next: 'Następny' },
   splash: {   // EKRAN POWITALNY (js/ui/splash.js): etapy ładowania, słowa Nexi, kroki budowy
     aria: 'Ładowanie laboratorium Nexi', retry: 'Odśwież stronę', ok: 'OK', kb: 'KB',

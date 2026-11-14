@@ -79,6 +79,7 @@ NX.boot = (() => {
     el.classList.add('tx');                                                          // підписи намальовані — можна показати хмарку (стилі в index.html)
     el.setAttribute('aria-valuetext', T('splash.st.' + (S.stage || 'js')));
   }
+  { const tp = document.querySelector('#turn p'), put = () => { if (tp) tp.textContent = T('ui.turn'); }; put(); if (NX.i18n && NX.i18n.onLang) NX.i18n.onLang(put); }   // екран «поверни телефон вертикально» (index.html, #turn)
   if (el) { el.setAttribute('aria-label', T('splash.aria')); const r = el.querySelector('.sp-retry'); if (r) r.setAttribute('aria-label', T('splash.retry')); }
   paint(); S.on = () => paint(); S.onUnit = () => paint(true);
   if (el && S.v === 'c') (function glitch() { setTimeout(() => { if (!el.isConnected || NX.boot.done) return; el.classList.add('glitch'); setTimeout(() => { el.classList.remove('glitch'); glitch(); }, 320); }, 4000 + Math.random() * 4000); })();

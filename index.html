@@ -168,6 +168,14 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
 @media(min-width:900px) and (min-aspect-ratio:4/3){.sp-vc{flex-direction:row;gap:calc(14 * var(--u))}}
 
 @media(prefers-reduced-motion:reduce){#splash *,#splash *::before,#splash *::after,#splash::after{animation:none!important;transition:none!important}}
+/* ЛИШЕ ВЕРТИКАЛЬНО: телефон боком — поверх усього екран «поверни телефон» (чистий CSS, працює ще до скриптів).
+   Той самий медіа-запит — у NX.loop.turned() (js/core/loop.js): кімнату під цей екран не перебудовуємо. Планшет і комп'ютер — як були. */
+#turn{display:none;position:fixed;inset:0;z-index:100;background:#050818;align-items:center;justify-content:center;gap:28px;color:#3be8ff;font:600 15px/1.4 'Rubik','Segoe UI',system-ui,sans-serif;letter-spacing:.04em;text-align:center}
+#turn i{display:block;width:44px;height:76px;border:4px solid #3be8ff;box-shadow:0 0 14px #3be8ff88,inset 0 0 10px #3be8ff33;position:relative;animation:turn 2.2s steps(6) infinite}
+#turn i::after{content:'';position:absolute;left:50%;bottom:5px;width:12px;height:4px;margin-left:-6px;background:#ff3fd0}
+#turn p{margin:0;max-width:46vw}
+@keyframes turn{0%,18%{transform:rotate(90deg)}60%,100%{transform:rotate(0)}}
+@media (orientation:landscape) and (pointer:coarse) and (max-height:520px){#turn{display:flex}}
 </style>
 </head>
 <body>
@@ -178,6 +186,7 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
   data-sp-t — ключ словника, data-sp-st — назва етапу, data-em — «ОК» / «...» (етап іде), data-raw — текст як є (NEXI);
   data-tx — розмір (b — як піксель арту, m — 2/3, s — 1/2), data-c — колір, data-cs — колір за станом етапу, data-w — ширина
   для переносу (p — ширина батька). [data-st] — значок / рядок етапу (класи on — зроблено, cur — зараз). -->
+<div id="turn" role="alert"><i></i><p data-t="ui.turn"></p></div>
 <div id="splash" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-js="100" data-room="assets/room.webp">
  <i class="sp-stars"></i>
  <button class="sp-retry" type="button" onclick="location.reload()">&#x27F3;</button>
@@ -314,9 +323,9 @@ html,body{margin:0;height:100%;background:#050818;overflow:hidden}
     FILLS.forEach(f => { f.style.transform = 'scaleX(' + S.p.toFixed(4) + ')'; });
     if (RIDER) RIDER.style.transform = 'translateX(' + (S.p * Math.max(0, TW - 2 * RI)).toFixed(1) + 'px)';
   }
-  unit(); addEventListener('resize', unit); pct(0); icons();
+  unit(); addEventListener('resize', unit); addEventListener('pageshow', unit); if (window.visualViewport) visualViewport.addEventListener('resize', unit);   // iPhone: розмір міняється й без події resize pct(0); icons();
   // довго немає руху (щось не завантажилось) — кнопка «оновити»
-  setInterval(() => { if (!S.done && performance.now() - last > 25000) el.classList.add('stall'); }, 2000);
+  setInterval(() => { if (document.hidden) { last = performance.now(); return; } if (!S.done && performance.now() - last > 25000) el.classList.add('stall'); }, 2000);   // згорнута сторінка не вантажиться — це не «зависло»
   // ---------- етап «скрипти»: подія load кожного <script src> (перехоплюємо на document) ----------
   const NJ = +el.getAttribute('data-js') || 50; let nj = 0;
   S.NJ = NJ; document.addEventListener('load', e => { const t = e.target; if (t && t.tagName === 'SCRIPT' && t.src) { S.nj = ++nj; S.set('js', Math.min(.98, nj / NJ)); } }, true);

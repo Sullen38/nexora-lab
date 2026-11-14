@@ -14,7 +14,7 @@
  * частини одного меблю (сидіння і спинка крісла) правильно перекривають Nexi.
  * ========================================================================== */
 NX.loop = {
-  canvas: null, c: null, last: 0, dpr: 1, frames: 0,
+  canvas: null, c: null, last: 0, dpr: 1, frames: 0, vw: 0, vh: 0, chk: 0, tick: 0,
   /** Підготовка без циклу: полотно, розмір екрана (камера, стеля й підлога, layout об'єктів), дотики. js/main.js кличе її
    *  під вітальною заставкою ще до збірки 3D-крил (їм потрібен масштаб екрана); start() — те саме + головний цикл. */
   prep() {
@@ -22,6 +22,13 @@ NX.loop = {
     this.canvas = document.getElementById('world');
     this.c = this.canvas.getContext('2d');
     this.resize(); addEventListener('resize', () => this.resize());
+    // Розмір міг змінитись БЕЗ події resize (iPhone і вбудовані браузери: згорнув / повернувся, панелі браузера, поворот) —
+    // тоді полотно лишалося старого розміру й картинка розтягувалась. Тому стежимо й за самим полотном, і за поверненням на
+    // сторінку: позначаємо «перевір» (this.chk), а frame() за 0.12 с звіряє розмір і перебудовує, якщо він інший.
+    const chk = () => { this.chk = performance.now() || 1; };
+    addEventListener('orientationchange', chk); addEventListener('pageshow', chk); document.addEventListener('visibilitychange', chk);
+    if (window.visualViewport) visualViewport.addEventListener('resize', chk);
+    if (window.ResizeObserver) new ResizeObserver(chk).observe(this.canvas);
     NX.cam.bindInput(this.canvas);
   },
   start() {
@@ -42,9 +49,16 @@ NX.loop = {
     const list = [NX.nexi.layer(), NX.cat.layer()]; objs.forEach(o => o.layers && list.push(...o.layers(t)));
     const L = list.filter(Boolean).sort((a, b) => a.y - b.y); for (let n = 0; n < L.length; n++) { T(); L[n].draw(c, t); yield .65 + .35 * (n + 1) / L.length; }
   },
+  /** Розмір екрана кімнати — справжній розмір полотна на сторінці (воно на весь екран, css/hud.css): малюнок завжди
+   *  рівно в розмір свого полотна, тож розтягнутись не може. */
+  size() { const cv = this.canvas; return [cv.clientWidth || innerWidth, cv.clientHeight || innerHeight]; },
+  /** Телефон лежить боком: гра лише вертикальна — поверх стоїть екран «поверни телефон» (#turn, index.html, той самий
+   *  медіа-запит), а кімнату під нього НЕ перебудовуємо: повернув назад — усе як було, без перезбирання. */
+  turned() { return !!window.matchMedia && matchMedia('(orientation:landscape) and (pointer:coarse) and (max-height:520px)').matches; },
   resize() {
+    if (this.vw && this.turned()) return;
     this.dpr = Math.min(2, devicePixelRatio || 1);   // рідна роздільність екрана (до 2×); чіткість дає картинка кімнати 2× (3072×736)
-    const vw = innerWidth, vh = innerHeight;
+    const [vw, vh] = this.size(); this.vw = vw; this.vh = vh; this.chk = 0;
     this.canvas.width = Math.round(vw * this.dpr); this.canvas.height = Math.round(vh * this.dpr);
     NX.cam.layout(vw, vh);
     NX.room.build();                           // перебудувати стелю/підлогу під новий розмір
@@ -53,6 +67,7 @@ NX.loop = {
   frame() {
     const now = performance.now() / 1000, dt = Math.min(.1, now - this.last); this.last = now; NX.time += dt;
     const t = NX.time, c = this.c;
+    if (this.chk ? now * 1000 - this.chk > 120 : !(++this.tick % 90)) { this.chk = 0; const [w, h] = this.size(); if ((w !== this.vw || h !== this.vh) && !this.turned()) dispatchEvent(new Event('resize')); }   // розмір змінився без події (див. prep) — та сама подія resize для всіх, хто її слухає
     // ---- 1. логіка
     NX.nexi.update(dt, t); NX.cat.update(dt, t);
     Object.values(NX.objects).forEach(o => o.update && o.update(dt, t));
