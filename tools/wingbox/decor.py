@@ -253,7 +253,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             add(it); prev = max(p[0] for p in screen_poly(it)); k += spec[0] not in ('lantern', 'greenhouse')
         # ЗВИСИ з краю плити через фасад (кожна свого виду) — обабіч емблеми
         fb = lambda X: ys(MZ['bot'], W.at(W.a_of(X, MZ['P']), MZ['P'])[0][1])              # низ фасаду на екрані в стовпчику X
-        for k, (X, kind, ln, w) in enumerate(((1436., 'ivy', 17, 13), (1452., 'ceropegia', 15, 11), (1500., 'rhipsalis', 16, 12), (1517., 'aeschynanthus', 17, 13))):
+        for k, (X, kind, ln, w) in enumerate(((1436., 'ivy', 17, 13), (1452., 'ceropegia', 15, 11), (1491., 'rhipsalis', 16, 10), (1521., 'aeschynanthus', 17, 11))):   # (14.11) два праві звиси розсунуто й звужено — не зливаються в одну купу під теплицею
             a = W.a_of(X, MZ['P'] + .6); add(item(W, f'dc_mzs{k}', a, .3, w, MZ['top'] + ln, MZ['top'] - .3, 'dc_spill', inset=MZ['P'] + .6, on=mz(a)['id'], dc=dict(kind=kind, seed=91 + k)))
         # ---------- П2. ВЕРТИКАЛЬНА ФЕРМА NEXI (Декор стін · 13–· 14; власник на · 12 «не подобається мені той екран — що ще можна
         # туди придумати»: обрано «вертикальну ферму»; на · 13: «воно рівне, а має бути як та плитка в перспективі; камерки більше,
@@ -312,13 +312,15 @@ def decor_side(L, sgn, C, R, verbose=True):
             y0 = fb(X) + (.6 if frm == 'edge' else 0.); y1 = min(y0 + ln, min(free_y(X + dx) for dx in (-w / 2 - 5, -w / 2, -w / 4, 0, w / 4, w / 2, w / 2 + 5)) - 1.5)
             a = W.a_of(X, MZ['P'] - 1.5); (x, z), _, _ = W.at(a, MZ['P'] - 1.5)
             hang(id, X, y0 - (1.2 if frm != 'edge' else 0.), y1, kind, w=w, inset=MZ['P'] - 1.5, frm=frm, anch=round(MZ['bot'], 2), **kw); out[-1]['on'] = mz(a)['id']; return out[-1]
-        for k, (X, kind, ln, w) in enumerate(((1426., 'pearls', 30, 15), (1587., 'tradescantia', 46, 15), (1466., 'wisteria', 22, 13), (1480., 'hoya', 24, 13))):
+        for k, (X, kind, ln, w) in enumerate(((1426., 'pearls', 30, 15), (1587., 'tradescantia', 46, 15), (1459., 'wisteria', 22, 12), (1476., 'hoya', 24, 12))):   # (14.11) гліцинія й хоя — далі одна від одної й від кокедам
             under(f'dc_mzv{k}', X, kind, w, ln, seed=41 + k)
         KK = []
         for k, (X, ln, kind, pot) in enumerate(((1495., 31., 'asplenium', 'koke-pink'), (1508., 39., 'peperomia', 'koke-gold'), (1523., 36., 'fittonia', 'koke-cyan'))):
             KK.append(under(f'dc_kk{k}', X, kind, 11., ln, frm='string', seed=131 + k, pot=pot_of(pot, 7.5, 7.5)))   # (· 26) кокедами більші (8.6 -> 11)
-        hangR = under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('macrame', 7, 7))
-        under('dc_hp3', 1567., 'columnea', 12., 44., frm='ring', seed=171, pot=dict(shape='ring', mat='chrome', band='pink', name='ring-neon', pw=5.5, ph=4))
+        # (14.11, власник — скрін з обведеними місцями, «так» на список) потос: замість білої кулі (з-під листя стирчала «тарілка») —
+        # плетений кошик у макраме; колумнея: замість неонового кільця з хромованою чашкою — рожевий вазон-конус у макраме
+        hangR = under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('basket', 8.5, 6.5))
+        under('dc_hp3', 1568., 'columnea', 12., 44., frm='hook', seed=171, pot=pot_of('pink', 6.5, 6.5))
         # ---------- (· 5) СВІТЛО Й ПОВІТРЯ: конуси світла з точкових світильників на споді антресолі (кожні 23 од. уздовж фасаду, за
         # 4.6 од. від краю — як у objects/dc_paint.js) — униз, поки не дійдуть до поля над зонами (живе: objects/decor_live.js)
         cones = []

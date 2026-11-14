@@ -112,13 +112,17 @@ NX.arc = NX.arc || {};
           return ramp(Pm, (gap ? .1 : over ? .62 : .4) * cylK * L + (over ? (1 - Math.abs(((x / 1.05) % 1) - .5) * 2) * .1 : 0), i, j); }; });
       draw(cyl(pw * 1.1, yb - ph, yb - ph + 1.1), .48);
       G.partF(cyl(pw * 1.02, yb - ph - .6, yb - ph + .1, { kt: .9 }), Fc => Fc.k === 'side' ? (u, v, i, j) => hash(i, j) > .45 ? ramp(pal(['#1a0e06', '#3a220e', '#5a3a1a']), .5 + hash(j, i) * .4, i, j) : 0 : null);   // кокосові волокна над обідком
-    } else if (shp === 'moss') {                                                        // КОКЕДАМА: мохова куля, обв'язана кольоровим шнуром
-      const y0 = yb - ph, k = [[.62, .97], [.97, 1], [1, .86], [.86, .45]], sc = STRING[band] || STRING.pink;
+    } else if (shp === 'moss') {                                                        // КОКЕДАМА: мохова куля, обмотана джутовою мотузкою
+      // (14.11, власник: смугасті кулі «якісь не такі» — читались як кавуни) без яскравих неонових поясів: мох пухнастий (світлі
+      // купини, темні западини), мотузка тонка, кольору джуту, йде навскоси навхрест; кольорова лише намистина-вузлик зверху.
+      const y0 = yb - ph, k = [[.62, .97], [.97, 1], [1, .86], [.86, .45]], sc = STRING[band] || STRING.pink, JUTE = pal(['#4a341c', '#9a7646', '#d8b47a']);
       k.forEach(([kt, kb], n) => G.partF(cyl(pw, y0 + ph * n / 4, y0 + ph * (n + 1) / 4, { kt, kb }), Fc => {
         if ((n > 0 && Fc.k === 'top') || (n < 3 && Fc.k === 'bottom')) return null; const L = lit(Fc.n, A.centre(Fc)), cylK = Fc.k === 'side' ? .78 + .3 * Math.max(-.6, Math.cos(Fc.ang - Math.PI * 1.5 - .5)) : .7;
         return (u, v, i, j) => { const y = (n + v) / 4, x = Fc.k === 'side' ? Fc.ui + u * Fc.un : u;
-          if (Math.abs(y - .4) < .03 || Math.abs(y - .64) < .03 || (Math.abs(x - .5) < .018 && y > .3)) return sc;
-          return ramp(Pm, (.42 + (hash(i >> 1, j >> 1) - .5) * .4) * cylK * L + (1 - y) * .1, i, j); }; }));
+          if (Fc.k === 'side') { const d1 = (x * 6 + y * 2.4) % 1, d2 = (x * 6 - y * 2.4 + 8) % 1; if (Math.abs(d1 - .5) < .045 || Math.abs(d2 - .5) < .045) return ramp(JUTE, (.45 + (1 - y) * .35) * cylK * L, i, j); }
+          if (n === 0 && y < .05) return sc;                                                                                // намистина-вузлик кольору шнура
+          const tuft = hash(i >> 1, j >> 1), fine = hash(i, j);
+          return ramp(Pm, (.34 + (tuft - .5) * .5 + (fine > .82 ? .22 : fine < .12 ? -.16 : 0)) * cylK * L + (1 - y) * .14, i, j); }; }));
     }
   }
   /** Спрайт (рослина / статуетка) -> пласка грань лицем до глядача у прямокутнику світу (cx, cz, yt..yb, ширина w);
