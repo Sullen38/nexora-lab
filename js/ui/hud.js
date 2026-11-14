@@ -7,7 +7,27 @@
  * ========================================================================== */
 NX.ui.hud = {
   $: id => document.getElementById(id), typed: null,
-  init() { this.applyLang(); },
+  init() { this.applyLang(); this.swipe(this.$('result')); },
+  /** СВАЙП ПО ПОВІДОМЛЕННЮ (власник, 14.11): картку результату можна потягнути пальцем чи мишею в будь-який бік — вона
+   *  їде за пальцем і блідне; відтягнув далі ніж на 48 пікс. (або швидко змахнув) — відлітає в той бік і зникає, менше —
+   *  повертається на місце. Сама картка, її текст і 7 секунд показу — js/ui/zones.js (result), стилі — css/hud.css (.result). */
+  swipe(el) {
+    if (!el) return;
+    let d = null;                                                    // поточний жест: старт, зсув, час
+    const put = (x, y, o, tr) => { el.style.transition = tr; el.style.transform = `translate(${x}px,${y}px)`; el.style.opacity = o; };
+    const clear = () => { el.style.transition = 'none'; el.style.transform = ''; el.style.opacity = ''; void el.offsetWidth; el.style.transition = ''; };   // назад до стилів із css/hud.css, без «перельоту»
+    el.addEventListener('pointerdown', e => { if (!el.classList.contains('show')) return; d = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0, t: performance.now() }; try { el.setPointerCapture(e.pointerId); } catch (_) {} });
+    el.addEventListener('pointermove', e => { if (!d || e.pointerId !== d.id) return; d.dx = e.clientX - d.x; d.dy = e.clientY - d.y; put(d.dx, d.dy, Math.max(.5, 1 - Math.hypot(d.dx, d.dy) / 400), 'none'); });
+    const end = e => {
+      if (!d || e.pointerId !== d.id) return; const g = d, L = Math.hypot(g.dx, g.dy), fast = L > 14 && L / Math.max(1, performance.now() - g.t) > .5; d = null;
+      if (!el.classList.contains('show')) { clear(); return; }                              // картка вже сама сховалась (7 с)
+      if (e.type === 'pointercancel' || !(L > 48 || fast)) { put(0, 0, 1, 'transform .2s,opacity .2s'); setTimeout(() => { if (!d) clear(); }, 220); return; }   // замало — назад на місце
+      const k = Math.max(innerWidth, innerHeight) / L;                                      // відлітає за край у бік руху
+      put(g.dx * k, g.dy * k, 0, 'transform .28s ease-in,opacity .22s'); el.style.pointerEvents = 'none';
+      setTimeout(() => { el.classList.remove('show'); el.style.pointerEvents = ''; if (!d) clear(); }, 290);
+    };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  },
   /** Перекласти весь HTML-інтерфейс поточною мовою (викликається і при зміні мови). */
   applyLang() {
     const $ = this.$, T = NX.t;
