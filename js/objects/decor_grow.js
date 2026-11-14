@@ -28,14 +28,15 @@
   /** Точки на суцільних пікселях спрайта виду: [{u, v}] у частках ширини / висоти спрайта (верхні 10–60 % висоти). */
   function anchors(kind, n, seed) {
     const sp = NX.arc.dcSpec && NX.arc.dcSpec[kind], r = sp && NX.arc.dcPlant(sp); if (!r) return [];
-    const out = []; for (let k = 0; k < 60 && out.length < n; k++) { const u = .12 + hash(k, seed) * .76, v = .1 + hash(k + 7, seed) * .5, i = Math.min(r.sw - 1, (u * r.sw) | 0), j = Math.min(r.sh - 1, (v * r.sh) | 0);
-      if ((r.d[j * r.sw + i] >>> 24) > 200 && !out.some(q => Math.abs(q.u - u) < .16 && Math.abs(q.v - v) < .16)) out.push({ u, v, s: .8 + hash(k, seed + 1) * .5 }); }
+    const out = []; for (let k = 0; k < 60 && out.length < n; k++) { const u = .14 + hash(k, seed) * .72, v = .2 + hash(k + 7, seed) * .45, i = Math.min(r.sw - 1, (u * r.sw) | 0), j = Math.min(r.sh - 1, (v * r.sh) | 0);
+      const solid = (di, dj) => { const x = i + di, y = j + dj; return x >= 0 && y >= 0 && x < r.sw && y < r.sh && (r.d[y * r.sw + x] >>> 24) > 200; };   // (14.11) точка — у гущі листя: суцільно і вище, і з боків
+      if (solid(0, 0) && solid(0, -3) && solid(-2, 0) && solid(2, 0) && solid(0, 2) && !out.some(q => Math.abs(q.u - u) < .16 && Math.abs(q.v - v) < .16)) out.push({ u, v, s: .8 + hash(k, seed + 1) * .5 }); }
     return out;
   }
   /** Полили рослину id (предмет розкладки) у час t. */
   function water(id, t = NX.time) {
     const kind = kindOf(id); if (!kind || !(kind in FL)) return; const cur = ST[kind]; if (cur && t - cur.t0 < COOL) return;
-    const seed = Math.floor(t * 7) % 97 + 3, fl = FL[kind], spr = anchors(kind, 3, seed).map(p => Object.assign(p, { kind: 'sprout' })), flw = fl ? anchors(kind, 2 + (hash(seed, 2) > .5 ? 1 : 0), seed + 40).map(p => Object.assign(p, { kind: 'flower' })) : [];
+    const seed = Math.floor(t * 7) % 97 + 3, fl = FL[kind], spr = anchors(kind, 2, seed).map(p => Object.assign(p, { kind: 'sprout' })), flw = fl ? anchors(kind, 2 + (hash(seed, 2) > .5 ? 1 : 0), seed + 40).map(p => Object.assign(p, { kind: 'flower' })) : [];
     ST[kind] = { id, kind, t0: t, pts: spr.concat(flw), fl };
   }
   /** Стан виду для картки: 'sprout' | 'bloom' | null. */
@@ -45,21 +46,25 @@
     const DL = NX.decorLive, L = DL && DL.LP.find(q => q.key === s.id);
     if (L && DL.plantPt) { const W = L.sw * L.U, H = L.hpx * L.U; return DL.plantPt(L, u * W, v * H); }
     const G = NX.decorGuide && NX.decorGuide.statics().find(q => q.kind === s.kind); if (!G) return null;
-    return [G.x0 + (G.x1 - G.x0) * u, G.y0 + (G.y1 - G.y0) * v];
+    return [G.x0 + (G.x1 - G.x0) * (.5 + (u - .5) * .5), G.y0 + (G.y1 - G.y0) * (.5 + (v - .5) * .45)];   // (14.11) нерухома рослина: коробка предмета ширша за листя (шнур, вазон) — тримаємось її середини
   }
   const px = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
-  function drawSprout(c, x, y, k, t, ph) {                                              // пара світлих листочків на стебельці, розгортаються (k 0..1)
-    const h = 4.2 * k, sw = .4 + Math.sin(t * 2 + ph) * .2; px(c, x - .3, y - h, .6, h, '#3a9a4a');
-    const lw = 2.1 * k; px(c, x - lw - sw, y - h + .2, lw, .9, '#9aff8a'); px(c, x + sw, y - h - .2, lw, .9, '#c8ff9a'); px(c, x - lw * .6 - sw, y - h + .1, .5, .3, '#e8ffd0'); px(c, x + sw + lw * .5, y - h - .3, .5, .3, '#ffffff');
+  // (14.11, власник — скрін антресолі: «щось багато незрозумілого, якось все дивно намішано… коли приближаєш, видно купу косяків»)
+  // Паростки й квіти були великими світлими «Т» та білими «свічками», що стирчали над рослинами. Тепер паросток — два маленькі
+  // свіжо-зелені листочки в гущі листя (2 од. заввишки), квіти — низькі, у формі квітки (трубчасті — гроно з трьох дзвоників, а не
+  // паличка), і ростуть лише з точок, довкола яких теж листя (anchors).
+  function drawSprout(c, x, y, k, t, ph) {                                              // пара свіжих листочків на короткому стебельці, розгортаються (k 0..1)
+    const h = 2 * k, sw = .2 + Math.sin(t * 2 + ph) * .12; px(c, x - .2, y - h, .4, h, '#2f8a3f');
+    const lw = 1.2 * k; px(c, x - lw - sw, y - h + .1, lw, .6, '#5fd46a'); px(c, x + sw, y - h - .15, lw, .6, '#7fe07a'); px(c, x + sw + lw * .55, y - h - .15, .35, .3, '#c8ffb0');
   }
   function drawFlower(c, x, y, k, fl, t, ph) {                                          // бутон -> квітка (k 0..1): форма на вид
-    const [pc, cc, shape] = fl, r = (1.1 + 1.9 * k), bud = k < .35;
-    px(c, x - .25, y, .5, 1.4, '#2a7a3a');                                              // квітконіжка
+    const [pc, cc, shape] = fl, r = (.8 + 1.1 * k), bud = k < .35;
+    px(c, x - .2, y - .2, .4, .8, '#2a7a3a');                                            // квітконіжка — коротка, ховається в листі
     if (bud) { px(c, x - .6, y - 1.2, 1.2, 1.4, '#6ac86a'); px(c, x - .3, y - 1.6, .6, .6, pc); return; }
     if (shape === 'daisy' || shape === 'star') { const n = shape === 'star' ? 5 : 8; for (let q = 0; q < n; q++) { const a = q / n * TAU + ph * .1, l = r * (shape === 'star' ? 1.2 : 1); px(c, x + Math.cos(a) * l - .45, y - 1 + Math.sin(a) * l * .8 - .45, .9, .9, pc); } px(c, x - .6, y - 1.6, 1.2, 1.2, cc); }
     else if (shape === 'bell') { px(c, x - r * .7, y - 1.6, r * 1.4, r * 1.1, pc); px(c, x - r * .9, y - .6, r * 1.8, .6, pc); px(c, x - .3, y - .3, .6, .4, cc); }
-    else if (shape === 'spathe') { px(c, x - r * .35, y - 1.7 * r, r * .7, 1.7 * r, pc); px(c, x - .2, y - 1.5 * r, .4, 1.1 * r, cc); px(c, x - r * .15, y - 1.9 * r, r * .3, .3, pc); }
-    else { px(c, x - .45, y - 2 * r, .9, 2 * r, pc); px(c, x - .8, y - 2 * r - .3, 1.6, .7, pc); px(c, x - .25, y - 2 * r - .2, .5, .4, cc); }   // tube
+    else if (shape === 'spathe') { px(c, x - r * .45, y - 1.25 * r, r * .9, 1.25 * r, pc); px(c, x - r * .25, y - 1.5 * r, r * .5, .4, pc); px(c, x - .2, y - 1.05 * r, .4, .8 * r, cc); }
+    else { for (const [dx, dy] of [[-1, 0], [0, -.7], [1, -.1]]) { px(c, x + dx * r * .8 - .45, y - 1.3 + dy * r - .45, .9, 1.1, pc); px(c, x + dx * r * .8 - .6, y - .5 + dy * r, 1.2, .35, pc); px(c, x + dx * r * .8 - .15, y - .3 + dy * r, .3, .3, cc); } }   // tube — гроно з трьох дзвоників
     if (k > .6 && Math.sin(t * 7 + ph) > .9) { c.globalAlpha = .9; px(c, x + Math.cos(ph) * r * 1.4 - .25, y - 1 + Math.sin(ph) * r - .25, .5, .5, '#ffffff'); c.globalAlpha = 1; }   // іскра
   }
   function draw(c, t, vx0, vx1) {
