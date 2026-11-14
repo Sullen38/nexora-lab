@@ -43,9 +43,12 @@ NX.nexi = {
    *            високий стрибок через них);
    *    jet   — підліт на ранці дугою з бірюзовим слідом;
    *    tp    — телепорт: тане зі спіном, зелена комета летить до місця, з'являється там;
-   *    flash — (власник, 13.11: «щоб він ще іноді як флеш міг рухатися і блискавку після себе лишати») надшвидкий біг: за ним
-   *            лишається ламана жовто-біла блискавка з відгалуженнями (мерехтить і гасне за 0,7 с) і напівпрозорі «відбитки»
-   *            самого Nexi; на фініші — спалах іскор (в обхід меблів);
+   *    flash — (власник, 13.11: «щоб він ще іноді як флеш міг рухатися і блискавку після себе лишати»; 14.11: «ефект флеш треба
+   *            зробити більш прикольно, щоб більше блискавку нагадувало») надшвидкий біг-розряд: на старті в Nexi б'є блискавка
+   *            згори; за ним тягнеться справжній розряд — гострий зигзаг із білим осердям і жовтим сяйвом, другою тонкою
+   *            жилою та розгалуженнями, що «тріщить» (форма перемальовується 18 разів на секунду) й гасне за 0,8 с; довкола
+   *            самого Nexi стрибають дуги й світиться ореол; напівпрозорі відбитки; на фініші — розряд у підлогу: дуги на всі
+   *            боки, кільце, іскри, ще пів секунди по ньому пробігають дуги (в обхід меблів);
    *    blink — мерехтіння: черга миттєвих коротких стрибків зигзагом (крок ≈ 64 од.), на кожному місці лишається фіолетовий
    *            відбиток;
    *    twist — вихор: мчить, крутячись дзиґою, довкола кружляють частинки (в обхід меблів).
@@ -62,7 +65,7 @@ NX.nexi = {
   MOVE_V: { dash: 430, slide: 470, roll: 400, twist: 430, flash: 950, leap: 400, jet: 430 }, MOVE_T: { flash: [.28, .7], def: [.35, 1.2] },
   moveTime(st, L) { const [a, b] = this.MOVE_T[st] || this.MOVE_T.def; return Math.max(a, Math.min(b, L / this.MOVE_V[st])); },
   EZ(q) { return q < .5 ? 2 * q * q : 1 - 2 * (1 - q) * (1 - q); },
-  MOVES: ['dash', 'slide', 'roll', 'leap', 'jet', 'tp', 'flash', 'blink', 'twist'], bolt: [], ghosts: [], MOVE_MIN: 70, moveBag: [], moveLast: null,
+  MOVES: ['dash', 'slide', 'roll', 'leap', 'jet', 'tp', 'flash', 'blink', 'twist'], bolt: [], ghosts: [], zaps: [], zapUntil: 0, MOVE_MIN: 70, moveBag: [], moveLast: null,
   nextMove() {
     if (this.forceMove) return this.forceMove;
     if (!this.moveBag.length) { const b = [...this.MOVES]; for (let i = b.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [b[i], b[j]] = [b[j], b[i]]; }
@@ -112,13 +115,30 @@ NX.nexi = {
     F.emit('energy', x, y + 4, { vy: -30, col, ttl: .3, h: 8 }); if (r() < .6) F.emit('spark', x, y, { col, vx: -d * (30 + r() * 60), vy: (r() - .5) * 60, g: 40, ttl: .45 });
     if (q > .7) F.emit('energy', a.tp[0] + (r() - .5) * 20, a.tp[1] - r() * 30, { vy: -40, col, ttl: .35 });                  // місце появи вже світиться
   },
+  /** Одна гілка блискавки від (x0,y0) до (x1,y1): гострий зигзаг (злами — упоперек, по черзі в різні боки; seed — форма),
+   *  три проходи: широке жовте сяйво, жовта жила, біле осердя. w — товщина, al — прозорість. Малюється адитивно. */
+  zap(c, x0, y0, x1, y1, seed, amp, w, al, lite) {
+    const L = Math.hypot(x1 - x0, y1 - y0) || 1, n = Math.max(2, Math.min(12, Math.round(L / 9))), nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
+    c.beginPath(); c.moveTo(x0, y0);
+    for (let i = 1; i < n; i++) { const v = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453, h = v - Math.floor(v), k = i / n + (h - .5) * .5 / n, o = (i % 2 ? 1 : -1) * (.3 + .7 * h) * amp; c.lineTo(x0 + (x1 - x0) * k + nx * o, y0 + (y1 - y0) * k + ny * o); }
+    c.lineTo(x1, y1);
+    if (!lite) { c.lineWidth = Math.max(1, w * 5.5); c.strokeStyle = '#ffb52e'; c.globalAlpha = al * .22; c.stroke(); }                 // lite (старий хвіст, гілочки) — без широкого сяйва
+    c.lineWidth = Math.max(.8, w * 2.4); c.strokeStyle = '#ffe27a'; c.globalAlpha = al * .85; c.stroke();
+    c.lineWidth = Math.max(.6, w); c.strokeStyle = '#ffffff'; c.globalAlpha = al; c.stroke();
+  },
+  /** Окремий розряд (удар згори, дуги у підлогу) — живе ttl с. */
+  addZap(x0, y0, x1, y1, ttl, amp, w) { this.zaps.push({ x0, y0, x1, y1, t: NX.time, ttl, amp, w, sd: Math.random() * 99 }); },
   /** Частинки «флеша» й вихору (d — напрям руху). Сама блискавка й відбитки — у layer() (bolt, ghosts). */
   styleFx(a, sty, d) {
     const r = Math.random, F = NX.fx, s = NX.room.scaleAt(Math.max(this.y, 352)) / 1.45, T = NX.time;
     if (sty === 'flash') {
       const B = this.bolt, L = B[B.length - 1];
-      if (!L || L.a !== a) B.push({ x: a.from[0], y: a.from[1] - 18 * s, t: T, a });                                              // початок блискавки — де стояв
-      else if (Math.abs(this.x - L.x) + Math.abs(this.y - (L.gy || L.y)) > 16 * s) B.push({ x: this.x + (r() - .5) * 6, y: this.y - (5 + r() * 30) * s, gy: this.y, t: T, a, br: r() < .35 ? [(r() - .5) * 26 * s, (r() < .5 ? -1 : 1) * (8 + r() * 14) * s] : null });   // злам; іноді — відгалуження
+      if (!L || L.a !== a) { B.push({ x: a.from[0], y: a.from[1] - 20 * s, t: T, a });                                              // початок розряду — де стояв; у нього б'є блискавка згори
+        const fx = a.from[0], fy = a.from[1]; this.addZap(fx + (r() - .5) * 60, fy - 300 * s, fx, fy - 30 * s, .26, 9 * s, 1.5); this.addZap(fx + (r() - .5) * 90, fy - 230 * s, fx, fy - 20 * s, .2, 7 * s, .9);
+        F.emit('ring', fx, fy, { col: '#ffe27a', r0: 4, gr: 60 }); for (let i = 0; i < 10; i++) F.emit('spark', fx, fy - r() * 24 * s, { vx: (r() - .5) * 200, vy: -30 - r() * 100, col: r() < .6 ? '#ffe27a' : '#ffffff', ttl: .4 }); }
+      else if (Math.abs(this.x - L.x) + Math.abs(this.y - (L.gy || L.y)) > 24 * s) B.push({ x: this.x, y: this.y - (8 + r() * 28) * s, gy: this.y, t: T, a, sd: r() * 99,
+        br: r() < .5 ? [-d * (10 + r() * 30) * s, (r() < .5 ? -1 : 1) * (16 + r() * 26) * s] : null });                                                     // вузол розряду; у половини — розгалуження назад-убік
+      this.zapUntil = T + .12;
       if (T - (this.ghT || 0) > .035) { this.ghT = T; this.ghosts.push({ x: this.x, y: this.y, d: this.dir, t: T, ttl: .28 }); }
       if (r() < .6) F.emit('spark', this.x - d * 6 * s, this.y - r() * 30 * s, { vx: -d * (40 + r() * 90), vy: (r() - .5) * 70, g: 30, ttl: .3, col: r() < .6 ? '#ffe27a' : '#ffffff' });
       F.emit('line', this.x - d * (8 + r() * 14) * s, this.y - (4 + r() * 30) * s, { w: Math.max(6, (14 + r() * 16) * s | 0), vx: -d * 40, col: r() < .5 ? '#ffe27a' : '#fff6c9' });
@@ -243,7 +263,9 @@ NX.nexi = {
       if (sty === 'twist') this.dir = Math.floor(a._t * 16) % 2 ? 1 : -1;
       if (q < 1) return false;
       const [tx, ty] = a.walk; this.x = tx; this.y = this.gy = ty; this.roll = 0; this.board = false; if (a.d) this.dir = a.d; NX.nexiPhys.land(sty === 'flash' ? 3.2 : 2.4); for (let j = 0; j < 6; j++) NX.fx.emit('dust', tx, ty);
-      if (sty === 'flash') { this.bolt.push({ x: tx, y: ty - 18 * NX.room.scaleAt(ty) / 1.45, t: NX.time, a }); NX.fx.emit('ring', tx, ty, { col: '#ffe27a', r0: 4, gr: 56 }); for (let j = 0; j < 12; j++) NX.fx.emit('spark', tx, ty - Math.random() * 30, { vx: (Math.random() - .5) * 160, vy: -20 - Math.random() * 90, col: Math.random() < .6 ? '#ffe27a' : '#ffffff', ttl: .45 }); this.emote('cool', 1.6); }
+      if (sty === 'flash') { this.bolt.push({ x: tx, y: ty - 18 * NX.room.scaleAt(ty) / 1.45, t: NX.time, a }); NX.fx.emit('ring', tx, ty, { col: '#ffe27a', r0: 4, gr: 56 }); for (let j = 0; j < 12; j++) NX.fx.emit('spark', tx, ty - Math.random() * 30, { vx: (Math.random() - .5) * 160, vy: -20 - Math.random() * 90, col: Math.random() < .6 ? '#ffe27a' : '#ffffff', ttl: .45 });
+        const zs = NX.room.scaleAt(ty) / 1.45; for (let j = 0; j < 6; j++) { const an = j / 6 * 6.283 + Math.random() * .6, R = (34 + Math.random() * 34) * zs; this.addZap(tx, ty - 3 * zs, tx + Math.cos(an) * R, ty - 3 * zs + Math.sin(an) * R * .38, .3 + Math.random() * .15, 5 * zs, .9); }   // розряд у підлогу — дуги на всі боки
+        this.zapUntil = NX.time + .55; this.emote('cool', 1.6); }
       return true;
     }
     if (a.walk) {
@@ -395,11 +417,21 @@ NX.nexi = {
       if (this.comet) { const [cx, cy, kd] = this.comet, sr = sr0, col = { ai: 'rgba(59,232,255,.9)', party: 'rgba(217,75,255,.9)', floor: 'rgba(59,255,138,.9)' }[kd] || 'rgba(255,122,240,.9)';   // комета телепорту: світне ядро
         NX.px.glow(c, cx, cy, 44 * sr, col, .9); NX.px.glow(c, cx, cy, 16 * sr, 'rgba(255,255,255,.9)', .9); c.save(); c.fillStyle = '#ffffff'; c.beginPath(); c.ellipse(cx, cy, 8 * sr, 4 * sr, 0, 0, 7); c.fill(); c.restore(); }
       const NT = NX.time;
-      if (this.bolt.length) { this.bolt = this.bolt.filter(b => NT - b.t < .7);                                                  // БЛИСКАВКА «флеша»: ламана з відгалуженнями, мерехтить і гасне
-        const B = this.bolt; c.save(); c.lineJoin = 'miter'; c.lineCap = 'butt';
-        for (const [lw, col, al] of [[9 * sr0, '#ffb52e', .3], [4 * sr0, '#ffe27a', .85], [1.6 * sr0, '#ffffff', 1]]) { c.lineWidth = Math.max(.6, lw); c.strokeStyle = col;
-          for (let i = 1; i < B.length; i++) { const q = B[i], o = B[i - 1]; if (q.a !== o.a) continue; const k = 1 - (NT - q.t) / .7, fl = Math.sin(NT * 70 + i * 2.3) > -.5 ? 1 : .35; c.globalAlpha = al * k * fl;
-            c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(q.x, q.y); if (q.br) { c.moveTo(q.x, q.y); c.lineTo(q.x + q.br[0] * .5, q.y + q.br[1] * .6); c.lineTo(q.x + q.br[0], q.y + q.br[1]); } c.stroke(); } }
+      if (this.bolt.length || this.zaps.length) {                                                                                // БЛИСКАВКА «флеша» (zap): слід-розряд, удар згори, дуги у підлогу
+        this.bolt = this.bolt.filter(b => NT - b.t < .8); this.zaps = this.zaps.filter(z => NT - z.t < z.ttl);
+        const B = this.bolt, fr = Math.floor(NT * 18) * 1.37, am = 7 * sr0 * 1.45; c.save(); c.lineJoin = 'miter'; c.miterLimit = 3; c.lineCap = 'butt'; c.globalCompositeOperation = 'lighter';
+        for (let i = 1; i < B.length; i++) { const q = B[i], o = B[i - 1]; if (q.a !== o.a) continue; const k = 1 - (NT - q.t) / .8, hot = k > .75 ? 1.5 : 1, w = (.5 + 1.3 * k) * sr0 * 1.3 * hot, al = Math.min(1, k * 1.6) * (Math.sin(fr * 3.1 + i) > -.75 ? 1 : .4);
+          this.zap(c, o.x, o.y, q.x, q.y, i * 7.13 + fr, am, w, al, k < .45);
+          if (k > .3) { c.beginPath(); const sd = i * 3.7 + fr * 1.9, v = Math.sin(sd) * 43758.5453, h = v - Math.floor(v), my = (o.y + q.y) / 2 + (h - .5) * 34 * sr0 * 1.45; c.moveTo(o.x, o.y + (h - .5) * 10); c.lineTo((o.x + q.x) / 2, my); c.lineTo(q.x, q.y - (h - .5) * 10);   // друга тонка жила — блукає довкола головної
+            c.lineWidth = Math.max(.6, .8 * sr0); c.strokeStyle = '#fff6c9'; c.globalAlpha = .55 * k; c.stroke(); }
+          if (q.br && k > .2) { const bx = q.x + q.br[0], by = q.y + q.br[1]; this.zap(c, q.x, q.y, bx, by, q.sd + fr, am * .7, w * .6, al * .9, true);                      // розгалуження і на ньому ще менше
+            if (q.sd > 50) this.zap(c, (q.x + bx) / 2, (q.y + by) / 2, bx + q.br[0] * .5, by - q.br[1] * .5, q.sd * 2 + fr, am * .5, w * .4, al * .7, true); } }
+        for (const z of this.zaps) { const k = 1 - (NT - z.t) / z.ttl; this.zap(c, z.x0, z.y0, z.x1, z.y1, z.sd + fr, z.amp, z.w * sr0 * 1.3 * (.6 + .8 * k), Math.min(1, k * 2)); }
+        c.restore(); }
+      if (NT < this.zapUntil) { const cx = X, cy = Y - top * .5, fr = Math.floor(NT * 24) * 2.71, R = 26 * sr0 * 1.45; NX.px.glow(c, cx, cy, 46 * sr0 * 1.45, 'rgba(255,214,90,.5)', this.alpha);   // ореол і дуги довкола Nexi
+        c.save(); c.lineJoin = 'miter'; c.miterLimit = 3; c.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 3; i++) { const v = Math.sin(fr + i * 5.3) * 43758.5453, an = (v - Math.floor(v)) * 6.283, v2 = Math.sin(fr * 1.7 + i) * 43758.5453, an2 = an + 1.2 + (v2 - Math.floor(v2)) * 1.6;
+          this.zap(c, cx + Math.cos(an) * R * .75, cy + Math.sin(an) * R, cx + Math.cos(an2) * R * .75, cy + Math.sin(an2) * R, fr + i * 9, 5 * sr0 * 1.45, .7 * sr0 * 1.3, .9); }
         c.restore(); }
       if (this.ghosts.length) { this.ghosts = this.ghosts.filter(g => NT - g.t < g.ttl); c.save(); c.imageSmoothingEnabled = false;   // відбитки Nexi (флеш, мерехтіння)
         for (const g of this.ghosts) { const gs = NX.room.scaleAt(Math.max(g.y, 352)) * SPRITE_K, gw = SW * gs, gh = SH * gs, k = 1 - (NT - g.t) / g.ttl; c.globalAlpha = (g.col ? .55 : .38) * k;
