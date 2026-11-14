@@ -104,14 +104,15 @@ NX.arc = NX.arc || {};
   const CACHE = new Map(), SPEC = NX.arc.dcSpec = {};                                  // (· 18) spec кожного виду (objects/decor_guide.js)
   /** spec: {kind, w, h, seed, pal, hang, leaves}. Основа — посередині внизу спрайта (hang — угорі: ліана, непентес). */
   function dcPlant(sp) {
-    if (!sp.snap) SPEC[sp.kind] = sp;                                                  // (· 18) спрайт виду для довідника ботаніка
-    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap, sp.lit || 1, sp.hz || 0, sp.pad || 0].join('|');   // (· 24) lit — бік світла, hz — серпанок за глибиною
+    if (!sp.snap && !sp.u) SPEC[sp.kind] = sp;                                         // (· 18) спрайт виду для довідника ботаніка
+    const UU = sp.u || U;                                                              // (15.11) u — щільніший растр для картки довідника (objects/decor_guide.js): та сама рослина, дрібніший піксель
+    const key = [sp.kind, sp.w, sp.h, sp.seed, sp.pal, sp.hang ? 1 : 0, sp.leaves, sp.snap, sp.lit || 1, sp.hz || 0, sp.pad || 0, UU].join('|');   // (· 24) lit — бік світла, hz — серпанок за глибиною
     let r = CACHE.get(key); if (r) return r;
-    const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, pad = sp.pad || 0, S = F.Sheet(-pad, -pad, W + pad, H, U);   // (· 33) pad — поле навколо (вазони: листя не зрізається)
+    const W = sp.w, H = sp.h, seed = sp.seed || 1, k0 = sp.kind, pad = sp.pad || 0, S = F.Sheet(-pad, -pad, W + pad, H, UU);   // (· 33) pad — поле навколо (вазони: листя не зрізається)
     if (OWN[k0]) OWN[k0](S, W, H, seed, sp);
     else v3(S, W, H, seed, sp);
     volume(S.r, sp);
-    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U, pad, meta: S.meta || null }; CACHE.set(key, r); return r;
+    r = { d: new Uint32Array(S.r.d.buffer), sw: S.W, sh: S.H, W, H, U: UU, pad, meta: S.meta || null }; CACHE.set(key, r); return r;
   }
   /** (· 17) ОБ'ЄМ для кожної рослини (власник: «пишніші, живіші, більше об'ємності»): глибина силуету (відстань до прозорого —
    *  ерозія в 5 кроків): усередині куща темніше (затінок між листям), край — як було; ВЕРХНІ й ЛІВІ краї (світло від вікна зліва

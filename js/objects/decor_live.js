@@ -200,7 +200,7 @@
     c.save(); c.globalCompositeOperation = 'lighter';
     F.forEach(([fu, fY, fr], k) => {
       const p = proj(P(fu, -.1, fY + fr * .15)), r = fr * 2.3 * s * (1 + boost * .9);
-      c.globalAlpha = Math.min(1, .2 + .14 * Math.sin(t * 1.3 + k * 2.1) + .55 * boost); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2);
+      c.globalAlpha = Math.min(1, .2 + .14 * Math.sin(t * 1.3 + k * 2.1) + .55 * boost + .3 * (NX.daylight ? 1 - NX.daylight.v(t) : 0)); c.drawImage(g.cv, p[0] - r, p[1] - r, r * 2, r * 2);   // (15.11) уночі світяться помітно
       for (let q = 0; q < 5 + (boost > .05 ? 9 : 0); q++) {                               // спори: з-під шапки вгору, хитаючись
         const f = ((t * (.16 + .1 * hash(q, k)) + hash(k, q + 3)) % 1), y = fY + fr * .35 - f * (7 + boost * 7), x = fu + (hash(q, k + 9) - .5) * fr * 1.5 + Math.sin(f * 7 + q) * .7, pp = proj(P(x, -.4 - f * 1.6, y));
         c.globalAlpha = (1 - f) * (.75 + .25 * boost); c.fillStyle = q % 3 ? '#9af6ff' : '#e8ffff'; c.fillRect(pp[0] - .22, pp[1] - .22, .44, .44);

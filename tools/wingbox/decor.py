@@ -187,7 +187,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         Ytop = min(Yw(-7., p[2]) for p in corners(0.))
         PY.update(a0=round(ap - dT(), 3), a1=ap, Yb=round(Yb, 2), Ytop=round(Ytop, 2))
         pyl = item(W, 'dc_pylon', apm, PY['D'], chord(W, ap - dT(), ap) + .3, PY['Yb'], PY['Ytop'], 'dc_pylon', inset=.5, dc=dict(PY, sgn=sgn, C=[round(C[0], 2), round(C[1], 2)], R=R, deck=MZ['top'], plant='shroom',
-                   fungi=[[-3.1, MZ['top'] + 3.5, 2.6], [3.2, MZ['top'] + 6.8, 2.3], [-2.6, MZ['top'] + 10., 2.]]))   # (· 5) світні гриби-трутовики: u, Y, r
+                   fungi=[[-2.3, MZ['top'] + 4.2, 4.], [2.6, MZ['top'] + 9.4, 3.5], [-2.2, MZ['top'] + 14.6, 3.1]]))   # (· 5) світні гриби-трутовики: u, Y, r; (15.11, власник: «де той гриб росте цікавий, я його ніде не бачу») у півтора раза більші й рідше
         add(pyl)
         # вікна на боковій грані (лицем уздовж антресолі, до глядача) — рушій дає маски видимих пікселів (objects/decor.js). Бокова
         # грань — грань коробки пілона (u = ±w/2), глибина від стіни ins = fin − v (fin — де лицьова грань: стрілка хорди + D)

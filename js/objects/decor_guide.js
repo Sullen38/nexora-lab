@@ -70,14 +70,38 @@
   }
 
   // ---------- спрайт виду на полотно картки ----------
+  /** (15.11) Вазон для картки — плаский піксельний малюнок за описом із розкладки (dc.pot: shape, mat, band, pw, ph), q пікселів на
+   *  одиницю: профіль форми, циліндричне світло зліва, світлий обідок, неонова смуга, темний контур; кошик — плетіння, кокедама —
+   *  мох у джуті, сітка — шахові вічка. Той самий вазон, що в кімнаті (там він об'ємний — objects/dc_paint.js potDraw). */
+  const POT_COL = { terra: [184, 100, 42], navy: [22, 50, 142], ceram: [226, 228, 240], dark: [44, 44, 62], chrome: [176, 190, 212], gold: [232, 176, 64], pink: [255, 122, 192], stone: [118, 118, 138], jade: [48, 150, 106], copper: [216, 132, 62],
+    concrete: [94, 94, 114], enamel: [46, 94, 204], wicker: [170, 122, 62], moss: [60, 150, 54], steel: [138, 148, 168] };
+  const BAND_COL = { cyan: '#3be8ff', pink: '#ff6ad8', gold: '#ffd23a', orange: '#ff9a3a', lil: '#c77dff', green: '#3bff8a' };
+  function potCard(Pd, q) {
+    const w = Math.max(6, Math.round(Pd.pw * q)), h = Math.max(5, Math.round(Pd.ph * q)), cv = document.createElement('canvas'); cv.width = w + 2; cv.height = h + 2; const c = cv.getContext('2d'), im = c.createImageData(w + 2, h + 2), d = im.data;
+    const base = POT_COL[Pd.mat] || POT_COL.ceram, shp = Pd.shape, hs = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+    const prof = v => shp === 'taper' ? 1 - .26 * v : shp === 'bowl' ? (v < .5 ? 1 : 1 - .9 * (v - .5) * (v - .5) * 4 * .5) : shp === 'tall' ? .9 : shp === 'cube' ? 1 : shp === 'basket' ? 1 - .3 * v : shp === 'net' ? 1 - .2 * v
+      : Math.sqrt(Math.max(.05, 1 - Math.pow((v - .52) / .56, 2)));                                                              // orb, moss — коло
+    const put = (x, y, r, g, b) => { const i = ((y + 1) * (w + 2) + x + 1) * 4; d[i] = r; d[i + 1] = g; d[i + 2] = b; d[i + 3] = 255; };
+    for (let y = 0; y < h; y++) { const v = (y + .5) / h, hw = prof(v) * w / 2, x0 = Math.round(w / 2 - hw), x1 = Math.round(w / 2 + hw) - 1;
+      for (let x = x0; x <= x1; x++) { const u = (x - x0 + .5) / (x1 - x0 + 1), edge = x === x0 || x === x1 || y === h - 1 || (y === 0 && shp !== 'orb' && shp !== 'moss');
+        let L = .5 + .62 * Math.cos((u - .3) * Math.PI * .95) * .8 + (y < Math.max(1, q * .5) ? .28 : 0) - v * .12;                         // світло зліва, світлий обідок, темніший низ
+        if (shp === 'basket') L *= ((Math.floor(x / Math.max(1, q * .5)) + Math.floor(y / Math.max(1, q * .4))) & 1) ? 1.12 : .78;
+        if (shp === 'net' && ((Math.floor(x / Math.max(1, q * .3)) + Math.floor(y / Math.max(1, q * .3))) & 1) && y > q * .4) L *= .35;
+        if (shp === 'moss') { L += (hs(x >> 1, y >> 1) - .5) * .5 + (hs(x, y) > .82 ? .2 : 0); const d1 = (u * 3 + v * 1.2) % 1, d2 = (u * 3 - v * 1.2 + 4) % 1; if (Math.abs(d1 - .5) < .07 || Math.abs(d2 - .5) < .07) { put(x, y, 200 * L + 30, 160 * L + 20, 100 * L + 10); continue; } }
+        if (Pd.mat === 'stone' || Pd.mat === 'concrete') L += (hs(x >> 1, y >> 1) - .5) * .18;
+        if (edge) L *= .32; L = Math.max(.12, Math.min(1.35, L)); put(x, y, Math.min(255, base[0] * L), Math.min(255, base[1] * L), Math.min(255, base[2] * L)); } }
+    c.putImageData(im, 0, 0);
+    if (Pd.band && BAND_COL[Pd.band] && shp !== 'moss') { const v = shp === 'orb' ? .4 : .34, hw = prof(v) * w / 2, bh = Math.max(1, Math.round(q * .45)); c.fillStyle = BAND_COL[Pd.band]; c.fillRect(Math.round(w / 2 - hw) + 2, 1 + Math.round(h * v), Math.round(hw * 2) - 2, bh); c.globalAlpha = .5; c.fillStyle = '#ffffff'; c.fillRect(Math.round(w / 2 - hw * .5), 1 + Math.round(h * v), Math.round(hw * .5), Math.max(1, bh >> 1)); c.globalAlpha = 1; }
+    return cv;
+  }
   function drawSprite(e, info) {
     const cv = $('guide').querySelector('canvas'); if (!cv) return; const n = CW, R = Math.min(3, Math.max(1, Math.round(devicePixelRatio || 1))); if (e.grp === 'art' || e.grp === 'bot') return; fitCanvas(cv, CW, CH, R);
     const c = cv.getContext('2d'); c.setTransform(R, 0, 0, R, 0, 0); c.clearRect(0, 0, CW, CH); stage(c, 1.2, '#3be8ff'); c.imageSmoothingEnabled = false;   // (· 63) та сама сцена, що в артефактів
-    const fit = (src, pad = 6) => {                                                                          // обрізати порожнє навколо спрайта й вписати в полотно
+    const fit = (src, pad = 6, whole = false) => {                                                            // whole — не різати на фрагмент (рослина з вазоном унизу)                                                                          // обрізати порожнє навколо спрайта й вписати в полотно
       const w = src.width, h = src.height; let x0 = w, y0 = h, x1 = -1, y1 = -1; try { const d = src.getContext('2d').getImageData(0, 0, w, h).data; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch (err) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
       if (x1 < 0) { x0 = y0 = 0; x1 = w - 1; y1 = h - 1; }
       // (14.11, власник: «якщо це якась ліана — то тільки її шматок у картці») довга вузька рослина: беремо верхній фрагмент (висота = 1.5 ширини), низ тане
-      let frag = false; if ((y1 - y0 + 1) > (x1 - x0 + 1) * 1.9) { y1 = y0 + Math.round((x1 - x0 + 1) * 1.5); frag = true; }
+      let frag = false; if (!whole && (y1 - y0 + 1) > (x1 - x0 + 1) * 1.9) { y1 = y0 + Math.round((x1 - x0 + 1) * 1.5); frag = true; }
       const sw = x1 - x0 + 1, sh = y1 - y0 + 1, aw = CW - 16 - pad * 2, ah = PY - 8 - pad; let k = Math.min(aw / sw, ah / sh, 6); if (k > 1) k = Math.floor(k * R) / R;   /* цілі пікселі екрана — без каші */
       const dw = sw * k, dh = sh * k; c.globalAlpha = .28; c.fillStyle = '#05020f'; c.beginPath(); c.ellipse(CW / 2, PY, Math.min(34, dw * .4), 3, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1;
       if (!frag) { c.drawImage(src, x0, y0, sw, sh, Math.round((CW - dw) / 2), Math.round(PY - 2 - dh - Math.max(0, (ah - dh) * .35)), dw, dh); return; }
@@ -91,8 +115,19 @@
         const r = NX.arc.dcPlant({ kind: p.kind, w: p.w, h: p.h, seed: p.seed, lit: 1, pad: 14 }); if (!r) return;
         const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
       if (e.grp === 'wall' && NX.decorVines && NX.decorVines.has(e.kind)) { fit(NX.decorVines.sprite(e.kind), 3); return; }   // (· 57) ліана між сотами — власний спрайт
-      if (e.grp === 'wall') { const sp = (NX.arc.dcSpec && NX.arc.dcSpec[e.kind]) || { kind: e.kind, w: 16, h: 14, seed: 8, lit: 1, pad: 8 }, r = NX.arc.dcPlant(sp); if (!r) return;   // (14.11) виду нема серед предметів розкладки (гриби пілона) — спрайт за типовим розміром
-        const o = document.createElement('canvas'); o.width = r.sw; o.height = r.sh; const oc = o.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); fit(o, 4); return; }
+      if (e.grp === 'wall') { const sp0 = (NX.arc.dcSpec && NX.arc.dcSpec[e.kind]) || { kind: e.kind, w: 16, h: 14, seed: 8, lit: 1, pad: 8 };   // (14.11) виду нема серед предметів розкладки (гриби пілона) — спрайт за типовим розміром
+        // (15.11, власник: «якщо рослина в горщечку прикольному — він теж має відображатися в карточці… передивися всі рослини під рендер»)
+        // малюнок для картки — окремий: та сама рослина вдвічі щільнішим растром (u), разом зі своїм вазоном (potCard)
+        const r = NX.arc.dcPlant(Object.assign({}, sp0, { u: .125 })); if (!r) return; const q = 1 / r.U;                             // q — пікселів на одиницю
+        const B = (NX.decor.items || []).find(b => b.dc && b.dc.kind === e.kind && b.dc.pot && (b.st === 'dc_pot' || b.st === 'dc_hang')), Pd = B && B.dc.pot, frm = B ? (B.st === 'dc_pot' ? 'pot' : B.dc.frm) : null;
+        const spr = document.createElement('canvas'); spr.width = r.sw; spr.height = r.sh; { const oc = spr.getContext('2d'), im = oc.createImageData(r.sw, r.sh); new Uint32Array(im.data.buffer).set(r.d); oc.putImageData(im, 0, 0); }
+        if (!Pd || !Pd.pw) { fit(spr, 4); return; }
+        const pot = potCard(Pd, q), stand = frm === 'pot' || frm === 'string', o = document.createElement('canvas'), oc = o.getContext('2d'); o.width = Math.max(r.sw, pot.width + 4);
+        if (stand) { const ov = Math.round((frm === 'string' ? 1.6 : 1.2) * q); o.height = r.sh + pot.height - ov; oc.drawImage(pot, Math.round((o.width - pot.width) / 2), r.sh - ov); oc.drawImage(spr, Math.round((o.width - r.sw) / 2), 0); fit(o, 4, true); return; }   // вазон унизу, рослина з нього — цілою
+        else { const top = Math.round(7 * q), py = top + Math.round((r.pad + 1.5) * q); o.height = r.sh + top; const cx = o.width / 2;                                                    // підвісний: шнури, вазон угорі, рослина звисає поверх
+          oc.strokeStyle = '#c8a070'; oc.lineWidth = Math.max(1, q * .3); for (const k of [-1, 1]) { oc.beginPath(); oc.moveTo(cx, 1); oc.lineTo(cx + k * pot.width * .42, py + 2); oc.stroke(); }
+          oc.fillStyle = '#e8b040'; oc.fillRect(cx - q * .5, 0, q, q); oc.drawImage(pot, Math.round(cx - pot.width / 2), py); oc.drawImage(spr, Math.round((o.width - r.sw) / 2), top); }
+        fit(o, 4); return; }
       if (e.grp === 'farm') { const S = NX.decorFarm && NX.decorFarm.plantSpr(e.kind, info && info.s != null ? info.s : 1); if (S) fit(S.cv); return; }
       const S = NX.decor.frame && (NX.decor.SPR[e.kind] || (NX.decor.JELLY && NX.decor.JELLY[e.kind])) ? NX.decor.frame(e.kind, 0) : null;
       if (S) { fit(S.cv); return; }
