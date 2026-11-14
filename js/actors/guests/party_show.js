@@ -81,7 +81,7 @@ NX.partyShow = (() => {
   function stop() { SH.act.slice().forEach(end); SH.on = false; }
   /** Кінець сценки: учасники вільні — далі їх веде party.js (танець там, де стоять). */
   function end(sc) {
-    [sc.g, ...sc.p].forEach(g => { g.sleep = false; g.pose = 'stand'; g.rot = 0; g.sx = 1; g.alt = g.fly ? 30 : 0; g.sc = null; g.mv = false; g.tx = g.x; g.tz = g.z; g.next = NX.time + 3 + rnd() * 5; });
+    [sc.g, ...sc.p].forEach(g => { g.sleep = false; g.pose = 'stand'; g.rot = 0; g.sx = 1; g.alt = g.fly ? 30 : 0; g.sc = null; g.mv = !g.fly; [g.tx, g.tz] = Pp.home(g); g.next = NX.time + 3 + rnd() * 5; });   // після сценки — кожен на своє місце (танцпол або компанія)
     SH.act = SH.act.filter(q => q !== sc); SH.next = Math.max(SH.next, NX.time + 5 + rnd() * 6);
   }
   /** Спробувати почати наступну сценку з черги: герой і партнери вільні, місце не поруч з іншою сценкою. */
