@@ -49,7 +49,7 @@ NX.gardenCat = (() => {
     sector: id => SECTORS.find(s => s.id === id),
     crop: id => CROPS.find(c => c.id === id),
     of: sec => CROPS.filter(c => c.sec === sec),
-    /** Скільки культур уже росте в саду (у збудованих секторах). */
-    grown: () => CROPS.filter(c => SECTORS.find(s => s.id === c.sec).ready).length,
+    /** Скільки культур уже росте в саду (ділянка ставить культурі on = true). */
+    grown: () => CROPS.filter(c => c.on).length,
   };
 })();

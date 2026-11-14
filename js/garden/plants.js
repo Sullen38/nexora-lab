@@ -87,5 +87,5 @@ NX.gardenPlants = (() => {
   }
   /** Зібрати всі растри культури (для прогріву шматками — garden.js). */
   function warm(id) { for (let s = 0; s < STAGES; s++) for (let v = 0; v < 3; v++) sprite(id, s, v); }
-  return { sprite, warm, SW, SH, BASE, STAGES };
+  return { sprite, warm, leaf, SW, SH, BASE, STAGES };
 })();
