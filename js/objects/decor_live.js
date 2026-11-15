@@ -313,6 +313,8 @@
       // (15.11, власник обвів нестиковки на куті) смуги коміра — ОДНА ламана: лицьова грань → кут → стик із фасадом галереї (далі їх
       // веде fasciaLive з тієї самої точки), тож рожевий неон, LED і помаранчевий низ переходять із вежі в галерею без сходинки
       const L = (y, w, col, al = 1) => { const Y = y1 + y, a = V.at(0, 0, Y), b = V.at(0, 1, Y), j = CONV ? CONV.P2(V.sJ, 0, Y) : V.at(1, .125, Y); c.globalAlpha = al; c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(j[0] + .3, j[1]); c.stroke(); };
+      { const W = Y => [V.at(0, 0, Y), V.at(0, 1, Y), CONV ? CONV.P2(V.sJ, 0, Y) : V.at(1, .125, Y)], ya = y1 + 3.25, yb = y1 + 14.95, fl = y1 + 13.9, pg = (A, B) => { c.beginPath(); A.forEach((q, k) => k ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); B.slice().reverse().forEach(q => c.lineTo(q[0], q[1])); c.closePath(); c.fill(); };   // (15.11) вікно коміра — чистий фон замість лишків старого растру (блідий гриб, ряд крапок): темне скло, стрічка
+        c.globalAlpha = 1; c.fillStyle = '#06202c'; pg(W(ya), W(yb)); c.fillStyle = '#0a0a18'; pg(W(fl), W(yb)); c.fillStyle = '#6a6a9c'; pg(W(fl), W(fl + .3)); }
       L(.5, 1, '#aab6d0'); L(.15, .3, '#f4f8ff'); L(1.17, .4, '#141a2e'); L(2, 1.3, '#b02a8a'); L(2, .8, '#ff7ad8'); L(2, .28, '#fff0f8'); L(2.92, .56, '#161c32'); L(15.3, .6, '#161c32');
       L(16.2, 1.2, '#0c5a78'); c.setLineDash([1.3, .7]); L(16.2, 1, '#3be8ff'); c.setLineDash([]); L(17.05, .5, '#161c32'); L(h - .37, .75, '#d86a1a'); L(h - .3, .32, '#ffc070');
       // ЦОКОЛЬ (власник: «нижня частина виглядає доволі примітивно») — технічна база вежі: панелі зі швами, ґратки вентиляції, міні-
