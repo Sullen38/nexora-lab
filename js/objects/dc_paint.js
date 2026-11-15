@@ -249,11 +249,11 @@ NX.arc = NX.arc || {};
       return 0;
     };
     const g0 = pt(M.sa, rr + .25, t2 + .8), g1 = pt(M.sb, rr + .25, t2 + .8);
-    quad(G, [g0, g1, add3(g1, [0, gh, 0]), add3(g0, [0, gh, 0])], glass(M.s0, len), nIn(am));
+    if (!M.gate) quad(G, [g0, g1, add3(g1, [0, gh, 0]), add3(g0, [0, gh, 0])], glass(M.s0, len), nIn(am));   // (15.11) gate — пройма на балкон
     const post = (a, rad, k) => { G.tube(pt(a, rad, top), pt(a, rad, t2 - .3), 1.25, chromeT); const nc = k % 2 ? N.cyan : N.pink; G.disc(add3(pt(a, rad, t2 - 1.1), nIn(a), .5), .62, (u, v) => E(Math.hypot(u - .45, v - .45) < .22 ? nc[2] : nc[1])); };
     const pk = Math.round((M.sa - M.a0) / 2);
     if (M.i % 2 === 0) post(M.sa, rr, pk); if (M.i === M.n - 1) post(M.sb, rr, pk + 1);
-    G.tube(pt(M.sa, rr, t2), pt(M.sb, rr, t2), 1.6, chromeT);
+    if (!M.gate) G.tube(pt(M.sa, rr, t2), pt(M.sb, rr, t2), 1.6, chromeT);
     const side = (a, s) => {                                                                     // бічне поруччя (до стіни)
       const p0 = pt(a, rr, t2), p1 = pt(a, rw - .6, t2), n = s < 0 ? tg(a).map(q => -q) : tg(a);
       G.tube(p0, p1, 1.5, chromeT); [.34, .67, 1].forEach((k, q) => post(a, rr + (rw - .6 - rr) * k, q));
@@ -273,6 +273,33 @@ NX.arc = NX.arc || {};
   };
 
   // ================= ВАЗОН З РОСЛИНОЮ =================
+  /** (15.11) БАЛКОН-ВИСТУП другого поверху (decor.py: dc_bay): плита зі скошеними кутами виступає з фасаду антресолі до глядача —
+   *  торець (хром, рожевий неон, темні панелі із заклепками, блакитна LED-смуга), спід із круглим світильником, два кронштейни-
+   *  підкоси до фасаду, скляне поруччя з хромовим поручнем і стійками з неоновими ковпачками. u — уздовж, d — від переду (0) до
+   *  фасаду (dep), Y — висота світу. */
+  SHP['st:dc_bay'] = (G, B) => {
+    const M = B.dc, w = B.w, D = B.dep, top = M.top, TH = 5.5, t2 = top - M.rail, gh = M.rail - 1.4, hw = w / 2;
+    const ring = [[-hw, D], [-hw, 3.2], [-hw + 4, 0], [hw - 4, 0], [hw, 3.2], [hw, D]], bc = G.P(0, D, top);
+    const nrm = (p0, p1) => { let n = [p1[2] - p0[2], 0, -(p1[0] - p0[0])]; const l = Math.hypot(n[0], n[2]) || 1; n = [n[0] / l, 0, n[2] / l]; return (n[0] * (p0[0] - bc[0]) + n[2] * (p0[2] - bc[2])) < 0 ? [-n[0], 0, -n[2]] : n; };
+    let acc = 0;
+    for (let k = 0; k < ring.length - 1; k++) { const [u0, d0] = ring[k], [u1, d1] = ring[k + 1], a = G.P(u0, d0, top), b = G.P(u1, d1, top), n = nrm(a, b), L = lit(n, a), len = Math.hypot(u1 - u0, d1 - d0), x0 = acc; acc += len;
+      G.face([a, b, add3(b, [0, TH, 0]), add3(a, [0, TH, 0])], a, sub(b, a), [0, TH, 0], (u, v, i, j) => { const x = x0 + u * len, y = v * TH;                       // торець плити
+        if (y < .5) return ramp(PL.CHROME, .7 * L + .1, i, j); if (y < 1.1) return E(N.pink[(i + j) % 4 ? 1 : 2]);
+        if (y > TH - 1) return E(((x * 1.4) | 0) % 3 ? N.cyan[1] : N.cyan[2]);
+        const px = ((x % 6.4) + 6.4) % 6.4; if (px < .3) return ramp(PL.STEEL, .08, i, j); if (Math.hypot(px - .9, y - 1.8) < .3 || Math.hypot(px - 5.8, y - 1.8) < .3) return ramp(PL.CHROME, .7, i, j);
+        return ramp(PL.STEEL, (.3 + (1 - v) * .1) * L + .08, i, j); }, n);
+      const g0 = add3(a, [0, -(M.rail - .8), 0]), g1 = add3(b, [0, -(M.rail - .8), 0]);                                                                               // скло поруччя
+      quad(G, [g0, g1, add3(g1, [0, gh, 0]), add3(g0, [0, gh, 0])], (u, v, i, j) => { const y = v * gh, x = x0 + u * len; if (y > gh - 1.6) return ((i >> 1) + (j >> 1)) % 2 ? 0 : ramp(PL.CYANL, .3, i, j);
+        const dg = ((x - y * .7) % 13 + 13) % 13; return dg < .4 || (dg > 1.05 && dg < 1.3) ? col('#bfe9ff') : 0; }, n);
+      G.tube(add3(a, [0, -M.rail, 0]), add3(b, [0, -M.rail, 0]), 1.6, chromeT);                                                                                       // поручень
+      if (k > 0) { G.tube(a, add3(a, [0, -M.rail + .3, 0]), 1.25, chromeT); const nc = k % 2 ? N.cyan : N.pink; G.disc(add3(add3(a, [0, -M.rail + 1.1, 0]), n, .5), .62, (u, v) => E(Math.hypot(u - .45, v - .45) < .22 ? nc[2] : nc[1])); } }
+    // спід: сталь, круглий теплий світильник
+    const q = ring.map(([u, d]) => G.P(u, d, top + TH)), o = G.P(-hw, 0, top + TH), eu = sub(G.P(hw, 0, top + TH), o), ed = sub(G.P(-hw, D, top + TH), o);
+    G.face(q, o, eu, ed, (u, v, i, j) => { const r = Math.hypot((u - .5) * w, (v - .45) * D); if (r < 1.2) return E(r < .65 ? col('#fff4d8') : col('#ffd27a')); if (r < 1.7) return ramp(PL.CHROME, .5, i, j);
+      return ramp(PL.STEEL, .2 + (1 - v) * .14 + ((((u * w * 1.4) | 0) + ((v * D * 1.4) | 0)) % 2) * .05, i, j); }, [0, 1, 0]);
+    // кронштейни-підкоси до фасаду антресолі
+    for (const sd of [-1, 1]) { const u = sd * (hw - 5); G.tube(G.P(u, 1.6, top + TH), G.P(u, D - .2, top + TH + 8.5), 1.5, steelT); G.tube(G.P(u, D - .2, top + TH), G.P(u, D - .2, top + TH + 8.5), 1.1, darkT); }
+  };
   SHP['st:dc_pot'] = (G, B) => {
     const d = B.dc, Pd = d.pot || { shape: 'taper', mat: 'terra', pw: d.pw || 6, ph: d.ph || 4 }, pw = Pd.pw, ph = Pd.ph, base = B.yb - (d.hl || 0), v = B.dep / 2;
     potDraw(G, B, v, Pd, base);

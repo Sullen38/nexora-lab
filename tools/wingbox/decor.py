@@ -253,8 +253,15 @@ def decor_side(L, sgn, C, R, verbose=True):
             add(it); prev = max(p[0] for p in screen_poly(it)); k += spec[0] not in ('lantern', 'greenhouse')
         # ЗВИСИ з краю плити через фасад (кожна свого виду) — обабіч емблеми
         fb = lambda X: ys(MZ['bot'], W.at(W.a_of(X, MZ['P']), MZ['P'])[0][1])              # низ фасаду на екрані в стовпчику X
-        for k, (X, kind, ln, w) in enumerate(((1436., 'ivy', 17, 13), (1452., 'ceropegia', 15, 11), (1491., 'rhipsalis', 16, 10), (1521., 'aeschynanthus', 17, 11))):   # (14.11) два праві звиси розсунуто й звужено — не зливаються в одну купу під теплицею
+        for k, (X, kind, ln, w) in enumerate(((1436., 'ivy', 17, 13), (1452., 'ceropegia', 15, 11), (1512., 'rhipsalis', 16, 10), (1535., 'aeschynanthus', 17, 11))):   # (14.11) два праві звиси розсунуто й звужено; (15.11) розступились обабіч балкона
             a = W.a_of(X, MZ['P'] + .6); add(item(W, f'dc_mzs{k}', a, .3, w, MZ['top'] + ln, MZ['top'] - .3, 'dc_spill', inset=MZ['P'] + .6, on=mz(a)['id'], dc=dict(kind=kind, seed=91 + k)))
+        # (15.11, власник: «покращити другий поверх… більш об'ємніше»; схему прийняв — «так давай») БАЛКОН-ВИСТУП: окрема плита, що
+        # виступає з фасаду на 6.5 од. до глядача (між емблемою й звисом ріпсалісу), зі своїм скляним поруччям і двома
+        # кронштейнами; поруччя антресолі за ним — із проймою (gate). Низ балкона вищий за низ антресолі — до зон не наближається.
+        aB0, aB1 = W.a_of(1477., MZ['P']), W.a_of(1503., MZ['P']); aBm = (aB0 + aB1) / 2
+        add(item(W, 'dc_bay', aBm, 6.5, round(chord(W, aB0, aB1, MZ['P']), 2), MZ['top'] + 15., MZ['top'] - MZ['rail'] - 1., 'dc_bay', inset=MZ['P'], on=mz(aBm)['id'], dc=dict(top=MZ['top'], rail=MZ['rail'])))
+        for sg in segs:
+            if min(aB0, aB1) - .05 <= sg['dc']['sa'] and sg['dc']['sb'] <= max(aB0, aB1) + .05: sg['dc']['gate'] = 1
         # ---------- П2. ВЕРТИКАЛЬНА ФЕРМА NEXI (Декор стін · 13–· 14; власник на · 12 «не подобається мені той екран — що ще можна
         # туди придумати»: обрано «вертикальну ферму»; на · 13: «воно рівне, а має бути як та плитка в перспективі; камерки більше,
         # покращити в три рази»): СПРАВЖНЯ 3D-ТЕПЛИЦЯ вздовж стіни від вікна до плаката Рудика (X 1058..1316 — передня кромка),
@@ -609,6 +616,7 @@ def check_overlap(items, frac=.12):
             A, B = by[ids[a]], by[ids[b]]; pa, pb = P[ids[a]], P[ids[b]]
             if pa[2] < pb[1] or pb[2] < pa[1] or pa[4] < pb[3] or pb[4] < pa[3]: continue
             if A.get('on') == B['id'] or B.get('on') == A['id']: continue                 # стоїть на ній / звисає з неї
+            if 'dc_bay' in (A['id'], B['id']) and (A['id'] + B['id']).replace('dc_bay', '').startswith(('dc_mzp', 'dc_green', 'dc_lantern')): continue   # (15.11) скляне поруччя балкона перед речами на плиті — як поруччя антресолі
             if 'dc_win' in (A['st'], B['st']) and A.get('on') and A.get('on') == B.get('on'): continue   # скло опори й те, що на тій самій опорі
             ga, gb = group_key(A, by), group_key(B, by); same = ga == gb
             if same and (A['st'] in SUPPORTS or B['st'] in SUPPORTS): continue            # опора й річ своєї групи, сусідні сегменти / соти
