@@ -168,7 +168,7 @@ NX.arc = NX.arc || {};
       const pi = Math.floor(x / PANW), pc = x - pi * PANW, ty = y - 3.2, hp = 11.8;
       if (pc < .5) return ramp(PL.STEEL, .08, i, j);
       const ex = x - mid, ey = y - 9.1, er = Math.hypot(ex * .92, ey);
-      if (er < 6.5) {                                                                          // ЕМБЛЕМА ГРИБНИЦІ (15.11, власник: «логотип… зроби якимось більш прикольним та грибним»): неонове коло, у ньому гриб
+      if (er < 6.5 && mid < -900) {                                                            // (15.11, власник: «воно так не прикольно зникає за логотипом») на склі коридору емблеми більше нема — конвеєр іде без розриву; вона — на цоколі вежі. ЕМБЛЕМА ГРИБНИЦІ (15.11, власник: «логотип… зроби якимось більш прикольним та грибним»): неонове коло, у ньому гриб
         if (Math.abs(er - 5.7) < .48) return E(Math.abs(er - 5.7) < .18 ? N.cyan[2] : N.cyan[1]);
         const cr = Math.hypot(ex / 3.7, (ey - .1) / 3.1);                                         // шапинка — верхня половина еліпса: рожевий неон-контур, світні цятки
         if (ey < .1 && cr < 1) { if (cr > .82 || ey > -.42) return E(N.pink[cr > .9 ? 1 : 2]); for (const [sx, sy, sr] of [[-1.5, -1.3, .55], [.9, -1.9, .5], [1.9, -.9, .4], [-.3, -2.4, .35]]) if (Math.hypot(ex - sx, ey - sy) < sr) return E(col('#fff0f8')); return ramp(pal(['#4a0c3a', '#8a1c6a', '#c03a98']), .5 - ex * .08, i, j); }
@@ -188,6 +188,9 @@ NX.arc = NX.arc || {};
       const fl = hp - 2.3, dy = fl - ty, near = x > 800 ? 1 : Math.max(0, Math.min(1, 1 - x / 190));                                 // dy — висота над лотком; near — близькість до вежі
       // (15.11, крок 2) лотки й гриби на них — живі, їдуть до вежі (objects/decor_live.js drawConv); у растрі — лише стрічка конвеєра
       if (dy < -1.5) return ((((x * 2) | 0) % 2) ? ramp(PL.STEEL, .3, i, j) : ramp(PL.CHROME, .5, i, j));
+      // (15.11, власник: «як додати глибини графіки») ДРУГИЙ ПЛАН за лотками: дальня полиця з рядом дрібніших грибів у тумані (силуети)
+      { const d2 = dy - 3.6; if (d2 > -.5 && d2 < 0) return ramp(pal(['#06222c', '#0c3c48', '#14585e']), .5, i, j);
+        if (d2 >= 0) { const gx = Math.floor(x / 4.6); if (hash(gx, 7) > .2) { const f = MUSH[(gx * 3 + 2) % 8](x - (gx + .5) * 4.6, d2, 3 + hash(gx, 3) * 1.4, i, j); if (f) return ramp(pal(['#0a3a46', '#12606a', '#1e8a8c']), .35 + d2 / 5 * .5, i, j); } } }
       const dg = ((x + y * .6) % 31 + 31) % 31, h1 = hash(i, j); if (dg < .35) return col('#d8f6ff'); if (h1 > .997) return col('#eaffff');
       return ramp(pal(['#03101c', '#072636', '#0c4452', '#176a72', '#34a09a']), (.16 + Math.max(0, 1 - dy / fl) * .34 + (hash(i >> 2, j >> 2) - .5) * .06) * (.7 + .3 * L), i, j);
     }
@@ -555,7 +558,7 @@ NX.arc = NX.arc || {};
     if (Y > Yb - .9) return ramp(PL.CHROME, .66, i, j);
     if (Y > Yb - base) { const y = Y - (Yb - base);                                                             // цоколь: неон, значок гриба
       if (y < .6) return ramp(PL.CHROME, .8, i, j); if (y > 1.1 && y < 1.9) return E(N.pink[Math.abs(y - 1.5) < .15 ? 2 : 1]);
-      const ex = x - w / 2, ey = y - 5; if (ey < .2 && ey > -1.9 && Math.hypot(ex / 2.3, ey / 1.9) < 1) return E(N.cyan[Math.hypot(ex / 2.3, ey / 1.9) > .72 ? 2 : 1]); if (ey >= .2 && ey < 2 && Math.abs(ex) < .55) return E(col('#eaffff'));
+      const ex = x - w / 2, ey = y - 4.9, cr = Math.hypot(ex / 3.1, ey / 2.3); if (ey < .1 && cr < 1) return cr > .8 || ey > -.4 ? E(N.pink[cr > .9 ? 1 : 2]) : (Math.hypot(ex + 1.1, ey + 1) < .45 || Math.hypot(ex - 1, ey + 1.3) < .4 ? E(col('#fff0f8')) : ramp(pal(['#4a0c3a', '#8a1c6a', '#c03a98']), .5, i, j)); if (ey >= .1 && ey < 2.5 && Math.abs(ex) < .7) return E(Math.abs(ex) > .4 ? N.cyan[1] : col('#eaffff'));   // (15.11) емблема грибниці — на цоколі
       return ramp(PL.STEEL, (.26 - y / base * .08) * L + .08, i, j); }
     // (15.11, власник: «зроби, щоб другий поверх якось гарно кріпився до грибниці») КОМІР: на висоті плити вежу оперізує той самий
     // фасад, що й у галереї (хром, рожевий неон, панель, блакитна LED-смуга, помаранчевий низ) — галерея ніби обіймає вежу
