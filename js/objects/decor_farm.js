@@ -69,7 +69,28 @@
     }
     void OUT;
   }
-  const PS = {}; const plantSpr = (kind, s) => { const st = Math.min(5, Math.floor(s * 6)), key = kind + st; return PS[key] || (PS[key] = sprite(32, 30, S => drawPlant(S, kind, (st + .5) / 6), true)); };
+  /** (15.11, власник: «де в нас конвеєр рослин — рослини тепер теж треба так само деталізовано малювати, як і гриби») ЧІТКИЙ СПРАЙТ:
+   *  той самий малюнок drawPlant, але на полотні в K разів щільнішому (96×90 замість 32×30) — форми гладкі, крапки круглі; після
+   *  малювання — об'єм (світло згори-ліворуч: світла кромка, тінь знизу-праворуч) і темний контур, як у грибів вежі. */
+  function spriteHi(W, H, K, draw) {
+    const w = W * K, h = H * K, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const c = cv.getContext('2d'), im = c.createImageData(w, h), d = im.data, hx = {};
+    const rgb = cc => typeof cc === 'string' ? (hx[cc] || (hx[cc] = [parseInt(cc.slice(1, 3), 16), parseInt(cc.slice(3, 5), 16), parseInt(cc.slice(5, 7), 16)])) : cc;
+    const put = (x, y, v, a) => { if (x < 0 || y < 0 || x >= w || y >= h) return; const q = (y * w + x) * 4; d[q] = v[0]; d[q + 1] = v[1]; d[q + 2] = v[2]; d[q + 3] = a; };
+    const disc = (cx, cy, r, v, a) => { for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r) put(x, y, v, a); };
+    const S = { W, H,
+      set(x, y, cc, a = 255) { disc((Math.floor(x) + .5) * K, (Math.floor(y) + .5) * K, K * .56, rgb(cc), a); },
+      ell(cx, cy, rx, ry, f, a = 255) { const X0 = cx * K, Y0 = cy * K, RX = Math.max(.6, rx) * K, RY = Math.max(.6, ry) * K; for (let y = Math.floor(Y0 - RY); y <= Y0 + RY; y++) for (let x = Math.floor(X0 - RX); x <= X0 + RX; x++) { const u = (x + .5 - X0) / RX, v = (y + .5 - Y0) / RY; if (u * u + v * v <= 1) { const cc = typeof f === 'function' ? f(Math.floor(x / K), Math.floor(y / K), u, v) : f; if (cc) put(x, y, rgb(cc), a); } } },
+      tri(p, f, a = 255) { const [A, B, C] = p.map(q => [q[0] * K, q[1] * K]), x0 = Math.floor(Math.min(A[0], B[0], C[0])), x1 = Math.ceil(Math.max(A[0], B[0], C[0])), y0 = Math.floor(Math.min(A[1], B[1], C[1])), y1 = Math.ceil(Math.max(A[1], B[1], C[1])), ar = (B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1]); if (!ar) return;
+        for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const px = x + .5, py = y + .5, w0 = ((B[0] - px) * (C[1] - py) - (C[0] - px) * (B[1] - py)) / ar, w1 = ((C[0] - px) * (A[1] - py) - (A[0] - px) * (C[1] - py)) / ar; if (w0 >= 0 && w1 >= 0 && w0 + w1 <= 1) { const cc = typeof f === 'function' ? f(Math.floor(x / K), Math.floor(y / K), w0, w1, 1 - w0 - w1) : f; if (cc) put(x, y, rgb(cc), a); } } },
+      line(x0, y0, x1, y1, cc, a = 255, wd = 1) { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) * K) + 1, r = K * (.42 + .28 * (wd - 1)); for (let k = 0; k <= n; k++) { const t = k / n; disc((x0 + (x1 - x0) * t + .5) * K, (y0 + (y1 - y0) * t + .5) * K, r, rgb(typeof cc === 'function' ? cc(t) : cc), a); } } };
+    draw(S);
+    const al = new Uint8Array(w * h); for (let q = 0; q < w * h; q++) al[q] = d[q * 4 + 3] > 120 ? 1 : 0; const A = (x, y) => x >= 0 && y >= 0 && x < w && y < h && al[y * w + x], o = Math.max(1, Math.round(K * .6));
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const q = (y * w + x) * 4;
+      if (al[y * w + x]) { const k = !A(x - o, y - o) ? 1.24 : !A(x + o, y + o) ? .7 : 1; if (k !== 1) { d[q] = Math.min(255, d[q] * k + (k > 1 ? 14 : 0)); d[q + 1] = Math.min(255, d[q + 1] * k + (k > 1 ? 14 : 0)); d[q + 2] = Math.min(255, d[q + 2] * k + (k > 1 ? 14 : 0)); } }
+      else if (A(x - 1, y) || A(x + 1, y) || A(x, y - 1) || A(x, y + 1) || A(x - 1, y - 1) || A(x + 1, y + 1) || A(x - 1, y + 1) || A(x + 1, y - 1)) { d[q] = 6; d[q + 1] = 16; d[q + 2] = 14; d[q + 3] = 255; } }
+    c.putImageData(im, 0, 0); return { cv, w: W / 4, h: H / 4 };
+  }
+  const PS = {}; const plantSpr = (kind, s) => { const st = Math.min(5, Math.floor(s * 6)), key = kind + st; return PS[key] || (PS[key] = spriteHi(32, 30, 3, S => drawPlant(S, kind, (st + .5) / 6))); };
 
   // ---------- лотки: три конвеєри від сівби (ліва шахта) до збору (права) ----------
   const X0 = SH + FARM.trayW / 2 + 1, X1 = T - SH - FARM.trayW / 2 - 1, RUN = X1 - X0, HID = 46;                           // HID — сховано в ліфті (од. шляху)
