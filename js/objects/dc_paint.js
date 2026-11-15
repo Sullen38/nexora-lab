@@ -369,7 +369,11 @@ NX.arc = NX.arc || {};
         G.tube(hook, e, .5, cordT); G.disc(m, .42, (u, v, i, j) => ramp(pal(['#7a5a3a', '#c8a070', '#f0d8a8']), .8 - v * .5, i, j)); }
       G.tube(G.P(0, v, potY - ph - .2), G.P(0, v, potY + 2.6), .5, cordT);                    // кисть знизу
       potDraw(G, B, v, Pd, potY);
-      plantFace(G, { kind: d.kind, seed: d.seed, hang: 1, pal: d.pal || 'light' }, p[0], p[2] + pw * .3, potY - ph - 1.5, B.yb, B.w, false, lv && Object.assign(lv, { cut: potY - ph * .55 }));
+      // (15.11, власник — скрін з обведеними кошиком потоса й рожевим вазоном: «бачиш ці незрозумілі моменти з горщиками?») під
+      // антресоллю листя починалось над вінцем і закривало вазон — від нього лишався плаский клапоть. Тепер там вазон видно цілим
+      // (вінце, боки, шнури до нього), а листя спадає з нижньої третини й нижче.
+      const py0 = anch != null ? potY - ph * .38 : potY - ph - 1.5;
+      plantFace(G, { kind: d.kind, seed: d.seed, hang: 1, pal: d.pal || 'light' }, p[0], p[2] + pw * .3, py0, B.yb, B.w, false, lv && Object.assign(lv, { cut: anch != null ? potY + 1 : potY - ph * .55 }));
     } else if (d.frm === 'chain') {                                                   // ВИСЯЧИЙ КОШИК: три ланцюжки зі стелі, кошик, папороть каскадом
       const Pd = d.pot || { shape: 'basket', mat: 'wicker', pw: 9.5, ph: 6 }, pw = Pd.pw, ph = Pd.ph, T = B.yb - B.yt, yr = B.yt + T * .28, v = B.dep / 2, c = G.P(0, v, yr);
       const top = [c[0], Ywz(-4, c[2]), c[2]], linkT = (u, vv, i, j) => ramp(PL.GOLD, ((vv * 60) | 0) % 2 ? .75 - Math.abs(u - .4) : .35, i, j);
