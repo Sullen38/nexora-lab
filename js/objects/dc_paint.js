@@ -214,6 +214,22 @@ NX.arc = NX.arc || {};
       let q = .24 + (1 - v) * .14 + ((((x * 1.6) | 0) + ((d * 1.6) | 0)) % 2) * .05; if (d > dep - 1.4) q -= .1;
       return ramp(PL.STEEL, q, i, j);
     }, [0, 1, 0]);
+    // (15.11, власник: «треба покращити другий поверх… зробити більш об'ємним; зараз мені там чогось не вистачає» — крок 1 зі схеми)
+    // ОБ'ЄМНІ БАЛКИ під плитою: замість намальованих смужок — справжні двотаври, що виступають зі споду на 2.6 од. (торець до
+    // глядача, бічні грані з отворами полегшення, світла нижня полиця), від фасаду до стіни, кожні 11.5 од. — там, де були смужки.
+    { const BH = 2.6, BW = 1.5, r0 = rf + 1.9, r1 = rw - .6;
+      for (let kb = Math.ceil((M.s0 - .7) / 11.5); kb * 11.5 + .7 < M.s0 + len; kb++) { const xb = kb * 11.5 + .7; if (xb < M.s0) continue;
+        const a = M.sa + (xb - M.s0) / len * (M.sb - M.sa), T = tg(a), hw = BW / 2, off = (p, k) => [p[0] + T[0] * k, p[1], p[2] + T[2] * k];
+        const A0 = pt(a, r0, bot), A1 = pt(a, r1, bot), dv = sub(A1, A0), Ld = Math.hypot(dv[0], dv[2]), yb2 = bot + BH;
+        const end = [off(A0, -hw), off(A0, hw)].map(q => q), eb = end.map(q => [q[0], yb2, q[2]]), Le = lit(nIn(a), A0);
+        G.face([end[0], end[1], eb[1], eb[0]], end[0], sub(end[1], end[0]), [0, BH, 0], (u, v, i, j) => v > .8 ? ramp(PL.CHROME, .62, i, j) : Math.abs(u - .5) < .17 ? ramp(PL.MET, .58 * Le + .1, i, j) : ramp(PL.STEEL, .2, i, j), nIn(a));   // торець: стінка двотавра й полиця
+        for (const sd of [-1, 1]) { const s0 = off(A0, sd * hw), s1 = off(A1, sd * hw), n = T.map(q => q * sd), Ls = lit(n, s0);
+          G.face([s0, s1, [s1[0], yb2, s1[2]], [s0[0], yb2, s0[2]]], s0, sub(s1, s0), [0, BH, 0], (u, v, i, j) => { const d = u * Ld; if (v > .8) return ramp(PL.CHROME, .5 * Ls + .12, i, j);
+            if (v > .22 && v < .66 && ((d % 4.2) + 4.2) % 4.2 < 1.7 && d > 1.5) return ramp(PL.STEEL, .06, i, j);                                                         // отвори полегшення
+            return ramp(PL.MET, (.4 + (1 - v) * .12) * Ls + .08, i, j); }, n); }
+        const b0 = off([A0[0], yb2, A0[2]], -hw), b1 = off([A0[0], yb2, A0[2]], hw), b3 = off([A1[0], yb2, A1[2]], -hw), b2 = off([A1[0], yb2, A1[2]], hw);
+        G.face([b0, b1, b2, b3], b0, sub(b1, b0), sub(b3, b0), (u, v, i, j) => ramp(PL.MET, .3 + (1 - v) * .16 + (Math.abs(u - .5) > .36 ? .14 : 0), i, j), [0, 1, 0]);    // нижня полиця
+      } }
     // ТІНЬ ПІД ПЛИТОЮ на стіні (дизеринг: густа під самою плитою, вниз розсіюється)
     const shB = Math.min(bot + 17, M.shy || bot + 17); if (shB > bot) ditherFace(G, pt(M.sa, R - .35, bot - 1), pt(M.sb, R - .35, bot - 1), pt(M.sa, R - .35, shB), nIn(am), (u, v) => .44 * Math.pow(1 - v, 1.7));
     // мідна труба вздовж споду з підвісами
