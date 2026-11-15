@@ -587,9 +587,9 @@ NX.arc = NX.arc || {};
   /** (15.11) СЦЕНА ВЕЖІ — спільна для растру й живого шару (objects/decor_live.js): U — розгортка (ліворуч від 0 — лицьова грань,
    *  праворуч — бічна), h — висота над плитою галереї. ISL — левітуючі острівці (u, h — верх, hw — пів ширини, k — вид NEO, s — зріст
    *  гриба), TH — нитки міцелію між ними; thAt(q, t) — точка нитки q (t 0…1). GC — колір світіння виду. */
-  const VS = { ISL: [{ u: -6.3, h: 1.6, hw: 5.3, k: 6, s: 12.5 }, { u: -6.2, h: 21, hw: 4.7, k: 1, s: 11.5 }, { u: -6.3, h: 39.5, hw: 4.7, k: 3, s: 11.5 },
-      { u: 8.5, h: 17, hw: 6, k: 0, s: 13 }, { u: 9.5, h: 37.5, hw: 5.2, k: 5, s: 13 }, { u: 22.5, h: 26.5, hw: 6.3, k: 2, s: 13 }, { u: 23.5, h: 45.5, hw: 5.2, k: 4, s: 10.5 },
-      { u: 34.6, h: 24, hw: 4.6, k: 7, s: 13 }, { u: 34.2, h: 42.5, hw: 4.8, k: 8, s: 10 }, { u: 8, h: 1.6, hw: 6, k: 9, s: 11, r: 1 }],   // r — гриб лишається в растрі (за поруччям)
+  const VS = { ISL: [{ u: -6.3, h: 1.6, hw: 5.3, k: 6, s: 12.5 }, { u: -6.2, h: 23, hw: 4.7, k: 1, s: 11.5 }, { u: -6.3, h: 39.5, hw: 4.7, k: 3, s: 11.5 },
+      { u: 8.5, h: 15.5, hw: 6, k: 0, s: 13 }, { u: 9.5, h: 40, hw: 5.2, k: 5, s: 12 }, { u: 22.5, h: 26.5, hw: 6.3, k: 2, s: 13 }, { u: 23.5, h: 45.5, hw: 5.2, k: 4, s: 10.5 },
+      { u: 34.6, h: 24, hw: 4.6, k: 7, s: 13 }, { u: 34.2, h: 41, hw: 4.8, k: 8, s: 10 }, { u: 8, h: 1.6, hw: 6, k: 9, s: 11, r: 1 }],   // r — гриб лишається в растрі (за поруччям)
     TH: [[0, 1], [1, 2], [1, 3], [3, 4], [3, 5], [4, 6], [5, 6], [5, 7], [7, 8], [6, 8], [2, 4], [9, 3]],
     GC: ['#b08aff', '#5ad8ff', '#38e070', '#ff6ad8', '#ffb020', '#7af0ff', '#b8d0ff', '#ff7a3a', '#3be8c8', '#ffe890'] };
   VS.thAt = (q, t) => { const a = VS.ISL[VS.TH[q][0]], b = VS.ISL[VS.TH[q][1]], sg = 4 * t * (1 - t); return [a.u + (b.u - a.u) * t + Math.sin(t * 6.28 + q) * .5 * sg, a.h - 1.6 + (b.h - a.h) * t - (1.6 + (q % 3)) * sg]; };
@@ -622,17 +622,12 @@ NX.arc = NX.arc || {};
         let c = f(dx, dy, I.s, i, j); if (c) return c; c = f(dx + I.hw * .68, dy, I.s * .36, i, j) || f(dx - I.hw * .7, dy, I.s * .28, i, j); if (c) return c; } return 0; };
     let c = hero(U, h); if (c) return c;
     if (hero(U - .3, h) || hero(U + .3, h) || hero(U, h - .3) || hero(U, h + .3)) return MOUT;
-    for (const I of VS.ISL) { const du = (U - I.u) / I.hw; if (Math.abs(du) >= 1) continue; const th = 3.5 * Math.pow(1 - du * du, .7), hh = I.h + .22 * Math.sin(U * 2.1) - h; if (hh < -.9 || hh > th) continue;   // острівець
+    for (const I of VS.ISL) { if (!I.r) continue; const du = (U - I.u) / I.hw; if (Math.abs(du) >= 1) continue; const th = 3.5 * Math.pow(1 - du * du, .7), hh = I.h + .22 * Math.sin(U * 2.1) - h; if (hh < -.9 || hh > th) continue;   // острівець
       if (hh < 0) { if (hash((U * 2.6) | 0, I.k) > .45 && -hh < .3 + hash((U * 2.6) | 0, 9) * .6) return ramp(pal(['#0e5a3a', '#1c9a5a', '#5ae08a']), .6, i, j); continue; }            // травинки моху
       if (hh < .8) return hash(i, j) > .9 ? E(N.green[2]) : ramp(pal(['#0a4a30', '#168a4a', '#3ad070', '#a0f8a0']), .4 + hash(i >> 1, j) * .5, i, j);
       if (hh > th - .5 && Math.abs(du) < .6) return E(N.cyan[Math.abs(du) < .3 ? 2 : 1]);                                                                         // антиграв-випромінювач знизу
       return ramp(pal(['#0c0a1c', '#1c1838', '#342c5c', '#5a4c8c']), .72 - hh / th * .5 - du * .2 + (hash(i >> 1, j >> 1) - .5) * .25, i, j); }
-    { const gx = Math.floor((U + 40) / 3.1), hv = hash(gx, 5 + fs); if (hv > .3) { const len = 2.5 + hash(gx, 4) * 8.5, d = hc - h, xx = U + 40 - (gx + .5) * 3.1 - Math.sin(d * .8 + gx) * .3;        // дзвіночки зі стелі
-        if (d < len - 1.4 && Math.abs(xx) < .17) return ramp(pal(['#0a3a46', '#12707a', '#2aa8a8']), .6, i, j); if (d >= len - 1.4 && d < len && Math.abs(xx) < .3 + (d - len + 1.4) * .5) return E([N.cyan[2], N.pink[2], N.green[2], N.cyan[1]][gx % 4]); } }
-    for (let q = 0; q < VS.TH.length; q++) { const a = VS.ISL[VS.TH[q][0]], b = VS.ISL[VS.TH[q][1]], vert = Math.abs(b.u - a.u) < Math.abs(b.h - a.h) * .6, t = vert ? (h - a.h + 1.6) / (b.h - a.h) : (U - a.u) / (b.u - a.u);   // нитки міцелію
-      if (t <= 0 || t >= 1) continue; const p = VS.thAt(q, t), d = vert ? Math.abs(U - p[0]) : Math.abs(h - p[1]); if (d < .22) return ((t * 26) | 0) % 3 ? ramp(pal(['#0e4a66', '#1a86a8', '#48c8e0']), .55, i, j) : E(col('#a8f4ff')); }
-    { const gx = Math.floor((U + 40) / 11), gy = Math.floor(h / 10), hv = hash(gx * 5 + 2, gy * 3 + 7); if (hv > .42) { const cx = (gx + .25 + hash(gx, gy) * .5) * 11 - 40, by = gy * 10 + 2.5, dx = U - cx, dy = h - by;   // далекий план: острівці-силуети
-        if (dy < 0 && dy > -1.4 * (1 - (dx / 3) * (dx / 3))) return ramp(pal(['#06202e', '#0c3a48']), .6, i, j); const f = dy >= 0 && MUSH[(gx * 3 + gy * 5 + 80) % MUSH.length](dx, dy, 5, i, j); if (f) return ramp(pal(['#082a3a', '#0e4a58', '#16686e']), .45 + dy / 5 * .4, i, j); } }
+    // (15.11) острівці, нитки, дзвіночки й дальній план — у живому шарі, в об'ємі (objects/decor_live.js vit3d); тут лише тло й скло
     const dg = ((x + Y * .6) % 61 + 61) % 61, h1 = hash(i, j);
     if (dg < .35) return col('#d8f6ff'); if (h1 > .9975) return col('#eaffff'); if (h1 < .003) return E(N.cyan[1]);
     return ramp(pal(['#020812', '#04182a', '#082c3e', '#0e4654', '#1a666c']), (.1 + .26 * Math.max(0, 1 - h / 62) + (hash(i >> 2, j >> 2) - .5) * .07) * (.75 + .25 * L), i, j);
