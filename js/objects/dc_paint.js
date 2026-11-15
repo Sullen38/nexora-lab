@@ -534,7 +534,7 @@ NX.arc = NX.arc || {};
   /** (15.11, власник прийняв схему вигляду: «давай пробувати») ВІТРИНА — ОДНА СЦЕНА, а не полиці: мохова колода-стежка зигзагом
    *  підіймається знизу догори через обидві грані (U — розгортка: від кута між гранями, ліворуч — лицьова, праворуч — бічна);
    *  три плани: далекі силуети грибів у тумані, колода, великі гриби біля скла (з темним обведенням). Угорі — рожева лампа росту. */
-  const RAMPS = 5, MOUT = col('#0a1420');
+  const MOUT = col('#0a1420');
   function vitrine(M, x, w, Y, i, j, L, fs) {
     const Yb = M.Yb, top = M.Ytop, base = 8.5, e = Math.min(x, w - x);
     if (e < .55) return ramp(PL.CHROME, .86 - e * .4, i, j);                                                    // тонкі стійки каркаса
@@ -543,8 +543,11 @@ NX.arc = NX.arc || {};
       if (y < .6) return ramp(PL.CHROME, .8, i, j); if (y > 1.1 && y < 1.9) return E(N.pink[Math.abs(y - 1.5) < .15 ? 2 : 1]);
       const ex = x - w / 2, ey = y - 5; if (ey < .2 && ey > -1.9 && Math.hypot(ex / 2.3, ey / 1.9) < 1) return E(N.cyan[Math.hypot(ex / 2.3, ey / 1.9) > .72 ? 2 : 1]); if (ey >= .2 && ey < 2 && Math.abs(ex) < .55) return E(col('#eaffff'));
       return ramp(PL.STEEL, (.26 - y / base * .08) * L + .08, i, j); }
-    const fw = M.fwv || 14, U = fs === 1 ? x : -(w - x), U0 = -fw, UW = M.D + fw, y0 = Yb - base, Ht = y0 - top, RH = Ht / RAMPS;
-    const rampY = (r, u) => { const n = Math.min(1, Math.max(0, (u - U0) / UW)); return y0 - (r + (r % 2 ? 1 - n : n)) * RH; };          // висота колоди r над точкою u
+    // (15.11, власник: «зроби, щоб другий поверх якось гарно кріпився до грибниці») КОМІР: на висоті плити вежу оперізує той самий
+    // фасад, що й у галереї (хром, рожевий неон, панель, блакитна LED-смуга, помаранчевий низ) — галерея ніби обіймає вежу
+    if (M.slab && Y > M.slab[0] - .2 && Y < M.slab[1] + .2) { const y = Y - M.slab[0], h = M.slab[1] - M.slab[0]; if (y < 0 || y > h) return ramp(PL.CHROME, .7, i, j); return fascia(900 + (fs === 1 ? x : -(w - x)), y, h, -99, i, j, L); }
+    const fw = M.fwv || 14, U = fs === 1 ? x : -(w - x), U0 = -fw, UW = M.D + fw, y0 = M.slab ? M.slab[0] : Yb - base, Ht = y0 - Math.max(top, -6), RAMPS = M.slab ? 4 : 5, RH = Ht / RAMPS;   // сцена — над коміром; верх — по стелі
+    const rampY = (r, u) => { const n = Math.min(1, Math.max(0, (u - U0) / UW)); return y0 - .4 - (r + (r % 2 ? 1 - n : n)) * RH; };          // висота колоди r над точкою u
     if (Y < top + 2.2 + 30) { const yl = Y - top; if (yl < 1.6) return yl < .5 ? ramp(PL.CHROME, .7, i, j) : E(N.pink[yl < 1.2 ? 2 : 1]); }    // лампа росту під кришкою
     let r = -1; for (let q = 0; q < RAMPS; q++) if (rampY(q, U) >= Y) r = q; else break;                                              // найвища колода, що під цією точкою
     if (r < RAMPS - 1 || true) { const rn = Math.min(RAMPS - 1, r + 1), yy = Y - rampY(rn, U);                                         // сама колода (та, що над точкою): кора, зріз, мох зверху
@@ -572,12 +575,17 @@ NX.arc = NX.arc || {};
       const L = lit(Fc.n, A.centre(Fc)), O = Fc.O, Au = Fc.A, Bv = Fc.B;
       if (Fc.n[0] * rs[0] + Fc.n[2] * rs[2] > .7) {                                     // бокова грань (лицем уздовж антресолі, до глядача)
         const i0 = insOf(O), iu = insOf(Au, 1) - M.fin, iv = insOf(Bv, 1) - M.fin;
-        if (M.vit) return (u, v, i, j) => { const ins = i0 + iu * u + iv * v, Y = O[1] + Au[1] * u + Bv[1] * v, [h0, h1] = M.hatch, hy = M.deck - 9, hr = (h1 - h0) / 2, hx = ins - (h0 + h1) / 2;
-          if (Y > hy - hr - 1.2 && Y < M.deck && Math.abs(hx) < hr + 1.2) {                                       // ШЛЮЗ: кругла арка люка на рівні плити
-            const rr = Y < hy ? Math.hypot(hx, Y - hy) : Math.abs(hx); if (rr > hr + .2) return ramp(PL.CHROME, .8 - (rr - hr) * .25, i, j); if (rr > hr - .7) return E(N.cyan[rr > hr - .3 ? 1 : 2]);
-            if (Math.abs(hx) < .22) return ramp(PL.STEEL, .06, i, j); if (Y > M.deck - 1.4) return HAZ(ins, Y, i, j);
-            if (Math.abs(Math.abs(hx) - hr * .5) < .75 && Y > hy - hr * .35 && Y < M.deck - 3.2) return E(Math.abs(Math.abs(hx) - hr * .5) < .4 ? col('#eaffff') : col('#7ae8ff'));   // вузькі віконця стулок
-            return ramp(PL.MET, (.44 - Math.abs(hx) / hr * .12) * L + .08, i, j); }
+        if (M.vit) return (u, v, i, j) => { const ins = i0 + iu * u + iv * v, Y = O[1] + Au[1] * u + Bv[1] * v, [h0, h1] = M.hatch, hw = (h1 - h0) / 2, hx = ins - (h0 + h1) / 2, hy = M.deck - Y;   // hy — висота над плитою
+          // (15.11, власник обвів шлюз: «щось незрозуміле») ДВЕРІ у вітрину — зрозумілі: прямокутна рама з блакитним неоном, дві скляні
+          // стулки (крізь них ледь видно грибницю), ручки-скоби, над дверима — світна табличка-гриб, поріг зі смугою «обережно»
+          if (hy > 0 && hy < 17.5 && Math.abs(hx) < hw + 1.3) {
+            if (hy > 15.2) { if (Math.abs(hx) < 2.2 && hy < 17) { const ex = hx, ey = hy - 15.6; return ey > .5 ? (Math.hypot(ex / 1.5, (ey - .5) / .8) < 1 ? E(N.pink[2]) : ramp(PL.DARK, .2, i, j)) : Math.abs(ex) < .35 ? E(col('#fff0f8')) : ramp(PL.DARK, .2, i, j); } return ramp(PL.CHROME, .7, i, j); }
+            if (Math.abs(hx) > hw || hy > 14.5) return Math.abs(hx) > hw + .5 || hy > 14.9 ? ramp(PL.CHROME, .82 - (Math.abs(hx) - hw) * .2, i, j) : E(N.cyan[2]);          // рама й неон
+            if (hy < 1.3) return HAZ(ins, Y, i, j);                                                                                                                          // поріг
+            if (Math.abs(hx) < .2) return ramp(PL.STEEL, .05, i, j);                                                                                                          // шов між стулками
+            if (Math.abs(Math.abs(hx) - 1.1) < .28 && hy > 5.2 && hy < 8.6) return ramp(PL.CHROME, .9, i, j);                                                                  // ручки
+            const dg = ((hx + hy * .8) % 7 + 7) % 7; if (dg < .35) return col('#d8f6ff');
+            return ramp(pal(['#06202c', '#0c3c4a', '#16606a']), .35 + hy / 14.5 * .4 + (hash(i >> 1, j >> 1) > .9 ? .3 : 0), i, j); }                                         // скло стулок
           return vitrine(M, M.D - ins, M.D, Y, i, j, L, 1); };
         return (u, v, i, j) => pylonSide(M, i0 + iu * u + iv * v, O[1] + Au[1] * u + Bv[1] * v, i, j, L);
       }

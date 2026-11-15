@@ -176,8 +176,8 @@
    *  краплі конденсату сповзають склом, світні плями «дихають» — кожна у своєму такті, раз на ~3 хв — «дощ» усередині; уночі вежа
    *  світить ізсередини на галерею й стіну. Точки — на двох видимих гранях коробки (лицьова — P(u, 0, Y), бічна — sideP(ins, Y));
    *  на бічній грані — лише там, де її не закриває галерея (вище поруччя або ближче до кута, ніж її кромка). */
-  const VIT = PYL && PYL.dc.vit ? (() => { const M = PYL.dc, { P } = basis(PYL), top = Math.max(M.Ytop, -2), bot = M.Yb - 9, sR = M.sR || 1, hw = PYL.w / 2;
-    const at = (f, a, Y) => f ? proj(sideP(M.D * (1 - a), Y)) : proj(P(-sR * hw * (1 - 2 * a) * 1, 0, Y)), ok = (f, a, Y) => !f || Y < M.deck - 13 || a < .2;   // a: 0 — кут між гранями
+  const VIT = PYL && PYL.dc.vit ? (() => { const M = PYL.dc, { P } = basis(PYL), top = Math.max(M.Ytop, -2), bot = M.slab ? M.slab[0] - 1 : M.Yb - 9, sR = M.sR || 1, hw = PYL.w / 2;
+    const at = (f, a, Y) => f ? proj(sideP(M.D * (1 - a), Y)) : proj(P(-sR * hw * (1 - 2 * a) * 1, 0, Y)), ok = (f, a, Y) => !f || Y < M.deck - 13 || a < .12;   // a: 0 — кут між гранями
     const R = (k, q) => hash(k * 7 + 3, q * 13 + 1);
     return { M, at, ok, top, bot, R, SP: Array.from({ length: 46 }, (_, k) => ({ f: R(k, 1) < .28 ? 0 : 1, a: .06 + R(k, 2) * .88, ph: R(k, 3), sp: .012 + R(k, 4) * .02, sw: R(k, 5) * 6.28 })),
       GL: Array.from({ length: 9 }, (_, k) => ({ f: k % 3 ? 1 : 0, a: .12 + R(k, 6) * .76, y: R(k, 7), ph: R(k, 8) * 6.28, sp: .5 + R(k, 9) * .9, col: ['#3be8ff', '#7aff9a', '#ff6ad8', '#c77dff'][k % 4] })),
