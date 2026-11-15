@@ -220,9 +220,6 @@
     c.globalCompositeOperation = 'lighter';
     for (let k = 0; k < 3; k++) { const a0 = .18 + k * .26, sw = Math.sin(t * .21 + k * 2) * .07, yb = Math.min(V.bot, V.M.deck - 13); c.globalAlpha = .07 + .03 * Math.sin(t * .5 + k);       // промені
       const p0 = V.at(1, a0, V.top), p1 = V.at(1, a0 + .1, V.top), p2 = V.at(1, Math.min(.98, a0 + .26 + sw), yb), p3 = V.at(1, Math.max(.02, a0 + .02 + sw), yb); c.fillStyle = '#ffc8f0'; c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(p1[0], p1[1]); c.lineTo(p2[0], p2[1]); c.lineTo(p3[0], p3[1]); c.closePath(); c.fill(); }
-    { const u = .5 - .5 * Math.cos(t * .35), Y = V.top + 3 + u * (H - 6); c.strokeStyle = '#7af6ff'; c.lineCap = 'round';                                                                            // кільце сканера
-      for (const [lw, al] of [[2.2, .14], [.5, .85]]) { c.lineWidth = lw; c.globalAlpha = al; c.beginPath(); const e0 = V.at(0, 1, Y), c0 = V.at(0, 0, Y); c.moveTo(e0[0], e0[1]); c.lineTo(c0[0], c0[1]);
-        const am = Y < V.M.deck - 13 ? 1 : .12, e1 = V.at(1, am, Y); c.lineTo(e1[0], e1[1]); c.stroke(); } }
     for (let k = 0; k < 6; k++) { const f = k % 3 ? 1 : 0, a = .2 + .6 * (.5 + .5 * Math.sin(t * (.17 + k * .03) + k * 1.9)), Y = V.top + H * (.12 + .7 * (.5 + .5 * Math.sin(t * (.13 + k * .02) + k * 2.7))); if (!V.ok(f, a, Y)) continue;   // світляки
       const p = V.at(f, a, Y), bl = .5 + .5 * Math.sin(t * 3 + k * 4); c.globalAlpha = .35 + .5 * bl; c.drawImage(glow('#d8ff7a').cv, p[0] - 1.8, p[1] - 1.8, 3.6, 3.6); c.globalAlpha = 1; c.fillStyle = '#f4ffc8'; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
     for (let k = 0; k < 7; k++) { const u = (k / 7 + t * .09) % 1, p = V.at(1, 0, V.M.Yb - 9 - u * (V.M.Yb - 9 - V.top)); c.globalAlpha = .9; c.fillStyle = '#eaffff'; c.fillRect(p[0] - .3, p[1] - .5, .6, 1); }      // розчин кутовою стійкою вгору
@@ -235,9 +232,9 @@
    *  проєктуються тим самим proj, що й уся кімната. Тому їх видно крізь ОБИДВІ грані одразу, кутова стійка й відблиски скла йдуть
    *  поверх них, дальні — тьмяніші (туман) і перекриваються ближніми. Видно й саму кімнату за склом: дві задні стінки різного тону
    *  й дальнє ребро коробки. Усе обрізано по видимому склу: лицьова грань і бічна над поруччям. */
-  const V3 = [[-1.5, 3], [-2.6, 4], [-1, 2], [2, 18.4], [3.2, 12.2], [3.5, 31.7], [4.5, 34.5], [3.5, 31.7], [4.5, 34.5], [3.2, 12.2]];     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
+  const V3 = [[-2, 3], [-2.4, 3.5], [-2, 3], [3, 14], [3, 14], [3, 25.5], [3.4, 36], [3, 25.5], [3.4, 36], [3, 14]];     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
   const VFAR = [[-4.6, 9, 9, 2], [-5, 20, 30, 5], [-4.4, 30, 14, 7], [-2, 37.5, 44, 1], [2.5, 38, 20, 3], [-5.2, 13, 47, 6], [0, 38.5, 33, 4]];   // дальній план: x, dp, h, вид
-  const VDR = [[0, 1, 2, 1], [9, 3, 4, 3], [7, 8, 5, 6, 5, 8]];
+  const VDR = [[0, 1, 2, 1], [9, 3, 4, 3], [7, 5, 6, 8]];
   function vit3d(c, t, V, nt) {
     const S = V.S, M = V.M, hw = PYL.w / 2, D = M.D, y0 = V.y0, P3 = V.P3, rail = M.deck - 13, K = 1.04;
     const poly = pts => { pts.forEach((p, k) => k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); };
@@ -254,13 +251,13 @@
     for (let q = 0; q < 12; q++) { const x = -5 + hash(q, 61) * 10, dp = 2 + hash(q, 62) * 36, len = 3 + hash(q, 63) * 9, a = P3(x, dp, 58.5), sw = Math.sin(t * .6 + q) * .5, far = (hw - x) / 12;    // дзвіночки зі стелі
       c.globalAlpha = .85 - far * .5; c.strokeStyle = '#1a7a84'; c.lineWidth = .3; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(a[0], a[1] + len * .6, a[0] + sw, a[1] + len); c.stroke();
       c.fillStyle = ['#7af6ff', '#ff8ae0', '#8affa8'][q % 3]; c.beginPath(); c.moveTo(a[0] + sw, a[1] + len - .9); c.lineTo(a[0] + sw + .9, a[1] + len + .7); c.lineTo(a[0] + sw - .9, a[1] + len + .7); c.closePath(); c.fill(); }
-    const pt = k => { const I = S.ISL[k], v = V3[k]; return P3(v[0], v[1], I.h); }, far = k => k < 3 ? V3[k][1] : hw - V3[k][0];
+    const bob = k => Math.sin(t * (.62 + (k % 4) * .07) + k * 1.7) * .9, pt = k => { const I = S.ISL[k], v = V3[k]; return P3(v[0], v[1], I.h + bob(k)); }, far = k => k < 3 ? V3[k][1] : hw - V3[k][0];   // (15.11) острівці плавають угору-вниз, кожен у своєму такті; нитки тягнуться за ними
     for (let q = 0; q < S.TH.length; q++) { const [ia, ib] = S.TH[q]; if (!V3[ia] || !V3[ib]) continue; const a = pt(ia), b = pt(ib), mx = (a[0] + b[0]) / 2 + Math.sin(q) * 1.5, my = Math.max(a[1], b[1]) + 3.5 + (q % 3);    // нитки міцелію провисають
       c.globalAlpha = .75; c.strokeStyle = rgbOf(c, t); c.lineWidth = .32; c.beginPath(); c.moveTo(a[0], a[1] + 1.5); c.quadraticCurveTo(mx, my, b[0], b[1] + 1.5); c.stroke();   // (15.11) нитки міцелію — у такт RGB-контуру
       c.globalCompositeOperation = 'lighter'; for (let n = 0; n < 2; n++) { const u = (t * (.11 + (q % 4) * .02) + q * .37 + n * .5) % 1, w = 1 - u, x = w * w * a[0] + 2 * w * u * mx + u * u * b[0], y = w * w * (a[1] + 1.5) + 2 * w * u * my + u * u * (b[1] + 1.5);
         c.globalAlpha = Math.sin(u * Math.PI) * .9; c.drawImage(glow(n ? '#ff9ae0' : '#a8f4ff').cv, x - 1.3, y - 1.3, 2.6, 2.6); c.fillStyle = '#ffffff'; c.fillRect(x - .25, y - .25, .5, .5); } c.globalCompositeOperation = 'source-over'; }
     const ord = S.ISL.map((_, k) => k).filter(k => V3[k]).sort((a, b) => far(b) - far(a));
-    for (const k of ord) { const I = S.ISL[k], [x, y] = pt(k), fg = far(k), sc = K * (1 - fg * .018), R = I.hw * .8 * sc, br = .5 + .5 * Math.sin(t * (.7 + k * .13) + k * 2.1), bobY = Math.sin(t * .5 + k * 1.7) * .35, yy = y + bobY;   // острівець левітує — ледь гойдається
+    for (const k of ord) { const I = S.ISL[k], [x, y] = pt(k), fg = far(k), sc = K * (1 - fg * .018), R = I.hw * .8 * sc, br = .5 + .5 * Math.sin(t * (.7 + k * .13) + k * 2.1), yy = y;   // острівець левітує — ледь гойдається
       const is = SH.isle(8 + I.k);                                                                                                                                                             // острівець — із ґрунту свого виду
       c.globalAlpha = 1 - fg * .035; c.fillStyle = is[3]; c.beginPath(); c.moveTo(x - R, yy); c.quadraticCurveTo(x - R * .55, yy + R * .5, x - R * .1, yy + R * .78); c.lineTo(x + R * .12, yy + R * .7); c.quadraticCurveTo(x + R * .6, yy + R * .45, x + R, yy); c.closePath(); c.fill();   // скеля знизу
       c.fillStyle = is[4]; c.beginPath(); c.moveTo(x - R, yy); c.quadraticCurveTo(x - R * .55, yy + R * .5, x - R * .1, yy + R * .78); c.lineTo(x - R * .2, yy); c.closePath(); c.fill();                                                           // освітлений бік
@@ -284,6 +281,13 @@
       const rw = 1.1 + .6 * Math.abs(Math.sin(t * 31 + d)); c.fillStyle = '#eaffff'; c.fillRect(-1.5 - rw / 2, -.85, rw, .25); c.fillRect(1.5 - rw / 2, -.85, rw, .25);
       c.fillStyle = colr; c.fillRect(-.5, -.35, 1, .6); c.fillStyle = '#ffffff'; c.fillRect(-.15, -.25, .3, .3); c.restore();
       c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = (.4 + .35 * nt) * (.7 + .3 * Math.sin(t * 5 + d)); c.drawImage(glow(colr).cv, x - 3.5, y - 2.8, 7, 5.6); c.restore(); }
+    // (15.11, власник показав на знімку: «сканування виглядає неправильно з точки зору перспективи») СКАНЕР — горизонтальний зріз коробки:
+    // площина на одній висоті крізь увесь об'єм (чотири ребра по чотирьох стінках, а не лінія на двох гранях); ближні ребра яскраві,
+    // дальні тьмяні, сама площина ледь світиться; їде вежею вгору-вниз
+    { const u = .5 - .5 * Math.cos(t * .35), h = 3 + u * 52, A = P3(-hw, 0, h), B = P3(hw, 0, h), Cq = P3(hw, D, h), Dq = P3(-hw, D, h), seg = (p, q, lw, al) => { c.lineWidth = lw; c.globalAlpha = al; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); };
+      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = '#3be8ff'; c.globalAlpha = .09; c.beginPath(); poly([A, B, Cq, Dq]); c.fill(); c.strokeStyle = '#7af6ff'; c.lineCap = 'round';
+      seg(Dq, Cq, .3, .35); seg(A, Dq, .3, .35); seg(A, B, 2.2, .14); seg(B, Cq, 2.2, .14); seg(A, B, .5, .9); seg(B, Cq, .5, .9);
+      for (const p of [A, B, Cq, Dq]) { c.globalAlpha = .8; c.drawImage(glow('#a8f4ff').cv, p[0] - 1.4, p[1] - 1.4, 2.8, 2.8); } c.restore(); }
     c.restore();
   }
   /** (15.11, власник: «не подобається, як зникають останні гриби — виходять за рамки; треба, щоб у тому місці був голографічний
@@ -296,11 +300,19 @@
     for (let k = 0; k < C.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), u = L - (raw - wr * L), idx = (((k * 5 - (wr + 1) * 7) % 18) + 18) % 18, past = u - uE;
       if (past >= 0 && (!last || past < last.past)) last = { past, idx, n: -wr * C.n + (C.n - k) };
       if (u > uE + 2.2) continue; const uu = Math.min(u, uE), f = uu < 5 ? 1 : 0, a = f ? (5 - uu) / D : 1 - (uu - 5) / fw, go = Math.max(0, past) / 2.2, sz = 7.3;       // go 0…1 — гриб «злітає» в порт
-      c.save(); TF(f, a, Y); c.globalAlpha = Math.min(1, u / 1.5) * (1 - go);
-      const sh = SH.tray(c, idx, t);                                                                                                  // свій лоток і ґрунт у кожного виду
-      c.globalAlpha = Math.min(1, u / 1.5) * (1 - go) * (1 - go); c.drawImage(C.CV[idx], -sz / 2, .12 - sh - sz - go * 2.2, sz, sz);
+      // (15.11, власник: «не подобається перехід останнього гриба в конвеєрі… краще продумати») ПРИЙОМ У ВЕЖУ, три кроки замість «танення»:
+      // 1) лоток стає під порт — рядок сканера проходить грибом згори донизу; 2) гриб розбирається на спори свого кольору згори донизу,
+      // спори потоком ідуть у кільце порту (у вежу); 3) порожній лоток опускається в люк стрічки — не зникає, а їде вниз
+      const A0 = Math.min(1, u / 1.5), SB = SH.SUB[idx], sh = SB.h, col = SB.led, cl = v => Math.max(0, Math.min(1, v)), dis = cl((go - .3) / .5), sink = cl((go - .82) / .18), top = .12 - sh - sz, cv = C.CV[idx];
+      c.save(); TF(f, a, Y);
+      c.save(); if (sink > 0) { c.beginPath(); c.rect(-3.4, -4, 6.8, 5.5); c.clip(); c.translate(0, sink * 3.2); } c.globalAlpha = A0; SH.tray(c, idx, t); c.restore();
+      if (dis < 1) { c.globalAlpha = A0; c.drawImage(cv, 0, cv.height * dis, cv.width, cv.height * (1 - dis), -sz / 2, top + sz * dis, sz, sz * (1 - dis)); }
       if (go < .5) { const hp = V.at(f, a, Y - sh - sz * .5); C.HIT.push([hp[0], hp[1], idx, sz * .6]); }
-      if (go > 0) { c.globalCompositeOperation = 'lighter'; for (let q = 0; q < 8; q++) { c.globalAlpha = (1 - go) * .9; c.fillStyle = q % 2 ? '#7af6ff' : '#eaffff'; c.fillRect((hash(q, 51) - .5) * 5, -1 - hash(q, 52) * 6 - go * 4, .4, .4); } }
+      if (go > 0 && go < 1) { c.globalCompositeOperation = 'lighter';
+        if (go < .32) { const y = top + sz * (go / .32); c.globalAlpha = .9; c.fillStyle = col; c.fillRect(-sz / 2 - .5, y - .2, sz + 1, .4); c.fillStyle = '#ffffff'; c.fillRect(-sz / 2 - .2, y - .07, sz + .4, .14); c.globalAlpha = .18; c.fillStyle = col; c.fillRect(-sz / 2, top, sz, y - top); }   // сканер
+        if (dis > 0 && dis < 1) { const y0 = top + sz * dis; c.globalAlpha = .9; c.fillStyle = '#ffffff'; c.fillRect(-sz * .4, y0 - .1, sz * .8, .2);                                                                                                   // кромка розбирання
+          for (let q = 0; q < 14; q++) { const w = (t * 1.1 + q / 14) % 1, x = (hash(q, 51) - .5) * sz * .8 * (1 - w * .85), y = y0 + (-8.4 - y0) * w * w; c.globalAlpha = .95 * (1 - w * .4); c.fillStyle = q % 3 ? col : '#ffffff'; c.fillRect(x - .2, y - .2, .4, .4); } }   // спори — у порт
+        c.globalCompositeOperation = 'source-over'; }
       c.restore(); }
     V.last = last;
     { c.save(); TF(0, 1 - fw * .34 / fw, Y); c.globalCompositeOperation = 'lighter'; const pu = .5 + .5 * Math.sin(t * 3);                                               // порт: кільце під стелею й стовп світла
