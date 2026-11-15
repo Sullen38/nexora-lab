@@ -171,9 +171,39 @@
     c.fillStyle = g; c.fillRect(0, by - 5, fw, 10);
     return true;
   }
+  /** (15.11, власник: «там все живе само собою… пусти всі ресурси саме на промальовку та анімацію всього того блоку») ЖИТТЯ ВІТРИНИ-
+   *  ГРИБНИЦІ — усе саме, без Nexi: спори підіймаються вгору (вночі світяться яскравіше), туман стікає з-під лампи й клубочиться,
+   *  краплі конденсату сповзають склом, світні плями «дихають» — кожна у своєму такті, раз на ~3 хв — «дощ» усередині; уночі вежа
+   *  світить ізсередини на галерею й стіну. Точки — на двох видимих гранях коробки (лицьова — P(u, 0, Y), бічна — sideP(ins, Y));
+   *  на бічній грані — лише там, де її не закриває галерея (вище поруччя або ближче до кута, ніж її кромка). */
+  const VIT = PYL && PYL.dc.vit ? (() => { const M = PYL.dc, { P } = basis(PYL), top = Math.max(M.Ytop, -2), bot = M.Yb - 9, sR = M.sR || 1, hw = PYL.w / 2;
+    const at = (f, a, Y) => f ? proj(sideP(M.D * (1 - a), Y)) : proj(P(-sR * hw * (1 - 2 * a) * 1, 0, Y)), ok = (f, a, Y) => !f || Y < M.deck - 13 || a < .2;   // a: 0 — кут між гранями
+    const R = (k, q) => hash(k * 7 + 3, q * 13 + 1);
+    return { M, at, ok, top, bot, R, SP: Array.from({ length: 46 }, (_, k) => ({ f: R(k, 1) < .28 ? 0 : 1, a: .06 + R(k, 2) * .88, ph: R(k, 3), sp: .012 + R(k, 4) * .02, sw: R(k, 5) * 6.28 })),
+      GL: Array.from({ length: 9 }, (_, k) => ({ f: k % 3 ? 1 : 0, a: .12 + R(k, 6) * .76, y: R(k, 7), ph: R(k, 8) * 6.28, sp: .5 + R(k, 9) * .9, col: ['#3be8ff', '#7aff9a', '#ff6ad8', '#c77dff'][k % 4] })),
+      DR: Array.from({ length: 10 }, (_, k) => ({ f: k % 3 ? 1 : 0, a: .08 + R(k, 10) * .84, ph: R(k, 11), sp: .025 + R(k, 12) * .03 })) }; })() : null;
+  function vitLive(c, t, vx0, vx1) {
+    const V = VIT; if (!V) return; const c0 = V.at(1, 0, V.top), c1 = V.at(1, 1, V.bot), c2 = V.at(0, 1, V.top); if (Math.max(c0[0], c1[0], c2[0]) < vx0 - 10 || Math.min(c0[0], c1[0], c2[0]) > vx1 + 10) return;
+    const nt = 1 - (NX.daylight ? NX.daylight.v(t) : 1), H = V.bot - V.top, rain = (t % 190) > 176 ? Math.min(1, ((t % 190) - 176) / 2, (190 - (t % 190)) / 2) : 0;
+    c.save(); c.globalCompositeOperation = 'lighter';
+    c.beginPath(); c.rect(vx0 - 20, -1, vx1 - vx0 + 40, 400); c.clip();                                                                                   // не вище стелі
+    if (nt > .05) for (const f of [0, 1]) { const yb = f ? V.M.deck - 13 : V.bot, a = V.at(f, 0, V.top), b = V.at(f, 1, V.top), d = V.at(f, 1, yb), e = V.at(f, 0, yb);   // бічна грань — лише над галереєю                 // нічне внутрішнє світіння граней
+      c.globalAlpha = nt * (.2 + .04 * Math.sin(t * .7)); c.fillStyle = '#1a9aa0'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.lineTo(e[0], e[1]); c.closePath(); c.fill(); }
+    for (const g of V.GL) { const Y = V.top + 6 + g.y * (H - 12); if (!V.ok(g.f, g.a, Y)) continue; const p = V.at(g.f, g.a, Y), r = 7 + 3 * Math.sin(t * g.sp + g.ph);                // світні плями «дихають»
+      c.globalAlpha = (.1 + .26 * nt) * (.6 + .4 * Math.sin(t * g.sp + g.ph)); c.drawImage(glow(g.col).cv, p[0] - r, p[1] - r, r * 2, r * 2); }
+    for (const s of V.SP) { const u = (s.ph + t * s.sp) % 1, Y = V.bot - u * H, a = s.a + Math.sin(t * .6 + s.sw) * .03; if (!V.ok(s.f, a, Y)) continue; const p = V.at(s.f, a, Y);           // спори вгору
+      c.globalAlpha = Math.sin(u * Math.PI) * (.5 + .5 * nt); c.fillStyle = s.sw > 4 ? '#eaffff' : '#7af0ff'; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); if (nt > .3 && s.sw > 3) { c.globalAlpha *= .35; c.fillRect(p[0] - .7, p[1] - .7, 1.4, 1.4); } }
+    c.globalCompositeOperation = 'source-over';
+    for (let k = 0; k < 7; k++) { const f = k % 3 ? 1 : 0, u = (V.R(k, 20) + t * (.006 + V.R(k, 21) * .006)) % 1, a = .12 + V.R(k, 22) * .7 + Math.sin(t * .23 + k) * .06, Y = V.top + 2 + u * H * .55; if (!V.ok(f, a, Y)) continue;   // туман стікає з-під лампи
+      const p = V.at(f, a, Y), w = 9 + 4 * Math.sin(t * .31 + k); c.globalAlpha = .16 * Math.sin(u * Math.PI) + .0; c.fillStyle = u < .25 ? '#d8a0e8' : '#bfeaea'; c.beginPath(); c.ellipse(p[0], p[1], w, 2.2, 0, 0, 6.2832); c.fill(); }
+    for (const d of V.DR) { const u = (d.ph + t * d.sp) % 1, Y = V.top + 3 + u * (H - 4), sl = u % .31 < .08 ? 0 : 1; if (!V.ok(d.f, d.a, Y)) continue; const p = V.at(d.f, d.a, Y);            // краплі конденсату сповзають
+      c.globalAlpha = .75; c.fillStyle = '#eaffff'; c.fillRect(p[0] - .2, p[1], .4, .6); c.globalAlpha = .25 * sl; c.fillRect(p[0] - .12, p[1] - 2.2, .24, 2.2); }
+    if (rain > 0) for (let k = 0; k < 50; k++) { const f = k % 4 ? 1 : 0, a = V.R(k, 30), Y = V.top + ((V.R(k, 31) + t * 1.4) % 1) * H; if (!V.ok(f, a, Y)) continue; const p = V.at(f, a, Y); c.globalAlpha = .5 * rain; c.fillStyle = '#bff4ff'; c.fillRect(p[0], p[1], .25, 1.6); }   // «дощ»
+    c.restore();
+  }
   /** Вентилятор у круглій ґратці (бокова грань), вогник кодового замка, вогники лицьової грані. */
   function drawPylonBits(c, t, vx0, vx1) {
-    if (!PYL || !sideP) return; const M = PYL.dc; if (M.vit) return;                     // (15.11) вітрина-грибниця: без вентилятора, замка й вогників
+    if (!PYL || !sideP) return; const M = PYL.dc; if (M.vit) return vitLive(c, t, vx0, vx1);   // (15.11) вітрина-грибниця: без вентилятора, замка й вогників — своє життя
     const [vu, vy, vr] = M.vent;
     const q0 = proj(sideP(vu, vy)); if (q0[0] < vx0 - 30 || q0[0] > vx1 + 30) return;
     const qi = proj(sideP(vu + 1, vy)), qy = proj(sideP(vu, vy + 1));
