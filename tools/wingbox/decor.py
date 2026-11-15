@@ -331,15 +331,16 @@ def decor_side(L, sgn, C, R, verbose=True):
             y0 = fb(X) + (.6 if frm == 'edge' else 0.); y1 = min(y0 + ln, min(free_y(X + dx) for dx in (-w / 2 - 5, -w / 2, -w / 4, 0, w / 4, w / 2, w / 2 + 5)) - 1.5)
             a = W.a_of(X, MZ['P'] - 1.5); (x, z), _, _ = W.at(a, MZ['P'] - 1.5)
             hang(id, X, y0 - (1.2 if frm != 'edge' else 0.), y1, kind, w=w, inset=MZ['P'] - 1.5, frm=frm, anch=round(MZ['bot'], 2), **kw); out[-1]['on'] = mz(a)['id']; return out[-1]
-        for k, (X, kind, ln, w) in enumerate(((1426., 'pearls', 30, 15), (1587., 'tradescantia', 46, 15), (1459., 'wisteria', 22, 12), (1476., 'hoya', 24, 12))):   # (14.11) гліцинія й хоя — далі одна від одної й від кокедам
+        # (15.11, власник: «сад теж прибираємо, нижній… лишаємо повністю чистий, рослини всі пізніше додамо окремо») MZ_EMPTY — без висячого саду
+        for k, (X, kind, ln, w) in enumerate(() if MZ_EMPTY else ((1426., 'pearls', 30, 15), (1587., 'tradescantia', 46, 15), (1459., 'wisteria', 22, 12), (1476., 'hoya', 24, 12))):   # (14.11) гліцинія й хоя — далі одна від одної й від кокедам
             under(f'dc_mzv{k}', X, kind, w, ln, seed=41 + k)
         KK = []
-        for k, (X, ln, kind, pot) in enumerate(((1495., 31., 'asplenium', 'koke-pink'), (1508., 39., 'peperomia', 'koke-gold'), (1523., 36., 'fittonia', 'koke-cyan'))):
+        for k, (X, ln, kind, pot) in enumerate(() if MZ_EMPTY else ((1495., 31., 'asplenium', 'koke-pink'), (1508., 39., 'peperomia', 'koke-gold'), (1523., 36., 'fittonia', 'koke-cyan'))):
             KK.append(under(f'dc_kk{k}', X, kind, 11., ln, frm='string', seed=131 + k, pot=pot_of(pot, 7.5, 7.5)))   # (· 26) кокедами більші (8.6 -> 11)
         # (14.11, власник — скрін з обведеними місцями, «так» на список) потос: замість білої кулі (з-під листя стирчала «тарілка») —
         # плетений кошик у макраме; колумнея: замість неонового кільця з хромованою чашкою — рожевий вазон-конус у макраме
-        hangR = under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('basket', 8.5, 6.5))
-        under('dc_hp3', 1568., 'columnea', 12., 44., frm='hook', seed=171, pot=pot_of('pink', 6.5, 6.5))
+        hangR = None if MZ_EMPTY else under('dc_hangR', 1545., 'pothos', 20., 52., frm='hook', seed=7, pot=pot_of('basket', 8.5, 6.5))
+        if not MZ_EMPTY: under('dc_hp3', 1568., 'columnea', 12., 44., frm='hook', seed=171, pot=pot_of('pink', 6.5, 6.5))
         # ---------- (· 5) СВІТЛО Й ПОВІТРЯ: конуси світла з точкових світильників на споді антресолі (кожні 23 од. уздовж фасаду, за
         # 4.6 од. від краю — як у objects/dc_paint.js) — униз, поки не дійдуть до поля над зонами (живе: objects/decor_live.js)
         cones = []
@@ -356,7 +357,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         segs[0]['dc']['cones'] = cones
         # ---------- (· 3) ОБ'ЄМ: тіні на стіні й світло
         wshadow(rud, dy=3.)
-        for o in [hangR] + KK: wshadow(o, dy=5., rnd=1, top=.3 if o is hangR else .55)
+        for o in ([hangR] if hangR else []) + KK: wshadow(o, dy=5., rnd=1, top=.3 if o is hangR else .55)
     else:
         # ---------- Л1. Над AI-центром: СОТИ-ПОЛИЦІ (кіберпанк: шестикутні комірки з неоновим кантом, кожна свого кольору й
         # візерунка дна) — у кожній своя річ; і неонова вивіска «Nexi з паростком» (без слів)

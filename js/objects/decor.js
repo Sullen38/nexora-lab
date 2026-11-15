@@ -284,6 +284,7 @@
   }
   /** Де дрон у час t: маршрут або (· 7) політ до Nexi / зависання біля лійки (fill — скільки води долито, 0..1) / повернення. */
   function droneAt(t) {
+    if (!ROUTE.length) return null;                                                    // (15.11) другий поверх порожній — дрону-поливальнику нема чого поливати, його нема
     const C = CALL; if (C && C.off != null && t >= C.t0 + FIN) { OFF = C.off; C.off = null; }
     const D = routeAt(t); if (!C || t < C.t0) return D;
     if (t > C.tg + BACK) { CALL = null; return D; }
