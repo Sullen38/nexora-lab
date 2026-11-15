@@ -314,6 +314,12 @@
         if (f === 0 || true) { const a9 = f ? 1 : a1; const LL = (Y, w, col) => { const p = V.at(f, a0, Y), q = V.at(f, a9, Y); c.globalAlpha = 1; c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); };
           LL(Yb - 8.2, .6, '#aab6d0'); LL(Yb - 7, .8, '#b02a8a'); LL(Yb - 7, .4, '#ff8ae0'); LL(Yb - .45, .9, '#aab6d0'); LL(Yb - .8, .3, '#f4f8ff'); } }
       for (const [f, a] of [[0, 0], [1, 1]]) { const p = V.at(f, a, f ? M.slab[1] : V.top - 4), q = V.at(f, a, Yb); c.globalAlpha = 1; c.strokeStyle = '#8a9ac0'; c.lineWidth = 1; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.strokeStyle = '#f0f8ff'; c.lineWidth = .3; c.beginPath(); c.moveTo(p[0] - .25, p[1]); c.lineTo(q[0] - .25, q[1]); c.stroke(); } }
+    if (M.slab) for (const f of [0, 1]) { const len = f ? M.D : PYL.w, Y = M.Yb - 8.5 + 4.9, p = V.at(f, .5, Y), q = V.at(f, .5 + 1 / len, Y), d = V.at(f, .5, Y + 1), pu = .8 + .2 * Math.sin(t * 1.6 + f * 2);   // емблеми на цоколі — чітко, дихають
+      c.save(); c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]); c.globalAlpha = 1; c.fillStyle = '#12081e'; c.fillRect(-3.8, -2.9, 7.6, 5.8);
+      c.fillStyle = '#3be8ff'; c.fillRect(-.7, .1, 1.4, 2.4); c.fillStyle = '#eaffff'; c.fillRect(-.3, .1, .6, 2.4);
+      c.fillStyle = '#ff6ad8'; c.beginPath(); c.ellipse(0, .1, 3.1, 2.3, 0, Math.PI, TAU); c.closePath(); c.fill(); c.fillStyle = '#8a1c6a'; c.beginPath(); c.ellipse(0, -.25, 2.5, 1.65, 0, Math.PI, TAU); c.closePath(); c.fill();
+      c.fillStyle = '#fff0f8'; for (const [x, y, r] of [[-1.1, -1, .42], [1, -1.3, .38], [0, -.6, .26]]) { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .35 * pu; c.drawImage(glow('#ff6ad8').cv, -4.5, -3.6, 9, 6.4); c.restore(); }
     const a = V.at(1, 0, V.top - 4), b = V.at(1, 0, M.slab ? M.Yb : y0); c.globalAlpha = 1; c.strokeStyle = '#8a9ac0'; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
     c.strokeStyle = '#f0f8ff'; c.lineWidth = .35; c.beginPath(); c.moveTo(a[0] - .2, a[1]); c.lineTo(b[0] - .2, b[1]); c.stroke(); c.restore();
   }
@@ -476,7 +482,7 @@
     c.globalAlpha = 1; for (const [dy, col, lw] of [[.35, '#6a3a18', 1.1], [.2, '#c8803a', .6], [-.05, '#ffc890', .22]]) { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 4, V.pipe + dy); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke(); }   // мідна труба
     for (let s = 7.75, k = 0; s < V.smax; s += 15.5, k++) { const p = P2(s, 2, M.top + 4.3), q = P2(s + 1, 2, M.top + 4.3), ux = q[0] - p[0], uy = q[1] - p[1]; if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue;                    // лампи росту під стелею
       c.save(); c.transform(ux, uy, 0, 1, p[0], p[1]); c.fillStyle = '#0c0c1c'; c.fillRect(-2.6, -.5, 5.2, .9); c.fillStyle = '#ff6ad8'; c.fillRect(-2.3, .1, 4.6, .4); c.fillStyle = '#fff0f8'; c.fillRect(-2.3, .1, 4.6, .14);
-      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .09 + .05 * Math.sin(t * .8 + k) + .06 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.2, .5); c.lineTo(2.2, .5); c.lineTo(4.6, 9.5); c.lineTo(-4.6, 9.5); c.closePath(); c.fill(); c.restore(); }
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .05 + .025 * Math.sin(t * .8 + k) + .05 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.2, .5); c.lineTo(2.2, .5); c.lineTo(4.6, 9.5); c.lineTo(-4.6, 9.5); c.closePath(); c.fill(); c.restore(); }
     c.fillStyle = '#0a0a18'; band(2.5, V.fl + 1.2, yB + 1); c.fill(); c.strokeStyle = '#6a6a9c'; c.lineWidth = .35; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 2.5, V.fl + 1.25); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();   // стрічка
     c.fillStyle = '#3a3a64'; for (let s = (-t * .55) % 2 + 2; s < V.smax + 2; s += 2) { const p = P2(s, 2.5, V.fl + 1.9); if (p[0] < vx0 || p[0] > vx1) continue; c.fillRect(p[0] - .5, p[1] - .15, 1, .3); }                               // риски стрічки їдуть
     c.restore();
@@ -489,12 +495,12 @@
     // НЕОНОВИЙ ЛОГОТИП ГРИБНИЦІ на склі: кільце, гриб-контур, спори на орбіті; темна підкладка напівпрозора — лотки видно за ним
     { const sm = (Math.floor(V.mid / 15.5) + .5) * 15.5 - s0 + .25, p = P(sm, M.top + 9.1), q = P(sm + 1, M.top + 9.1), fl = .88 + .12 * Math.sin(t * 2.1) - (hash(Math.floor(t * 5), 17) > .97 ? .35 : 0);
       if (p[0] > vx0 - 10 && p[0] < vx1 + 10) { c.transform(q[0] - p[0], q[1] - p[1], 0, 1, p[0], p[1]); c.lineCap = 'round'; c.lineJoin = 'round';
-        c.globalAlpha = .46; c.fillStyle = '#02060e'; c.beginPath(); c.arc(0, 0, 5.5, 0, TAU); c.fill();
+        c.globalAlpha = .62; c.fillStyle = '#02060e'; c.beginPath(); c.arc(0, 0, 5.5, 0, TAU); c.fill();
         const draw = (lw, al) => { c.lineWidth = lw; c.globalAlpha = al * fl;
           c.strokeStyle = '#3be8ff'; c.beginPath(); c.arc(0, 0, 5.2, .25 + t * .2, TAU - .25 + t * .2); c.stroke();                                                   // кільце з розривом, що обертається
           c.strokeStyle = '#ff6ad8'; c.beginPath(); c.moveTo(-3.5, .2); c.bezierCurveTo(-3.5, -4.4, 3.5, -4.4, 3.5, .2); c.closePath(); c.stroke();                     // шапинка
           c.strokeStyle = '#3be8ff'; c.beginPath(); c.moveTo(-.8, .2); c.lineTo(-1, 3.3); c.lineTo(1, 3.3); c.lineTo(.8, .2); c.stroke(); };                              // ніжка
-        c.globalCompositeOperation = 'lighter'; draw(1.6, .22); c.globalCompositeOperation = 'source-over'; draw(.5, 1);
+        c.globalCompositeOperation = 'lighter'; draw(1.9, .22); c.globalCompositeOperation = 'source-over'; draw(.7, 1);
         c.globalAlpha = fl; c.fillStyle = '#fff0f8'; for (const [x, y, r] of [[-1.5, -1.3, .5], [.9, -2, .45], [1.9, -.8, .36]]) { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
         c.fillStyle = '#8affa8'; for (let k = 0; k < 4; k++) { const a = t * .5 + k * 1.57; c.fillRect(Math.cos(a) * 4.3 - .25, Math.sin(a) * 4.3 - .25, .5, .5); } } }
     c.restore();
@@ -554,7 +560,7 @@
       if (nt > .05) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = nt * .24; c.fillStyle = '#1fb0b4'; c.beginPath(); for (let s = 0; s <= V.smax; s += 8) { const p = V.P(s, top); s ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); }
         for (let s = V.smax; s >= 0; s -= 8) { const p = V.P(s, V.fl + 1.4); c.lineTo(p[0], p[1]); } c.closePath(); c.fill(); c.globalCompositeOperation = 'source-over'; }
       const sL = V.smax * (.5 + .44 * Math.sin(t * .11));                                                                                              // лампа на рейці
-      c.save(); TF(sL, top); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .13 + .1 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.6, .8); c.lineTo(2.6, .8); c.lineTo(5.2, hgt); c.lineTo(-5.2, hgt); c.closePath(); c.fill();
+      c.save(); TF(sL, top); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .08 + .1 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.6, .8); c.lineTo(2.6, .8); c.lineTo(5.2, hgt); c.lineTo(-5.2, hgt); c.closePath(); c.fill();
       c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = '#0c0c1c'; c.fillRect(-3.2, -.2, 6.4, 1.1); c.fillStyle = '#ff6ad8'; c.fillRect(-2.8, .45, 5.6, .4); c.fillStyle = '#fff0f8'; c.fillRect(-2.8, .45, 5.6, .14); c.restore();
       const ph = t * .085, n = Math.floor(ph), u = ph - n, pos = q => 7 + hash(q, 5) * (V.smax - 16), mv = Math.min(1, u / .38), e = mv * mv * (3 - 2 * mv), sA = pos(n) + (pos(n + 1) - pos(n)) * e, scan = u > .42 && u < .92, ext = scan ? Math.min(1, (u - .42) / .1, (.92 - u) / .08) : 0;   // рука
       c.save(); TF(sA, top); c.fillStyle = '#0c0c1c'; c.fillRect(-1.5, -.3, 3, 1.2); c.fillStyle = '#9a9ac4'; c.fillRect(-1.2, -.1, 2.4, .35); c.fillStyle = '#ffd23a'; c.fillRect(-.35, .2, .7, .5);                 // каретка
