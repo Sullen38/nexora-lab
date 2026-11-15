@@ -304,7 +304,7 @@ NX.arc = NX.arc || {};
    *  неон угорі, ілюмінатор (хромове кільце з болтами, нічне небо із зорями й місяцем), дві об'ємні полиці (виступають на 2.2 од.):
    *  на верхній — книжки й світна банка, на нижній — ящики з розсадою. u — уздовж стіни, Y — висота. */
   SHP['st:dc_mzwall'] = (G, B) => {
-    const w = B.w, hw = w / 2, H = B.yb - B.yt, nF = sub(G.P(0, 0, 0), G.P(0, 1, 0)), L = lit(nF, G.P(0, 0, B.yt)), pcx = w * .2, pcy = H * .4, pr = 5.6;
+    const w = B.w, hw = w / 2, H = B.yb - B.yt, nF = sub(G.P(0, 0, 0), G.P(0, 1, 0)), L = lit(nF, G.P(0, 0, B.yt)), pcx = (((B.dc && B.dc.port) != null ? B.dc.port : .7) - .5) * w, pcy = H * .34, pr = 4.4;   // port — де просвіт між рослинами (decor.py)
     const o = G.P(-hw, 0, B.yt);
     G.face([o, G.P(hw, 0, B.yt), G.P(hw, 0, B.yb), G.P(-hw, 0, B.yb)], o, sub(G.P(hw, 0, B.yt), o), [0, H, 0], (u, v, i, j) => {
       const x = (u - .5) * w, y = v * H, e = Math.min(u * w, (1 - u) * w, y, H - y);
@@ -324,7 +324,7 @@ NX.arc = NX.arc || {};
       quad(G, [add3(a, [0, .8, 0]), add3(b, [0, .8, 0]), add3(b2, [0, .8, 0]), add3(a2, [0, .8, 0])], (u, v, i, j) => ramp(PL.STEEL, .16 + (1 - v) * .12, i, j), [0, 1, 0]);   // спід
       fill(u0, u1, Y); };
     const stand = (u0, u1, Y, h, sh) => { const a = G.P(u0, -1.2, Y - h), b = G.P(u1, -1.2, Y - h); quad(G, [a, b, add3(b, [0, h, 0]), add3(a, [0, h, 0])], sh, nF); };
-    shelf(-hw + 2.5, pcx - pr - 1.5, B.yt + H * .46, (u0, u1, Y) => {                                                              // верхня полиця: книжки й світна банка
+    shelf(-hw + 2.5, Math.min(pcx - pr - 1.5, hw - 4), B.yt + H * .46, (u0, u1, Y) => {                                                              // верхня полиця: книжки й світна банка
       const BK = ['#ff6ad8', '#3be8ff', '#ffd23a', '#7aff9a', '#c77dff', '#ff9a3a']; let x = u0 + .8;
       for (let k = 0; k < 6 && x < u1 - 6; k++) { const bw = .9 + hash(k, 3) * .5, bh = 3.4 + hash(k, 7) * 1.4, c0 = col(BK[k % BK.length]); stand(x, x + bw, Y, bh, (u, v, i, j) => u < .18 || u > .82 ? dim(c0, .55) : v > .2 && v < .32 ? col('#fff4d8') : dim(c0, .85 * L + .1)); x += bw + .15; }
       stand(u1 - 3.6, u1 - 1, Y, 3.6, (u, v, i, j) => { if (v < .18) return ramp(PL.CHROME, .6, i, j); const e = Math.min(u, 1 - u); return e < .12 ? col('#9af6ff') : E(hash(i >> 1, j >> 1) > .8 ? col('#eaffff') : N.cyan[1]); }); });

@@ -231,11 +231,13 @@ def decor_side(L, sgn, C, R, verbose=True):
         BACK, FRONT = 11.5, MZ['P'] - 10.
         # ОДИН РЯД зліва направо (від ядра), без накладань: кожна річ — одразу за попередньою (межі на екрані + 2 од.);
         # висота — до стелі в цьому місці; там, де плита вже під стелею, — більше не ставимо
-        ROW = [('strelitzia', 17, 52, 'navyneon', 10, 8, BACK, dict(seed=61)), ('palm', 17, 46, 'chrome', 8, 9, BACK, dict(seed=33)), ('lantern',),
-               ('monstera', 16, 32, 'ceram', 9, 6, BACK, dict(seed=32)), ('greenhouse',), ('flytrap', 11, 14, 'jade', 8, 4.5, FRONT, dict(seed=5)),
-               ('shroom', 10, 12, 'darkcyan', 9, 4.5, FRONT, dict(seed=8, glow=1))]
-        prev = door_X1 + .5; k = 0
+        # (15.11, крок 4 зі схеми другого поверху) рослини на плиті менші (~15%) і вужчі; між пальмою й ліхтарем — просвіт (gap):
+        # крізь нього видно ілюмінатор задньої стіни (PORT_X — його середина на екрані)
+        ROW = [('strelitzia', 14, 44, 'navyneon', 8, 7, BACK, dict(seed=61)), ('palm', 13, 39, 'chrome', 7, 8, BACK, dict(seed=33)), ('gap', 6.), ('lantern',),
+               ('monstera', 13, 27, 'ceram', 8, 5.5, BACK, dict(seed=32)), ('greenhouse',)]   # (15.11) мухоловку й гриб у вазоні з ряду прибрано: їм давно не лишалось місця під стелею, у довіднику їх нема (гриби ростуть на пілоні)
+        prev = door_X1 + .5; k = 0; PORT_X = None
         for spec in ROW:
+            if spec[0] == 'gap': PORT_X = prev + 1 + spec[1] / 2; prev += spec[1]; continue
             def make(a, h=None):
                 if spec[0] == 'lantern': return item(W, 'dc_lantern', a, 9., 9., MZ['top'], MZ['top'] - (h or 22), 'dc_lantern', inset=FRONT - 4.5, on=mz(a)['id'], glow=1, gr=34)
                 if spec[0] == 'greenhouse': return item(W, 'dc_green', a, 13., 13., MZ['top'], MZ['top'] - (h or 28), 'dc_art', inset=BACK - 6.5, on=mz(a)['id'], dc=dict(kind='greenhouse', plant='orchid', seed=27))
@@ -259,7 +261,7 @@ def decor_side(L, sgn, C, R, verbose=True):
         # над плитою від пілона до ліхтаря: три секції з рамою, рожевий неон угорі, круглий ілюмінатор із нічним небом, дві полиці
         # (книжки, світна банка, ящики з розсадою). Лежить НА стіні (ONWALL) — рослини й ліхтар стоять перед нею.
         aW0, aW1 = W.a_of(1429., .5), W.a_of(1479., .5); aWm = (aW0 + aW1) / 2
-        add(item(W, 'dc_mzwall', aWm, .4, round(chord(W, aW0, aW1, .5), 2), MZ['top'] - .6, MZ['top'] - 25., 'dc_mzwall', inset=.1, on=mz(aWm)['id'], dc=dict(seed=5)))
+        add(item(W, 'dc_mzwall', aWm, .4, round(chord(W, aW0, aW1, .5), 2), MZ['top'] - .6, MZ['top'] - 25., 'dc_mzwall', inset=.1, on=mz(aWm)['id'], dc=dict(seed=5, port=round((W.a_of(PORT_X, .5) - aW0) / (aW1 - aW0), 3) if PORT_X else .7)))
         # (15.11, власник: «покращити другий поверх… більш об'ємніше»; схему прийняв — «так давай») БАЛКОН-ВИСТУП: окрема плита, що
         # виступає з фасаду на 6.5 од. до глядача (між емблемою й звисом ріпсалісу), зі своїм скляним поруччям і двома
         # кронштейнами; поруччя антресолі за ним — із проймою (gate). Низ балкона вищий за низ антресолі — до зон не наближається.
