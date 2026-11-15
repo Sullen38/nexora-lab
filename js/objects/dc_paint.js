@@ -550,7 +550,8 @@ NX.arc = NX.arc || {};
     if (r < RAMPS - 1 || true) { const rn = Math.min(RAMPS - 1, r + 1), yy = Y - rampY(rn, U);                                         // сама колода (та, що над точкою): кора, зріз, мох зверху
       if (yy >= 0 && yy < 2.3) { if (yy < .75) return ramp(pal(['#1a5a22', '#2f8a3a', '#5fc85a', '#b8f08a']), .45 + hash(i >> 1, j) * .5, i, j);
         return ramp(pal(['#24160c', '#44291a', '#6e4a2c', '#a07446']), .62 - (yy - .75) * .28 + ((((U * 1.3) | 0) + ((yy * 2) | 0)) % 2) * .14, i, j); } }
-    if (r < 0) r = 0;
+    if (r < 0) { const d = Y - rampY(0, U);                                                                                                  // (15.11) під найнижчою колодою — ґрунт (було: смуги «трави» й обрізаний гриб)
+      return ramp(pal(['#120c08', '#24180e', '#3a2616', '#523a22']), .5 - d * .05 + (hash(i >> 1, j >> 1) - .5) * .3, i, j); }
     const hero = (u, yq) => { for (let q = 0; q < 4; q++) { const sd = r * 11 + q * 3, n = (r % 2 ? [.16, .4, .64, .86] : [.14, .36, .6, .84])[q] + (hash(sd, 1) - .5) * .06, cx = U0 + n * UW, by = rampY(r, cx), room = r < RAMPS - 1 ? by - rampY(r + 1, cx) - 2.6 : by - top - 3;
         if (room < 5) continue; const sz = Math.min(room * .92, 10.5 + hash(sd, 2) * 6), c = MUSH[(r * 3 + q * 5 + (r >> 1)) % 8](u - cx, by - yq, sz, i, j); if (c) return c; } return 0; };
     const c = hero(U, Y); if (c) return c;

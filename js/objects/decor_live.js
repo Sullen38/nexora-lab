@@ -188,7 +188,7 @@
     c.save(); c.globalCompositeOperation = 'lighter';
     c.beginPath(); c.rect(vx0 - 20, -1, vx1 - vx0 + 40, 400); c.clip();                                                                                   // не вище стелі
     if (nt > .05) for (const f of [0, 1]) { const yb = f ? V.M.deck - 13 : V.bot, a = V.at(f, 0, V.top), b = V.at(f, 1, V.top), d = V.at(f, 1, yb), e = V.at(f, 0, yb);   // бічна грань — лише над галереєю                 // нічне внутрішнє світіння граней
-      c.globalAlpha = nt * (.2 + .04 * Math.sin(t * .7)); c.fillStyle = '#1a9aa0'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.lineTo(e[0], e[1]); c.closePath(); c.fill(); }
+      c.globalAlpha = nt * (.34 + .05 * Math.sin(t * .7)); c.fillStyle = '#1fb0b4'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.lineTo(e[0], e[1]); c.closePath(); c.fill(); }
     for (const g of V.GL) { const Y = V.top + 6 + g.y * (H - 12); if (!V.ok(g.f, g.a, Y)) continue; const p = V.at(g.f, g.a, Y), r = 7 + 3 * Math.sin(t * g.sp + g.ph);                // світні плями «дихають»
       c.globalAlpha = (.1 + .26 * nt) * (.6 + .4 * Math.sin(t * g.sp + g.ph)); c.drawImage(glow(g.col).cv, p[0] - r, p[1] - r, r * 2, r * 2); }
     for (const s of V.SP) { const u = (s.ph + t * s.sp) % 1, Y = V.bot - u * H, a = s.a + Math.sin(t * .6 + s.sw) * .03; if (!V.ok(s.f, a, Y)) continue; const p = V.at(s.f, a, Y);           // спори вгору
