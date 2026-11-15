@@ -448,14 +448,53 @@
   // паросток, біля вежі — дорослий; у вежі лоток зникає, з дальнього кінця заїжджає новий (інший вид). По мідній трубі під стелею
   // біжать бульбашки розчину — теж до вежі. Геометрія — фасад антресолі (як LED-вогники вище).
   const CONV = (() => { const seg = items.filter(B => B.st === 'dc_mz').sort((a, b) => a.dc.i - b.dc.i); if (!seg.length || !NX.arc.mushCanvas) return null;
-    const M = seg[0].dc, sg = M.sgn, C = M.C, R = M.R - M.P - .05, D2R = Math.PI / 180, a0 = M.a0, P = (s, Y) => { const a = a0 + s / (R * D2R); return proj([C[0] + sg * R * Math.sin(a * D2R), Y, C[1] + R * Math.cos(a * D2R)]); };
+    const M = seg[0].dc, sg = M.sgn, C = M.C, R = M.R - M.P - .05, D2R = Math.PI / 180, a0 = M.a0, P = (s, Y) => { const a = a0 + s / (R * D2R); return proj([C[0] + sg * R * Math.sin(a * D2R), Y, C[1] + R * Math.cos(a * D2R)]); }, P2 = (s, d, Y) => { const a = a0 + s / (R * D2R), r = R + d; return proj([C[0] + sg * r * Math.sin(a * D2R), Y, C[1] + r * Math.cos(a * D2R)]); };   // P2 — точка в глибині коридору (d — від скла до стіни)
     let smax = 0; for (let s = 0; s < 400; s += 2) { const p = P(s, M.top + 12); if (p[1] < -6 || p[0] > 1606 || a0 + s / (R * D2R) > M.a1) break; smax = s; }
-    return { M, P, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 18 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
+    return { M, P, P2, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 18 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
+  /** (15.11, власник: «якісне зображення без недомальованих пробілів, щоб усе було гарненько й чітко… додай поверх прикольний
+   *  неоновий логотип там, де він був, тільки щоб гриби за нього заходили чітко») КОРИДОР — В ОБ'ЄМІ, як вежа: за склом видно задню
+   *  стінку (глибина 9), дальню полицю з дрібними грибами (7), мідну трубу (4), стрічку з лотками (2.5); ребра вікон, відблиски скла
+   *  й неоновий логотип — на самому склі, поверх усього: лотки проїжджають ЗА логотипом і лишаються видимими крізь нього. */
+  function convBack(c, t, V, nt, vx0, vx1) {
+    const M = V.M, P2 = V.P2, yT = M.top + 3.25, yB = M.top + 14.95, band = (d, Ya, Yb) => { c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, d, Ya); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } for (let s = V.smax + 4; s >= -1; s -= 5) { const p = P2(s, d, Yb); c.lineTo(p[0], p[1]); } c.closePath(); };
+    c.save(); band(0, yT, yB); c.clip(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+    c.fillStyle = '#03101c'; band(0, yT, yB); c.fill(); c.fillStyle = '#08303e'; band(9, yT, yB); c.fill();                                              // тло й задня стінка
+    { const a = P2(0, 9, yB), g = c.createLinearGradient(0, a[1] - 9, 0, a[1] + 2); g.addColorStop(0, 'rgba(40,170,170,0)'); g.addColorStop(1, 'rgba(40,170,170,.3)'); }
+    c.strokeStyle = '#2a8a98'; c.lineWidth = .3; c.globalAlpha = .35; for (let s = 2; s < V.smax + 4; s += 7.75) { const a = P2(s, 9, yT), b = P2(s, 9, yB); if (a[0] < vx0 - 4 || a[0] > vx1 + 4) continue; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }   // шви задньої стінки
+    c.globalAlpha = .8; c.strokeStyle = '#1a6a74'; c.lineWidth = .5; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 7, V.fl - 3.4); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();   // дальня полиця
+    c.imageSmoothingEnabled = false; for (let s = 1.5, k = 0; s < V.smax + 2; s += 5.3, k++) { if (hash(k, 91) < .18) continue; const p = P2(s, 7, V.fl - 3.6); if (p[0] < vx0 - 4 || p[0] > vx1 + 4) continue; const w = 3.2 + hash(k, 92) * 1.3; c.globalAlpha = .5 + .12 * nt; c.drawImage(V.CV[(k * 7 + 3) % 18], p[0] - w / 2, p[1] - w, w, w); }
+    c.globalAlpha = 1; for (const [dy, col, lw] of [[.35, '#6a3a18', 1.1], [.2, '#c8803a', .6], [-.05, '#ffc890', .22]]) { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 4, V.pipe + dy); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke(); }   // мідна труба
+    for (let s = 7.75, k = 0; s < V.smax; s += 15.5, k++) { const p = P2(s, 2, M.top + 4.3), q = P2(s + 1, 2, M.top + 4.3), ux = q[0] - p[0], uy = q[1] - p[1]; if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue;                    // лампи росту під стелею
+      c.save(); c.transform(ux, uy, 0, 1, p[0], p[1]); c.fillStyle = '#0c0c1c'; c.fillRect(-2.6, -.5, 5.2, .9); c.fillStyle = '#ff6ad8'; c.fillRect(-2.3, .1, 4.6, .4); c.fillStyle = '#fff0f8'; c.fillRect(-2.3, .1, 4.6, .14);
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .09 + .05 * Math.sin(t * .8 + k) + .06 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.2, .5); c.lineTo(2.2, .5); c.lineTo(4.6, 9.5); c.lineTo(-4.6, 9.5); c.closePath(); c.fill(); c.restore(); }
+    c.fillStyle = '#0a0a18'; band(2.5, V.fl + 1.2, yB + 1); c.fill(); c.strokeStyle = '#6a6a9c'; c.lineWidth = .35; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 2.5, V.fl + 1.25); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();   // стрічка
+    c.fillStyle = '#3a3a64'; for (let s = (-t * .55) % 2 + 2; s < V.smax + 2; s += 2) { const p = P2(s, 2.5, V.fl + 1.9); if (p[0] < vx0 || p[0] > vx1) continue; c.fillRect(p[0] - .5, p[1] - .15, 1, .3); }                               // риски стрічки їдуть
+    c.restore();
+  }
+  function convFront(c, t, V, nt, vx0, vx1) {
+    const M = V.M, P = V.P, yT = M.top + 3.2, yB = M.top + 15, s0 = M.s0 || 0; c.save(); c.globalCompositeOperation = 'source-over';
+    for (let k = Math.ceil(s0 / 15.5); k * 15.5 - s0 < V.smax + 4; k++) { const s = k * 15.5 - s0 + .25, a = P(s, yT), b = P(s, yB); if (a[0] < vx0 - 4 || a[0] > vx1 + 4 || s < -.5) continue;       // ребра вікон
+      c.globalAlpha = 1; c.strokeStyle = '#1a2038'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); c.strokeStyle = '#8a98b8'; c.lineWidth = .6; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+      const g0 = P(s + 5.2, yT + .3), g1 = P(s + 2.2, yB - .3), g2 = P(s + 6.4, yT + .3), g3 = P(s + 3.4, yB - .3); c.globalAlpha = .1; c.fillStyle = '#d8f4ff'; c.beginPath(); c.moveTo(g0[0], g0[1]); c.lineTo(g2[0], g2[1]); c.lineTo(g3[0], g3[1]); c.lineTo(g1[0], g1[1]); c.closePath(); c.fill(); }   // відблиск скла
+    // НЕОНОВИЙ ЛОГОТИП ГРИБНИЦІ на склі: кільце, гриб-контур, спори на орбіті; темна підкладка напівпрозора — лотки видно за ним
+    { const sm = (Math.floor(V.mid / 15.5) + .5) * 15.5 - s0 + .25, p = P(sm, M.top + 9.1), q = P(sm + 1, M.top + 9.1), fl = .88 + .12 * Math.sin(t * 2.1) - (hash(Math.floor(t * 5), 17) > .97 ? .35 : 0);
+      if (p[0] > vx0 - 10 && p[0] < vx1 + 10) { c.transform(q[0] - p[0], q[1] - p[1], 0, 1, p[0], p[1]); c.lineCap = 'round'; c.lineJoin = 'round';
+        c.globalAlpha = .46; c.fillStyle = '#02060e'; c.beginPath(); c.arc(0, 0, 5.5, 0, TAU); c.fill();
+        const draw = (lw, al) => { c.lineWidth = lw; c.globalAlpha = al * fl;
+          c.strokeStyle = '#3be8ff'; c.beginPath(); c.arc(0, 0, 5.2, .25 + t * .2, TAU - .25 + t * .2); c.stroke();                                                   // кільце з розривом, що обертається
+          c.strokeStyle = '#ff6ad8'; c.beginPath(); c.moveTo(-3.5, .2); c.bezierCurveTo(-3.5, -4.4, 3.5, -4.4, 3.5, .2); c.closePath(); c.stroke();                     // шапинка
+          c.strokeStyle = '#3be8ff'; c.beginPath(); c.moveTo(-.8, .2); c.lineTo(-1, 3.3); c.lineTo(1, 3.3); c.lineTo(.8, .2); c.stroke(); };                              // ніжка
+        c.globalCompositeOperation = 'lighter'; draw(1.6, .22); c.globalCompositeOperation = 'source-over'; draw(.5, 1);
+        c.globalAlpha = fl; c.fillStyle = '#fff0f8'; for (const [x, y, r] of [[-1.5, -1.3, .5], [.9, -2, .45], [1.9, -.8, .36]]) { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
+        c.fillStyle = '#8affa8'; for (let k = 0; k < 4; k++) { const a = t * .5 + k * 1.57; c.fillRect(Math.cos(a) * 4.3 - .25, Math.sin(a) * 4.3 - .25, .5, .5); } } }
+    c.restore();
+  }
   function drawConv(c, t, vx0, vx1) {
     const V = CONV; if (!V || V.n < 2) return; const a = V.P(0, V.fl), b = V.P(V.smax, V.fl); if (Math.max(a[0], b[0]) < vx0 - 10 || Math.min(a[0], b[0]) > vx1 + 10) return;
     c.save(); c.beginPath(); c.rect(vx0 - 20, 0, Math.min(vx1 + 20, 1600) - vx0 + 20, 400); c.clip(); c.imageSmoothingEnabled = false; const L = V.n * 7.75;   // не вище стелі й не за торцеву стіну
+    const nt0 = 1 - (NX.daylight ? NX.daylight.v(t) : 1); convBack(c, t, V, nt0, vx0, vx1); c.imageSmoothingEnabled = false;
     for (let k = 0; k < V.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), s = raw - wr * L; if (s < 1.6 || s > V.smax - 1) continue;                                    // у вежі, за краєм
-      const p = V.P(s, V.fl); if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue; const q = V.P(s + 1, V.fl), d = V.P(s, V.fl + 1), near = 1 - s / V.smax, sz = 1.6 + near * 5.7, fade = Math.min(1, (s - 1.6) / 2, (V.smax - 1 - s) / 3);
+      const p = V.P2(s, 2.5, V.fl); if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue; const q = V.P2(s + 1, 2.5, V.fl), d = V.P2(s, 2.5, V.fl + 1), near = 1 - s / V.smax, sz = 1.6 + near * 5.7, fade = Math.min(1, (s - 1.6) / 2, (V.smax - 1 - s) / 3);
       c.save(); c.globalAlpha = fade; c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]);
       c.fillStyle = '#0c0c1c'; c.fillRect(-2.9, 0, 5.8, 1.45); c.fillStyle = '#34345c'; c.fillRect(-2.7, .2, 5.4, .95); c.fillStyle = '#8a8abc'; c.fillRect(-2.7, .2, 5.4, .22);      // лоток
       c.fillStyle = '#2f8a3a'; c.fillRect(-2.6, -.45, 5.2, .5); c.fillStyle = '#7ad86a'; c.fillRect(-2.6, -.45, 5.2, .18);                                                         // мох
@@ -485,7 +524,8 @@
         const sy = 1.6 + al + (hgt - 1.6 - al) * (.5 + .5 * Math.sin(t * 7)); c.globalAlpha = .9 * ext; c.fillRect(-2.2, sy, 4.4, .2); }                                                                                    // рядок сканера
       c.restore(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
     c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
-    for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P(s, V.pipe); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
+    for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P2(s, 4, V.pipe + .2); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
+    convFront(c, t, V, nt0, vx0, vx1);
     c.restore();
   }
 
