@@ -215,7 +215,7 @@
     for (let k = 0; k < 6; k++) { const f = k % 3 ? 1 : 0, a = .2 + .6 * (.5 + .5 * Math.sin(t * (.17 + k * .03) + k * 1.9)), Y = V.top + H * (.12 + .7 * (.5 + .5 * Math.sin(t * (.13 + k * .02) + k * 2.7))); if (!V.ok(f, a, Y)) continue;   // світляки
       const p = V.at(f, a, Y), bl = .5 + .5 * Math.sin(t * 3 + k * 4); c.globalAlpha = .35 + .5 * bl; c.drawImage(glow('#d8ff7a').cv, p[0] - 1.8, p[1] - 1.8, 3.6, 3.6); c.globalAlpha = 1; c.fillStyle = '#f4ffc8'; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
     for (let k = 0; k < 7; k++) { const u = (k / 7 + t * .09) % 1, p = V.at(1, 0, V.M.Yb - 9 - u * (V.M.Yb - 9 - V.top)); c.globalAlpha = .9; c.fillStyle = '#eaffff'; c.fillRect(p[0] - .3, p[1] - .5, .6, 1); }      // розчин кутовою стійкою вгору
-    vitTrays(c, t, V); vitRail(c, t, V); vitGlass(c, t, V);
+    vitGlass(c, t, V); vitTrays(c, t, V);
     c.restore();
     vitHolo(c, t, nt);
   }
@@ -274,30 +274,31 @@
       c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = (.4 + .35 * nt) * (.7 + .3 * Math.sin(t * 5 + d)); c.drawImage(glow(colr).cv, x - 3.5, y - 2.8, 7, 5.6); c.restore(); }
     c.restore();
   }
-  /** (15.11, власник обвів дві «не промальовані» зони) 1) низ вежі за склом поруччя: сцена тепер іде до кромки плити, тож поруччя
-   *  галереї, що проходить перед вежею (поручень, неонова нитка, стійка з ковпачком, скло з відблисками), домальовано тут поверх
-   *  сцени — тією самою геометрією, що в растрі (CONV.P). 2) комір на лицьовій грані: лотки з дорослими грибами не зникають біля
-   *  вежі, а їдуть далі — коміром за ріг, до лівого краю (там їх забирає ліфт у вітрину). */
-  function vitRail(c, t, V) {
-    if (!CONV) return; const M = CONV.M, P = CONV.P, t2 = M.top - M.rail, sE = V.sE, ln = (Y, s0 = -.6, s1 = sE) => { const a = P(s0, Y), b = P(s1, Y); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); };
-    c.save(); c.beginPath(); c.rect(V.at(1, 0, 0)[0] - .6, -1, V.at(1, 1, 0)[0] - V.at(1, 0, 0)[0] + .6, 200); c.clip(); c.globalCompositeOperation = 'source-over';
-    { const a = P(-.6, t2), b = P(sE, t2), d = P(sE, M.top), e = P(-.6, M.top); c.globalAlpha = .1; c.fillStyle = '#9adcf0'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.lineTo(e[0], e[1]); c.closePath(); c.fill();   // скло
-      c.globalAlpha = .5; c.strokeStyle = '#bfe9ff'; c.lineWidth = .3; for (const s of [5, 18]) { const p = P(s, t2 + 1.2), q = P(s + 5.5, M.top - 1.8); c.beginPath(); c.moveTo(q[0], p[1]); c.lineTo(p[0], q[1]); c.stroke(); }                                // відблиски
-      c.globalAlpha = .22; c.strokeStyle = '#9adcf0'; c.lineWidth = 1.4; ln(M.top - 1.1); }                                                                                                                                                            // фрит-смуга
-    c.globalAlpha = 1; c.strokeStyle = '#3be8ff'; c.lineWidth = .5; ln(t2 + 1.5);
-    c.strokeStyle = '#8a98b8'; c.lineWidth = 1.5; ln(t2 + .2); c.strokeStyle = '#eef4ff'; c.lineWidth = .45; ln(t2 - .2);
-    { const a = P(14.3, t2 + .3), b = P(14.3, M.top); c.strokeStyle = '#8a98b8'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); c.strokeStyle = '#eef4ff'; c.lineWidth = .35; c.beginPath(); c.moveTo(a[0] - .3, a[1]); c.lineTo(b[0] - .3, b[1]); c.stroke();
-      c.fillStyle = '#ff6ad8'; c.fillRect(a[0] - .7, a[1] + .5, 1.4, 1.1); c.fillStyle = '#ffe0f6'; c.fillRect(a[0] - .3, a[1] + .7, .6, .5); }
-    c.restore();
-  }
+  /** (15.11, власник: «не подобається, як зникають останні гриби — виходять за рамки; треба, щоб у тому місці був голографічний
+   *  дисплей, що пише про останній гриб, який туди потрапляє») ПРИЙМАЛЬНИЙ ПОРТ у комірі вежі: лотки з дорослими грибами заїжджають
+   *  за ріг і зупиняються під портом (a = .66 лицьової грані) — гриб підіймається світлом і розчиняється, порожній лоток гасне; за
+   *  рамку нічого не виходить. Ліворуч — голо-дисплей: гриб, що прибув останнім, його номер виду й лічильник прийнятих. */
   function vitTrays(c, t, V) {
-    if (!CONV) return; const C = CONV, L = C.n * 7.75, fw = PYL.w, D = V.M.D, Y = C.fl; c.save(); c.imageSmoothingEnabled = false;
-    for (let k = 0; k < C.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), u = L - (raw - wr * L); if (u > 5 + fw - 1.2) continue;          // u — шлях від стику галереї з вежею
-      const f = u < 5 ? 1 : 0, a = f ? (5 - u) / D : 1 - (u - 5) / fw, da = f ? 1 / D : 1 / fw, p = V.at(f, a, Y), q = V.at(f, a + da, Y), d = V.at(f, a, Y + 1), sz = 7.3, fade = Math.min(1, u / 1.5, (5 + fw - 1.2 - u) / 2.5);
-      c.save(); c.globalAlpha = Math.max(0, fade); c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]);
+    if (!CONV) return; const C = CONV, L = C.n * 7.75, fw = PYL.w, D = V.M.D, Y = C.fl, uE = 5 + fw * .34, tx = NX.px.text; let last = null; c.save(); c.imageSmoothingEnabled = false;
+    const TF = (f, a, y) => { const da = f ? 1 / D : 1 / fw, p = V.at(f, a, y), q = V.at(f, a + da, y), d = V.at(f, a, y + 1); c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]); };
+    for (let k = 0; k < C.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), u = L - (raw - wr * L), idx = (((k * 5 - (wr + 1) * 7) % 18) + 18) % 18, past = u - uE;
+      if (past >= 0 && (!last || past < last.past)) last = { past, idx, n: -wr * C.n + (C.n - k) };
+      if (u > uE + 2.2) continue; const uu = Math.min(u, uE), f = uu < 5 ? 1 : 0, a = f ? (5 - uu) / D : 1 - (uu - 5) / fw, go = Math.max(0, past) / 2.2, sz = 7.3;       // go 0…1 — гриб «злітає» в порт
+      c.save(); TF(f, a, Y); c.globalAlpha = Math.min(1, u / 1.5) * (1 - go);
       c.fillStyle = '#0c0c1c'; c.fillRect(-2.9, 0, 5.8, 1.45); c.fillStyle = '#34345c'; c.fillRect(-2.7, .2, 5.4, .95); c.fillStyle = '#8a8abc'; c.fillRect(-2.7, .2, 5.4, .22);
       c.fillStyle = '#2f8a3a'; c.fillRect(-2.6, -.45, 5.2, .5); c.fillStyle = '#7ad86a'; c.fillRect(-2.6, -.45, 5.2, .18);
-      c.drawImage(C.CV[(((k * 5 - (wr + 1) * 7) % 18) + 18) % 18], -sz / 2, -.35 - sz, sz, sz); c.restore(); }
+      c.globalAlpha = Math.min(1, u / 1.5) * (1 - go) * (1 - go); c.drawImage(C.CV[idx], -sz / 2, -.35 - sz - go * 2.2, sz, sz);
+      if (go > 0) { c.globalCompositeOperation = 'lighter'; for (let q = 0; q < 8; q++) { c.globalAlpha = (1 - go) * .9; c.fillStyle = q % 2 ? '#7af6ff' : '#eaffff'; c.fillRect((hash(q, 51) - .5) * 5, -1 - hash(q, 52) * 6 - go * 4, .4, .4); } }
+      c.restore(); }
+    { c.save(); TF(0, 1 - fw * .34 / fw, Y); c.globalCompositeOperation = 'lighter'; const pu = .5 + .5 * Math.sin(t * 3);                                               // порт: кільце під стелею й стовп світла
+      c.globalAlpha = .1 + .06 * pu; c.fillStyle = '#7af6ff'; c.beginPath(); c.moveTo(-1.6, -8.6); c.lineTo(1.6, -8.6); c.lineTo(3, .2); c.lineTo(-3, .2); c.closePath(); c.fill();
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = '#0c0c1c'; c.fillRect(-2.2, -9.2, 4.4, .9); c.fillStyle = '#3be8ff'; c.fillRect(-1.8, -8.7, 3.6, .3); c.restore(); }
+    { const W = fw * .46, H = 9.6; c.save(); TF(0, .05, Y - 8.9); const fl = .9 + .08 * Math.sin(t * 9);                                                                 // голо-дисплей останнього гриба
+      c.globalAlpha = .78 * fl; c.fillStyle = '#061640'; c.fillRect(0, 0, W, H); c.globalAlpha = fl; c.fillStyle = 'rgba(60,232,255,.12)'; for (let y = .5; y < H; y += 1) c.fillRect(0, y, W, .22);
+      c.fillStyle = '#3be8ff'; c.fillRect(0, 0, W, .3); c.fillRect(0, H - .3, W, .3); c.fillRect(0, 0, .25, H); c.fillRect(W - .25, 0, .25, H);
+      if (last) { const nw = Math.min(1, last.past / 3), s = 4.6; c.globalAlpha = fl * nw; c.drawImage(C.CV[last.idx], W / 2 - s / 2, .9 + (1 - nw) * 1.5, s, s);
+        c.globalAlpha = fl; tx(c, '№' + (last.idx + 1), W / 2, 7.2, '#7aff9a', 1.5, 'center'); tx(c, '×' + (((last.n % 1000) + 1000) % 1000), W / 2, 9, '#7af6ff', 1.1, 'center'); }
+      c.restore(); }
     c.restore();
   }
   /** (15.11) СКЛО ПОВЕРХ УСЬОГО: косі відблиски на обох гранях (повільно пливуть) і кутова стійка — те, що за ними, читається «всередині». */
@@ -305,7 +306,15 @@
     const M = V.M, rail = M.deck - 13, y0 = V.y0; c.save(); c.globalCompositeOperation = 'lighter';
     for (const f of [0, 1]) { const yb = f ? rail : y0, H = yb - V.top; for (const [a0, w, al] of [[.12, .16, .075], [.52, .07, .05]]) { const dr = .04 * Math.sin(t * .13 + f), sl = f ? .34 : .5;
         const p = [V.at(f, a0 + dr + sl, V.top), V.at(f, Math.min(1, a0 + dr + sl + w), V.top), V.at(f, a0 + dr + w, yb), V.at(f, a0 + dr, yb)]; c.globalAlpha = al; c.fillStyle = '#d8f4ff'; c.beginPath(); p.forEach((q, k) => k ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.fill(); } }
-    c.globalCompositeOperation = 'source-over'; const a = V.at(1, 0, V.top - 4), b = V.at(1, 0, y0); c.globalAlpha = 1; c.strokeStyle = '#8a9ac0'; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+    // (15.11) контури вежі чітко: комір на лицьовій грані й на куті бічної (ті самі смуги, що у фасаді галереї), цоколь, ребра
+    c.globalCompositeOperation = 'source-over'; c.lineCap = 'butt'; if (M.slab) { const y1 = M.slab[0], h = M.slab[1] - y1, Yb = M.Yb;
+      for (const [f, a0, a1] of [[0, 0, 1], [1, 0, .13]]) { const L = (Y, w, col, al = 1) => { const p = V.at(f, a0, Y), q = V.at(f, a1, Y); c.globalAlpha = al; c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); };
+        L(y1 + .5, 1, '#aab6d0'); L(y1 + .15, .3, '#f4f8ff'); L(y1 + 2, 1.3, '#b02a8a'); L(y1 + 2, .8, '#ff7ad8'); L(y1 + 2, .28, '#fff0f8'); L(y1 + 2.92, .56, '#161c32'); L(y1 + 15.3, .6, '#161c32');
+        L(y1 + 16.2, 1.2, '#0c5a78'); c.setLineDash([1.3, .7]); L(y1 + 16.2, 1, '#3be8ff'); c.setLineDash([]); L(y1 + h - .37, .75, '#d86a1a'); L(y1 + h - .3, .32, '#ffc070');
+        if (f === 0 || true) { const a9 = f ? 1 : a1; const LL = (Y, w, col) => { const p = V.at(f, a0, Y), q = V.at(f, a9, Y); c.globalAlpha = 1; c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); };
+          LL(Yb - 8.2, .6, '#aab6d0'); LL(Yb - 7, .8, '#b02a8a'); LL(Yb - 7, .4, '#ff8ae0'); LL(Yb - .45, .9, '#aab6d0'); LL(Yb - .8, .3, '#f4f8ff'); } }
+      for (const [f, a] of [[0, 0], [1, 1]]) { const p = V.at(f, a, f ? M.slab[1] : V.top - 4), q = V.at(f, a, Yb); c.globalAlpha = 1; c.strokeStyle = '#8a9ac0'; c.lineWidth = 1; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.strokeStyle = '#f0f8ff'; c.lineWidth = .3; c.beginPath(); c.moveTo(p[0] - .25, p[1]); c.lineTo(q[0] - .25, q[1]); c.stroke(); } }
+    const a = V.at(1, 0, V.top - 4), b = V.at(1, 0, M.slab ? M.Yb : y0); c.globalAlpha = 1; c.strokeStyle = '#8a9ac0'; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
     c.strokeStyle = '#f0f8ff'; c.lineWidth = .35; c.beginPath(); c.moveTo(a[0] - .2, a[1]); c.lineTo(b[0] - .2, b[1]); c.stroke(); c.restore();
   }
   /** (15.11) ГОЛО-ДИСПЛЕЙ ГРИБНИЦІ — над проєктором біля вежі, на рівні галереї (де були двері): напівпрозора панель у площині
@@ -450,7 +459,8 @@
   const CONV = (() => { const seg = items.filter(B => B.st === 'dc_mz').sort((a, b) => a.dc.i - b.dc.i); if (!seg.length || !NX.arc.mushCanvas) return null;
     const M = seg[0].dc, sg = M.sgn, C = M.C, R = M.R - M.P - .05, D2R = Math.PI / 180, a0 = M.a0, P = (s, Y) => { const a = a0 + s / (R * D2R); return proj([C[0] + sg * R * Math.sin(a * D2R), Y, C[1] + R * Math.cos(a * D2R)]); }, P2 = (s, d, Y) => { const a = a0 + s / (R * D2R), r = R + d; return proj([C[0] + sg * r * Math.sin(a * D2R), Y, C[1] + r * Math.cos(a * D2R)]); };   // P2 — точка в глибині коридору (d — від скла до стіни)
     let smax = 0; for (let s = 0; s < 400; s += 2) { const p = P(s, M.top + 12); if (p[1] < -6 || p[0] > 1606 || a0 + s / (R * D2R) > M.a1) break; smax = s; }
-    return { M, P, P2, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 18 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
+    const PO = []; seg.forEach(B => { const m = B.dc, pk = Math.round((m.sa - m.a0) / 2), sOf = a => (a - a0) * R * D2R; if (m.i % 2 === 0) PO.push({ s: sOf(m.sa), k: pk }); if (m.i === m.n - 1) PO.push({ s: sOf(m.sb), k: pk + 1 }); });   // стійки поруччя — як у растрі (dc_paint.js st:dc_mz)
+    return { M, P, P2, PO, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 18 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
   /** (15.11, власник: «якісне зображення без недомальованих пробілів, щоб усе було гарненько й чітко… додай поверх прикольний
    *  неоновий логотип там, де він був, тільки щоб гриби за нього заходили чітко») КОРИДОР — В ОБ'ЄМІ, як вежа: за склом видно задню
    *  стінку (глибина 9), дальню полицю з дрібними грибами (7), мідну трубу (4), стрічку з лотками (2.5); ребра вікон, відблиски скла
@@ -458,7 +468,7 @@
   function convBack(c, t, V, nt, vx0, vx1) {
     const M = V.M, P2 = V.P2, yT = M.top + 3.25, yB = M.top + 14.95, band = (d, Ya, Yb) => { c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, d, Ya); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } for (let s = V.smax + 4; s >= -1; s -= 5) { const p = P2(s, d, Yb); c.lineTo(p[0], p[1]); } c.closePath(); };
     c.save(); band(0, yT, yB); c.clip(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
-    c.fillStyle = '#03101c'; band(0, yT, yB); c.fill(); c.fillStyle = '#08303e'; band(9, yT, yB); c.fill();                                              // тло й задня стінка
+    c.fillStyle = '#03101c'; band(0, yT, yB); c.fill(); c.fillStyle = '#08303e'; c.beginPath(); for (let s = -16; s <= V.smax + 4; s += 5) { const p = P2(s, 9, yT); s > -16 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } for (let s = V.smax + 4; s >= -16; s -= 5) { const p = P2(s, 9, yB); c.lineTo(p[0], p[1]); } c.closePath(); c.fill();                                              // тло й задня стінка
     { const a = P2(0, 9, yB), g = c.createLinearGradient(0, a[1] - 9, 0, a[1] + 2); g.addColorStop(0, 'rgba(40,170,170,0)'); g.addColorStop(1, 'rgba(40,170,170,.3)'); }
     c.strokeStyle = '#2a8a98'; c.lineWidth = .3; c.globalAlpha = .35; for (let s = 2; s < V.smax + 4; s += 7.75) { const a = P2(s, 9, yT), b = P2(s, 9, yB); if (a[0] < vx0 - 4 || a[0] > vx1 + 4) continue; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }   // шви задньої стінки
     c.globalAlpha = .8; c.strokeStyle = '#1a6a74'; c.lineWidth = .5; c.beginPath(); for (let s = -1; s <= V.smax + 4; s += 5) { const p = P2(s, 7, V.fl - 3.4); s > -1 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();   // дальня полиця
@@ -487,6 +497,35 @@
         c.globalCompositeOperation = 'lighter'; draw(1.6, .22); c.globalCompositeOperation = 'source-over'; draw(.5, 1);
         c.globalAlpha = fl; c.fillStyle = '#fff0f8'; for (const [x, y, r] of [[-1.5, -1.3, .5], [.9, -2, .45], [1.9, -.8, .36]]) { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
         c.fillStyle = '#8affa8'; for (let k = 0; k < 4; k++) { const a = t * .5 + k * 1.57; c.fillRect(Math.cos(a) * 4.3 - .25, Math.sin(a) * 4.3 - .25, .5, .5); } } }
+    c.restore();
+  }
+  /** (15.11, власник: «поручні спочатку одної якості, потім іншої… зроби повністю в одному стилі… контури всі, нижню частину — усе
+   *  в одній якості») ПОРУЧЧЯ Й КОНТУРИ ФАСАДУ — чітким шаром на всю довжину галереї, тією самою геометрією, що в растрі:
+   *  fasciaLive — хромова кромка, рожевий неон, рамка вікон, блакитна LED-смуга, помаранчевий низ; railLive — скло з відблисками
+   *  й хромовою планкою, неонова нитка, поручень, стійки з неоновими ковпачками (стоять там само, де растрові). */
+  const lineS = (c, V, d, Y, s0 = -1.2, s1 = V.smax + 6) => { c.beginPath(); for (let s = s0; s < s1 + 4; s += 4) { const p = V.P2(Math.min(s, s1), d, Y); s > s0 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke(); };
+  function fasciaLive(c, t, V) {
+    const top = V.M.top, h = V.M.bot - top, L = (Y, w, col, al = 1) => { c.globalAlpha = al; c.strokeStyle = col; c.lineWidth = w; lineS(c, V, 0, top + Y); };
+    c.save(); c.globalCompositeOperation = 'source-over'; c.lineCap = 'butt';
+    L(.5, 1, '#aab6d0'); L(.15, .3, '#f4f8ff'); L(1.17, .4, '#141a2e');
+    L(2, 1.3, '#b02a8a'); L(2, .8, '#ff7ad8'); L(2, .28, '#fff0f8'); L(2.92, .56, '#161c32');
+    L(15.3, .6, '#161c32'); L(16.2, 1.2, '#0c5a78'); c.setLineDash([1.3, .7]); L(16.2, 1, '#3be8ff'); c.lineDashOffset = -t * 2; c.setLineDash([1.3, 12.7]); L(16.2, 1, '#eaffff', .9); c.setLineDash([]); L(17.05, .5, '#161c32');
+    L(h - .37, .75, '#d86a1a'); L(h - .3, .32, '#ffc070');
+    c.globalCompositeOperation = 'lighter'; L(2, 2.6, '#ff6ad8', .16); L(16.2, 2.4, '#3be8ff', .12); L(h - .37, 1.8, '#ff9a3a', .14); c.restore();
+  }
+  function railLive(c, t, V, vx0, vx1) {
+    const M = V.M, t2 = M.top - M.rail, D = .95, L = (Y, w, col, al = 1) => { c.globalAlpha = al; c.strokeStyle = col; c.lineWidth = w; lineS(c, V, D + .25, Y); };
+    c.save(); c.globalCompositeOperation = 'source-over'; c.lineCap = 'butt';
+    c.globalAlpha = .07; c.fillStyle = '#9adcf0'; c.beginPath(); for (let s = -1.2; s <= V.smax + 6; s += 4) { const p = V.P2(s, D + .25, t2 + .8); s > -1.2 ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } for (let s = V.smax + 6; s >= -1.2; s -= 4) { const p = V.P2(s, D + .25, M.top - .6); c.lineTo(p[0], p[1]); } c.closePath(); c.fill();   // скло
+    c.strokeStyle = '#cfeeff'; c.lineWidth = .3; for (let s = 6; s < V.smax + 4; s += 13) { const a = V.P2(s + 6, D + .25, t2 + 1.9), b = V.P2(s, D + .25, M.top - 1.6); if (a[0] < vx0 - 8 || a[0] > vx1 + 8) continue; c.globalAlpha = .45; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }   // відблиски
+    L(M.top - .85, .5, '#aab6d0', .9);                                                                                                                         // хромова планка внизу скла
+    L(t2 + 1.5, .55, '#3be8ff'); c.globalCompositeOperation = 'lighter'; L(t2 + 1.5, 1.6, '#3be8ff', .18); c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = 1; for (const po of V.PO) { const a = V.P2(po.s, D, t2 - .3), b = V.P2(po.s, D, M.top); if (a[0] < vx0 - 4 || a[0] > vx1 + 4) continue;       // стійки
+      for (const [w, col, dx] of [[1.5, '#1c2238', 0], [1.1, '#94a2c0', 0], [.3, '#f4f8ff', -.3]]) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a[0] + dx, a[1]); c.lineTo(b[0] + dx, b[1]); c.stroke(); } }
+    L(t2, 1.8, '#1c2238'); L(t2, 1.4, '#94a2c0'); L(t2 - .35, .35, '#f4f8ff');                                                                                // поручень
+    for (const po of V.PO) { const a = V.P2(po.s, D, t2 - 1.1); if (a[0] < vx0 - 4 || a[0] > vx1 + 4) continue; const col = po.k % 2 ? '#3be8ff' : '#ff6ad8', bl = .75 + .25 * Math.sin(t * 1.7 + po.k);
+      c.globalAlpha = 1; c.fillStyle = '#1c2238'; c.fillRect(a[0] - .95, a[1] - .95, 1.9, 1.9); c.fillStyle = col; c.fillRect(a[0] - .7, a[1] - .7, 1.4, 1.4); c.fillStyle = '#ffffff'; c.fillRect(a[0] - .3, a[1] - .4, .6, .6);
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = .5 * bl; c.drawImage(glow(col).cv, a[0] - 2.4, a[1] - 2.4, 4.8, 4.8); c.globalCompositeOperation = 'source-over'; }
     c.restore();
   }
   function drawConv(c, t, vx0, vx1) {
@@ -525,7 +564,7 @@
       c.restore(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
     c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
     for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P2(s, 4, V.pipe + .2); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
-    convFront(c, t, V, nt0, vx0, vx1);
+    fasciaLive(c, t, V); convFront(c, t, V, nt0, vx0, vx1); railLive(c, t, V, vx0, vx1);
     c.restore();
   }
 
