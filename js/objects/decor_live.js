@@ -232,9 +232,9 @@
    *  проєктуються тим самим proj, що й уся кімната. Тому їх видно крізь ОБИДВІ грані одразу, кутова стійка й відблиски скла йдуть
    *  поверх них, дальні — тьмяніші (туман) і перекриваються ближніми. Видно й саму кімнату за склом: дві задні стінки різного тону
    *  й дальнє ребро коробки. Усе обрізано по видимому склу: лицьова грань і бічна над поруччям. */
-  const V3 = [[-2, 3], [-2.4, 3.5], [-2, 3], [3, 14], [3, 14], [3, 25.5], [3.4, 36], [3, 25.5], [3.4, 36], [3, 14]];     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
+  const V3 = [[-2, 3], [-2.4, 3.5], [-2, 3], [3, 14], [3, 14], [3, 14], [3, 14], [3, 25.5], [3, 25.5], [3, 25.5], [3.4, 36], [3.4, 36], [3.4, 36], [3.4, 36]];     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
   const VFAR = [[-4.6, 9, 9, 2], [-5, 20, 30, 5], [-4.4, 30, 14, 7], [-2, 37.5, 44, 1], [2.5, 38, 20, 3], [-5.2, 13, 47, 6], [0, 38.5, 33, 4]];   // дальній план: x, dp, h, вид
-  const VDR = [[0, 1, 2, 1], [9, 3, 4, 3], [7, 5, 6, 8]];
+  const VDR = [[0, 1, 2, 1], [3, 4, 5, 6, 5, 4], [10, 11, 12, 13, 9, 8, 7]];
   function vit3d(c, t, V, nt) {
     const S = V.S, M = V.M, hw = PYL.w / 2, D = M.D, y0 = V.y0, P3 = V.P3, rail = M.deck - 13, K = 1.04;
     const poly = pts => { pts.forEach((p, k) => k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); };
@@ -266,7 +266,7 @@
       c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .55 + .25 * Math.sin(t * 2.3 + k); c.drawImage(glow('#3be8ff').cv, x - R * .5, yy + R * .5, R, R * .7); c.restore();                                                             // антиграв
       const cv = V.SPR[k]; for (const [du, sz, ph] of [[-R * .62, .36, 1.7], [R * .64, .28, 3.1], [0, 1, 0]]) { const w = I.s * sz * sc / .92, sw = Math.sin(t * (.7 + k * .07) + k * 1.3 + ph) * (sz < 1 ? .07 : .03);
         c.save(); c.translate(x + du, yy + .1); c.rotate(sw); c.scale(1, 1 + .012 * Math.sin(t * 1.1 + k + ph)); c.drawImage(cv, -w / 2, -w, w, w); c.restore(); }
-      c.save(); c.globalCompositeOperation = 'lighter'; const r = I.s * sc * (.7 + .12 * br); c.globalAlpha = (.16 + .3 * nt) * (.55 + .45 * br); c.drawImage(glow(S.GC[I.k]).cv, x - r, yy - I.s * sc * .6 - r, r * 2, r * 2); c.restore(); }
+      c.save(); c.globalCompositeOperation = 'lighter'; const r = I.s * sc * (.7 + .12 * br); c.globalAlpha = (.16 + .3 * nt) * (.55 + .45 * br); c.drawImage(glow(S.GC[I.k] || SH.SUB[8 + I.k].led).cv, x - r, yy - I.s * sc * .6 - r, r * 2, r * 2); c.restore(); }
     c.globalAlpha = 1;
     for (let d = 0; d < 3; d++) { const R = VDR[d], T = 9.5, tt = t + d * 3.7, n = Math.floor(tt / T), ph = tt / T - n, ka = R[n % R.length], kb = R[(n + 1) % R.length], A = S.ISL[ka], B = S.ISL[kb], mv = Math.min(1, ph / .37), e = mv * mv * (3 - 2 * mv), work = ph > .4 && ph < .96;   // міні-дрони
       const top = I => Math.min(55.5, I.h + I.s * K + 3), a = P3(V3[ka][0], V3[ka][1], top(A)), b = P3(V3[kb][0], V3[kb][1], top(B)), x = a[0] + (b[0] - a[0]) * e, y = a[1] + (b[1] - a[1]) * e - Math.sin(e * Math.PI) * 2 + Math.sin(t * 2.6 + d * 2) * .25;
