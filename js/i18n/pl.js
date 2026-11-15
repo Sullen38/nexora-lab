@@ -21,6 +21,7 @@ NX.i18n.add('pl', {
   decor: {
     garden: { title: 'OGRÓD ZA SOFĄ', count: 'GATUNKÓW: {n}' },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     reefmon: { title: 'ŻYCIE RAFY', temp: 'TEMP', salt: 'SÓL', saved: 'URATOWANO: {n}', scan: 'SKAN', feed: 'KARMIENIE' },   // (· 60) голо-монітор рифу (objects/decor_reefx.js)
+    shroommon: { title: 'GRZYBNIA', hum: 'WILGOĆ', temp: 'TEMP', spores: 'ZARODNIKI', kinds: 'GATUNKI: {n}' },   // (15.11) голо-дисплей грибниці (objects/decor_live.js vitHolo)
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
       bot: { head: 'POMOCNIK NEXI', n: 'Dron-kustosz', d: 'Dba o plastry: przeciera szkło, zdmuchuje kurz, poprawia pamiątki i podlewa pnącza. Dotknij i prowadź — poleci za palcem.', kind: 'DRON' },   // (· 59) картка дрона-куратора
       art: {   // (· 27) pamiątki Nexi na półkach-plastrach (objects/decor_guide.js)

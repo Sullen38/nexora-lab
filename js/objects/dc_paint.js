@@ -576,16 +576,9 @@ NX.arc = NX.arc || {};
       if (Fc.n[0] * rs[0] + Fc.n[2] * rs[2] > .7) {                                     // бокова грань (лицем уздовж антресолі, до глядача)
         const i0 = insOf(O), iu = insOf(Au, 1) - M.fin, iv = insOf(Bv, 1) - M.fin;
         if (M.vit) return (u, v, i, j) => { const ins = i0 + iu * u + iv * v, Y = O[1] + Au[1] * u + Bv[1] * v, [h0, h1] = M.hatch, hw = (h1 - h0) / 2, hx = ins - (h0 + h1) / 2, hy = M.deck - Y;   // hy — висота над плитою
-          // (15.11, власник обвів шлюз: «щось незрозуміле») ДВЕРІ у вітрину — зрозумілі: прямокутна рама з блакитним неоном, дві скляні
-          // стулки (крізь них ледь видно грибницю), ручки-скоби, над дверима — світна табличка-гриб, поріг зі смугою «обережно»
-          if (hy > 0 && hy < 17.5 && Math.abs(hx) < hw + 1.3) {
-            if (hy > 15.2) { if (Math.abs(hx) < 2.2 && hy < 17) { const ex = hx, ey = hy - 15.6; return ey > .5 ? (Math.hypot(ex / 1.5, (ey - .5) / .8) < 1 ? E(N.pink[2]) : ramp(PL.DARK, .2, i, j)) : Math.abs(ex) < .35 ? E(col('#fff0f8')) : ramp(PL.DARK, .2, i, j); } return ramp(PL.CHROME, .7, i, j); }
-            if (Math.abs(hx) > hw || hy > 14.5) return Math.abs(hx) > hw + .5 || hy > 14.9 ? ramp(PL.CHROME, .82 - (Math.abs(hx) - hw) * .2, i, j) : E(N.cyan[2]);          // рама й неон
-            if (hy < 1.3) return HAZ(ins, Y, i, j);                                                                                                                          // поріг
-            if (Math.abs(hx) < .2) return ramp(PL.STEEL, .05, i, j);                                                                                                          // шов між стулками
-            if (Math.abs(Math.abs(hx) - 1.1) < .28 && hy > 5.2 && hy < 8.6) return ramp(PL.CHROME, .9, i, j);                                                                  // ручки
-            const dg = ((hx + hy * .8) % 7 + 7) % 7; if (dg < .35) return col('#d8f6ff');
-            return ramp(pal(['#06202c', '#0c3c4a', '#16606a']), .35 + hy / 14.5 * .4 + (hash(i >> 1, j >> 1) > .9 ? .3 : 0), i, j); }                                         // скло стулок
+          // (15.11, власник: «що там за двері від ліфта? зроби там краще якийсь голографічний дисплей щодо грибів») дверей нема: на
+          // рівні плити — лише проєктор (хромова планка з блакитними лінзами); сам голо-дисплей — живий (objects/decor_live.js)
+          if (hy > 0 && hy < 1.5 && Math.abs(hx) < hw + 1) return hy > 1 ? ramp(PL.CHROME, .8, i, j) : Math.abs(((hx + 40) % 2.4) - 1.2) < .4 ? E(N.cyan[2]) : ramp(PL.STEEL, .12, i, j);
           return vitrine(M, M.D - ins, M.D, Y, i, j, L, 1); };
         return (u, v, i, j) => pylonSide(M, i0 + iu * u + iv * v, O[1] + Au[1] * u + Bv[1] * v, i, j, L);
       }

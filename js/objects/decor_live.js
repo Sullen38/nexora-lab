@@ -200,6 +200,32 @@
       c.globalAlpha = .75; c.fillStyle = '#eaffff'; c.fillRect(p[0] - .2, p[1], .4, .6); c.globalAlpha = .25 * sl; c.fillRect(p[0] - .12, p[1] - 2.2, .24, 2.2); }
     if (rain > 0) for (let k = 0; k < 50; k++) { const f = k % 4 ? 1 : 0, a = V.R(k, 30), Y = V.top + ((V.R(k, 31) + t * 1.4) % 1) * H; if (!V.ok(f, a, Y)) continue; const p = V.at(f, a, Y); c.globalAlpha = .5 * rain; c.fillStyle = '#bff4ff'; c.fillRect(p[0], p[1], .25, 1.6); }   // «дощ»
     c.restore();
+    vitHolo(c, t, nt);
+  }
+  /** (15.11) ГОЛО-ДИСПЛЕЙ ГРИБНИЦІ — над проєктором біля вежі, на рівні галереї (де були двері): напівпрозора панель у площині
+   *  бічної грані — заголовок, гриб, що повільно обертається, три смужки (волога, тепло, спори — «дихають»), «ВИДІВ: 8»; промені
+   *  від проєктора, рядки розгортки, мерехтіння. Тексти — словники decor.shroommon (4 мови). */
+  function vitHolo(c, t, nt) {
+    // панель стоїть лицем до глядача праворуч від вежі, над поруччям галереї (у площині бічної грані вона виходила завширшки 6 од.
+    // екрана — нечитабельно); ледь нахилена вздовж галереї; проєктор — на плиті біля вежі
+    const M = PYL.dc, W = 30, H = 30, K = .8, pa = proj(sideP(M.D, M.deck)), pb = proj(sideP(0, M.deck)), bx = Math.max(pa[0], pb[0]) + 3, by = Math.min(pa[1], pb[1]) - 20, sl = -.2;
+    const o = [bx, by - H * K], ax = [K, K * sl], ay = [0, K], fl = .86 + .08 * Math.sin(t * 9) - (hash(Math.floor(t * 6), 5) > .96 ? .3 : 0), T = (k, v) => NX.t('decor.shroommon.' + k, v), tx = NX.px.text;
+    c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .12 * fl; c.fillStyle = '#3be8ff';                                                   // промені від проєктора на плиті
+    { const px0 = bx + W * K * .5, py0 = by + 17 + W * K * .5 * sl; c.beginPath(); c.moveTo(px0 - 1.5, py0); c.lineTo(px0 + 1.5, py0); c.lineTo(bx + W * K, by + W * K * sl); c.lineTo(bx, by); c.closePath(); c.fill(); }
+    c.globalCompositeOperation = 'source-over'; c.transform(ax[0], ax[1], ay[0], ay[1], o[0], o[1]); c.globalAlpha = fl;
+    c.fillStyle = 'rgba(6,22,64,.62)'; c.fillRect(0, 0, W, H); c.fillStyle = 'rgba(60,232,255,.1)'; for (let y = .6; y < H; y += 1.3) c.fillRect(0, y, W, .3);
+    const sw = (t * 6) % (H + 6) - 3; c.fillStyle = 'rgba(160,250,255,.1)'; c.fillRect(0, sw, W, 2.4);
+    c.fillStyle = '#3be8ff'; c.fillRect(0, 0, W, .4); c.fillRect(0, H - .4, W, .4); c.fillRect(0, 0, .4, H); c.fillRect(W - .4, 0, .4, H);
+    c.fillStyle = '#eaffff'; for (const [x, y] of [[0, 0], [W - 2.6, 0], [0, H - .8], [W - 2.6, H - .8]]) c.fillRect(x, y, 2.6, .8);
+    const fit = (s, x, y, col, size, al, mw) => { c.font = size + 'px "Press Start 2P", monospace'; const w = c.measureText(s).width; tx(c, s, x, y, col, w > mw ? size * mw / w : size, al); };
+    fit(T('title'), W / 2, 4.2, '#7aff9a', 2.6, 'center', W - 3);
+    { const k = Math.cos(t * .9), cx = 7.5, cy = 12.5, cw = 5.2 * Math.abs(k) + .6; c.fillStyle = '#eaffff'; c.fillRect(cx - .7, cy, 1.4, 4.4);                 // гриб обертається
+      c.fillStyle = k > 0 ? '#ff6ad8' : '#c04aa8'; c.beginPath(); c.ellipse(cx, cy, cw, 3.4, 0, Math.PI, 0); c.fill(); c.fillStyle = '#fff0f8'; if (Math.abs(k) > .4) { c.fillRect(cx - cw * .5, cy - 2.2, .8, .8); c.fillRect(cx + cw * .25, cy - 1.5, .8, .8); }
+      c.strokeStyle = '#3be8ff'; c.lineWidth = .3; c.beginPath(); c.ellipse(cx, cy + 4.8, 4.6, 1.1, 0, 0, 6.2832); c.stroke(); }
+    [[T('hum'), .9 + .05 * Math.sin(t * .4), '#3be8ff'], [T('temp'), .62 + .04 * Math.sin(t * .27 + 1), '#ffb24a'], [T('spores'), .5 + .4 * Math.abs(Math.sin(t * .13)), '#c77dff']].forEach(([nm, v, col], q) => { const y = 9.6 + q * 4;
+      fit(nm, 15, y, '#9ad8ff', 1.8, 'left', 13.4); c.fillStyle = 'rgba(60,232,255,.18)'; c.fillRect(15, y + .5, 13.4, 1); c.fillStyle = col; c.fillRect(15, y + .5, 13.4 * v, 1); });
+    fit(T('kinds', { n: 8 }), W / 2, 26.6, '#7aff9a', 2.3, 'center', W - 3);
+    c.restore();
   }
   /** Вентилятор у круглій ґратці (бокова грань), вогник кодового замка, вогники лицьової грані. */
   function drawPylonBits(c, t, vx0, vx1) {

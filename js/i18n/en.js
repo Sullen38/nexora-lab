@@ -21,6 +21,7 @@ NX.i18n.add('en', {
   decor: {
     garden: { title: 'SOFA GARDEN', count: 'SPECIES: {n}' },   // ДЕКОР СТІН (objects/dc_paint.js): плакат ботаніка біля вікна; (· 4) плакат Рудика
     reefmon: { title: 'REEF LIFE', temp: 'TEMP', salt: 'SALT', saved: 'RESCUED: {n}', scan: 'SCAN', feed: 'FEEDING' },   // (· 60) голо-монітор рифу (objects/decor_reefx.js)
+    shroommon: { title: 'MUSHROOMS', hum: 'HUMID', temp: 'TEMP', spores: 'SPORES', kinds: 'SPECIES: {n}' },   // (15.11) голо-дисплей грибниці (objects/decor_live.js vitHolo)
     guide: {   // (· 18) ДОВІДНИК БОТАНІКА (objects/decor_guide.js): картка врятованого виду на тап по рослині чи мешканцю акваріума; sp.* — назви видів
       bot: { head: 'NEXI\'S HELPER', n: 'Curator drone', d: 'Looks after the honeycombs: wipes the glass, blows off dust, straightens the keepsakes and waters the vines. Touch and drag — it follows your finger.', kind: 'DRONE' },   // (· 59) картка дрона-куратора
       art: {   // (· 27) Nexi's keepsakes on the honeycomb shelves (objects/decor_guide.js)
