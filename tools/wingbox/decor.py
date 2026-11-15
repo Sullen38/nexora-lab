@@ -201,9 +201,10 @@ def decor_side(L, sgn, C, R, verbose=True):
             add(dict(id=id, layer='up', x=round(x, 2), z=round(z, 2), turn=round(turnS, 3), w=round(u1 - u0, 2), dep=.3, yb=round(y1, 2), yt=round(y0, 2), st='dc_win', grp='dc', on='dc_pylon', dc=dict(aq=aq, u0=u0, u1=u1, **kw)))
         PY.update(door=[15.5, 28.5, round(MZ['top'] - 25., 2), round(MZ['top'] - .2, 2)], glass=[30., 36., PY['Ytop'], round(MZ['top'] - 4.5, 2)], vent=[22., 10.5, 6.2], keys=[11.4, 14., 36.5, 44.])
         pyl['dc'].update(door=PY['door'], glass=PY['glass'], vent=PY['vent'], keys=PY['keys'], sR=PY['sR'], fin=PY['fin'])
-        side_win('dc_door', PY['door'][0], PY['door'][1], PY['door'][2], PY['door'][3], 'door')
-        side_win('dc_pyg', PY['glass'][0], PY['glass'][1], PY['glass'][2], PY['glass'][3], 'pylon')
-        door_X1 = max(p[0] for p in hull(screen_poly(out[-2]))) + 3.                   # правий край дверей (і кодового замка) на екрані: рослини — правіше
+        # (15.11, власник: «ліфт звідти теж забираємо, модуль повністю — грибничка + вітрина») пілон — скляна вітрина-грибниця (vit):
+        # без дверей ліфта й колби (живих вікон), без вентилятора, замка й вогників; hatch — шлюз на рівні плити (глибина від стіни)
+        pyl['dc'].update(vit=1, hatch=[14., 27.])
+        door_X1 = max(p[0] for p in hull(screen_poly(pyl))) + 3.                   # правий край дверей (і кодового замка) на екрані: рослини — правіше
         # ---------- П1. ДРУГИЙ ПОВЕРХ: виходить з пілона й тягнеться за правий край кадру — ближній кінець іде «в стелю» (кінця
         # теж не видно). Товща плита (26 од.) з багатошаровим фасадом (хромова кромка, рожевий неон, панелі, емблема-паросток,
         # блакитна LED-смуга — живі вогники біжать нею), глибший виступ, скляне поруччя, ферми-консолі там, де під плитою вільно,
@@ -224,7 +225,7 @@ def decor_side(L, sgn, C, R, verbose=True):
             d['shy'] = shy(sa, sb)                                                       # межа тіні під плитою (не на зони)
             # ферма-консоль — де під плитою біля стіни вільно (і не в ядрі, і в кадрі)
             fits = all(ys(MZ['bot'] + MZ['brk'] + 1, W.at(a, ins)[0][1]) <= free_y(W.X(a, ins)) - 1 for a in (sa, (sa + sb) / 2, sb) for ins in (0., MZ['P']))
-            if fits and sa > a_out + 1.5 and W.X(sb) < 1598 and d['i'] % 2 == 1: d['truss'] = 1; sg['yb'] = MZ['bot'] + MZ['brk']
+            if False and fits and sa > a_out + 1.5 and W.X(sb) < 1598 and d['i'] % 2 == 1: d['truss'] = 1; sg['yb'] = MZ['bot'] + MZ['brk']   # (15.11, власник: «опори внизу поверху повністю забирай усі») ферм-консолей нема
             if d['i'] in (6, 13): sg['glow'] = 1; sg['gr'] = 30                            # теплі світильники в споді — світло на стіну під антресоллю
         mz = lambda a: dict(Y=MZ['top'], id=f"dc_mz{min(len(segs) - 1, max(0, int((a - MZ['a0']) / ((MZ['a1'] - MZ['a0']) / len(segs)))))}")
         BACK, FRONT = 11.5, MZ['P'] - 10.

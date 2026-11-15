@@ -173,7 +173,8 @@
   }
   /** Вентилятор у круглій ґратці (бокова грань), вогник кодового замка, вогники лицьової грані. */
   function drawPylonBits(c, t, vx0, vx1) {
-    if (!PYL || !sideP) return; const M = PYL.dc, [vu, vy, vr] = M.vent;
+    if (!PYL || !sideP) return; const M = PYL.dc; if (M.vit) return;                     // (15.11) вітрина-грибниця: без вентилятора, замка й вогників
+    const [vu, vy, vr] = M.vent;
     const q0 = proj(sideP(vu, vy)); if (q0[0] < vx0 - 30 || q0[0] > vx1 + 30) return;
     const qi = proj(sideP(vu + 1, vy)), qy = proj(sideP(vu, vy + 1));
     c.save(); c.transform(qi[0] - q0[0], qi[1] - q0[1], qy[0] - q0[0], qy[1] - q0[1], q0[0], q0[1]);

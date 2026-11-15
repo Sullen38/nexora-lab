@@ -178,20 +178,15 @@ NX.arc = NX.arc || {};
         }
         return ramp(PL.DARK, .32 + (er > 5.2 ? .12 : 0), i, j);
       }
-      let q = .44 * L + (ty < 1 ? .14 : 0) - (ty > hp - 1 ? .12 : 0);
-      if ((Math.abs(pc - 1.6) < .42 || Math.abs(pc - (PANW - 1.1)) < .42) && (Math.abs(ty - 1.6) < .42 || Math.abs(ty - (hp - 1.6)) < .42)) return ramp(PL.CHROME, .72, i, j);   // заклепки
-      const kd = Math.floor(hash(pi * 7 + 3, 11) * 4), cx = pc - PANW / 2, cy = ty - hp / 2;
-      if (kd === 0 && Math.abs(cx) < 4.6 && Math.abs(cy) < 3.4) q -= (ty % 1.15) < .5 ? .22 : 0;                       // ґратка-ламелі
-      else if (kd === 1 && Math.abs(cy) < .55) { for (let k = -1; k <= 1; k++) if (Math.abs(cx - k * 1.9) < .5) return E(k < 0 ? col('#3bff8a') : k ? col('#3be8ff') : col('#ffb24a')); }   // вогники стану
-      else if (kd === 2 && Math.abs(cx) < 4 && Math.abs(cy) < 3.6) { if (Math.abs((cy + Math.abs(cx) * .75) % 2.4) < .45) q += .16; }   // шеврони
-      else if (kd === 3 && Math.abs(cx) < 4.4 && Math.abs(cy) < 3.2 && (((pc * 1.8) | 0) % 2 === 0) && (((ty * 1.8) | 0) % 2 === 0)) q -= .18;   // перфорація
-      return ramp(PL.MET, q, i, j);
+      // (15.11, власник: «сам другий поверх промальовуємо повністю, кришталево досконало… з нуля») панелі чисті: без заклепок, ґраток,
+      // шевронів і перфорації — рівна площина з м'яким світлом зверху, тонкий шов між панелями, світла фаска згори й тінь унизу
+      return ramp(PL.MET, (.4 + (1 - ty / hp) * .1) * L + (ty < .8 ? .14 : 0) - (ty > hp - .8 ? .1 : 0) + (pc < 1 ? .05 : 0), i, j);
     }
     if (y < 15.6) return ramp(PL.STEEL, .1, i, j);
     if (y < 16.8) return E(((x * 1.4) | 0) % 3 ? N.cyan[1] : N.cyan[2]);                        // блакитна LED-смуга
     if (y < 17.3) return ramp(PL.STEEL, .1, i, j);
     if (y > h - .75) return E(y > h - .38 ? N.orange[1] : N.orange[0]);                          // помаранчеве підсвічування знизу
-    return ramp(PL.STEEL, (((x * 1.3) | 0) % 2 ? .34 : .22) * L + .1, i, j);                    // ламелі спідниці
+    return ramp(PL.STEEL, (.3 - (y - 17.3) / Math.max(1, h - 17.3) * .1) * L + .1, i, j);          // спідниця — рівна (15.11: без ламелей)
   }
   SHP['st:dc_mz'] = (G, B) => {
     const M = B.dc, sg = M.sgn, C = M.C, R = M.R, rf = R - M.P, rw = R - .3, top = M.top, bot = M.bot, h = bot - top, mid = M.mid != null ? M.mid : (M.tot || 93) / 2;
@@ -207,35 +202,16 @@ NX.arc = NX.arc || {};
       const x = M.s0 + u * len, d = v * dep;
       if (d < 1) return ramp(PL.CHROME, .55 - d * .2, i, j);
       if (d < 1.7) return E(N.cyan[(i + j) % 5 ? 1 : 2]);
-      const bm = ((x % 11.5) + 11.5) % 11.5; if (bm < 1.4) return ramp(PL.MET, .5 + (bm < .5 ? .16 : 0), i, j);
+      // (15.11, власник: «опори внизу поверху повністю забирай усі… там дуже наляпано») спід рівний: без балок, труби й центральної
+      // смуги — темна гладка стеля з тонкими швами панелей і рідкими точковими світильниками (від них — конуси світла)
       const sx = (((x + 5.75) % 23) + 23) % 23 - 11.5, sr = Math.hypot(sx, (d - 4.6) * 1.2);
       if (sr < 1.05) return E(sr < .55 ? col('#fff4d8') : col('#ffd27a')); if (sr < 1.5) return ramp(PL.CHROME, .5, i, j);
-      if (Math.abs(d - ctr) < 1.3) return ramp(PL.STEEL, Math.abs(d - ctr) < .3 ? .34 : .14, i, j);
-      let q = .24 + (1 - v) * .14 + ((((x * 1.6) | 0) + ((d * 1.6) | 0)) % 2) * .05; if (d > dep - 1.4) q -= .1;
-      return ramp(PL.STEEL, q, i, j);
+      if ((((x % 23) + 23) % 23) < .3) return ramp(PL.STEEL, .12, i, j);
+      return ramp(PL.STEEL, .2 + (1 - v) * .16 - (d > dep - 1.4 ? .08 : 0), i, j);
     }, [0, 1, 0]);
-    // (15.11, власник: «треба покращити другий поверх… зробити більш об'ємним; зараз мені там чогось не вистачає» — крок 1 зі схеми)
-    // ОБ'ЄМНІ БАЛКИ під плитою: замість намальованих смужок — справжні двотаври, що виступають зі споду на 2.6 од. (торець до
-    // глядача, бічні грані з отворами полегшення, світла нижня полиця), від фасаду до стіни, кожні 11.5 од. — там, де були смужки.
-    { const BH = 2.6, BW = 1.5, r0 = rf + 1.9, r1 = rw - .6;
-      for (let kb = Math.ceil((M.s0 - .7) / 11.5); kb * 11.5 + .7 < M.s0 + len; kb++) { const xb = kb * 11.5 + .7; if (xb < M.s0) continue;
-        const a = M.sa + (xb - M.s0) / len * (M.sb - M.sa), T = tg(a), hw = BW / 2, off = (p, k) => [p[0] + T[0] * k, p[1], p[2] + T[2] * k];
-        const A0 = pt(a, r0, bot), A1 = pt(a, r1, bot), dv = sub(A1, A0), Ld = Math.hypot(dv[0], dv[2]), yb2 = bot + BH;
-        const end = [off(A0, -hw), off(A0, hw)].map(q => q), eb = end.map(q => [q[0], yb2, q[2]]), Le = lit(nIn(a), A0);
-        G.face([end[0], end[1], eb[1], eb[0]], end[0], sub(end[1], end[0]), [0, BH, 0], (u, v, i, j) => v > .8 ? ramp(PL.CHROME, .62, i, j) : Math.abs(u - .5) < .17 ? ramp(PL.MET, .58 * Le + .1, i, j) : ramp(PL.STEEL, .2, i, j), nIn(a));   // торець: стінка двотавра й полиця
-        for (const sd of [-1, 1]) { const s0 = off(A0, sd * hw), s1 = off(A1, sd * hw), n = T.map(q => q * sd), Ls = lit(n, s0);
-          G.face([s0, s1, [s1[0], yb2, s1[2]], [s0[0], yb2, s0[2]]], s0, sub(s1, s0), [0, BH, 0], (u, v, i, j) => { const d = u * Ld; if (v > .8) return ramp(PL.CHROME, .5 * Ls + .12, i, j);
-            if (v > .22 && v < .66 && ((d % 4.2) + 4.2) % 4.2 < 1.7 && d > 1.5) return ramp(PL.STEEL, .06, i, j);                                                         // отвори полегшення
-            return ramp(PL.MET, (.4 + (1 - v) * .12) * Ls + .08, i, j); }, n); }
-        const b0 = off([A0[0], yb2, A0[2]], -hw), b1 = off([A0[0], yb2, A0[2]], hw), b3 = off([A1[0], yb2, A1[2]], -hw), b2 = off([A1[0], yb2, A1[2]], hw);
-        G.face([b0, b1, b2, b3], b0, sub(b1, b0), sub(b3, b0), (u, v, i, j) => ramp(PL.MET, .3 + (1 - v) * .16 + (Math.abs(u - .5) > .36 ? .14 : 0), i, j), [0, 1, 0]);    // нижня полиця
-      } }
     // ТІНЬ ПІД ПЛИТОЮ на стіні (дизеринг: густа під самою плитою, вниз розсіюється)
     const shB = Math.min(bot + 17, M.shy || bot + 17); if (shB > bot) ditherFace(G, pt(M.sa, R - .35, bot - 1), pt(M.sb, R - .35, bot - 1), pt(M.sa, R - .35, shB), nIn(am), (u, v) => .44 * Math.pow(1 - v, 1.7));
     // мідна труба вздовж споду з підвісами
-    const rp = rf + M.P * .38, copT = tubeT(MAT.copper, .2, .66);
-    G.tube(pt(M.sa, rp, bot + 1.2), pt(M.sb, rp, bot + 1.2), 1.7, copT);
-    if (M.i % 3 === 1) G.tube(pt(am, rp, bot), pt(am, rp, bot + 1.2), .5, steelT);
     // торці
     const cap = (a, s) => { const a0 = pt(a, rf, top), a1 = pt(a, rw, top), a2 = pt(a, rw, bot), a3 = pt(a, rf, bot), n = s < 0 ? tg(a).map(q => -q) : tg(a), L = lit(n, a0);
       G.face([a0, a1, a2, a3], a0, sub(a1, a0), [0, h, 0], (u, v, i, j) => fascia(500 + u * (rw - rf), v * h, h, -99, i, j, L), n); };
@@ -245,7 +221,7 @@ NX.arc = NX.arc || {};
     const glass = (x0, lenG) => (u, v, i, j) => {
       const x = x0 + u * lenG, y = v * gh;
       if (y > gh - 1.6) return ((i >> 1) + (j >> 1)) % 2 ? 0 : ramp(PL.CYANL, .3, i, j);      // фрит-смуга (крапки)
-      const dg = ((x - y * .7) % 13 + 13) % 13; if (dg < .4 || (dg > 1.05 && dg < 1.3)) return col('#bfe9ff');
+      const dg = ((x - y * .7) % 26 + 26) % 26; if (dg < .35) return col('#bfe9ff');                // (15.11) один рідкий відблиск замість частих штрихів
       return 0;
     };
     const g0 = pt(M.sa, rr + .25, t2 + .8), g1 = pt(M.sb, rr + .25, t2 + .8);
@@ -521,6 +497,60 @@ NX.arc = NX.arc || {};
     if (hb > .7 && lx > 2 && lx < pw - 2 && ly > 3 && ly < ph - 3 && ((ly * 1.6) | 0) % 2) q -= .14;            // ґратки
     return ramp(PNL, q, i, j);
   }
+  /** (15.11, власник: «з того модуля робимо красиву грибницю з різними видами найприкольніших рідкісних грибочків; модуль робимо
+   *  прозорим і заповнюємо його грибами… грибничка + вітрина така, щоб було зрозуміло… такою самою формою в перспективі, як був
+   *  той модуль») ВІТРИНА-ГРИБНИЦЯ: та сама коробка пілона, але обидві видимі грані — скло в тонкому хромовому каркасі. За склом —
+   *  туманна глибина, чотири яруси (колода з мохом), на кожному гриби: мухомор, світні міцени, лисички, синя ентолома, вуаль
+   *  нареченої, коралова рамарія, рожеві гливи, їжовик. Яруси на одній висоті на обох гранях — читається як одна кімната за склом.
+   *  Унизу — темний цоколь із рожевим неоном і значком гриба; на бічній грані на рівні плити — шлюз-люк, до якого стикується
+   *  платформа. x — уздовж грані (од.), w — її ширина, Y — висота світу, fs — зерно грані (свої гриби на кожній). */
+  const MP = { stem: pal(['#8a7a5a', '#c8b890', '#eadfc4', '#f8f0dc']), red: pal(['#5a060c', '#a8121a', '#e0262a', '#ff6a5a']), gold: pal(['#7a3a06', '#c87410', '#f0a428', '#ffd066']),
+    blue: pal(['#0c1466', '#2038c0', '#4470f0', '#8ab4ff']), veil: pal(['#9a927e', '#d0c8b4', '#eee8d8']), cap: pal(['#241a0e', '#4a3a20', '#7a6238']), coral: pal(['#8a2a48', '#d84a70', '#ff7a98', '#ffb0c0']),
+    oyst: pal(['#a8406a', '#e0709a', '#ffa0c4', '#ffd0e0']), mane: pal(['#8a7a56', '#c0b088', '#e4d8b8', '#f6eeda']) };
+  const stemOf = (dx, dy, s, hw, h, i, j) => Math.abs(dx) < hw * s && dy < h * s ? ramp(MP.stem, .78 - (dx / (hw * s) + 1) * .22, i, j) : 0;       // ніжка: світло зліва
+  const MUSH = [
+    (dx, dy, s, i, j) => { const cy = dy - .56 * s, r = Math.hypot(dx / (.46 * s), cy / (.3 * s));                                                        // МУХОМОР: купол із цятками, кільце на ніжці
+      if (cy >= -.02 * s && r < 1) { if (r > .9) return ramp(MP.red, .2, i, j); const sp = hash(Math.round(dx / s * 9), Math.round(cy / s * 9)); return sp > .8 && r < .82 ? col('#fff2e0') : ramp(MP.red, .82 - r * .3 - dx / s * .7 + cy / s * .5, i, j); }
+      if (cy < -.02 * s && cy > -.07 * s && Math.abs(dx) < .4 * s) return ramp(MP.stem, .5 + (((dx / s * 30) | 0) % 2) * .2, i, j);                       // пластинки
+      if (dy > .3 * s && dy < .36 * s && Math.abs(dx) < .16 * s) return col('#f4ecd8'); return stemOf(dx, dy, s, .1, .56, i, j); },
+    (dx, dy, s, i, j) => { for (const [ox, h, r] of [[-.36, .56, .17], [-.06, .84, .21], [.28, .66, .18], [.44, .36, .12]]) { const x = dx - ox * s - Math.sin(dy / s * 4) * .03 * s;   // СВІТНІ МІЦЕНИ: дзвіночки на тонких ніжках
+        const cy = dy - h * s, rr = Math.hypot(x / (r * s), cy / (r * 1.1 * s)); if (cy > -.04 * s && rr < 1) return rr > .86 ? col('#0a6a80') : E(rr < .45 ? N.cyan[2] : N.cyan[1]);
+        if (Math.abs(x) < .028 * s && dy < h * s) return col('#9adce8'); } return 0; },
+    (dx, dy, s, i, j) => { const t = dy / (.7 * s); if (t < 1) { const hw = (.06 + .3 * Math.pow(t, 1.5)) * s; if (Math.abs(dx) < hw) return Math.abs(dx) > hw - .03 * s ? ramp(MP.gold, .15, i, j) : ramp(MP.gold, .42 + t * .25 - dx / hw * .22 + (((dx / s * 26) | 0) % 2 ? .09 : 0), i, j); return 0; }   // ЛИСИЧКА: лійка з рубчиками
+      const y = dy - .7 * s, hw = (.36 + .04 * Math.sin(dx / s * 16)) * s; return y < .09 * s + .03 * s * Math.sin(dx / s * 11) && Math.abs(dx) < hw ? ramp(MP.gold, .8 - dx / s * .5, i, j) : 0; },
+    (dx, dy, s, i, j) => { const cy = dy - .46 * s, t = cy / (.5 * s); if (t > 0 && t < 1) { const hw = (.34 * Math.pow(1 - t, .7) + .02) * s; if (Math.abs(dx) < hw) return Math.abs(dx) > hw - .035 * s || t < .06 ? ramp(MP.blue, .12, i, j) : ramp(MP.blue, .7 - t * .15 - dx / hw * .32, i, j); }   // СИНЯ ЕНТОЛОМА: конус
+      return stemOf(dx, dy, s, .06, .5, i, j) && ramp(MP.blue, .9 - (dx / (.06 * s) + 1) * .2, i, j); },
+    (dx, dy, s, i, j) => { const cy = dy - .84 * s; if (cy > -.02 * s && cy < .15 * s && Math.abs(dx) < (.14 - cy / s * .4) * s) return ramp(MP.cap, .75 - dx / s * 1.6 + (((cy / s * 40) | 0) % 2) * .15, i, j);     // ВУАЛЬ НАРЕЧЕНОЇ: мереживна спідниця
+      if (dy > .2 * s && dy < .82 * s) { const hw = (.1 + .3 * Math.pow(1 - (dy - .2 * s) / (.62 * s), .8)) * s; if (Math.abs(dx) < hw && Math.abs(dx) > .07 * s) { const a = Math.round(dx / s * 22), b = Math.round(dy / s * 22); return (a + b) & 1 ? ramp(MP.veil, .85 - Math.abs(dx) / hw * .3, i, j) : 0; } }
+      return stemOf(dx, dy, s, .075, .86, i, j); },
+    (dx, dy, s, i, j) => { for (let k = -3; k <= 3; k++) { const h = (.78 - Math.abs(k) * .1 + (hash(k, 7) - .5) * .18) * s, ox = k * .12 * s * (.35 + .65 * Math.min(1, dy / (.3 * s))) + Math.sin(dy / s * 6 + k * 2) * .025 * s;   // КОРАЛОВА РАМАРІЯ: гілки з одного пенька
+        if (dy < h && Math.abs(dx - ox) < (.045 - dy / h * .015) * s) return ramp(MP.coral, .3 + dy / h * .5 - (dx - ox) / s * 2, i, j); if (dy >= h && dy < h + .05 * s && Math.abs(dx - ox) < .06 * s) return col('#ffd0d8'); } return 0; },
+    (dx, dy, s, i, j) => { for (const [ox, oy, r] of [[-.16, .12, .36], [.2, .32, .32], [-.1, .54, .27], [.14, .72, .2]]) { const x = (dx - ox * s) / (r * s), y = (dy - oy * s) / (r * .42 * s), rr = x * x + y * y;       // РОЖЕВІ ГЛИВИ: віяла одне над одним
+        if (y > -.35 && rr < 1) return y < 0 ? ramp(MP.oyst, .25 + (((x * 10) | 0) % 2) * .18, i, j) : rr > .8 ? ramp(MP.oyst, .3, i, j) : ramp(MP.oyst, .8 - Math.sqrt(rr) * .4 - x * .18, i, j); } return 0; },
+    (dx, dy, s, i, j) => { const cy = dy - .5 * s, r = Math.hypot(dx / (.38 * s), cy / (.3 * s)), col2 = Math.round(dx / s * 24);                                                             // ЇЖОВИК: куля з бурульками
+      if (r < 1 && cy > -.1 * s) return ramp(MP.mane, .7 - r * .25 - dx / s * .5 + (col2 % 2 ? .1 : -.04), i, j);
+      if (Math.abs(dx) < .37 * s && dy < .5 * s && dy > (.1 + hash(col2, 3) * .24) * s && Math.hypot(dx / (.38 * s), 0) < 1) return col2 % 2 ? ramp(MP.mane, .62 - dx / s * .4, i, j) : ramp(MP.mane, .3, i, j); return 0; },
+  ];
+  function vitrine(M, x, w, Y, i, j, L, fs) {
+    const Yb = M.Yb, top = M.Ytop, base = 8.5, e = Math.min(x, w - x);
+    if (e < .8) return ramp(PL.CHROME, .86 - e * .35, i, j);                                                   // стійки каркаса
+    if (Y > Yb - .9) return ramp(PL.CHROME, .66, i, j);
+    if (Y > Yb - base) { const y = Y - (Yb - base);                                                             // цоколь: неон, значок гриба
+      if (y < .6) return ramp(PL.CHROME, .8, i, j); if (y > 1.1 && y < 1.9) return E(N.pink[Math.abs(y - 1.5) < .15 ? 2 : 1]);
+      const ex = x - w / 2, ey = y - 5; if (ey < .2 && ey > -1.9 && Math.hypot(ex / 2.3, ey / 1.9) < 1) return E(N.cyan[Math.hypot(ex / 2.3, ey / 1.9) > .72 ? 2 : 1]); if (ey >= .2 && ey < 2 && Math.abs(ex) < .55) return E(col('#eaffff'));
+      return ramp(PL.STEEL, (.26 - y / base * .08) * L + .08, i, j); }
+    // яруси: колода з мохом кожні tierH; між ними — туманна глибина й гриби
+    const tierH = (Yb - base - top) / 4, k = Math.min(3, Math.max(0, Math.floor((Y - top) / tierH))), fy = top + (k + 1) * tierH - 1.9, dy = fy - Y;      // dy — висота над мохом яруса
+    if (dy < 0) { const y = -dy; if (y < .7) return ramp(pal(['#1a5a22', '#2f8a3a', '#5fc85a', '#b8f08a']), .5 + hash(i >> 1, j) * .5, i, j);                 // мох
+      if (y < 1.6) return ramp(pal(['#2a1a0e', '#4a2e18', '#7a5230', '#a87a48']), .5 + (((x * 1.7) | 0) % 2) * .2 - (y - .7) * .3, i, j); return ramp(PL.CHROME, .5, i, j); }   // колода, полиця
+    const n = Math.max(1, Math.round(w / 10.5));                                                             // гриби великі — читаються здалеку: 9–14 од. заввишки
+    for (let q = 0; q < n; q++) { const sd = fs * 31 + k * 7 + q, cx = (q + .5) / n * w + (hash(sd, 1) - .5) * 1.4, s = tierH * (.5 + hash(sd, 2) * .22), ty = (k * 3 + q * 5 + fs * 2) % 8, c = MUSH[ty](x - cx, dy, s, i, j); if (c) return c; }
+    if (dy < 1.1 && hash((x * 2.3) | 0, k + fs) > .55 && dy < .4 + hash((x * 2.3) | 0, 9) * .7) return ramp(pal(['#1a5a22', '#2f8a3a', '#5fc85a']), .6, i, j);   // травинки моху
+    // скло: відблиск навскоси, краплі конденсату, спори; за ним — туман (темно-бірюзовий угорі яруса, тепліший над мохом)
+    const dg = ((x + Y * .6) % 47 + 47) % 47, h1 = hash(i, j);
+    if (dg < .4) return col('#d8f6ff'); if (h1 > .9965) return col('#eaffff'); if (h1 < .004) return E(N.cyan[1]);
+    return ramp(pal(['#04101e', '#082a3a', '#0e4a58', '#1a7078', '#3aa8a0']), (.16 + Math.max(0, 1 - dy / tierH) * .4 + (dg < 4 ? .08 : 0) + (hash(i >> 2, j >> 2) - .5) * .06) * (.7 + .3 * L), i, j);
+  }
   SHP['st:dc_pylon'] = (G, B) => {
     const M = B.dc, { f, r, c } = A.basis(B), sR = M.sR || 1, rs = [r[0] * sR, 0, r[1] * sR];
     const insOf = (p, d) => M.fin + (p[0] - (d ? 0 : c[0])) * f[0] + (p[2] - (d ? 0 : c[1])) * f[1];   // глибина від стіни (decor.py: fin − v)
@@ -528,8 +558,16 @@ NX.arc = NX.arc || {};
       const L = lit(Fc.n, A.centre(Fc)), O = Fc.O, Au = Fc.A, Bv = Fc.B;
       if (Fc.n[0] * rs[0] + Fc.n[2] * rs[2] > .7) {                                     // бокова грань (лицем уздовж антресолі, до глядача)
         const i0 = insOf(O), iu = insOf(Au, 1) - M.fin, iv = insOf(Bv, 1) - M.fin;
+        if (M.vit) return (u, v, i, j) => { const ins = i0 + iu * u + iv * v, Y = O[1] + Au[1] * u + Bv[1] * v, [h0, h1] = M.hatch, hy = M.deck - 9, hr = (h1 - h0) / 2, hx = ins - (h0 + h1) / 2;
+          if (Y > hy - hr - 1.2 && Y < M.deck && Math.abs(hx) < hr + 1.2) {                                       // ШЛЮЗ: кругла арка люка на рівні плити
+            const rr = Y < hy ? Math.hypot(hx, Y - hy) : Math.abs(hx); if (rr > hr + .2) return ramp(PL.CHROME, .8 - (rr - hr) * .25, i, j); if (rr > hr - .7) return E(N.cyan[rr > hr - .3 ? 1 : 2]);
+            if (Math.abs(hx) < .22) return ramp(PL.STEEL, .06, i, j); if (Y > M.deck - 1.4) return HAZ(ins, Y, i, j);
+            if (Math.abs(Math.abs(hx) - hr * .5) < .75 && Y > hy - hr * .35 && Y < M.deck - 3.2) return E(Math.abs(Math.abs(hx) - hr * .5) < .4 ? col('#eaffff') : col('#7ae8ff'));   // вузькі віконця стулок
+            return ramp(PL.MET, (.44 - Math.abs(hx) / hr * .12) * L + .08, i, j); }
+          return vitrine(M, M.D - ins, M.D, Y, i, j, L, 1); };
         return (u, v, i, j) => pylonSide(M, i0 + iu * u + iv * v, O[1] + Au[1] * u + Bv[1] * v, i, j, L);
       }
+      if (M.vit && Fc.k === 'front') return (u, v, i, j) => vitrine(M, u * Fc.fw, Fc.fw, O[1] + Bv[1] * v, i, j, L, 2);
       if (Fc.k === 'front') return (u, v, i, j) => {                                    // лицьова: хромові кромки, неон, дисплей, вогники, «обережно»
         const x = u * Fc.fw, Y = O[1] + Bv[1] * v, w = Fc.fw;
         if (x < .7 || x > w - .7) return ramp(PL.CHROME, .82 - Math.min(x, w - x) * .3, i, j);
