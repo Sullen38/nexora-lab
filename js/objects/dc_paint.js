@@ -207,7 +207,7 @@ NX.arc = NX.arc || {};
     const f0t = pt(M.sa, rf, top), f1t = pt(M.sb, rf, top), f1b = pt(M.sb, rf, bot), f0b = pt(M.sa, rf, bot), len = Math.hypot(f1t[0] - f0t[0], f1t[2] - f0t[2]);
     // фасад
     const Lf = lit(nIn(am), f0t);
-    G.face([f0t, f1t, f1b, f0b], f0t, sub(f1t, f0t), [0, h, 0], (u, v, i, j) => fascia(M.s0 + u * len, v * h, h, mid, i, j, Lf), nIn(am));
+    G.face([f0t, f1t, f1b, f0b], f0t, sub(f1t, f0t), [0, h, 0], (u, v, i, j) => fascia(M.s0 + u * len, v * 24, 24, mid, i, j, Lf), nIn(am));   // (16.11) плита товща (h 30) — растровий фасад розтягнуто з тих самих 24 од.; чіткий шар — objects/decor_live.js
     // спід (його добре видно знизу): кромка, блакитна стрічка, балки, кабель-канал, точкові світильники, рифлені плити
     const w0b = pt(M.sa, rw, bot), w1b = pt(M.sb, rw, bot), dep = M.P - .3, ctr = dep * .58;
     G.face([f0b, f1b, w1b, w0b], f0b, sub(f1b, f0b), sub(w0b, f0b), (u, v, i, j) => {
@@ -226,7 +226,7 @@ NX.arc = NX.arc || {};
     // мідна труба вздовж споду з підвісами
     // торці
     const cap = (a, s) => { const a0 = pt(a, rf, top), a1 = pt(a, rw, top), a2 = pt(a, rw, bot), a3 = pt(a, rf, bot), n = s < 0 ? tg(a).map(q => -q) : tg(a), L = lit(n, a0);
-      G.face([a0, a1, a2, a3], a0, sub(a1, a0), [0, h, 0], (u, v, i, j) => fascia(500 + u * (rw - rf), v * h, h, -99, i, j, L), n); };
+      G.face([a0, a1, a2, a3], a0, sub(a1, a0), [0, h, 0], (u, v, i, j) => fascia(500 + u * (rw - rf), v * 24, 24, -99, i, j, L), n); };
     if (!M.pier) { if (M.i === 0) cap(M.sa, -1); if (M.i === M.n - 1) cap(M.sb, 1); }                // (· 4) з пілона й за кадр — торців не видно
     // ПОРУЧЧЯ: скло (дірки з відблисками й фрит-смугою), хромовані стійки з неоновими ковпачками, товстий поручень
     const rr = rf + .9, t2 = top - M.rail, gh = M.rail - 1.4;
@@ -610,7 +610,7 @@ NX.arc = NX.arc || {};
     if (ol) { const o = new Uint32Array(d); for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { if (o[j * n + i]) continue; let hit = 0; for (let b = -ol; b <= ol && !hit; b++) for (let a = -ol; a <= ol; a++) { const x = i + a, y = j + b; if (x >= 0 && y >= 0 && x < n && y < n && a * a + b * b <= ol * ol + 1 && o[y * n + x]) { hit = 1; break; } } if (hit) d[j * n + i] = MOUT; } }   // темне обведення
     X.SH = SH0; c.putImageData(im, 0, 0); return cv; };
   function vitrine(M, x, w, Y, i, j, L, fs) {
-    const Yb = M.Yb, top = M.Ytop, base = 8.5, e = Math.min(x, w - x);
+    const Yb = M.Yb, top = M.Ytop, base = M.slab ? Yb - M.slab[1] : 8.5, e = Math.min(x, w - x);
     if (e < .55) return ramp(PL.CHROME, .86 - e * .4, i, j);                                                    // тонкі стійки каркаса
     if (Y > Yb - .9) return ramp(PL.CHROME, .66, i, j);
     if (Y > Yb - base) { const y = Y - (Yb - base);                                                             // цоколь: неон, значок гриба
@@ -619,7 +619,7 @@ NX.arc = NX.arc || {};
       return ramp(PL.STEEL, (.26 - y / base * .08) * L + .08, i, j); }
     // (15.11, власник: «зроби, щоб другий поверх якось гарно кріпився до грибниці») КОМІР: на висоті плити вежу оперізує той самий
     // фасад, що й у галереї (хром, рожевий неон, панель, блакитна LED-смуга, помаранчевий низ) — галерея ніби обіймає вежу
-    if (M.slab && Y > M.slab[0] - .2 && Y < M.slab[1] + .2) { const y = Y - M.slab[0], h = M.slab[1] - M.slab[0]; if (y < 0 || y > h) return ramp(PL.CHROME, .7, i, j); return fascia(900 + (fs === 1 ? x : -(w - x)), y, h, -99, i, j, L); }
+    if (M.slab && Y > M.slab[0] - .2 && Y < M.slab[1] + .2) { const y = Y - M.slab[0], h = M.slab[1] - M.slab[0]; if (y < 0 || y > h) return ramp(PL.CHROME, .7, i, j); return fascia(900 + (fs === 1 ? x : -(w - x)), y * 24 / h, 24, -99, i, j, L); }
     const fw = M.fwv || 14, U = fs === 1 ? x : -(w - x), y0 = M.slab ? M.slab[0] : Yb - base, h = y0 - Y, hc = y0 + 1;                                  // сцена — над коміром; hc — стеля кімнати
     if (Y < top + 1.6) { const yl = Y - top; return yl < .5 ? ramp(PL.CHROME, .7, i, j) : E(N.pink[yl < 1.2 ? 2 : 1]); }                                      // лампа росту під кришкою
     // (15.11, власник: «наповни світними грибами нових видів… красиву вітрину») сцена — ЛЕВІТУЮЧІ ОСТРІВЦІ: на кожному — один новий
