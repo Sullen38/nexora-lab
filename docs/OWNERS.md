@@ -10,6 +10,7 @@
 | Nexi | `docs/chats/nexi.md` | `js/actors/nexi/*`, `js/actors/cat/*` (Рудик), `js/ui/skinlab.js`, `shop.js`, `js/objects/workshop.js`, `ws_paint.js`, `rug_dock.js`, `ball.js`, `docs/NFT.md` |
 | Гості й вечірка | `docs/chats/guests.md` | `js/actors/guests/*`, `tools/guests` |
 | Ботанічний сад | `docs/chats/garden.md` | нові файли `js/garden/*` (ще немає) |
+| Навчання й портфоліо (з 15.11) | `docs/chats/learn.md` | лише свій файл чату; код гри не змінює, репо читає як навчальний матеріал; портфоліо — окремий репозиторій |
 
 Спільні: `js/i18n/*.js` — кожен править лише свої гілки ключів; `index.html` — лише свій рядок скрипта; `docs/HISTORY.md` — кожен дописує свій блок у кінець.
 Сумнів, чий файл, — питати Архітектора (або власника).
