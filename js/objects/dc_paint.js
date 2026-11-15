@@ -168,14 +168,13 @@ NX.arc = NX.arc || {};
       const pi = Math.floor(x / PANW), pc = x - pi * PANW, ty = y - 3.2, hp = 11.8;
       if (pc < .5) return ramp(PL.STEEL, .08, i, j);
       const ex = x - mid, ey = y - 9.1, er = Math.hypot(ex * .92, ey);
-      if (er < 6.5) {                                                                          // ЕМБЛЕМА: неонове коло з паростком
-        if (Math.abs(er - 5.7) < .48) return E(Math.abs(er - 5.7) < .18 ? N.green[2] : N.green[1]);
-        if (Math.abs(ex) < .3 && ey > -1.2 && ey < 3.8) return E(N.green[1]);                   // стебло
-        for (const [bx, by, tx, ty] of [[0, -.9, -3.5, -3.1], [0, -1.9, 3.1, -4.6]]) {         // два листки-краплі: контур — неон, усередині — темна зелень
-          const dx = tx - bx, dy = ty - by, L2 = Math.hypot(dx, dy), al = ((ex - bx) * dx + (ey - by) * dy) / L2, pp = Math.abs((ex - bx) * dy - (ey - by) * dx) / L2;
-          if (al < 0 || al > L2) continue; const hw = 1.25 * Math.sin(Math.PI * Math.pow(al / L2, .8));
-          if (Math.abs(pp - hw) < .3) return E(N.green[1]); if (pp < hw) return pp < .16 ? E(N.green[0]) : ramp(MAT.jade, .3, i, j);
-        }
+      if (er < 6.5) {                                                                          // ЕМБЛЕМА ГРИБНИЦІ (15.11, власник: «логотип… зроби якимось більш прикольним та грибним»): неонове коло, у ньому гриб
+        if (Math.abs(er - 5.7) < .48) return E(Math.abs(er - 5.7) < .18 ? N.cyan[2] : N.cyan[1]);
+        const cr = Math.hypot(ex / 3.7, (ey - .1) / 3.1);                                         // шапинка — верхня половина еліпса: рожевий неон-контур, світні цятки
+        if (ey < .1 && cr < 1) { if (cr > .82 || ey > -.42) return E(N.pink[cr > .9 ? 1 : 2]); for (const [sx, sy, sr] of [[-1.5, -1.3, .55], [.9, -1.9, .5], [1.9, -.9, .4], [-.3, -2.4, .35]]) if (Math.hypot(ex - sx, ey - sy) < sr) return E(col('#fff0f8')); return ramp(pal(['#4a0c3a', '#8a1c6a', '#c03a98']), .5 - ex * .08, i, j); }
+        if (Math.abs(ex) < .85 - (ey > 2.6 ? -.3 : 0) && ey >= .1 && ey < 3.7) return E(Math.abs(ex) > .5 ? N.cyan[1] : col('#eaffff'));   // ніжка
+        if (ey >= .1 && ey < .7 && Math.abs(ex) < 2.4) return E(N.pink[0]);                         // пластинки під шапинкою
+        for (const [sx, sy] of [[-3.6, 1.6], [3.5, 2.3], [-2.6, 3.4], [3.9, -.2]]) if (Math.hypot(ex - sx, ey - sy) < .32) return E(N.green[2]);   // спори
         return ramp(PL.DARK, .32 + (er > 5.2 ? .12 : 0), i, j);
       }
       // (15.11, власник: «давай ми повністю весь другий поверх зробимо скляною теплицею… другий поверх — це модуль по вирощуванню та

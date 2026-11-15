@@ -346,13 +346,22 @@
     return { M, P, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 8 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
   function drawConv(c, t, vx0, vx1) {
     const V = CONV; if (!V || V.n < 2) return; const a = V.P(0, V.fl), b = V.P(V.smax, V.fl); if (Math.max(a[0], b[0]) < vx0 - 10 || Math.min(a[0], b[0]) > vx1 + 10) return;
-    c.save(); c.imageSmoothingEnabled = false; const L = V.n * 7.75;
+    c.save(); c.beginPath(); c.rect(vx0 - 20, 0, Math.min(vx1 + 20, 1600) - vx0 + 20, 400); c.clip(); c.imageSmoothingEnabled = false; const L = V.n * 7.75;   // не вище стелі й не за торцеву стіну
     for (let k = 0; k < V.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), s = raw - wr * L; if (s < 1.6 || s > V.smax - 1 || Math.abs(s - V.mid) < 8.5) continue;      // у вежі, за краєм, за емблемою
       const p = V.P(s, V.fl); if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue; const q = V.P(s + 1, V.fl), d = V.P(s, V.fl + 1), near = 1 - s / V.smax, sz = 1.6 + near * 5.7, fade = Math.min(1, (s - 1.6) / 2, (V.smax - 1 - s) / 3);
       c.save(); c.globalAlpha = fade; c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]);
       c.fillStyle = '#0c0c1c'; c.fillRect(-2.9, 0, 5.8, 1.45); c.fillStyle = '#34345c'; c.fillRect(-2.7, .2, 5.4, .95); c.fillStyle = '#8a8abc'; c.fillRect(-2.7, .2, 5.4, .22);      // лоток
       c.fillStyle = '#2f8a3a'; c.fillRect(-2.6, -.45, 5.2, .5); c.fillStyle = '#7ad86a'; c.fillRect(-2.6, -.45, 5.2, .18);                                                         // мох
       c.drawImage(V.CV[(((k * 3 - wr * 5) % 8) + 8) % 8], -sz / 2, -.35 - sz, sz, sz); c.restore(); }
+    // (15.11, крок 3) ТУМАН: раз на 48 с форсунки під стелею спрацьовують хвилею від дальнього кінця до вежі — під кожною хмарка
+    // осідає на лотки; після хвилі скло коридору запотіває й за ~20 с прояснюється
+    { const T0 = t % 48, wv = V.smax - T0 * 14, fog = T0 > V.smax / 14 ? Math.max(0, 1 - (T0 - V.smax / 14) / 20) : Math.min(1, T0 * 14 / V.smax) * .8;
+      c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true;
+      if (fog > .02) { c.globalAlpha = .2 * fog; c.fillStyle = '#d8f4f4'; c.beginPath(); for (let s = 0; s <= V.smax; s += 8) { const p = V.P(s, V.pipe + .6); s ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); }
+        for (let s = V.smax; s >= 0; s -= 8) { const p = V.P(s, V.fl + 1.4); c.lineTo(p[0], p[1]); } c.closePath(); c.fill(); }
+      for (let s = 4; s < V.smax; s += 7.75) { const d = s - wv; if (d < 0 || d > 34) continue; const u = d / 34, p = V.P(s, V.pipe + 1 + u * 6), q = V.P(s + 1, V.pipe), w = Math.hypot(q[0] - p[0], 0) + .6; if (p[0] < vx0 - 6 || p[0] > vx1 + 6) continue;
+        c.globalAlpha = .5 * Math.sin(Math.min(1, u * 1.2) * Math.PI); c.fillStyle = '#eafcff'; c.beginPath(); c.ellipse(p[0], p[1], (1.2 + u * 2.6) * w, (.8 + u * 1.2) * w, 0, 0, 6.2832); c.fill();
+        if (u < .25) { const n = V.P(s, V.pipe + .5); c.globalAlpha = 1; c.fillStyle = '#3be8ff'; c.fillRect(n[0] - .3, n[1] - .3, .6, .6); } } }                                       // форсунка блимає
     c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
     for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P(s, V.pipe); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
     c.restore();
