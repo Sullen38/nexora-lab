@@ -589,7 +589,7 @@ NX.arc = NX.arc || {};
    *  гриба), TH — нитки міцелію між ними; thAt(q, t) — точка нитки q (t 0…1). GC — колір світіння виду. */
   const VS = { ISL: [{ u: -6.3, h: 1.6, hw: 5.3, k: 6, s: 12.5 }, { u: -6.2, h: 21, hw: 4.7, k: 1, s: 11.5 }, { u: -6.3, h: 39.5, hw: 4.7, k: 3, s: 11.5 },
       { u: 8.5, h: 17, hw: 6, k: 0, s: 13 }, { u: 9.5, h: 37.5, hw: 5.2, k: 5, s: 13 }, { u: 22.5, h: 26.5, hw: 6.3, k: 2, s: 13 }, { u: 23.5, h: 45.5, hw: 5.2, k: 4, s: 10.5 },
-      { u: 34.3, h: 15.5, hw: 4.8, k: 7, s: 11.5 }, { u: 34.2, h: 35, hw: 4.8, k: 8, s: 11 }, { u: 8, h: 1.6, hw: 6, k: 9, s: 11 }],
+      { u: 34.6, h: 24, hw: 4.6, k: 7, s: 13 }, { u: 34.2, h: 42.5, hw: 4.8, k: 8, s: 10 }, { u: 8, h: 1.6, hw: 6, k: 9, s: 11, r: 1 }],   // r — гриб лишається в растрі (за поруччям)
     TH: [[0, 1], [1, 2], [1, 3], [3, 4], [3, 5], [4, 6], [5, 6], [5, 7], [7, 8], [6, 8], [2, 4], [9, 3]],
     GC: ['#b08aff', '#5ad8ff', '#38e070', '#ff6ad8', '#ffb020', '#7af0ff', '#b8d0ff', '#ff7a3a', '#3be8c8', '#ffe890'] };
   VS.thAt = (q, t) => { const a = VS.ISL[VS.TH[q][0]], b = VS.ISL[VS.TH[q][1]], sg = 4 * t * (1 - t); return [a.u + (b.u - a.u) * t + Math.sin(t * 6.28 + q) * .5 * sg, a.h - 1.6 + (b.h - a.h) * t - (1.6 + (q % 3)) * sg]; };
@@ -599,8 +599,9 @@ NX.arc = NX.arc || {};
    *  три плани: далекі силуети грибів у тумані, колода, великі гриби біля скла (з темним обведенням). Угорі — рожева лампа росту. */
   const MOUT = col('#0a1420');
   /** (15.11) Гриб виду k як полотно n×n (для живого конвеєра — objects/decor_live.js): той самий малюнок, що у вітрині. */
-  NX.arc.mushCanvas = (k, n) => { const cv = document.createElement('canvas'); cv.width = cv.height = n; const c = cv.getContext('2d'), im = c.createImageData(n, n), d = new Uint32Array(im.data.buffer), SH0 = X.SH; if (!X.SH) X.SH = { fl: 0 };
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const v = MUSH[k % MUSH.length](i + .5 - n / 2, n - 1 - j, n * .96, i, j); if (v) d[j * n + i] = v; }
+  NX.arc.mushCanvas = (k, n, ol) => { const cv = document.createElement('canvas'); cv.width = cv.height = n; const c = cv.getContext('2d'), im = c.createImageData(n, n), d = new Uint32Array(im.data.buffer), SH0 = X.SH; if (!X.SH) X.SH = { fl: 0 };
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const v = MUSH[k % MUSH.length](i + .5 - n / 2, n - 1 - j, n * .92, i, j); if (v) d[j * n + i] = v; }
+    if (ol) { const o = new Uint32Array(d); for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { if (o[j * n + i]) continue; let hit = 0; for (let b = -ol; b <= ol && !hit; b++) for (let a = -ol; a <= ol; a++) { const x = i + a, y = j + b; if (x >= 0 && y >= 0 && x < n && y < n && a * a + b * b <= ol * ol + 1 && o[y * n + x]) { hit = 1; break; } } if (hit) d[j * n + i] = MOUT; } }   // темне обведення
     X.SH = SH0; c.putImageData(im, 0, 0); return cv; };
   function vitrine(M, x, w, Y, i, j, L, fs) {
     const Yb = M.Yb, top = M.Ytop, base = 8.5, e = Math.min(x, w - x);
@@ -617,7 +618,7 @@ NX.arc = NX.arc || {};
     if (Y < top + 1.6) { const yl = Y - top; return yl < .5 ? ramp(PL.CHROME, .7, i, j) : E(N.pink[yl < 1.2 ? 2 : 1]); }                                      // лампа росту під кришкою
     // (15.11, власник: «наповни світними грибами нових видів… красиву вітрину») сцена — ЛЕВІТУЮЧІ ОСТРІВЦІ: на кожному — один новий
     // вид (великий, з темним обведенням) і його малеча; між острівцями — світні нитки міцелію; зі стелі звисають світні дзвіночки
-    const hero = (u, hq) => { for (const I of VS.ISL) { const dx = u - I.u, dy = hq - I.h; if (dy < -.5 || dy > I.s + 1 || Math.abs(dx) > I.hw + 2) continue; const f = NEO[I.k];
+    const hero = (u, hq) => { for (const I of VS.ISL) { if (!I.r) continue; const dx = u - I.u, dy = hq - I.h; if (dy < -.5 || dy > I.s + 1 || Math.abs(dx) > I.hw + 2) continue; const f = NEO[I.k];
         let c = f(dx, dy, I.s, i, j); if (c) return c; c = f(dx + I.hw * .68, dy, I.s * .36, i, j) || f(dx - I.hw * .7, dy, I.s * .28, i, j); if (c) return c; } return 0; };
     let c = hero(U, h); if (c) return c;
     if (hero(U - .3, h) || hero(U + .3, h) || hero(U, h - .3) || hero(U, h + .3)) return MOUT;

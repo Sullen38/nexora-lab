@@ -180,7 +180,8 @@
     const at = (f, a, Y) => f ? proj(sideP(M.D * (1 - a), Y)) : proj(P(-sR * hw * (1 - 2 * a) * 1, 0, Y)), ok = (f, a, Y) => !f || Y < M.deck - 13 || a < .12;   // a: 0 — кут між гранями
     const R = (k, q) => hash(k * 7 + 3, q * 13 + 1);
     const S = NX.arc.vitScene, fw = M.fwv || PYL.w, y0 = M.slab ? M.slab[0] : M.Yb - 8.5, uh = (U, h) => { const f = U < 0 ? 0 : 1, a = f ? U / M.D : 1 + U / fw, Y = y0 - h; return Y > -1 && ok(f, a, Y) ? at(f, a, Y) : null; };   // (U, h) сцени → екран (null — за галереєю)
-    return { M, at, ok, top, bot, R, S, uh, SP: Array.from({ length: 46 }, (_, k) => ({ f: R(k, 1) < .28 ? 0 : 1, a: .06 + R(k, 2) * .88, ph: R(k, 3), sp: .012 + R(k, 4) * .02, sw: R(k, 5) * 6.28 })),
+    const raw = (U, h) => U < 0 ? at(0, 1 + U / fw, y0 - h) : at(1, U / M.D, y0 - h), SPR = S ? S.ISL.map(I => I.r ? null : NX.arc.mushCanvas(8 + I.k, 80, 2)) : [];   // чіткі спрайти нових видів (5–6 точок на од.)
+    return { M, at, ok, top, bot, R, S, uh, raw, SPR, SP: Array.from({ length: 46 }, (_, k) => ({ f: R(k, 1) < .28 ? 0 : 1, a: .06 + R(k, 2) * .88, ph: R(k, 3), sp: .012 + R(k, 4) * .02, sw: R(k, 5) * 6.28 })),
       GL: Array.from({ length: 9 }, (_, k) => ({ f: k % 3 ? 1 : 0, a: .12 + R(k, 6) * .76, y: R(k, 7), ph: R(k, 8) * 6.28, sp: .5 + R(k, 9) * .9, col: ['#3be8ff', '#7aff9a', '#ff6ad8', '#c77dff'][k % 4] })),
       DR: Array.from({ length: 10 }, (_, k) => ({ f: k % 3 ? 1 : 0, a: .08 + R(k, 10) * .84, ph: R(k, 11), sp: .025 + R(k, 12) * .03 })) }; })() : null;
   function vitLive(c, t, vx0, vx1) {
@@ -192,6 +193,13 @@
       c.globalAlpha = nt * (.2 + .04 * Math.sin(t * .7)); c.fillStyle = '#1fb0b4'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.lineTo(e[0], e[1]); c.closePath(); c.fill(); }
     // (15.11, власник: «наповни світними грибами нових видів… красиву вітрину з міні-дрончиками») нові види дихають світлом — кожен
     // своїм кольором і у своєму такті (вночі яскравіше); нитками міцелію між острівцями біжать іскри; під острівцями — сяйво антиграву
+    // (15.11, власник: «хочу, щоб якість, промальовка, глибина всього були кращі») гриби вежі — не в растрі кімнати (1 точка на од.),
+    // а чіткими спрайтами в площині грані: великий гриб і двоє малих на острівці, усі легко гойдаються (кожен у своєму такті)
+    c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+    if (V.S) for (let k = 0; k < V.S.ISL.length; k++) { const I = V.S.ISL[k], cv = V.SPR[k]; if (!cv) continue; const o = V.raw(I.u, I.h), ex = V.raw(I.u + 1, I.h), ey = V.raw(I.u, I.h + 1);
+      for (const [du, sz, ph] of [[-I.hw * .68, .36, 1.7], [I.hw * .7, .28, 3.1], [0, 1, 0]]) { const w = I.s * sz / .92, sw = Math.sin(t * (.7 + k * .07) + k * 1.3 + ph) * (sz < 1 ? .07 : .028);
+        c.save(); c.transform(ex[0] - o[0], ex[1] - o[1], o[0] - ey[0], o[1] - ey[1], o[0], o[1]); c.translate(du, .25); c.rotate(sw); c.scale(1, 1 + .012 * Math.sin(t * 1.1 + k + ph)); c.drawImage(cv, -w / 2, -w, w, w); c.restore(); } }
+    c.globalCompositeOperation = 'lighter';
     const S = V.S; if (S) { for (let k = 0; k < S.ISL.length; k++) { const I = S.ISL[k], br = .5 + .5 * Math.sin(t * (.7 + k * .13) + k * 2.1), p = V.uh(I.u, I.h + I.s * .62), q = V.uh(I.u, I.h - 3.2); if (!p) continue;
         const r = I.s * (.72 + .12 * br); c.globalAlpha = (.2 + .3 * nt) * (.55 + .45 * br); c.drawImage(glow(S.GC[I.k]).cv, p[0] - r, p[1] - r, r * 2, r * 2);
         if (q) { c.globalAlpha = .3 + .15 * Math.sin(t * 2.3 + k); c.drawImage(glow('#3be8ff').cv, q[0] - I.hw * .9, q[1] - 1.6, I.hw * 1.8, 4); } }
