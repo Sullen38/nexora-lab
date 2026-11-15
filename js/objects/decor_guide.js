@@ -216,7 +216,7 @@
       tint(el, artCol(e.kind, performance.now() / 1000)); artCard(); return; }
     el.querySelector('b').textContent = T(e.grp === 'shroom' && NX.shroom && NX.shroom.KINDS.indexOf(e.kind) >= 8 ? 'decor.guide.bred' : 'decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
-    const lat = T('decor.guide.latin.' + e.kind); el.querySelector('small').textContent = lat.startsWith('decor.') ? '' : lat;
+    const lat = T('decor.guide.latin.' + e.kind), dsc = e.grp === 'shroom' ? T('decor.guide.shroomd.' + e.kind) : ''; el.querySelector('small').textContent = (lat.startsWith('decor.') ? '' : lat) + (dsc && !dsc.startsWith('decor.') ? ' — ' + dsc : '');   // (15.11) у грибів — ще й підпис-історія
     const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : e.grp === 'shroom' ? 'shroom' : 'plant', gs = e.grp === 'wall' && NX.decorGrow ? NX.decorGrow.state(e.kind) : null;   // (· 22) росте / цвіте
     el.querySelector('.gw').textContent = T('decor.guide.kind.' + kindT) + ' · ' + T('decor.guide.where.' + e.grp) + (e.grp === 'farm' && info && info.s != null ? ' · ' + T('decor.guide.stage', { s: Math.min(6, Math.floor(info.s * 6) + 1) }) : '') + (gs ? ' · ' + T('decor.guide.grow.' + gs) : '');
     el.querySelector('.gc').textContent = T('decor.guide.count', { n: R.n });
@@ -225,7 +225,7 @@
   }
   function show(e, info) {
     const el = $('guide'); if (!el || !e) return; cur = { e, info }; LAST = { e, t: NX.time }; render(); el.classList.add('show');
-    clearTimeout(timer); timer = setTimeout(hide, (e.grp === 'art' ? HIDE_ART : HIDE) * 1000);                    // (· 55) артефакт — довше: є на що дивитись
+    clearTimeout(timer); timer = setTimeout(hide, (e.grp === 'art' || e.grp === 'shroom' ? HIDE_ART : HIDE) * 1000);                    // (· 55) артефакт — довше: є на що дивитись
   }
   function hide() { const el = $('guide'); if (el) el.classList.remove('show'); cur = null; }
   { const el = $('guide'); if (el) el.addEventListener('click', hide); }                                    // розмітка — вище скриптів (index.html)

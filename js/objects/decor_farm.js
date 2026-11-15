@@ -26,7 +26,7 @@
       return { s0: q.i * L, len: Math.hypot(b[0] - a[0], b[2] - a[2]), a, b, n: [-q.sgn * Math.sin((q.sa + q.sb) / 2 * D2R), -Math.cos((q.sa + q.sb) / 2 * D2R)] }; });
     const W = (x, y, back = 0) => { let g = seg[0]; for (const q of seg) if (x >= q.s0) g = q; const u = Math.max(0, Math.min(1, (x - g.s0) / g.len));
       return [g.a[0] + (g.b[0] - g.a[0]) * u - g.n[0] * back, y0 + y, g.a[2] + (g.b[2] - g.a[2]) * u - g.n[1] * back]; };
-    return { W, S: (x, y, back) => X.proj(W(x, y, back)), T: seg.reduce((m, g) => Math.max(m, g.s0 + g.len), 0), H, P: d0.P }; })();
+    return { W, S: (x, y, back) => X.proj(W(x, y, back)), T: seg.reduce((m, g) => Math.max(m, g.s0 + g.len), 0), H, P: d0.P, seg }; })();
   const T = M.T, H = M.H, SH = FARM.shaft, sOf = z => 520 / (520 + z), S = (x, y, b) => M.S(x, y, b), kAt = (x, y, b) => sOf(M.W(x, y, b)[2]);
   const quadF = (fx, pts, fill, a = 1, back = 0) => { fx.globalAlpha = a; fx.fillStyle = fill; fx.beginPath(); pts.forEach(([x, y], k) => { const p = S(x, y, back); k ? fx.lineTo(p[0], p[1]) : fx.moveTo(p[0], p[1]); }); fx.closePath(); fx.fill(); fx.globalAlpha = 1; };
   const MID = M.P / 2 - 1;                                                               // лотки стоять посередині глибини теплиці
@@ -192,6 +192,59 @@
       const p = S(x, y, z), k = kAt(x, y, z); fx.fillStyle = PRODUCE[it.kind] || '#8aff8a'; fx.beginPath(); fx.arc(p[0], p[1], r * k, 0, TAU); fx.fill(); fx.fillStyle = 'rgba(255,255,255,.55)'; fx.fillRect(p[0] - r * k * .5, p[1] - r * k * .6, .6 * k, .6 * k); });
     if (CRATE.items.length >= CRATE.max) { const p = S(cx, cy - h - 2, z), k = kAt(cx, cy, z); fx.fillStyle = Math.floor(t * 2) % 2 ? '#ffd23a' : '#7a5a10'; fx.fillRect(p[0] - .7 * k, p[1] - .7 * k, 1.4 * k, 1.4 * k); }   // повний — блимає
   }
+  // ---------- (15.11, чат «Кімната — правки»; власник: «рамку конвеєру рослин теж зроби з новою якістю») РАМА ЧІТКИМ ШАРОМ ----------
+  // Растр кімнати — 1 точка на одиницю, тому рама ферми зблизька була «кашею». Тут та сама рама (кришка з ламелями й корпусами
+  // фітоламп, рожевий неон, хромові кромки полиць, тумба-бак із віконцями води, насосами й ґратками, зелена лінія, стійки з зеленим
+  // неоном, табличка) намальована ОДИН раз у полотно ×4 і кладеться поверх растру; щокадру — лише живе: вода у віконцях бака
+  // хлюпає, вогники насосів блимають, неон дихає. Геометрія — та сама S(x, y) нутра (кришка — y < 0, тумба — y > H).
+  const FRM = { cv: null, q: 4, bx: 0, by: 0, bw: 0, bh: 0, lang: null }, LID = VW.segs[0].lid, BASE = VW.segs[0].base, NSEG = M.seg.length, SX = M.seg.map(g => g.s0), SEGL = SX[1] - SX[0];
+  const cuts = (x0, x1) => { const out = [x0]; for (let k = 1; k < NSEG; k++) { const x = SX[k]; if (x > x0 + .01 && x < x1 - .01) out.push(x); } out.push(x1); return out; };
+  /** Смуга рами x0…x1, ya…yb (координати нутра) на контекст c — чотирикутниками по сегментах стіни (хорди). */
+  const Q = (c, x0, x1, ya, yb, col, al = 1) => { const xs = cuts(Math.max(0, x0), Math.min(T, x1)); c.globalAlpha = al; c.fillStyle = col; c.beginPath();
+    xs.forEach((x, k) => { const p = S(x, ya, 0); k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); }); for (let k = xs.length - 1; k >= 0; k--) { const p = S(xs[k], yb, 0); c.lineTo(p[0], p[1]); } c.closePath(); c.fill(); };
+  function frameBuild() {
+    const pts = []; for (const x of cuts(0, T)) for (const y of [-LID, H + BASE]) pts.push(S(x, y, 0));
+    const x0 = Math.floor(Math.min(...pts.map(p => p[0]))) - 2, x1 = Math.ceil(Math.max(...pts.map(p => p[0]))) + 2, y0 = Math.max(0, Math.floor(Math.min(...pts.map(p => p[1]))) - 2), y1 = Math.ceil(Math.max(...pts.map(p => p[1]))) + 2, q = FRM.q;
+    const cv = document.createElement('canvas'); cv.width = (x1 - x0) * q; cv.height = (y1 - y0) * q; const c = cv.getContext('2d'); c.setTransform(q, 0, 0, q, -x0 * q, -y0 * q);
+    Object.assign(FRM, { cv, bx: x0, by: y0, bw: x1 - x0, bh: y1 - y0, lang: NX.i18n && NX.i18n.lang });
+    // КРИШКА
+    Q(c, 0, T, -LID, 0, '#161c3a'); Q(c, 0, T, -LID + .6, -LID + 1.5, '#222a52'); Q(c, 0, T, -LID, -LID + .6, '#aab6d0'); Q(c, 0, T, -LID, -LID + .2, '#f4f8ff'); Q(c, 0, T, -LID + .6, -LID + .85, '#0a0c20');
+    for (let x = 0; x < T; x += 9) { for (let y = -LID + 1.9; y < -2.9; y += .8) { Q(c, x + .8, x + 8.2, y, y + .38, '#070918'); Q(c, x + .8, x + 8.2, y + .38, y + .5, '#3a4478'); }                 // ламелі
+      Q(c, x + 2, x + 7, -2.55, -.95, '#0a0c20'); Q(c, x + 2.2, x + 6.8, -2.35, -1, '#c0389a'); Q(c, x + 2.5, x + 6.5, -2.05, -1.35, '#ff7ad8'); Q(c, x + 2.9, x + 6.1, -1.85, -1.6, '#fff0f8'); }   // корпуси фітоламп
+    Q(c, 0, T, -1.05, 0, '#0a0c20'); Q(c, 0, T, -.85, -.15, '#b02a8a'); Q(c, 0, T, -.7, -.3, '#ff7ad8'); Q(c, 0, T, -.56, -.44, '#fff0f8');                                                                 // рожевий неон
+    // ПОЛИЦІ
+    for (let k = 1; k < FARM.tiers; k++) { const y = FARM.tierY(H, k), th = FARM.shelf; Q(c, SH, T - SH, y, y + th, '#2e3860'); Q(c, SH, T - SH, y, y + .55, '#c8d2e8'); Q(c, SH, T - SH, y, y + .18, '#ffffff'); Q(c, SH, T - SH, y + .55, y + .75, '#0a0c20');
+      for (let x = SH + 4; x < T - SH - 4; x += 11) Q(c, x, x + 2.4, y + 1, y + 1.4, '#141a36');
+      Q(c, SH, T - SH, y + th - .75, y + th, '#0a0c20'); Q(c, SH, T - SH, y + th - .62, y + th - .12, '#ff7ad8'); Q(c, SH, T - SH, y + th - .44, y + th - .3, '#fff0f8'); }
+    // ТУМБА-БАК
+    Q(c, 0, T, H, H + BASE, '#1a2044'); Q(c, 0, T, H + .5, H + 1.5, '#242c58'); Q(c, 0, T, H, H + .5, '#aab6d0'); Q(c, 0, T, H, H + .16, '#f4f8ff'); Q(c, 0, T, H + .5, H + .7, '#0a0c20');
+    for (let x = 0; x < T; x += 24) { Q(c, x + 1.7, x + 13.3, H + 1.4, H + BASE - 1.7, '#070918'); Q(c, x + 2, x + 13, H + 1.6, H + BASE - 2, '#082434'); Q(c, x + 2, x + 13, H + 1.6, H + 1.78, '#3a4478');     // віконце рівня води (вода — живим шаром)
+      Q(c, x + 14.8, x + 20.7, H + 1.5, H + BASE - 1.7, '#070918'); Q(c, x + 15, x + 20.5, H + 1.7, H + BASE - 1.9, '#5a6890'); Q(c, x + 15, x + 20.5, H + 1.7, H + 2.2, '#8a98c0'); Q(c, x + 15.5, x + 16.7, H + 2.6, H + 4.4, '#2a3258'); Q(c, x + 18.8, x + 20, H + 3.6, H + 4.5, '#2a3258');   // насос
+      for (let y = H + 2; y < H + BASE - 2; y += .75) { Q(c, x + 21.1, x + 23.6, y, y + .34, '#070918'); Q(c, x + 21.1, x + 23.6, y + .34, y + .46, '#3a4478'); } }                                              // ґратка
+    Q(c, 0, T, H + BASE - .8, H + BASE, '#06180e'); Q(c, 0, T, H + BASE - .66, H + BASE - .1, '#1fae5a'); Q(c, 0, T, H + BASE - .5, H + BASE - .26, '#8affc0');                                                // зелена лінія
+    // СТІЙКИ: на початку кожної камери (два сегменти) і в кінці
+    const post = x => { Q(c, x, x + FARM.post + .25, -.25, H + .25, '#0a0c20'); Q(c, x, x + FARM.post, -.2, H + .2, '#8a98b8'); Q(c, x, x + .5, -.2, H + .2, '#d8e0f0'); Q(c, x + FARM.post - .5, x + FARM.post, -.2, H + .2, '#4a5678');
+      Q(c, x + FARM.post / 2 - .42, x + FARM.post / 2 + .42, .6, H - .6, '#0a3a1e'); Q(c, x + FARM.post / 2 - .28, x + FARM.post / 2 + .28, .8, H - .8, '#3bff8a'); Q(c, x + FARM.post / 2 - .08, x + FARM.post / 2 + .08, .8, H - .8, '#e8fff0');
+      for (let y = 9; y < H; y += 9) Q(c, x, x + FARM.post, y, y + .4, '#eef2ff'); };
+    for (let k = 0; k < NSEG; k += 2) post(SX[k]); post(T - FARM.post);
+    // ТАБЛИЧКА «ФЕРМА NEXI» на кришці, посередині
+    { const xm = SX[5], w = SEGL * 1.44, h = LID * .72, ya = -LID + LID * .12, p = S(xm - w / 2, ya, 0), q1 = S(xm - w / 2 + 1, ya, 0), d = S(xm - w / 2, ya + 1, 0); c.save(); c.globalAlpha = 1; c.transform(q1[0] - p[0], q1[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]);
+      c.fillStyle = '#04120a'; c.fillRect(0, 0, w, h); c.strokeStyle = '#3bff8a'; c.lineWidth = .3; c.strokeRect(.3, .3, w - .6, h - .6); c.fillStyle = '#3bff8a'; [[2.6, 1.4], [3.3, .9], [4, 1.4], [2.9, 2.2], [3.7, 2.2], [3.3, 3]].forEach(([x, y]) => c.fillRect(x, y, .7, .7));
+      c.fillStyle = '#ff4fd8'; c.fillRect(w - 2.4, h / 2 - .5, 1, 1); const s = NX.t('decor.farm.title'); let sz = h * .5; c.font = sz + 'px "Press Start 2P", monospace'; const tw = c.measureText(s).width; if (tw > w - 9) sz *= (w - 9) / tw;
+      NX.px.text(c, s, w / 2 + 1.2, h / 2 + sz * .38, '#d8ffe8', sz, 'center'); c.restore(); }
+    c.globalAlpha = 1;
+  }
+  function frameLive(c, t, vx0, vx1) {
+    if (!FRM.cv || FRM.lang !== (NX.i18n && NX.i18n.lang)) frameBuild(); if (FRM.bx > vx1 || FRM.bx + FRM.bw < vx0) return;
+    c.save(); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true; c.drawImage(FRM.cv, FRM.bx, FRM.by, FRM.bw, FRM.bh);
+    c.beginPath(); c.rect(FRM.bx, FRM.by, FRM.bw, FRM.bh); c.clip();
+    for (let x = 0, k = 0; x < T; x += 24, k++) { const lv = 3 + .5 * Math.sin(t * .9 + k * 1.7), wv = .22 * Math.sin(t * 2.3 + k);                                   // вода у віконцях бака хлюпає
+      Q(c, x + 2, x + 13, H + lv, H + BASE - 2, '#1a9ac8'); Q(c, x + 2, x + 7.5, H + lv + wv, H + lv + wv + .4, '#9af6ff'); Q(c, x + 7.5, x + 13, H + lv - wv, H + lv - wv + .4, '#9af6ff');
+      { const u = (t * .5 + k * .37) % 1; Q(c, x + 3 + (k * 3.1) % 8, x + 3.5 + (k * 3.1) % 8, H + BASE - 2.4 - u * (BASE - 4 - lv + 2), H + BASE - 2 - u * (BASE - 4 - lv + 2), '#eaffff', .8 * (1 - u)); }
+      Q(c, x + 17.1, x + 18.2, H + 2.6, H + 3.5, Math.floor(t * 1.6 + k * .7) % 3 ? '#3bff8a' : '#0a3a1e'); }                                                              // вогник насоса
+    c.globalCompositeOperation = 'lighter'; Q(c, 0, T, -1.5, .6, '#ff4fd8', .1 + .05 * Math.sin(t * .9)); Q(c, 0, T, H + BASE - 1.3, H + BASE + .4, '#3bff8a', .1 + .04 * Math.sin(t * 1.3));   // неон дихає
+    c.restore();
+  }
   NX.decorFarm = {
     /** (· 40) Ящик зібраного: скільки лежить; Nexi забирає все (activities.js harvest) — повертає кількість. */
     crateCount() { return CRATE.items.length; },
@@ -204,7 +257,7 @@
     /** Тап по теплиці (objects/decor_live.js): x, y — екран -> точка нутра; хмарка туману, рослини поруч трусяться. -> true */
     tap(x, y, t) { let best = null, bd = 1e9; for (let fx_ = 0; fx_ <= T; fx_ += 4) for (let k = 0; k < FARM.tiers; k++) { const fy = FARM.rowY(H, k) - 8, p = S(fx_, fy, MID), d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = [fx_, fy]; } }
       TAP = { fx: best[0], fy: best[1], t0: t }; return true; },
-    trayAt, TR, T, H, plantSpr,
+    trayAt, TR, T, H, plantSpr, frame: frameLive,
     /** (· 20) Де шахта ярусу row на екрані (ліва — сівалка, права — різак): [x, y] для сховища насіння (objects/decor_vault.js). */
     shaft(row, side) { return S(side === 'left' ? SH * .5 : T - SH * .5, FARM.rowY(H, row) - 6, MID); },
     /** (· 30) Світова точка правої шахти ярусу (для Nexi: збір врожаю) — [X, Y, Z]. */

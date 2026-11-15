@@ -256,7 +256,7 @@
       c.fillStyle = ['#7af6ff', '#ff8ae0', '#8affa8'][q % 3]; c.beginPath(); c.moveTo(a[0] + sw, a[1] + len - .9); c.lineTo(a[0] + sw + .9, a[1] + len + .7); c.lineTo(a[0] + sw - .9, a[1] + len + .7); c.closePath(); c.fill(); }
     const pt = k => { const I = S.ISL[k], v = V3[k]; return P3(v[0], v[1], I.h); }, far = k => k < 3 ? V3[k][1] : hw - V3[k][0];
     for (let q = 0; q < S.TH.length; q++) { const [ia, ib] = S.TH[q]; if (!V3[ia] || !V3[ib]) continue; const a = pt(ia), b = pt(ib), mx = (a[0] + b[0]) / 2 + Math.sin(q) * 1.5, my = Math.max(a[1], b[1]) + 3.5 + (q % 3);    // нитки міцелію провисають
-      c.globalAlpha = .7; c.strokeStyle = '#1a86a8'; c.lineWidth = .32; c.beginPath(); c.moveTo(a[0], a[1] + 1.5); c.quadraticCurveTo(mx, my, b[0], b[1] + 1.5); c.stroke();
+      c.globalAlpha = .75; c.strokeStyle = rgbOf(c, t); c.lineWidth = .32; c.beginPath(); c.moveTo(a[0], a[1] + 1.5); c.quadraticCurveTo(mx, my, b[0], b[1] + 1.5); c.stroke();   // (15.11) нитки міцелію — у такт RGB-контуру
       c.globalCompositeOperation = 'lighter'; for (let n = 0; n < 2; n++) { const u = (t * (.11 + (q % 4) * .02) + q * .37 + n * .5) % 1, w = 1 - u, x = w * w * a[0] + 2 * w * u * mx + u * u * b[0], y = w * w * (a[1] + 1.5) + 2 * w * u * my + u * u * (b[1] + 1.5);
         c.globalAlpha = Math.sin(u * Math.PI) * .9; c.drawImage(glow(n ? '#ff9ae0' : '#a8f4ff').cv, x - 1.3, y - 1.3, 2.6, 2.6); c.fillStyle = '#ffffff'; c.fillRect(x - .25, y - .25, .5, .5); } c.globalCompositeOperation = 'source-over'; }
     const ord = S.ISL.map((_, k) => k).filter(k => V3[k]).sort((a, b) => far(b) - far(a));
@@ -373,7 +373,7 @@
     // (15.11, власник: «голографічний комп'ютер лягає на поручні — неправильно») панель стоїть НАД поруччям і паралельно йому, на
     // двох тонких стійках від поручня: низ панелі — на 3 од. вище поручня й іде тим самим нахилом, що й галерея
     if (!CONV) return; const M = PYL.dc, W = 30, H = 26, pa = proj(sideP(M.D, M.deck)), pb = proj(sideP(0, M.deck)), xr = Math.max(pa[0], pb[0]) + 2.5, Yb = CONV.M.top - (CONV.M.rail || 12) - 3;
-    let s0 = 0; while (s0 < 40 && CONV.P(s0, Yb)[0] < xr) s0 += .5; const p0 = CONV.P(s0, Yb), p1 = CONV.P(s0 + 23, Yb), ax = [(p1[0] - p0[0]) / W, (p1[1] - p0[1]) / W], k = Math.hypot(ax[0], ax[1]), ay = [0, k], o = [p0[0], p0[1] - H * k];
+    let s0 = 0; while (s0 < 40 && CONV.P(s0, Yb)[0] < xr) s0 += .5; const p0 = CONV.P(s0, Yb), p1 = CONV.P(s0 + 16.5, Yb),   /* (15.11, власник: «дисплей зроби трохи менше, щоб не виходив за рамку сайту й не находив на орхідеї») було 23 */  ax = [(p1[0] - p0[0]) / W, (p1[1] - p0[1]) / W], k = Math.hypot(ax[0], ax[1]), ay = [0, k], o = [p0[0], p0[1] - H * k];
     const fl = .86 + .08 * Math.sin(t * 9) - (hash(Math.floor(t * 6), 5) > .96 ? .3 : 0), T = (kk, v) => NX.t('decor.shroommon.' + kk, v), tx = NX.px.text;
     c.save(); c.transform(ax[0], ax[1], ay[0], ay[1], o[0], o[1]); c.fillStyle = '#9aa8c8'; c.fillRect(W * .14, H, .7, 3.6); c.fillRect(W * .84, H, .7, 3.6); c.fillStyle = '#3be8ff'; c.fillRect(W * .1, H - .2, W * .82, .5); c.restore();   // стійки й планка
     c.save();
@@ -391,7 +391,8 @@
     { const T0 = t % 48, hum = .5 + .45 * (T0 < 10 ? T0 / 10 : Math.max(0, 1 - (T0 - 10) / 38)), tmp = .5 + .3 * (.5 + .5 * Math.sin(t * .11)), spo = Math.min(1, .3 + .55 * nt + .08 * Math.sin(t * .5));
       [[T('hum'), hum, '#3be8ff'], [T('temp'), tmp, '#ffb24a'], [T('spores'), spo, '#c77dff']].forEach(([nm, v, col], q) => { const y = 9 + q * 3.6;
         fit(nm, 15, y, '#9ad8ff', 1.8, 'left', 13.4); c.fillStyle = 'rgba(60,232,255,.18)'; c.fillRect(15, y + .5, 13.4, 1); c.fillStyle = col; c.fillRect(15, y + .5, 13.4 * v, 1); }); }
-    fit(T('kinds', { n: 18 }), W / 2, 23.4, '#7aff9a', 2.3, 'center', W - 3);
+    { const L = VIT && VIT.last; if (L && SH) fit(String(NX.t('decor.guide.sp.shroom.' + SH.KINDS[L.idx])).toUpperCase(), W / 2, 20.6, '#eaffff', 1.7, 'center', W - 3); }   // (15.11) назва виду, що прибув останнім
+    fit(T('kinds', { n: 18 }), W / 2, 24.2, '#7aff9a', 2.1, 'center', W - 3);
     c.restore();
   }
   /** Вентилятор у круглій ґратці (бокова грань), вогник кодового замка, вогники лицьової грані. */
@@ -606,6 +607,14 @@
       c.globalCompositeOperation = 'lighter'; c.globalAlpha = .5 * bl; c.drawImage(glow(col).cv, a[0] - 2.4, a[1] - 2.4, 4.8, 4.8); c.globalCompositeOperation = 'source-over'; }
     c.restore();
   }
+  /** (15.11) Тап по грибу: кільце й хмарка спор кольору виду злітають від місця дотику (1.6 с). */
+  function shroomFx(c, t) {
+    const E = TP.shroom; if (!E || !SH) return; const dt = t - E.t0; if (dt < 0 || dt > 1.6) return; const f = dt / 1.6, col = SH.SUB[E.k].led;
+    c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = (1 - f) * .8; c.drawImage(glow(col).cv, E.x - 5 - f * 4, E.y - 5 - f * 4, 10 + f * 8, 10 + f * 8);
+    c.strokeStyle = col; c.lineWidth = .5; c.globalAlpha = (1 - f) * .9; c.beginPath(); c.arc(E.x, E.y, 1.5 + f * 6, 0, TAU); c.stroke();
+    for (let q = 0; q < 16; q++) { const a = hash(q, 61) * TAU, r = f * (3 + hash(q, 62) * 7), x = E.x + Math.cos(a) * r + Math.sin(t * 5 + q) * .4, y = E.y + Math.sin(a) * r * .6 - f * f * 7; c.globalAlpha = (1 - f) * (.6 + .4 * hash(q, 63)); c.fillStyle = q % 3 ? col : '#ffffff'; c.fillRect(x - .25, y - .25, .5, .5); }
+    c.restore();
+  }
   function drawConv(c, t, vx0, vx1) {
     const V = CONV; if (!V || V.n < 2) return; const a = V.P(0, V.fl), b = V.P(V.smax, V.fl); if (Math.max(a[0], b[0]) < vx0 - 10 || Math.min(a[0], b[0]) > vx1 + 10) return;
     hitReset(t); c.save(); c.beginPath(); c.rect(vx0 - 20, 0, Math.min(vx1 + 20, 1600) - vx0 + 20, 400); c.clip(); c.imageSmoothingEnabled = false; const L = V.n * 7.75;   // не вище стелі й не за торцеву стіну
@@ -641,7 +650,7 @@
       c.restore(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
     c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
     for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P2(s, 4, V.pipe + .2); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
-    underLive(c, t, V, vx0, vx1); panelsLive(c, t, V, vx0, vx1); fasciaLive(c, t, V); convFront(c, t, V, nt0, vx0, vx1); railLive(c, t, V, vx0, vx1);
+    underLive(c, t, V, vx0, vx1); panelsLive(c, t, V, vx0, vx1); fasciaLive(c, t, V); convFront(c, t, V, nt0, vx0, vx1); railLive(c, t, V, vx0, vx1); shroomFx(c, t);
     c.restore();
   }
 
@@ -1042,6 +1051,7 @@
       const P = this.prof, T = P ? (k, f) => { const a = performance.now(); f(); P[k] = (P[k] || 0) + performance.now() - a; } : (k, f) => f();   // NX.decorLive.prof = {} — заміри частин (мс)
       T('build', () => { buildPlants(); liftStep('left'); liftStep('right'); });
       const m = c.getTransform(); c.__base = [m.a, m.b, m.c, m.d, m.e, m.f];
+      T('farm', () => { if (NX.decorFarm && NX.decorFarm.frame) NX.decorFarm.frame(c, t, vx0, vx1); });   // (15.11) рама ферми чітким шаром — objects/decor_farm.js
       T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); drawConv(c, t, vx0, vx1); });
       T('led', () => drawLED(c, t, vx0, vx1));
       T('art', () => { if (NX.decorCollage) NX.decorCollage.draw(c, t, { items, proj, basis, vx0, vx1 }); drawArt(c, t, vx0, vx1); });   // (· 53) колаж довкола сот — під сяйвом сот
