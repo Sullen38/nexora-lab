@@ -375,6 +375,21 @@
       for (let s = 4; s < V.smax; s += 7.75) { const d = s - wv; if (d < 0 || d > 34) continue; const u = d / 34, p = V.P(s, V.pipe + 1 + u * 6), q = V.P(s + 1, V.pipe), w = Math.hypot(q[0] - p[0], 0) + .6; if (p[0] < vx0 - 6 || p[0] > vx1 + 6) continue;
         c.globalAlpha = .5 * Math.sin(Math.min(1, u * 1.2) * Math.PI); c.fillStyle = '#eafcff'; c.beginPath(); c.ellipse(p[0], p[1], (1.2 + u * 2.6) * w, (.8 + u * 1.2) * w, 0, 0, 6.2832); c.fill();
         if (u < .25) { const n = V.P(s, V.pipe + .5); c.globalAlpha = 1; c.fillStyle = '#3be8ff'; c.fillRect(n[0] - .3, n[1] - .3, .6, .6); } } }                                       // форсунка блимає
+    // (15.11, крок 4) ТЕХНІКА В КОРИДОРІ: лампа росту їздить рейкою під стелею туди-сюди (рожевий конус світла на лотки); рука-
+    // маніпулятор переїжджає від лотка до лотка, зупиняється, опускає «лапу» й сканує гриб блакитним променем. Крок 5 — НІЧ: коридор
+    // світиться зсередини (бірюза), під лампою — рожева пляма.
+    { const nt = 1 - (NX.daylight ? NX.daylight.v(t) : 1), TF = (s, Y) => { const p = V.P(s, Y), q = V.P(s + 1, Y), d = V.P(s, Y + 1); c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]); }, top = V.pipe + .7, hgt = V.fl - top;
+      if (nt > .05) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = nt * .24; c.fillStyle = '#1fb0b4'; c.beginPath(); for (let s = 0; s <= V.smax; s += 8) { const p = V.P(s, top); s ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); }
+        for (let s = V.smax; s >= 0; s -= 8) { const p = V.P(s, V.fl + 1.4); c.lineTo(p[0], p[1]); } c.closePath(); c.fill(); c.globalCompositeOperation = 'source-over'; }
+      const sL = V.smax * (.5 + .44 * Math.sin(t * .11));                                                                                              // лампа на рейці
+      c.save(); TF(sL, top); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .13 + .1 * nt; c.fillStyle = '#ff8ae0'; c.beginPath(); c.moveTo(-2.6, .8); c.lineTo(2.6, .8); c.lineTo(5.2, hgt); c.lineTo(-5.2, hgt); c.closePath(); c.fill();
+      c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.fillStyle = '#0c0c1c'; c.fillRect(-3.2, -.2, 6.4, 1.1); c.fillStyle = '#ff6ad8'; c.fillRect(-2.8, .45, 5.6, .4); c.fillStyle = '#fff0f8'; c.fillRect(-2.8, .45, 5.6, .14); c.restore();
+      const ph = t * .085, n = Math.floor(ph), u = ph - n, pos = q => 7 + hash(q, 5) * (V.smax - 16), mv = Math.min(1, u / .38), e = mv * mv * (3 - 2 * mv), sA = pos(n) + (pos(n + 1) - pos(n)) * e, scan = u > .42 && u < .92, ext = scan ? Math.min(1, (u - .42) / .1, (.92 - u) / .08) : 0;   // рука
+      c.save(); TF(sA, top); c.fillStyle = '#0c0c1c'; c.fillRect(-1.5, -.3, 3, 1.2); c.fillStyle = '#9a9ac4'; c.fillRect(-1.2, -.1, 2.4, .35); c.fillStyle = '#ffd23a'; c.fillRect(-.35, .2, .7, .5);                 // каретка
+      const al = 1.4 + ext * 1.6; c.fillStyle = '#0c0c1c'; c.fillRect(-.45, .9, .9, al); c.fillStyle = '#c4c4ec'; c.fillRect(-.22, .9, .44, al); c.fillStyle = '#0c0c1c'; c.fillRect(-1.1, .9 + al, 2.2, .7); c.fillStyle = '#3be8ff'; c.fillRect(-.8, 1.05 + al, 1.6, .35);   // плече й головка
+      if (ext > 0) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .3 * ext; c.fillStyle = '#3be8ff'; c.beginPath(); c.moveTo(-.7, 1.5 + al); c.lineTo(.7, 1.5 + al); c.lineTo(2.6, hgt); c.lineTo(-2.6, hgt); c.closePath(); c.fill();
+        const sy = 1.6 + al + (hgt - 1.6 - al) * (.5 + .5 * Math.sin(t * 7)); c.globalAlpha = .9 * ext; c.fillRect(-2.2, sy, 4.4, .2); }                                                                                    // рядок сканера
+      c.restore(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
     c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
     for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P(s, V.pipe); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
     c.restore();
