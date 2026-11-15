@@ -187,10 +187,8 @@ NX.arc = NX.arc || {};
       if (ty < .9) return ramp(MAT.copper, .75 - ty * .4 + (hash((x * 1.5) | 0, 3) > .7 ? .2 : 0), i, j);                            // труба з розчином
       if (ty < 1.7 && pi % 2 === 0 && pc > 3 && pc < PANW - 2) return E(N.pink[ty < 1.3 ? 2 : 1]);                                    // лампа росту
       const fl = hp - 2.3, dy = fl - ty, near = x > 800 ? 1 : Math.max(0, Math.min(1, 1 - x / 190));                                 // dy — висота над лотком; near — близькість до вежі
-      if (dy < 0) { const t2 = -dy; if (t2 < .55) return ramp(pal(['#1a5a22', '#2f8a3a', '#5fc85a', '#b8f08a']), .45 + hash(i >> 1, j) * .5, i, j);     // мох на лотку
-        if (t2 < 1.5) return (pc % (PANW / 2)) < .5 ? ramp(PL.STEEL, .1, i, j) : ramp(PL.DARK, .5 - (t2 - .55) * .3, i, j);                          // лотки
-        return ((((x * 2) | 0) % 2) ? ramp(PL.STEEL, .3, i, j) : ramp(PL.CHROME, .5, i, j)); }                                                      // стрічка конвеєра
-      for (let q = 0; q < 2; q++) { const sd = pi * 5 + q, cx = PANW * (.3 + q * .42) + (hash(sd, 1) - .5), sz = Math.min(fl - 2, 2.2 + near * (4.6 + hash(sd, 2) * 1.6)), c = MUSH[(pi * 3 + q * 5 + 16) % 8](pc - cx, dy, sz, i, j); if (c) return c; }
+      // (15.11, крок 2) лотки й гриби на них — живі, їдуть до вежі (objects/decor_live.js drawConv); у растрі — лише стрічка конвеєра
+      if (dy < -1.5) return ((((x * 2) | 0) % 2) ? ramp(PL.STEEL, .3, i, j) : ramp(PL.CHROME, .5, i, j));
       const dg = ((x + y * .6) % 31 + 31) % 31, h1 = hash(i, j); if (dg < .35) return col('#d8f6ff'); if (h1 > .997) return col('#eaffff');
       return ramp(pal(['#03101c', '#072636', '#0c4452', '#176a72', '#34a09a']), (.16 + Math.max(0, 1 - dy / fl) * .34 + (hash(i >> 2, j >> 2) - .5) * .06) * (.7 + .3 * L), i, j);
     }
@@ -548,6 +546,10 @@ NX.arc = NX.arc || {};
    *  підіймається знизу догори через обидві грані (U — розгортка: від кута між гранями, ліворуч — лицьова, праворуч — бічна);
    *  три плани: далекі силуети грибів у тумані, колода, великі гриби біля скла (з темним обведенням). Угорі — рожева лампа росту. */
   const MOUT = col('#0a1420');
+  /** (15.11) Гриб виду k як полотно n×n (для живого конвеєра — objects/decor_live.js): той самий малюнок, що у вітрині. */
+  NX.arc.mushCanvas = (k, n) => { const cv = document.createElement('canvas'); cv.width = cv.height = n; const c = cv.getContext('2d'), im = c.createImageData(n, n), d = new Uint32Array(im.data.buffer), SH0 = X.SH; if (!X.SH) X.SH = { fl: 0 };
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const v = MUSH[k % 8](i + .5 - n / 2, n - 1 - j, n * .96, i, j); if (v) d[j * n + i] = v; }
+    X.SH = SH0; c.putImageData(im, 0, 0); return cv; };
   function vitrine(M, x, w, Y, i, j, L, fs) {
     const Yb = M.Yb, top = M.Ytop, base = 8.5, e = Math.min(x, w - x);
     if (e < .55) return ramp(PL.CHROME, .86 - e * .4, i, j);                                                    // тонкі стійки каркаса

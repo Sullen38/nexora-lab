@@ -335,6 +335,29 @@
     c.restore();
   }
 
+  // =============================== КОНВЕЄР ГРИБНИЦІ ===============================
+  // (15.11, власник: «другий поверх — це модуль по вирощуванню та утриманню грибів… як вона може жити, рухатись»; план, крок 2)
+  // У скляному коридорі в тілі плити лотки повільно їдуть стрічкою до вежі; гриб на лотку росте дорогою: з дальнього кінця —
+  // паросток, біля вежі — дорослий; у вежі лоток зникає, з дальнього кінця заїжджає новий (інший вид). По мідній трубі під стелею
+  // біжать бульбашки розчину — теж до вежі. Геометрія — фасад антресолі (як LED-вогники вище).
+  const CONV = (() => { const seg = items.filter(B => B.st === 'dc_mz').sort((a, b) => a.dc.i - b.dc.i); if (!seg.length || !NX.arc.mushCanvas) return null;
+    const M = seg[0].dc, sg = M.sgn, C = M.C, R = M.R - M.P - .05, D2R = Math.PI / 180, a0 = M.a0, P = (s, Y) => { const a = a0 + s / (R * D2R); return proj([C[0] + sg * R * Math.sin(a * D2R), Y, C[1] + R * Math.cos(a * D2R)]); };
+    let smax = 0; for (let s = 0; s < 400; s += 2) { const p = P(s, M.top + 12); if (p[1] < -6 || p[0] > 1606 || a0 + s / (R * D2R) > M.a1) break; smax = s; }
+    return { M, P, smax, n: Math.floor(smax / 7.75), fl: M.top + 12.7, pipe: M.top + 3.65, mid: M.mid != null ? M.mid : (M.tot || 93) / 2, CV: Array.from({ length: 8 }, (_, k) => NX.arc.mushCanvas(k, 48)) }; })();
+  function drawConv(c, t, vx0, vx1) {
+    const V = CONV; if (!V || V.n < 2) return; const a = V.P(0, V.fl), b = V.P(V.smax, V.fl); if (Math.max(a[0], b[0]) < vx0 - 10 || Math.min(a[0], b[0]) > vx1 + 10) return;
+    c.save(); c.imageSmoothingEnabled = false; const L = V.n * 7.75;
+    for (let k = 0; k < V.n; k++) { const raw = k * 7.75 - t * .55, wr = Math.floor(raw / L), s = raw - wr * L; if (s < 1.6 || s > V.smax - 1 || Math.abs(s - V.mid) < 8.5) continue;      // у вежі, за краєм, за емблемою
+      const p = V.P(s, V.fl); if (p[0] < vx0 - 8 || p[0] > vx1 + 8) continue; const q = V.P(s + 1, V.fl), d = V.P(s, V.fl + 1), near = 1 - s / V.smax, sz = 1.6 + near * 5.7, fade = Math.min(1, (s - 1.6) / 2, (V.smax - 1 - s) / 3);
+      c.save(); c.globalAlpha = fade; c.transform(q[0] - p[0], q[1] - p[1], d[0] - p[0], d[1] - p[1], p[0], p[1]);
+      c.fillStyle = '#0c0c1c'; c.fillRect(-2.9, 0, 5.8, 1.45); c.fillStyle = '#34345c'; c.fillRect(-2.7, .2, 5.4, .95); c.fillStyle = '#8a8abc'; c.fillRect(-2.7, .2, 5.4, .22);      // лоток
+      c.fillStyle = '#2f8a3a'; c.fillRect(-2.6, -.45, 5.2, .5); c.fillStyle = '#7ad86a'; c.fillRect(-2.6, -.45, 5.2, .18);                                                         // мох
+      c.drawImage(V.CV[(((k * 3 - wr * 5) % 8) + 8) % 8], -sz / 2, -.35 - sz, sz, sz); c.restore(); }
+    c.globalCompositeOperation = 'lighter'; c.fillStyle = '#eaffff';                                                                                                             // бульбашки в трубі
+    for (let k = 0; k < 16; k++) { const s = V.smax - ((k * V.smax / 16 + t * 3.2) % V.smax); if (s < 1) continue; const p = V.P(s, V.pipe); if (p[0] < vx0 || p[0] > vx1) continue; c.globalAlpha = .7; c.fillRect(p[0] - .25, p[1] - .25, .5, .5); }
+    c.restore();
+  }
+
   // =============================== ПЛАКАТ РУДИКА ===============================
   const RUD = byId.dc_poster1, CATCV = document.createElement('canvas');
   const VIR = [0, 1].map(v => sprite(14, 14, S => {                                     // піксельний вірус: кулька з шипами й сердитими очима
@@ -724,7 +747,7 @@
       const P = this.prof, T = P ? (k, f) => { const a = performance.now(); f(); P[k] = (P[k] || 0) + performance.now() - a; } : (k, f) => f();   // NX.decorLive.prof = {} — заміри частин (мс)
       T('build', () => { buildPlants(); liftStep('left'); liftStep('right'); });
       const m = c.getTransform(); c.__base = [m.a, m.b, m.c, m.d, m.e, m.f];
-      T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); });
+      T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); drawConv(c, t, vx0, vx1); });
       T('led', () => drawLED(c, t, vx0, vx1));
       T('art', () => { if (NX.decorCollage) NX.decorCollage.draw(c, t, { items, proj, basis, vx0, vx1 }); drawArt(c, t, vx0, vx1); });   // (· 53) колаж довкола сот — під сяйвом сот
       T('rudik', () => drawRudik(c, t, vx0, vx1));
