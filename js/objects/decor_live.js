@@ -236,7 +236,7 @@
    *  проєктуються тим самим proj, що й уся кімната. Тому їх видно крізь ОБИДВІ грані одразу, кутова стійка й відблиски скла йдуть
    *  поверх них, дальні — тьмяніші (туман) і перекриваються ближніми. Видно й саму кімнату за склом: дві задні стінки різного тону
    *  й дальнє ребро коробки. Усе обрізано по видимому склу: лицьова грань і бічна над поруччям. */
-  const V3 = [[-2, 3], [-2.4, 3.5], [-2, 3], [3, 14], [3, 14], [3, 25.5], [3, 25.5], [3, 25.5], [3.4, 36], [3.4, 36]].map(([x, dp]) => [x * TSX, dp * DSX]);     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
+  const V3 = [[-4, 4], [-4, 4], [-4, 4], [2.4, 8.3], [2.4, 8.3], [2.4, 23.6], [2.4, 23.6], [2.4, 23.6], [3.6, 36.6], [3.6, 36.6]].map(([x, dp]) => [x * TSX, dp * DSX]);     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
   const VFAR = [[-4.6, 9, 9, 2], [-5, 20, 30, 5], [-4.4, 30, 14, 7], [-2, 37.5, 44, 1], [2.5, 38, 20, 3], [-5.2, 13, 47, 6], [0, 38.5, 33, 4]].map(([x, dp, h, k]) => [x * TSX, dp * DSX, h * (VIT ? VIT.HT / 59.25 : 1), k]);   // дальній план: x, dp, h, вид
   const VDR = [[0, 1, 2, 1], [3, 4, 7, 6, 5], [8, 9, 6]];
   /** (16.11, власник на знімку: «щось з'їло частину гриба у вежі») де кромка плити галереї виходить з-під дальнього ребра вежі — міряється
@@ -405,7 +405,7 @@
         c.fillStyle = '#04051a'; pg(ring(0, D * .5, 5, 11)); c.fill(); c.strokeStyle = rgbOf(c, t); c.lineWidth = .45; c.stroke();
         const L = ring(0, D * .5, 3.9, 8.6); c.fillStyle = '#ffc45a'; pg(L); c.fill(); c.fillStyle = '#ffe9b0'; pg(ring(0, D * .5, 2.8, 6.2)); c.fill(); c.fillStyle = '#ffffff'; pg(ring(-.5, D * .5 - 1.2, 1.3, 2.9)); c.fill();
         for (const dp of [3.6, D - 3.6]) { c.fillStyle = Math.floor(t * 1.2 + dp) % 2 ? '#7af6ff' : '#1a4a5a'; pg(ring(0, dp, .8, 1.5)); c.fill(); }
-        const xs = L.map(q => q[0]), ys = L.map(q => q[1]), xa = Math.min(...xs), xb = Math.max(...xs), yc = (Math.min(...ys) + Math.max(...ys)) / 2, CH = 15;
+        const xs = L.map(q => q[0]), ys = L.map(q => q[1]), xa = Math.min(...xs), xb = Math.max(...xs), yc = (Math.min(...ys) + Math.max(...ys)) / 2, CH = 9;   /* (16.11) вежа нижча — конус коротший, щоб не світити на портал */
         c.globalCompositeOperation = 'lighter'; const g = c.createLinearGradient(0, yc, 0, yc + CH); g.addColorStop(0, `rgba(255,214,140,${Math.min(.6, .36 * pu * LK)})`); g.addColorStop(.5, `rgba(255,200,120,${Math.min(.3, .13 * pu * LK)})`); g.addColorStop(1, 'rgba(255,190,110,0)');
         c.globalAlpha = 1; c.fillStyle = g; c.beginPath(); c.moveTo(xa, yc); c.lineTo(xb, yc); c.lineTo(xb + 5.5, yc + CH); c.lineTo(xa - 5.5, yc + CH); c.closePath(); c.fill();
         c.globalAlpha = .45 * pu; c.drawImage(glow('#ffd27a').cv, xa - 4, yc - 3.5, xb - xa + 8, 8);
@@ -414,7 +414,8 @@
     // РЕБРА ВЕЖІ (власник: «сіра рамка там зовсім не личить») — темний профіль зі світною блакитною жилкою, по якій біжать іскри
     const edge = (p, q, ph) => { c.globalAlpha = 1; c.strokeStyle = '#141a30'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.strokeStyle = rgbOf(c, t); c.lineWidth = .55; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke();
       c.globalCompositeOperation = 'lighter'; c.globalAlpha = .2; c.lineWidth = 2; c.stroke(); for (let n = 0; n < 2; n++) { const u = (t * .16 + ph + n * .5) % 1, x = p[0] + (q[0] - p[0]) * u, y = p[1] + (q[1] - p[1]) * u; c.globalAlpha = .9 * Math.sin(u * Math.PI); c.drawImage(glow(n ? '#ff8ae0' : '#a8f4ff').cv, x - 1.6, y - 1.6, 3.2, 3.2); } c.globalCompositeOperation = 'source-over'; };
-    edge(V.at(0, 0, V.top - 4), V.at(0, 0, Yb), 0); edge(V.at(0, 1, V.top - 4), V.at(0, 1, Yb), .33); if (M.slab) edge(V.at(1, 1, M.slab[1]), V.at(1, 1, Yb), .66); edge(V.at(1, 1, V.top - 4), V.at(1, 1, M.deck - RAIL * .72), .5);
+    edge(V.at(0, 0, V.top - 4), V.at(0, 0, Yb), 0); if (M.slab) edge(V.at(0, 1, M.slab[0]), V.at(0, 1, Yb), .33); else edge(V.at(0, 1, V.top - 4), V.at(0, 1, Yb), .33);
+    if (M.slab) { const p = V.at(0, 1, V.top - 4), q = V.at(0, 1, M.slab[0]); c.globalCompositeOperation = 'source-over'; c.lineCap = 'butt'; c.strokeStyle = '#eaffff'; c.globalAlpha = .28; c.lineWidth = .22; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.globalAlpha = .1; c.lineWidth = 1.1; c.stroke(); c.globalAlpha = 1; }   // (16.11, власник: «прибери перемичку і зроби той кут скляним») над плитою кут — стик двох стекол: тонкий відблиск, без стійки if (M.slab) edge(V.at(1, 1, M.slab[1]), V.at(1, 1, Yb), .66); edge(V.at(1, 1, V.top - 4), V.at(1, 1, M.deck - RAIL * .72), .5);
     c.restore();
   }
   /** (15.11) ГОЛО-ДИСПЛЕЙ ГРИБНИЦІ — над проєктором біля вежі, на рівні галереї (де були двері): напівпрозора панель у площині
