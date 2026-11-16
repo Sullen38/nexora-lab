@@ -104,117 +104,143 @@
       c.fillStyle = PAL.magenta; c.beginPath(); c.arc(N.x, N.y, 1.15 * m, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.beginPath(); c.arc(N.x, N.y, .6 * m, 0, TAU); c.fill(); pt(c, N.x, N.y, PAL.pink); },
   };
   const DRAW = {
-    /** Філодендрон Селло: товсте стебло-«стовбурець», 7 великих перисто-розсічених листків: кожен — середня жилка й по 6 округлих
-     *  лопатей з боків (глибокі розрізи між ними), задні листки темні, передні — світліші з бліками на верхніх лопатях. */
+    /** (17.11, власник: «хочеться покращити якість саду за диваном» → «так») ГЕРОЇ САДУ ЗА ДИВАНОМ — дрібний піксель (4 px/од.), тонкий
+     *  контур O, у кожного виду своя фактура: світла й тіньова сторона листка, жилки, блиск. Силуети й місця — ті самі.
+     *  Філодендрон Селло: стовбурець із рубцями, 7 перисто-розсічених листків — у кожної лопаті своя жилка, на верхніх — блиск. */
     philodendron(c, W, H, seed) {
-      const cx = W / 2, by = H - 2;
-      c.lineCap = 'round'; c.lineJoin = 'round';
-      c.fillStyle = PAL.out; c.beginPath(); c.ellipse(cx, by - 4, 9, 6, 0, 0, TAU); c.fill(); c.fillStyle = PAL.stem; c.beginPath(); c.ellipse(cx, by - 4, 7, 4.5, 0, 0, TAU); c.fill();   // основа
+      const cx = W / 2, by = H - 2, O = .7; c.lineCap = 'round'; c.lineJoin = 'round';
+      EL(c, [[cx, by - 4, 7.5, 4.8, 0, PAL.stem]], O); c.fillStyle = PAL.stemHi; c.beginPath(); c.ellipse(cx - 2, by - 5.6, 3.6, 1.3, 0, 0, TAU); c.fill(); c.fillStyle = PAL.bark; for (let k = 0; k < 4; k++) c.fillRect(cx - 5 + k * 3, by - 3.4 + (k % 2), 1.7, .5);   // основа з рубцями
       const leaves = [];
       for (let q = 0; q < 7; q++) { const u = (q + .5) / 7, a = (u - .5) * 2.9 + (hash(seed, q) - .5) * .25, back = q % 2 === 0, st = (back ? .5 : .42) * H * (.85 + .3 * hash(seed, q + 3)), len = H * (back ? .5 : .44); leaves.push({ a, st, len, back, q }); }
-      leaves.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));                                      // задні спершу, крайні спершу
+      leaves.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
       for (const L of leaves) {
-        const { a, st, len, back, q } = L, sx = cx, sy = by - 5, ex = cx + Math.sin(a) * st, ey = sy - Math.cos(a) * st;
-        c.strokeStyle = PAL.out; c.lineWidth = 5; c.beginPath(); c.moveTo(sx, sy); c.quadraticCurveTo(sx + Math.sin(a) * st * .5, sy - Math.cos(a) * st * .3, ex, ey); c.stroke();   // черешок
-        c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 2.6; c.stroke();
-        const la = a * .72, dx = Math.sin(la), dy = -Math.cos(la), nx = Math.cos(la), ny = Math.sin(la), fill = back ? PAL.d1 : PAL.d2, hi = back ? PAL.d2 : PAL.d3;
-        const lobes = [];
-        for (let k = 0; k < 7; k++) { const t = (k + .6) / 7.6, px = ex + dx * len * t, py = ey + dy * len * t, ll = len * (.26 + .14 * Math.sin(t * Math.PI)) * (k === 6 ? .6 : 1), lw = len * (.036 + .014 * Math.sin(t * Math.PI));   // лопать: довжина, товщина
-          for (const sd of (k === 6 ? [0] : [-1, 1])) { const ang = la + sd * (1.05 - t * .45), mx = px + Math.sin(ang) * ll * .5, my = py - Math.cos(ang) * ll * .5; lobes.push({ mx, my, ll, lw, ang, sd, t }); } }
-        c.fillStyle = PAL.out; for (const o of lobes) { c.beginPath(); c.ellipse(o.mx, o.my, o.lw + 1.6, o.ll * .5 + 1.6, o.ang, 0, TAU); c.fill(); }                     // контур
-        c.strokeStyle = PAL.out; c.lineWidth = 5.5; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len, ey + dy * len); c.stroke();
-        for (const o of lobes) { c.fillStyle = fill; c.beginPath(); c.ellipse(o.mx, o.my, o.lw, o.ll * .5, o.ang, 0, TAU); c.fill();                                          // лопать
-          c.fillStyle = hi; c.beginPath(); c.ellipse(o.mx - Math.cos(o.ang) * o.lw * .4, o.my - Math.sin(o.ang) * o.lw * .4, o.lw * .45, o.ll * .38, o.ang, 0, TAU); c.fill(); }   // світліша верхня половина лопаті
-        c.strokeStyle = back ? PAL.d0 : PAL.d1; c.lineWidth = 2.4; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .97, ey + dy * len * .97); c.stroke();          // середня жилка
-        if (!back) { c.strokeStyle = PAL.hi; c.lineWidth = 1; c.beginPath(); c.moveTo(ex + nx * 1.2, ey + ny * 1.2); c.lineTo(ex + dx * len * .9 + nx * 1.2, ey + dy * len * .9 + ny * 1.2); c.stroke(); }
+        const { a, st, len, back } = L, sx = cx, sy = by - 5, ex = cx + Math.sin(a) * st, ey = sy - Math.cos(a) * st, pet = (o = 0) => { c.beginPath(); c.moveTo(sx + o, sy); c.quadraticCurveTo(sx + Math.sin(a) * st * .5 + o, sy - Math.cos(a) * st * .3, ex + o, ey); c.stroke(); };
+        c.strokeStyle = PAL.out; c.lineWidth = 3.4; pet(); c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 2; pet(); c.strokeStyle = back ? PAL.stemHi : PAL.hi; c.lineWidth = .4; pet(-.55);   // черешок із бліком
+        const la = a * .72, dx = Math.sin(la), dy = -Math.cos(la), nx = Math.cos(la), ny = Math.sin(la), fill = back ? PAL.d1 : PAL.d2, hi = back ? PAL.d2 : PAL.d3, lobes = [];
+        for (let k = 0; k < 7; k++) { const t = (k + .6) / 7.6, px = ex + dx * len * t, py = ey + dy * len * t, ll = len * (.27 + .14 * Math.sin(t * Math.PI)) * (k === 6 ? .6 : 1), lw = len * (.052 + .02 * Math.sin(t * Math.PI));
+          for (const sd of (k === 6 ? [0] : [-1, 1])) { const ang = la + sd * (1.05 - t * .45), mx = px + Math.sin(ang) * ll * .5, my = py - Math.cos(ang) * ll * .5; lobes.push({ mx, my, ll, lw, ang, sd, px, py }); } }
+        c.fillStyle = PAL.out; for (const o of lobes) { c.beginPath(); c.ellipse(o.mx, o.my, o.lw + O, o.ll * .5 + O, o.ang, 0, TAU); c.fill(); }
+        c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len, ey + dy * len); c.stroke();
+        for (const o of lobes) { c.fillStyle = fill; c.beginPath(); c.ellipse(o.mx, o.my, o.lw, o.ll * .5, o.ang, 0, TAU); c.fill();
+          c.fillStyle = hi; c.beginPath(); c.ellipse(o.mx - Math.cos(o.ang) * o.lw * .42, o.my - Math.sin(o.ang) * o.lw * .42, o.lw * .5, o.ll * .4, o.ang, 0, TAU); c.fill();                    // світла половина лопаті
+          c.strokeStyle = back ? PAL.d0 : PAL.d1; c.lineWidth = .35; c.beginPath(); c.moveTo(o.px, o.py); c.lineTo(o.px + Math.sin(o.ang) * o.ll * .86, o.py - Math.cos(o.ang) * o.ll * .86); c.stroke();   // жилка лопаті
+          if (!back && o.sd <= 0) { c.fillStyle = PAL.hi; c.beginPath(); c.ellipse(o.mx - Math.cos(o.ang) * o.lw * .5 + Math.sin(o.ang) * o.ll * .12, o.my - Math.sin(o.ang) * o.lw * .5 - Math.cos(o.ang) * o.ll * .12, o.lw * .2, o.ll * .16, o.ang, 0, TAU); c.fill(); } }   // блиск
+        c.strokeStyle = back ? PAL.d0 : PAL.d1; c.lineWidth = 1.7; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .97, ey + dy * len * .97); c.stroke();
+        c.strokeStyle = back ? PAL.d2 : PAL.hi; c.lineWidth = .5; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .93, ey + dy * len * .93); c.stroke();                               // світла середня жилка
       }
     },
-    /** Арека: 9 дуг-вай з пучка, кожна — тонкий рахіс і по 14 пар вузьких листочків, що звисають; передні світліші. */
+    /** Арека: пучок золотавих стебел, 9 дуг-вай; на кожній — тонкий золотавий рахіс і по 20 пар вузьких листочків, що звисають. */
     areca(c, W, H, seed) {
-      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
-      c.fillStyle = PAL.out; c.beginPath(); c.ellipse(cx, by - 3, 10, 5, 0, 0, TAU); c.fill(); c.fillStyle = PAL.barkHi; c.beginPath(); c.ellipse(cx, by - 3, 8, 3.5, 0, 0, TAU); c.fill();
+      const cx = W / 2, by = H - 2, N = 22; c.lineCap = 'round'; c.lineJoin = 'round';
+      for (let k = 0; k < 5; k++) { const x = cx - 6 + k * 3, h = 6 + (k % 2) * 3; c.fillStyle = PAL.out; c.fillRect(x - 1.5, by - h - .7, 3, h + .7); c.fillStyle = k % 2 ? PAL.spine : PAL.stemHi; c.fillRect(x - .9, by - h, 1.8, h); c.fillStyle = PAL.bark; for (let y = by - h + 2; y < by - 1; y += 2.6) c.fillRect(x - .9, y, 1.8, .4); }   // стебла з кільцями
       const fr = []; for (let q = 0; q < 9; q++) { const u = (q + .5) / 9, a = (u - .5) * 3.1 + (hash(seed, q) - .5) * .2, back = q % 2 === 1; fr.push({ a, back, len: H * (back ? .9 : .78) * (.85 + .25 * hash(seed, q + 5)), q }); }
       fr.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
-      for (const F of fr) { const { a, back, len } = F, sx = cx, sy = by - 4, pts = []; for (let i = 0; i <= 16; i++) { const t = i / 16, bend = t * t * .9 * Math.sign(a || 1) * (Math.abs(a) * .5 + .3); pts.push([sx + Math.sin(a + bend) * len * t, sy - Math.cos(a + bend) * len * t]); }
+      for (const F of fr) { const { a, back, len } = F, sx = cx, sy = by - 4, pts = []; for (let i = 0; i <= N; i++) { const t = i / N, bend = t * t * .9 * Math.sign(a || 1) * (Math.abs(a) * .5 + .3); pts.push([sx + Math.sin(a + bend) * len * t, sy - Math.cos(a + bend) * len * t]); }
         const fill = back ? PAL.d1 : PAL.d2, hi = back ? PAL.d2 : PAL.d3;
-        for (const pass of [0, 1]) for (let i = 2; i < 16; i++) { const [x, y] = pts[i], [x1, y1] = pts[i + 1], da = Math.atan2(y1 - y, x1 - x), t = i / 16, ll = len * (.22 + .1 * Math.sin(t * Math.PI)) * (i > 14 ? .6 : 1), lw = 1.9;
-          for (const sd of [-1, 1]) { const ang = da + sd * (1.15 - t * .25) + .35, ex = x + Math.cos(ang) * ll, ey = y + Math.sin(ang) * ll;
-            if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = lw + 3; } else { c.strokeStyle = (sd < 0 && !back) ? hi : fill; c.lineWidth = lw; }
-            c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo((x + ex) / 2, (y + ey) / 2 + 2.5, ex, ey + 1.5); c.stroke(); } }
-        c.strokeStyle = PAL.out; c.lineWidth = 4.2; c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (const q of pts) c.lineTo(q[0], q[1]); c.stroke();
-        c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 1.8; c.stroke(); }
+        for (const pass of [0, 1, 2]) for (let i = 3; i < N; i++) { const [x, y] = pts[i], [x1, y1] = pts[i + 1], da = Math.atan2(y1 - y, x1 - x), t = i / N, ll = len * (.22 + .1 * Math.sin(t * Math.PI)) * (i > N - 2 ? .6 : 1);
+          for (const sd of [-1, 1]) { if (pass === 2 && (back || sd > 0)) continue; const ang = da + sd * (1.15 - t * .25) + .35, ex = x + Math.cos(ang) * ll, ey = y + Math.sin(ang) * ll;
+            c.strokeStyle = pass === 0 ? PAL.out : pass === 1 ? (sd < 0 && !back ? hi : fill) : PAL.hi; c.lineWidth = pass === 0 ? 2.6 : pass === 1 ? 1.4 : .3;
+            c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo((x + ex) / 2, (y + ey) / 2 + 2.5 - (pass === 2 ? .35 : 0), ex, ey + 1.5); c.stroke(); } }
+        const rach = () => { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (const q of pts) c.lineTo(q[0], q[1]); c.stroke(); };
+        c.strokeStyle = PAL.out; c.lineWidth = 2.5; rach(); c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 1.2; rach(); if (!back) { c.strokeStyle = PAL.spine; c.lineWidth = .35; rach(); } }
     },
-    /** Стреліція Ніколая: 2 віяла з 5 довгих черешків, на кожному — широкий бананоподібний листок із надірваними краями; біла квітка-«птах» зверху. */
+    /** Стреліція Ніколая: стовбурець із лусками, 7 довгих черешків із широкими «банановими» листками — надриви по краях, часті бічні
+     *  жилки, світла середня; біла квітка-«птах» у синьому човнику. */
     strelitzia(c, W, H, seed) {
-      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
-      c.fillStyle = PAL.out; c.fillRect(cx - 9, by - 12, 18, 12); c.fillStyle = PAL.bark; c.fillRect(cx - 7, by - 11, 14, 10); c.fillStyle = PAL.barkHi; for (let y = by - 10; y < by - 1; y += 3) c.fillRect(cx - 6, y, 5, 1);   // стовбурець
+      const cx = W / 2, by = H - 2, O = .7; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.fillStyle = PAL.out; c.fillRect(cx - 7.7, by - 11.7, 15.4, 11.7); c.fillStyle = PAL.bark; c.fillRect(cx - 7, by - 11, 14, 11); for (let y = by - 10, k = 0; y < by - 1; y += 2.4, k++) { c.fillStyle = PAL.barkHi; c.fillRect(cx - 6.4 + (k % 2) * 3, y, 4.6, .6); c.fillStyle = PAL.out; c.fillRect(cx - 7, y + 1.2, 14, .3); }   // стовбурець із лусками
       const ls = []; for (let q = 0; q < 7; q++) { const u = (q + .5) / 7, a = (u - .5) * 1.5 + (hash(seed, q) - .5) * .15, back = q % 2 === 0; ls.push({ a, back, st: H * (back ? .5 : .42) * (.85 + .3 * hash(seed, q + 2)), len: H * (back ? .5 : .46), q }); }
       ls.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
       for (const L of ls) { const { a, back, st, len, q } = L, sx = cx, sy = by - 10, ex = sx + Math.sin(a) * st, ey = sy - Math.cos(a) * st, la = a * .55, dx = Math.sin(la), dy = -Math.cos(la), nx = Math.cos(la), ny = Math.sin(la), wd = len * .22;
-        c.strokeStyle = PAL.out; c.lineWidth = 5; c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex, ey); c.stroke(); c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 2.6; c.stroke();
-        const edge = (sd, pass) => { c.beginPath(); c.moveTo(ex, ey); for (let i = 1; i <= 10; i++) { const t = i / 10, w = wd * Math.sin(Math.min(1, t * 1.25) * Math.PI * .5) * (1 - t * t * .5), tear = (i === 4 || i === 7) && hash(seed, q * 3 + sd + i) > .35 ? .45 : 1; c.lineTo(ex + dx * len * t + nx * sd * w * tear, ey + dy * len * t + ny * sd * w * tear); } c.lineTo(ex + dx * len, ey + dy * len); for (let i = 10; i >= 1; i--) { const t = i / 10; c.lineTo(ex + dx * len * t, ey + dy * len * t); } c.closePath(); if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 3; c.stroke(); } c.fillStyle = pass === 0 ? PAL.out : (back ? PAL.d1 : (sd < 0 ? PAL.d3 : PAL.d2)); c.fill(); };
+        const pet = (o = 0) => { c.beginPath(); c.moveTo(sx + o, sy); c.lineTo(ex + o, ey); c.stroke(); }; c.strokeStyle = PAL.out; c.lineWidth = 3.6; pet(); c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 2.2; pet(); c.strokeStyle = back ? PAL.stemHi : PAL.hi; c.lineWidth = .4; pet(-.6);
+        const wAt = (t, sd) => wd * Math.sin(Math.min(1, t * 1.25) * Math.PI * .5) * (1 - t * t * .5) * (((Math.abs(t - .4) < .02 || Math.abs(t - .7) < .02) && hash(seed, q * 3 + sd + Math.round(t * 10)) > .35) ? .45 : 1);
+        const edge = (sd, pass) => { c.beginPath(); c.moveTo(ex, ey); for (let i = 1; i <= 10; i++) { const t = i / 10, w = wAt(t, sd); c.lineTo(ex + dx * len * t + nx * sd * w, ey + dy * len * t + ny * sd * w); } c.lineTo(ex + dx * len, ey + dy * len); for (let i = 10; i >= 1; i--) { const t = i / 10; c.lineTo(ex + dx * len * t, ey + dy * len * t); } c.closePath(); if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 2 * O; c.stroke(); } c.fillStyle = pass === 0 ? PAL.out : (back ? (sd < 0 ? PAL.d2 : PAL.d1) : (sd < 0 ? PAL.d3 : PAL.d2)); c.fill(); };
         for (const pass of [0, 1]) for (const sd of [-1, 1]) edge(sd, pass);
-        c.strokeStyle = back ? PAL.d0 : PAL.d1; c.lineWidth = 2; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .96, ey + dy * len * .96); c.stroke();
-        if (!back) { c.strokeStyle = PAL.hi; c.lineWidth = .9; for (let i = 2; i < 9; i += 2) { const t = i / 10, x = ex + dx * len * t, y = ey + dy * len * t; c.beginPath(); c.moveTo(x, y); c.lineTo(x - nx * wd * .6, y - ny * wd * .6 + 2); c.stroke(); } } }
-      const fx = cx + 14, fy = by - H * .72; c.strokeStyle = PAL.out; c.lineWidth = 4.5; c.beginPath(); c.moveTo(cx + 2, by - 10); c.lineTo(fx, fy + 10); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 2; c.stroke();   // квітконіс
-      c.fillStyle = PAL.out; c.beginPath(); c.moveTo(fx - 4, fy + 12); c.lineTo(fx + 12, fy + 6); c.lineTo(fx + 10, fy + 1); c.lineTo(fx - 3, fy + 5); c.closePath(); c.fill();                                              // човник
-      c.fillStyle = PAL.blue; c.beginPath(); c.moveTo(fx - 2, fy + 10); c.lineTo(fx + 10, fy + 5); c.lineTo(fx + 8, fy + 2); c.lineTo(fx - 1, fy + 6); c.closePath(); c.fill();
-      c.strokeStyle = PAL.out; c.lineWidth = 3.2; for (const [ang, l] of [[-1.2, 11], [-.95, 13], [-.7, 10]]) { c.beginPath(); c.moveTo(fx, fy + 6); c.lineTo(fx + Math.cos(ang) * l, fy + 6 + Math.sin(ang) * l); c.stroke(); }
-      c.strokeStyle = PAL.white; c.lineWidth = 1.6; for (const [ang, l] of [[-1.2, 11], [-.95, 13], [-.7, 10]]) { c.beginPath(); c.moveTo(fx, fy + 6); c.lineTo(fx + Math.cos(ang) * l, fy + 6 + Math.sin(ang) * l); c.stroke(); }   // білі пелюстки
+        for (const sd of [-1, 1]) { c.strokeStyle = back ? (sd < 0 ? PAL.d1 : PAL.d0) : (sd < 0 ? PAL.d2 : PAL.d1); c.lineWidth = .3; for (let i = 1; i < 24; i++) { const t = i / 25, t2 = Math.min(1, t + .07), w = wd * Math.sin(Math.min(1, t2 * 1.25) * Math.PI * .5) * (1 - t2 * t2 * .5) * .9; c.beginPath(); c.moveTo(ex + dx * len * t, ey + dy * len * t); c.lineTo(ex + dx * len * t2 + nx * sd * w, ey + dy * len * t2 + ny * sd * w); c.stroke(); } }   // часті бічні жилки
+        c.strokeStyle = back ? PAL.d0 : PAL.d1; c.lineWidth = 1.6; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .96, ey + dy * len * .96); c.stroke(); c.strokeStyle = back ? PAL.d3 : PAL.hi; c.lineWidth = .5; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + dx * len * .9, ey + dy * len * .9); c.stroke();
+        if (!back) { c.fillStyle = PAL.hi; c.beginPath(); c.ellipse(ex + dx * len * .45 - nx * wd * .5, ey + dy * len * .45 - ny * wd * .5, wd * .12, len * .16, la, 0, TAU); c.fill(); } }   // блиск на світлій половині
+      const fx = cx + 14, fy = by - H * .72; c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(cx + 2, by - 10); c.lineTo(fx, fy + 10); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.8; c.stroke();   // квітконіс
+      const boat = (e, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(fx - 3 - e, fy + 11 + e); c.lineTo(fx + 11 + e, fy + 5.5 + e * .3); c.lineTo(fx + 9.5, fy + 1.6 - e); c.lineTo(fx - 2 - e, fy + 5.4 - e); c.closePath(); c.fill(); };
+      boat(O, PAL.out); boat(0, PAL.blue); c.fillStyle = PAL.sky; c.beginPath(); c.moveTo(fx - 1.5, fy + 6.4); c.lineTo(fx + 9, fy + 2.6); c.lineTo(fx + 9.3, fy + 3.6); c.lineTo(fx - 1.2, fy + 7.6); c.closePath(); c.fill();
+      for (const pass of [0, 1, 2]) for (const [ang, l] of [[-1.25, 11], [-.95, 13.5], [-.68, 10.5]]) { c.strokeStyle = pass === 0 ? PAL.out : pass === 1 ? PAL.white : PAL.silver; c.lineWidth = pass === 0 ? 2.8 : pass === 1 ? 1.5 : .35; c.beginPath(); c.moveTo(fx + 1, fy + 6); c.quadraticCurveTo(fx + 1 + Math.cos(ang) * l * .5 - 1, fy + 6 + Math.sin(ang) * l * .5, fx + 1 + Math.cos(ang) * l, fy + 6 + Math.sin(ang) * l); c.stroke(); }
+      c.strokeStyle = PAL.out; c.lineWidth = 1.6; c.beginPath(); c.moveTo(fx + 2, fy + 5.5); c.lineTo(fx + 8.5, fy - 2); c.stroke(); c.strokeStyle = PAL.blue; c.lineWidth = .8; c.stroke();   // синій «язичок»
     },
-    /** Юка: грубий стовбур із рубцями й 2 голови — віяла з 22 гострих мечоподібних листків (задні темні, передні світлі зі смугою). */
+    /** Юка: стовбур у рубцях і 2 голови — віяла гострих мечів: у кожного світла й тіньова половина, середня лінія й сухий кінчик. */
     yucca(c, W, H, seed) {
-      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
-      c.fillStyle = PAL.out; c.fillRect(cx - 7, by - H * .5 - 2, 14, H * .5 + 2); c.fillStyle = PAL.bark; c.fillRect(cx - 5.5, by - H * .5, 11, H * .5); c.fillStyle = PAL.barkHi; for (let y = by - H * .48; y < by - 4; y += 5) c.fillRect(cx - 5.5 + (y % 10 < 5 ? 0 : 3), y, 4, 1.2);
+      const cx = W / 2, by = H - 2, O = .7; c.lineCap = 'round'; c.lineJoin = 'round';
+      c.fillStyle = PAL.out; c.fillRect(cx - 6.2, by - H * .5 - O, 12.4, H * .5 + O); c.fillStyle = PAL.bark; c.fillRect(cx - 5.5, by - H * .5, 11, H * .5); c.fillStyle = PAL.out; c.fillRect(cx + 2.8, by - H * .5, 2.7, H * .5); c.fillStyle = PAL.bark; c.globalAlpha = .55; c.fillRect(cx + 2.8, by - H * .5, 2.7, H * .5); c.globalAlpha = 1;
+      for (let y = by - H * .49, k = 0; y < by - 2; y += 2.6, k++) { c.fillStyle = PAL.barkHi; c.fillRect(cx - 5.2 + (k % 2) * 2.6, y, 3.4, .6); c.fillRect(cx + .2 + (k % 2) * 2, y + 1.2, 2.2, .5); c.fillStyle = PAL.out; c.fillRect(cx - 5.5, y + .9, 11, .25); }   // рубці від старого листя
       for (const [hx, hy, R, n] of [[cx - 6, by - H * .5, H * .4, 22], [cx + 7, by - H * .62, H * .38, 20]]) { const bl = []; for (let i = 0; i < n; i++) { const a = (i / (n - 1) - .5) * 3.4 + (hash(seed, i + hx) - .5) * .12; bl.push({ a, len: R * (.72 + .28 * hash(seed, i * 7 + hx)), back: Math.abs(a) > 1.1 || i % 3 === 1 }); }
         bl.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
-        for (const pass of [0, 1]) for (const B of bl) { const ex = hx + Math.sin(B.a) * B.len, ey = hy - Math.cos(B.a) * B.len, w = 4.2; c.beginPath(); c.moveTo(hx - Math.cos(B.a) * w / 2, hy - Math.sin(B.a) * w / 2); c.lineTo(ex, ey); c.lineTo(hx + Math.cos(B.a) * w / 2, hy + Math.sin(B.a) * w / 2); c.closePath();
-          if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 2.4; c.stroke(); c.fillStyle = PAL.out; c.fill(); } else { c.fillStyle = B.back ? PAL.d1 : PAL.d2; c.fill(); if (!B.back) { c.strokeStyle = PAL.d3; c.lineWidth = 1; c.beginPath(); c.moveTo(hx + Math.sin(B.a) * 4 - Math.cos(B.a) * .8, hy - Math.cos(B.a) * 4 - Math.sin(B.a) * .8); c.lineTo(ex - Math.cos(B.a) * .6, ey - Math.sin(B.a) * .6); c.stroke(); } } } }
+        for (const pass of [0, 1]) for (const B of bl) { const sa = Math.sin(B.a), ca = Math.cos(B.a), ex = hx + sa * B.len, ey = hy - ca * B.len, w = 3.8, mxp = hx + sa * B.len * .45, myp = hy - ca * B.len * .45;
+          const body = k => { c.beginPath(); c.moveTo(hx - ca * w / 2 * k, hy - sa * w / 2 * k); c.quadraticCurveTo(mxp - ca * w * .62 * k, myp - sa * w * .62 * k, ex, ey); if (k === 1) c.quadraticCurveTo(mxp + ca * w * .62, myp + sa * w * .62, hx + ca * w / 2, hy + sa * w / 2); else c.lineTo(hx, hy); c.closePath(); };
+          if (pass === 0) { body(1); c.strokeStyle = PAL.out; c.lineWidth = 2 * O; c.stroke(); c.fillStyle = PAL.out; c.fill(); }
+          else { body(1); c.fillStyle = B.back ? PAL.d1 : PAL.d2; c.fill(); body(2); c.fillStyle = B.back ? PAL.d2 : PAL.d3; c.fill(); c.strokeStyle = B.back ? PAL.d0 : PAL.hi; c.lineWidth = .35; c.beginPath(); c.moveTo(hx + sa * 3, hy - ca * 3); c.lineTo(hx + sa * B.len * .9, hy - ca * B.len * .9); c.stroke(); c.fillStyle = PAL.bark; c.fillRect(ex - .4, ey - .4, .8, .8); } } }   // сухий кінчик
     },
-    /** Аспленіум (гніздовий папороть): низька розетка з 11 широких хвилястих листків із темною жилкою. */
+    /** Аспленіум (гніздовий папороть): розетка з 11 широких хвилястих листків — темна середня жилка, тонкі бічні, смуга блиску. */
     asplenium(c, W, H, seed) {
-      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
+      const cx = W / 2, by = H - 2, O = .7; c.lineCap = 'round'; c.lineJoin = 'round';
       const ls = []; for (let i = 0; i < 11; i++) { const a = (i / 10 - .5) * 3 + (hash(seed, i) - .5) * .2; ls.push({ a, len: H * (.75 + .25 * hash(seed, i + 4)) * (1 - Math.abs(a) * .12), back: i % 2 === 0 }); }
       ls.sort((p, q) => (q.back - p.back) || (Math.abs(q.a) - Math.abs(p.a)));
-      for (const pass of [0, 1]) for (const L of ls) { const dx = Math.sin(L.a), dy = -Math.cos(L.a), nx = Math.cos(L.a), ny = Math.sin(L.a), wd = L.len * .2; c.beginPath(); c.moveTo(cx, by - 3);
-        for (const sd of [-1, 1]) { const pts = []; for (let i = 1; i <= 8; i++) { const t = i / 8, w = wd * Math.sin(t * Math.PI * .9) * (1 + .18 * Math.sin(t * 14 + seed)); pts.push([cx + dx * L.len * t + nx * sd * w, by - 3 + dy * L.len * t + ny * sd * w]); } if (sd < 0) for (const q of pts) c.lineTo(q[0], q[1]); else for (const q of pts.reverse()) c.lineTo(q[0], q[1]); }
-        c.closePath(); if (pass === 0) { c.strokeStyle = PAL.out; c.lineWidth = 3; c.stroke(); c.fillStyle = PAL.out; c.fill(); } else { c.fillStyle = L.back ? PAL.d2 : PAL.d3; c.fill(); c.strokeStyle = L.back ? PAL.d0 : PAL.d1; c.lineWidth = 1.6; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(cx + dx * L.len * .92, by - 3 + dy * L.len * .92); c.stroke(); if (!L.back) { c.strokeStyle = PAL.hi; c.lineWidth = .8; c.beginPath(); c.moveTo(cx + dx * L.len * .3 + nx * 1.5, by - 3 + dy * L.len * .3 + ny * 1.5); c.lineTo(cx + dx * L.len * .85 + nx * 1.5, by - 3 + dy * L.len * .85 + ny * 1.5); c.stroke(); } } }
+      for (const pass of [0, 1]) for (const L of ls) { const dx = Math.sin(L.a), dy = -Math.cos(L.a), nx = Math.cos(L.a), ny = Math.sin(L.a), wd = L.len * .2, wAt = t => wd * Math.sin(t * Math.PI * .9) * (1 + .18 * Math.sin(t * 14 + seed)), P = (t, s) => [cx + dx * L.len * t + nx * s, by - 3 + dy * L.len * t + ny * s];
+        const half = sd => { c.beginPath(); c.moveTo(cx, by - 3); for (let i = 1; i <= 12; i++) { const t = i / 12, q = P(t, sd * wAt(t)); c.lineTo(q[0], q[1]); } const e = P(1, 0); c.lineTo(e[0], e[1]); c.closePath(); };
+        if (pass === 0) { for (const sd of [-1, 1]) { half(sd); c.strokeStyle = PAL.out; c.lineWidth = 2 * O; c.stroke(); c.fillStyle = PAL.out; c.fill(); } continue; }
+        half(-1); c.fillStyle = L.back ? PAL.d2 : PAL.d3; c.fill(); half(1); c.fillStyle = L.back ? PAL.d1 : PAL.d2; c.fill();
+        c.lineWidth = .3; for (const sd of [-1, 1]) { c.strokeStyle = L.back ? (sd < 0 ? PAL.d1 : PAL.d0) : (sd < 0 ? PAL.d2 : PAL.d1); for (let i = 1; i < 11; i++) { const t = i / 11, t2 = Math.min(1, t + .06), a0 = P(t, 0), a1 = P(t2, sd * wAt(t2) * .88); c.beginPath(); c.moveTo(a0[0], a0[1]); c.lineTo(a1[0], a1[1]); c.stroke(); } }   // бічні жилки
+        const m0 = P(0, 0), m1 = P(.93, 0); c.strokeStyle = PAL.bark; c.lineWidth = .9; c.beginPath(); c.moveTo(m0[0], m0[1]); c.lineTo(m1[0], m1[1]); c.stroke();
+        if (!L.back) { const h0 = P(.3, -wd * .45), h1 = P(.8, -wd * .4); c.strokeStyle = PAL.hi; c.lineWidth = .5; c.beginPath(); c.moveTo(h0[0], h0[1]); c.lineTo(h1[0], h1[1]); c.stroke(); } }
+      EL(c, [[cx, by - 2.6, 3.2, 1.6, 0, PAL.bark]], .5);                                                                                                 // «гніздо» в серці розетки
     },
-    /** Квітучі малята: DRAW отримує стадію st (0 — бутони, 1 — повне цвітіння) і пише центри квіток у c.__pts (для пелюсток і гостей). */
+    /** Квітучі малята: DRAW отримує стадію st (0 — бутони, 1 — повне цвітіння) і пише центри квіток у c.__pts (для пелюсток і гостей).
+     *  Сенполія: оксамитова розетка (жилка й пушок-блік на кожному листку), фіалкові квіти з бузковими верхніми пелюстками. */
     saintpaulia(c, W, H, seed, st = 1) {
-      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
-      for (const pass of [0, 1]) for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3.3, r = H * .55, lx = cx + Math.sin(a) * r * .75, ly = by - 4 - Math.cos(a) * r * .35, R = H * .22; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, R + (pass ? 0 : 1.6), R * .8 + (pass ? 0 : 1.6), a * .3, 0, TAU); c.fill(); if (pass) { c.fillStyle = PAL.d3; c.beginPath(); c.ellipse(lx - 1, ly - 1.2, R * .45, R * .3, a * .3, 0, TAU); c.fill(); } }
-      for (let f = 0; f < 5; f++) { const fx = cx + (f - 2) * 5.5 + (hash(seed, f) - .5) * 2, fy = by - H * .68 - (f % 2) * 3; if (bud(c, fx, fy, st, PAL.purple)) continue; const m = .5 + .5 * st; for (const pass of [0, 1]) for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + f; c.fillStyle = pass ? PAL.purple : PAL.out; c.beginPath(); c.ellipse(fx + Math.cos(a) * 2.2 * m, fy + Math.sin(a) * 2.2 * m, 2 * m + (pass ? 0 : 1.2), 1.4 * m + (pass ? 0 : 1.2), a, 0, TAU); c.fill(); }
-        c.fillStyle = PAL.lilac; c.beginPath(); c.arc(fx - 1.4 * m, fy - 1.4 * m, 1.5 * m, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.2, 0, TAU); c.fill(); pt(c, fx, fy, PAL.purple); }
+      const cx = W / 2, by = H - 2, O = .65; c.lineJoin = 'round'; c.lineCap = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3.3, r = H * .55, lx = cx + Math.sin(a) * r * .75, ly = by - 4 - Math.cos(a) * r * .35, R = H * .22; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, R + (pass ? 0 : O), R * .8 + (pass ? 0 : O), a * .3, 0, TAU); c.fill();
+        if (pass) { c.fillStyle = i % 2 ? PAL.d3 : PAL.d2; c.beginPath(); c.ellipse(lx - 1, ly - 1.2, R * .5, R * .3, a * .3, 0, TAU); c.fill(); c.strokeStyle = PAL.d0; c.lineWidth = .3; c.beginPath(); c.moveTo(lx - Math.sin(a) * R * .8, ly + R * .5); c.lineTo(lx + Math.sin(a) * R * .7, ly - R * .5); c.stroke(); if (i % 2) { c.fillStyle = PAL.hi; c.fillRect(lx - 1.8, ly - 1.8, .5, .5); c.fillRect(lx - .4, ly - 2.2, .5, .5); } } }
+      for (let f = 0; f < 5; f++) { const fx = cx + (f - 2) * 5.5 + (hash(seed, f) - .5) * 2, fy = by - H * .68 - (f % 2) * 3; if (bud(c, fx, fy, st, PAL.purple)) continue; const m = .5 + .5 * st, L = [];
+        for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + f - 1.2; L.push([fx + Math.cos(a) * 2.1 * m, fy + Math.sin(a) * 2.1 * m, 2 * m, 1.45 * m, a, k < 2 ? PAL.lilac : PAL.purple]); } EL(c, L, O);
+        c.fillStyle = PAL.yellow; c.fillRect(fx - .8, fy - .5, .7, .7); c.fillRect(fx + .1, fy - .1, .7, .7); pt(c, fx, fy, PAL.purple); }
     },
+    /** Каланхое: м'ясисті зубчасті листки з жилкою, три щитки дрібних чотирипелюсткових квіток. */
     kalanchoe(c, W, H, seed, st = 1) {
-      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
-      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 2.8, r = H * .5, lx = cx + Math.sin(a) * r * .7, ly = by - 3 - Math.cos(a) * r * .4; c.fillStyle = pass ? (i % 2 ? PAL.d3 : PAL.d2) : PAL.out; c.beginPath(); const R = H * .2 + (pass ? 0 : 1.6); for (let k = 0; k <= 12; k++) { const t = k / 12 * TAU, rr = R * (1 + .12 * Math.cos(t * 6)); c.lineTo(lx + Math.cos(t) * rr, ly + Math.sin(t) * rr * .75); } c.closePath(); c.fill(); }
-      for (let s2 = 0; s2 < 3; s2++) { const sx = cx + (s2 - 1) * 8, sy = by - H * .55; c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); c.moveTo(sx, sy + 6); c.lineTo(sx, sy - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.2; c.stroke();
-        if (bud(c, sx, sy - 5, st, PAL.orange)) continue; const m = .4 + .6 * st;
-        for (const pass of [0, 1]) for (let k = 0; k < 7; k++) { const a = hash(seed, s2 * 9 + k) * TAU, r = (2 + hash(seed, k + s2) * 3) * m, fx = sx + Math.cos(a) * r, fy = sy - 5 + Math.sin(a) * r * .7; c.fillStyle = pass ? (k % 3 ? PAL.orange : PAL.red) : PAL.out; c.beginPath(); c.arc(fx, fy, 1.6 * m + (pass ? 0 : 1.1), 0, TAU); c.fill(); if (pass) { c.fillStyle = PAL.yellow; c.fillRect(fx - .5, fy - .5, 1, 1); } } pt(c, sx, sy - 5, PAL.orange); }
+      const cx = W / 2, by = H - 2, O = .65; c.lineJoin = 'round'; c.lineCap = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 2.8, r = H * .5, lx = cx + Math.sin(a) * r * .7, ly = by - 3 - Math.cos(a) * r * .4; c.fillStyle = pass ? (i % 2 ? PAL.d3 : PAL.d2) : PAL.out; c.beginPath(); const R = H * .2 + (pass ? 0 : O); for (let k = 0; k <= 24; k++) { const t = k / 24 * TAU, rr = R * (1 + .1 * Math.cos(t * 8)); c.lineTo(lx + Math.cos(t) * rr, ly + Math.sin(t) * rr * .75); } c.closePath(); c.fill();
+        if (pass) { c.strokeStyle = i % 2 ? PAL.d2 : PAL.d1; c.lineWidth = .35; c.beginPath(); c.moveTo(lx - H * .15, ly); c.lineTo(lx + H * .15, ly); c.stroke(); c.fillStyle = i % 2 ? PAL.hi : PAL.d3; c.beginPath(); c.ellipse(lx - 1, ly - H * .07, H * .08, H * .03, 0, 0, TAU); c.fill(); } }
+      for (let s2 = 0; s2 < 3; s2++) { const sx = cx + (s2 - 1) * 8, sy = by - H * .55; c.strokeStyle = PAL.out; c.lineWidth = 2.1; c.beginPath(); c.moveTo(sx, sy + 6); c.lineTo(sx, sy - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .9; c.stroke();
+        if (bud(c, sx, sy - 5, st, PAL.orange)) continue; const m = .4 + .6 * st, L = [];
+        for (let k = 0; k < 10; k++) { const a = hash(seed, s2 * 9 + k) * TAU, r = (1 + hash(seed, k + s2) * 3.6) * m; L.push([sx + Math.cos(a) * r, sy - 5 + Math.sin(a) * r * .7, 1.35 * m, 1.35 * m, 0, k % 3 ? PAL.orange : PAL.red]); } EL(c, L, .55);
+        c.fillStyle = PAL.yellow; for (const q of L) c.fillRect(q[0] - .3, q[1] - .3, .6, .6); pt(c, sx, sy - 5, PAL.orange); }
     },
+    /** Антуріум: глянцеві серця листя з жилками, червоні покривала з блиском і жовтий качан. */
     anthurium(c, W, H, seed, st = 1) {
-      const cx = W / 2, by = H - 2; c.lineCap = 'round'; c.lineJoin = 'round';
-      const heart = (x, y, R, ang, fill, hi) => { for (const pass of [0, 1]) { c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = pass ? fill : PAL.out; const e = pass ? 0 : 1.5; c.beginPath(); c.moveTo(0, R + e); c.bezierCurveTo(-R * 1.1 - e, R * .3, -R * 1.1 - e, -R * .8 - e, 0, -R * .35); c.bezierCurveTo(R * 1.1 + e, -R * .8 - e, R * 1.1 + e, R * .3, 0, R + e); c.fill();
-        if (pass && hi) { c.fillStyle = hi; c.beginPath(); c.ellipse(-R * .35, -R * .1, R * .3, R * .45, .4, 0, TAU); c.fill(); } c.restore(); } };
-      for (const [a, r, back] of [[-1.1, .5, 1], [1.0, .5, 1], [-.45, .62, 0], [.5, .6, 0], [0, .42, 0]]) { const lx = cx + Math.sin(a) * H * r * .8, ly = by - 4 - Math.cos(a) * H * r * .6; c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(lx, ly); c.stroke(); c.strokeStyle = PAL.stem; c.lineWidth = 1.4; c.stroke(); heart(lx, ly - 3, H * .17, a * .5 + Math.PI, back ? PAL.d1 : PAL.d2, back ? null : PAL.d3); }
-      for (const [a, r] of [[-.7, .95], [.6, 1.0]]) { const fx = cx + Math.sin(a) * H * r * .45, fy = by - 4 - Math.cos(a) * H * r * .75; c.strokeStyle = PAL.out; c.lineWidth = 3.2; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(fx, fy + 2); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.4; c.stroke(); if (bud(c, fx, fy, st, PAL.red)) continue; heart(fx, fy - 2, H * .14 * (.5 + .5 * st), a * .4 + Math.PI, PAL.red, PAL.pink);
-        c.strokeStyle = PAL.out; c.lineWidth = 3.6; c.beginPath(); c.moveTo(fx, fy - 2); c.lineTo(fx + Math.sin(a * .4) * 7 * st, fy - 2 - Math.cos(a * .4) * 7 * st); c.stroke(); c.strokeStyle = PAL.yellow; c.lineWidth = 1.8; c.stroke(); pt(c, fx, fy - 2, PAL.red); }
+      const cx = W / 2, by = H - 2, O = .7; c.lineCap = 'round'; c.lineJoin = 'round';
+      const heart = (x, y, R, ang, fill, hi, vein) => { for (const pass of [0, 1]) { c.save(); c.translate(x, y); c.rotate(ang); c.fillStyle = pass ? fill : PAL.out; const e = pass ? 0 : O; c.beginPath(); c.moveTo(0, R + e); c.bezierCurveTo(-R * 1.1 - e, R * .3, -R * 1.1 - e, -R * .8 - e, 0, -R * .35); c.bezierCurveTo(R * 1.1 + e, -R * .8 - e, R * 1.1 + e, R * .3, 0, R + e); c.fill();
+        if (pass) { if (hi) { c.fillStyle = hi; c.beginPath(); c.moveTo(0, R); c.bezierCurveTo(-R * 1.1, R * .3, -R * 1.1, -R * .8, 0, -R * .35); c.closePath(); c.fill(); }
+          c.strokeStyle = vein; c.lineWidth = .32; c.beginPath(); c.moveTo(0, -R * .3); c.lineTo(0, R * .85); for (const s of [-1, 1]) { c.moveTo(0, -R * .2); c.quadraticCurveTo(s * R * .6, -R * .3, s * R * .75, R * .1); c.moveTo(0, R * .1); c.quadraticCurveTo(s * R * .45, R * .1, s * R * .55, R * .45); } c.stroke(); } c.restore(); } };
+      const stalk = (x, y, col) => { c.strokeStyle = PAL.out; c.lineWidth = 2.3; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(x, y); c.stroke(); c.strokeStyle = col; c.lineWidth = 1; c.stroke(); };
+      for (const [a, r, back] of [[-1.1, .5, 1], [1.0, .5, 1], [-.45, .62, 0], [.5, .6, 0], [0, .42, 0]]) { const lx = cx + Math.sin(a) * H * r * .8, ly = by - 4 - Math.cos(a) * H * r * .6; stalk(lx, ly, PAL.stem); heart(lx, ly - 3, H * .17, a * .5 + Math.PI, back ? PAL.d1 : PAL.d2, back ? PAL.d2 : PAL.d3, back ? PAL.d0 : PAL.hi); }
+      for (const [a, r] of [[-.7, .95], [.6, 1.0]]) { const fx = cx + Math.sin(a) * H * r * .45, fy = by - 4 - Math.cos(a) * H * r * .75; stalk(fx, fy + 2, PAL.stemHi); if (bud(c, fx, fy, st, PAL.red)) continue; const R = H * .14 * (.5 + .5 * st); heart(fx, fy - 2, R, a * .4 + Math.PI, PAL.red, PAL.pink, PAL.terra);
+        c.fillStyle = PAL.white; c.beginPath(); c.ellipse(fx - R * .45, fy - 2 - R * .2, R * .14, R * .3, .5, 0, TAU); c.fill();
+        c.strokeStyle = PAL.out; c.lineWidth = 2.5; c.beginPath(); c.moveTo(fx, fy - 2); c.lineTo(fx + Math.sin(a * .4) * 7 * st, fy - 2 - Math.cos(a * .4) * 7 * st); c.stroke(); c.strokeStyle = PAL.yellow; c.lineWidth = 1.3; c.stroke(); c.strokeStyle = PAL.cream; c.lineWidth = .4; c.stroke(); pt(c, fx, fy - 2, PAL.red); }
     },
+    /** Віола: листки з жилкою, «личка» — темні верхні пелюстки, жовта нижня з вусиками. */
     viola(c, W, H, seed, st = 1) {
-      const cx = W / 2, by = H - 2;
-      for (const pass of [0, 1]) for (let i = 0; i < 8; i++) { const a = (i / 7 - .5) * 3, lx = cx + Math.sin(a) * W * .4, ly = by - 3 - Math.cos(a) * H * .25; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, 2.6 + (pass ? 0 : 1.3), 3.4 + (pass ? 0 : 1.3), a, 0, TAU); c.fill(); }
-      for (let f = 0; f < 4; f++) { const fx = cx + (f - 1.5) * 7 + (hash(seed, f) - .5) * 2, fy = by - H * .6 - (f % 2) * 4, cols = f % 2 ? [PAL.purple, PAL.yellow] : [PAL.lilac, PAL.yellow];
-        c.strokeStyle = PAL.out; c.lineWidth = 2.6; c.beginPath(); c.moveTo(fx, fy + 3); c.lineTo(fx + (f - 1.5) * .8, by - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1; c.stroke(); if (bud(c, fx, fy, st, cols[0])) continue; const m = .5 + .5 * st;
-        for (const pass of [0, 1]) { const e = pass ? 0 : 1.2; for (const [dx, dy, r, col] of [[-2.2, -2, 2.4, cols[0]], [2.2, -2, 2.4, cols[0]], [-2.6, .8, 2, cols[0]], [2.6, .8, 2, cols[0]], [0, 2.2, 2.8, cols[1]]]) { c.fillStyle = pass ? col : PAL.out; c.beginPath(); c.ellipse(fx + dx * m, fy + dy * m, r * m + e, r * .85 * m + e, 0, 0, TAU); c.fill(); } }
-        c.fillStyle = PAL.out; c.beginPath(); c.arc(fx, fy + 1, 1, 0, TAU); c.fill(); c.fillStyle = PAL.orange; c.fillRect(fx - .5, fy + .3, 1, 1); pt(c, fx, fy, cols[0]); }
+      const cx = W / 2, by = H - 2, O = .6; c.lineCap = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 8; i++) { const a = (i / 7 - .5) * 3, lx = cx + Math.sin(a) * W * .4, ly = by - 3 - Math.cos(a) * H * .25; c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); c.ellipse(lx, ly, 2.6 + (pass ? 0 : O), 3.4 + (pass ? 0 : O), a, 0, TAU); c.fill(); if (pass) { c.strokeStyle = i % 2 ? PAL.d3 : PAL.d2; c.lineWidth = .32; c.beginPath(); c.moveTo(lx + Math.sin(a) * 2.6, ly - Math.cos(a) * 2.6); c.lineTo(lx - Math.sin(a) * 2.6, ly + Math.cos(a) * 2.6); c.stroke(); } }
+      for (let f = 0; f < 4; f++) { const fx = cx + (f - 1.5) * 7 + (hash(seed, f) - .5) * 2, fy = by - H * .6 - (f % 2) * 4, cols = f % 2 ? [PAL.purple, PAL.yellow, PAL.lilac] : [PAL.lilac, PAL.yellow, PAL.purple];
+        c.strokeStyle = PAL.out; c.lineWidth = 1.9; c.beginPath(); c.moveTo(fx, fy + 3); c.lineTo(fx + (f - 1.5) * .8, by - 4); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .8; c.stroke(); if (bud(c, fx, fy, st, cols[0])) continue; const m = .5 + .5 * st;
+        EL(c, [[-2.2, -2, 2.4, cols[0]], [2.2, -2, 2.4, cols[0]], [-2.6, .8, 2, cols[2]], [2.6, .8, 2, cols[2]], [0, 2.2, 2.8, cols[1]]].map(([dx, dy, r, col]) => [fx + dx * m, fy + dy * m, r * m, r * .85 * m, 0, col]), O);
+        c.strokeStyle = PAL.purple; c.lineWidth = .3; c.beginPath(); for (const s of [-.9, -.3, .3, .9]) { c.moveTo(fx, fy + 1 * m); c.lineTo(fx + s * 1.6 * m, fy + 3.6 * m); } c.stroke();
+        c.fillStyle = PAL.out; c.beginPath(); c.arc(fx, fy + .8 * m, .8, 0, TAU); c.fill(); c.fillStyle = PAL.orange; c.fillRect(fx - .4, fy + .4 * m, .8, .8); pt(c, fx, fy, cols[0]); }
     },
+    /** Примула: зморшкуваті листки з жилками, щиток квіток із жовтим вічком. */
     primula(c, W, H, seed, st = 1) {
-      const cx = W / 2, by = H - 2; c.lineJoin = 'round';
-      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 3.1, lx = cx + Math.sin(a) * W * .36, ly = by - 3 - Math.cos(a) * H * .2; c.save(); c.translate(lx, ly); c.rotate(a * .6); c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); const e = pass ? 0 : 1.4; for (let k = 0; k <= 14; k++) { const t = k / 14 * TAU, rr = (1 + .1 * Math.cos(t * 7)); c.lineTo(Math.cos(t) * (3 + e) * rr, Math.sin(t) * (5 + e) * rr); } c.closePath(); c.fill(); if (pass) { c.strokeStyle = PAL.d0; c.lineWidth = .8; c.beginPath(); c.moveTo(0, 4); c.lineTo(0, -3.5); c.stroke(); } c.restore(); }
-      c.strokeStyle = PAL.out; c.lineWidth = 3.4; c.beginPath(); c.moveTo(cx, by - 4); c.lineTo(cx, by - H * .6); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.4; c.stroke();
-      const m = .5 + .5 * st; for (const pass of [0, 1]) for (let f = 0; f < 6; f++) { const a = f / 6 * TAU + .3, fx = cx + Math.cos(a) * 6.5, fy = by - H * .66 + Math.sin(a) * 3.5; if (st < .3) { if (pass) bud(c, fx, fy, st, f % 2 ? PAL.pink : PAL.cream); continue; } for (let k = 0; k < 5; k++) { const b = k / 5 * TAU + f; c.fillStyle = pass ? (f % 2 ? PAL.pink : PAL.cream) : PAL.out; c.beginPath(); c.arc(fx + Math.cos(b) * 1.9 * m, fy + Math.sin(b) * 1.9 * m, 1.5 * m + (pass ? 0 : 1), 0, TAU); c.fill(); } if (pass) { c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.1, 0, TAU); c.fill(); pt(c, fx, fy, f % 2 ? PAL.pink : PAL.cream); } }
+      const cx = W / 2, by = H - 2, O = .65; c.lineJoin = 'round'; c.lineCap = 'round';
+      for (const pass of [0, 1]) for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 3.1, lx = cx + Math.sin(a) * W * .36, ly = by - 3 - Math.cos(a) * H * .2; c.save(); c.translate(lx, ly); c.rotate(a * .6); c.fillStyle = pass ? (i % 2 ? PAL.d2 : PAL.d1) : PAL.out; c.beginPath(); const e = pass ? 0 : O; for (let k = 0; k <= 28; k++) { const t = k / 28 * TAU, rr = (1 + .08 * Math.cos(t * 11)); c.lineTo(Math.cos(t) * (3 + e) * rr, Math.sin(t) * (5 + e) * rr); } c.closePath(); c.fill();
+        if (pass) { c.strokeStyle = i % 2 ? PAL.d3 : PAL.d2; c.lineWidth = .32; c.beginPath(); c.moveTo(0, 4.2); c.lineTo(0, -4); for (const y of [-2, 0, 2]) for (const s of [-1, 1]) { c.moveTo(0, y + .8); c.lineTo(s * 2.1, y - .6); } c.stroke(); } c.restore(); }
+      c.strokeStyle = PAL.out; c.lineWidth = 2.4; c.beginPath(); c.moveTo(cx, by - 4); c.lineTo(cx, by - H * .6); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = 1.1; c.stroke();
+      const m = .5 + .5 * st; for (let f = 0; f < 6; f++) { const a = f / 6 * TAU + .3, fx = cx + Math.cos(a) * 6.5, fy = by - H * .66 + Math.sin(a) * 3.5, col = f % 2 ? PAL.pink : PAL.cream; if (st < .3) { bud(c, fx, fy, st, col); continue; } const L = []; for (let k = 0; k < 5; k++) { const b = k / 5 * TAU + f; L.push([fx + Math.cos(b) * 1.9 * m, fy + Math.sin(b) * 1.9 * m, 1.55 * m, 1.3 * m, b, col]); } EL(c, L, O);
+        c.fillStyle = PAL.orange; c.beginPath(); c.arc(fx, fy, 1.2 * m, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.fillRect(fx - .5, fy - .5, 1, 1); pt(c, fx, fy, col); }
     },
     // ---------- (· 39) висячі: малюються від ГОРИ (y 0 — гачок), кашпо зверху, рослина звисає ----------
     /** (16.11, 23:10) КУЩ ЛІАНИ над вікном (спрайт 4 px/од., гачок — центр верху): від вузла під кліпсою розходяться пагони за вдачею
@@ -260,14 +286,15 @@
       for (const pass of [0, 1]) for (const [a, l, back] of ls) { const ex = cx + Math.sin(a) * H * l * .5, ey = by - 4 - Math.cos(a) * H * l * .75; c.strokeStyle = PAL.out; c.lineWidth = 3; c.beginPath(); c.moveTo(cx, by - 3); c.lineTo(ex, ey); c.stroke(); if (pass) { c.strokeStyle = back ? PAL.stem : PAL.stemHi; c.lineWidth = 1.3; c.stroke(); }
         const R = H * .22; c.save(); c.translate(ex, ey); c.rotate(a * .5); c.fillStyle = pass ? (back ? PAL.d1 : PAL.d2) : PAL.out; const e = pass ? 0 : 1.4; c.beginPath(); c.moveTo(0, R * 1.3 + e); c.lineTo(-R - e, -R * .2); c.lineTo(-R * .45, -R * 1.1 - e); c.lineTo(0, -R * .6); c.lineTo(R * .45, -R * 1.1 - e); c.lineTo(R + e, -R * .2); c.closePath(); c.fill();
         if (pass) { c.strokeStyle = back ? PAL.d3 : PAL.cream; c.lineWidth = .9; c.beginPath(); c.moveTo(0, R * 1.1); c.lineTo(0, -R * .5); c.moveTo(0, R * .3); c.lineTo(-R * .7, -R * .3); c.moveTo(0, R * .3); c.lineTo(R * .7, -R * .3); c.moveTo(0, -R * .2); c.lineTo(-R * .35, -R * .85); c.moveTo(0, -R * .2); c.lineTo(R * .35, -R * .85); c.stroke(); } c.restore(); } },
-    /** Цереус: ребристий стовп з двома бічними пагонами, ребра — світлі смуги, ареоли з колючками-крапками. */
+    /** Цереус: стовп із двома бічними пагонами — п'ять ребер у трьох тонах, ареоли з променями колючок, блік на маківці. */
     cereus(c, W, H, seed) {
-      const cx = W / 2, by = H - 2, col = (x, y0, w, h, r) => { c.fillStyle = PAL.out; c.beginPath(); c.roundRect(x - w / 2 - 1.5, y0 - 1.5, w + 3, h + 3, r + 1.5); c.fill();
-        c.fillStyle = PAL.d1; c.beginPath(); c.roundRect(x - w / 2, y0, w, h, r); c.fill(); const rb = 4, rw = w / rb;
-        for (let i = 0; i < rb; i++) { c.fillStyle = i % 2 ? PAL.d2 : PAL.d1; c.fillRect(x - w / 2 + i * rw, y0 + 1, rw, h - 1); if (i === 1) { c.fillStyle = PAL.d3; c.fillRect(x - w / 2 + i * rw + .4, y0 + 1.5, rw * .45, h - 3); } }
-        for (let i = 0; i < rb; i++) for (let y = y0 + 3; y < y0 + h - 2; y += 5) { c.fillStyle = PAL.spine; c.fillRect(x - w / 2 + i * rw + rw * .5 - .6, y + hash(seed, y + i) * 1.5, 1.2, .8); } };
+      const cx = W / 2, by = H - 2, O = .7, T = [PAL.d1, PAL.d2, PAL.d3, PAL.d2, PAL.d1], col = (x, y0, w, h, r) => { c.fillStyle = PAL.out; c.beginPath(); c.roundRect(x - w / 2 - O, y0 - O, w + 2 * O, h + 2 * O, r + O); c.fill();
+        c.save(); c.beginPath(); c.roundRect(x - w / 2, y0, w, h, r); c.clip(); const rb = 5, rw = w / rb;
+        for (let i = 0; i < rb; i++) { c.fillStyle = T[i]; c.fillRect(x - w / 2 + i * rw, y0, rw + .1, h); if (i) { c.fillStyle = PAL.d0; c.fillRect(x - w / 2 + i * rw - .15, y0, .3, h); } }
+        c.fillStyle = PAL.hi; c.fillRect(x - w / 2 + 2 * rw + .3, y0 + 1.2, .5, h * .45); c.restore();
+        for (let i = 0; i < rb; i++) for (let y = y0 + 2.5 + (i % 2) * 1.6; y < y0 + h - 2; y += 3.4) { const ax = x - w / 2 + (i + .5) * rw; c.strokeStyle = PAL.spine; c.lineWidth = .22; c.beginPath(); for (const a of [-2.4, -1.57, -.75]) { c.moveTo(ax, y); c.lineTo(ax + Math.cos(a) * 1.1, y + Math.sin(a) * 1.1); } c.stroke(); c.fillStyle = PAL.cream; c.fillRect(ax - .3, y - .3, .6, .6); } };
       col(cx - 5, by - H * .55, 7, H * .55, 3.5); col(cx + 5, by - H * .68, 7, H * .68, 3.5); col(cx, by - H + 2, 9, H - 2, 4.5);
-      c.fillStyle = PAL.out; c.fillRect(cx - 6, by - 4, 12, 4); c.fillStyle = PAL.bark; c.fillRect(cx - 5, by - 3, 10, 2);
+      EL(c, [[cx, by - 1.6, 7.5, 2, 0, PAL.bark]], .5); c.fillStyle = PAL.barkHi; for (let k = 0; k < 5; k++) c.fillRect(cx - 6 + k * 2.7, by - 2.4 + (k % 2) * .8, 1.2, .5);
     },
     /** Нічна квітка цереуса (окремий спрайт, малюється лише вночі): велика біла воронка з жовтою серединою на боці стовпа. */
     cereusBloom(c, W, H) {
@@ -293,23 +320,36 @@
   const SPR = {}, PADU = 40;                                                                                      // запас полотна, щоб крайні лопаті не різалися
   /** Спрайт героя: малюємо на великому полотні, далі обрізаємо до вмісту (нічого не різане) і запам'ятовуємо, де в ньому точка основи. */
   function spriteOf(p, kind = p.kind, stage = STAGES - 1) {
-    const key = kind + ':' + stage; if (SPR[key]) return SPR[key]; const S = p.S || 2, P = PADU, big = document.createElement('canvas'); big.width = (p.w + 2 * P) * S; big.height = (p.h + 2 * P) * S; const c = big.getContext('2d'); c.scale(S, S); c.translate(P, P); c.__pts = []; DRAW[kind](c, p.w, p.h, p.seed, stage / (STAGES - 1));
+    const key = kind + ':' + stage; if (SPR[key]) return SPR[key]; const S = p.S || 4, P = PADU, big = document.createElement('canvas'); big.width = (p.w + 2 * P) * S; big.height = (p.h + 2 * P) * S; const c = big.getContext('2d'); c.scale(S, S); c.translate(P, P); c.__pts = []; DRAW[kind](c, p.w, p.h, p.seed, stage / (STAGES - 1));
     const pts = c.__pts.map(([x, y, col]) => [x - p.w / 2, y - p.h, col]);                                               // центри квіток відносно основи (од. кімнати)
     pixelize(big); const im = c.getImageData(0, 0, big.width, big.height).data; let x0 = big.width, y0 = big.height, x1 = -1, y1 = -1;
     for (let y = 0; y < big.height; y++) for (let x = 0; x < big.width; x++) if (im[(y * big.width + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     if (x1 < 0) { x0 = y0 = 0; x1 = y1 = 1; } const cv = document.createElement('canvas'); cv.width = x1 - x0 + 1; cv.height = y1 - y0 + 1; cv.getContext('2d').drawImage(big, -x0, -y0);
     cv.base = [(P + p.w / 2) * S - x0, (P + (p.hang ? 0 : p.h)) * S - y0]; cv.S = S; cv.pts = pts;                        // висячі: основа — точка гачка (центр верху)                                        // точка основи (центр низу) у пікселях спрайта
+    if (!p.hang) { const g = cv.getContext('2d'), gy = cv.base[1], gr = g.createLinearGradient(0, gy - Math.min(cv.height * .55, 36 * S), 0, gy); g.globalCompositeOperation = 'source-atop';   // (17.11) глибина: низ куща в тіні сусідів, задній ряд — у синьому серпанку
+      gr.addColorStop(0, 'rgba(4,10,26,0)'); gr.addColorStop(1, 'rgba(4,10,26,' + (p.back ? .62 : p.h < 40 ? .28 : .5) + ')'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height); if (p.back) { g.fillStyle = 'rgba(44,56,150,.2)'; g.fillRect(0, 0, cv.width, cv.height); } }
     return SPR[key] = cv;
   }
   const px = (c, x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
+  /** (17.11) ВЕРХ КОРОБА (4 px/од., малюється раз): металева рама зі скосом, заклепками й поділками, під нею тінь; ґрунт — мульча з кори,
+   *  камінці, перліт і подушечки моху. Неон, краплі й індикатори — живі, у drawJar. */
+  let JTOP = null;
+  function jarTop() { if (JTOP) return JTOP; const S = 4, w = JAR.x1 - JAR.x0, d = JAR.d, cv = document.createElement('canvas'); cv.width = w * S; cv.height = d * S; const c = cv.getContext('2d'); c.scale(S, S);
+    const R = (x, y, ww, hh, col) => { c.fillStyle = col; c.fillRect(x, y, ww, hh); };
+    R(0, 0, w, d, '#1a2148'); R(0, 0, w, .5, '#4a5aa0'); R(0, .5, w, .5, '#2c3672'); R(0, d - .6, w, .6, '#0c1026'); R(0, 0, .6, d, '#2c3672'); R(w - .6, 0, .6, d, '#0c1026');                 // рама зі скосом
+    R(2, 1.5, w - 4, d - 3, '#120c08'); R(2, 1.5, w - 4, 1, '#050408'); R(2, 2.5, w - 4, .5, '#1c130c'); R(2, 1.5, .5, d - 3, '#050408');                                               // ґрунт і тінь від рами
+    for (let k = 0; k < 520; k++) { const x = 2.5 + hash(k, 1) * (w - 6), y = 3 + hash(k, 2) * (d - 5.2), r = hash(k, 3);
+      if (r < .5) R(x, y, .8 + hash(k, 4) * 1.4, .5, r < .25 ? '#4a3220' : '#2e1f14'); else if (r < .7) R(x, y, .5, .5, '#6a4a2c'); else if (r < .82) { R(x, y, 1, .75, '#5a6478'); R(x, y, .5, .25, '#8a94a8'); } else if (r < .9) R(x, y, .25, .25, '#e8e4d8'); else { R(x - .25, y, 1.75, .75, '#1f4a2a'); R(x, y - .25, 1.25, .5, '#3a7a3e'); R(x + .25, y - .25, .5, .25, '#6ab85a'); } }   // кора, камінці, перліт, мох
+    for (let x = 5; x < w - 4; x += 12) { R(x, d - 1.25, .75, .5, '#5a6aa8'); R(x + .25, d - 1.25, .25, .25, '#b8c8ff'); }                                                                // заклепки
+    for (let x = 3; x < w - 2; x += 3) R(x, .5, .25, x % 12 === 3 ? .75 : .5, '#6a7ac0');                                                                                                  // поділки на кромці
+    return JTOP = cv; }
   /** Жардиньєр: довгий кібер-короб; видно верх (кант з неоном, ґрунт) над спинкою дивана. */
   function drawJar(c, t, LK) {
     const { x0, x1, y, h, d } = JAR, top = y - h, w = x1 - x0;
     c.save(); c.globalAlpha = .35; c.fillStyle = '#000'; c.fillRect(x0 - 3, y - 1, w + 6, 3); c.restore();
     px(c, x0, top, w, h, '#10142e'); px(c, x0 + 1, top + d, w - 2, h - d, '#171c3e');                                                      // корпус
     for (let x = x0 + 6; x < x1 - 6; x += 12) px(c, x, top + d + 6, 7, 1, '#2a3468');                                                        // щілини вентиляції
-    px(c, x0, top, w, d, '#1e2650'); px(c, x0 + 2, top + 1.5, w - 4, d - 3, '#0a0c1c'); px(c, x0 + 2, top + 1.5, w - 4, 1.2, '#2a1a10');      // верх: рамка, ґрунт
-    for (let x = x0 + 3; x < x1 - 3; x += 2.3) if (hash(x, 1) > .55) px(c, x, top + 2.5 + hash(x, 2) * (d - 5), 1.2, .8, hash(x, 3) > .5 ? '#3a2a18' : '#1c1410');   // грудки ґрунту
+    c.save(); c.imageSmoothingEnabled = false; c.drawImage(jarTop(), x0, top, w, d); c.restore();                                              // (17.11) верх короба — чіткий, намальований раз
     c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .85 * Math.min(1.3, LK); px(c, x0, top, w, .9, '#3be8ff'); px(c, x0, top + d - .8, w, .6, '#3be8ff');
     c.globalAlpha = .18 * LK; const g = c.createLinearGradient(0, top - 6, 0, top); g.addColorStop(0, 'rgba(59,232,255,0)'); g.addColorStop(1, 'rgba(59,232,255,1)'); c.fillStyle = g; c.fillRect(x0, top - 6, w, 6); c.restore();   // неон і його відсвіт
     px(c, x0 + 4, top + 4.5, w - 8, 1, '#3a4a6a'); for (let x = x0 + 18; x < x1 - 10; x += 26) { px(c, x, top + 4, 2, 2, '#5a6a8a'); const ph = (t * .5 + x * .013) % 1; if (HUM.drip && ph < .3) { c.save(); c.globalAlpha = .9 - ph * 2; px(c, x + .5, top + 6 + ph * 10, 1, 1.6, '#8ae8ff'); c.restore(); } }   // крапельна трубка з емітерами, краплі в ґрунт
@@ -522,7 +562,6 @@
       for (const p of HEROES) { if (p.x + p.w < vx0 || p.x - p.w > vx1) continue; const cv = spriteOf(p, p.kind, FLOWERS.includes(p.kind) ? Math.round(stageOf(p, t) * (STAGES - 1)) : STAGES - 1), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, byy = cv.base[1] / S, sh = Math.sin(t * .7 + p.seed) * .012 + Math.sin(t * 1.9 + p.seed * 2) * .004;
         c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, top); c.transform(1, 0, sh, 1, 0, 0);                   // легке погойдування: верх ходить, основа стоїть
         c.drawImage(cv, -bx, -byy, w, h);
-        if (p.back) { c.globalAlpha = .12 + .05 * night; c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#2a3a8a'; c.fillRect(-bx, -byy, w, h); }   // серпанок на задньому шарі — глибина
         if (p.kind === 'cereus' && night > .05) { const bl = spriteOf(p, 'cereusBloom'); c.globalAlpha = night; c.drawImage(bl, -bl.base[0] / S, -bl.base[1] / S, bl.width / S, bl.height / S); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.25 + .1 * Math.sin(t * 2)); c.fillStyle = '#fff6c0'; c.beginPath(); c.arc(-4, -p.h * .7 + 2, 9, 0, TAU); c.fill(); }   // (· 36) цереус квітне вночі
         c.restore(); }   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
       drawLife(c, t, LK); drawGecko(c, t, night); drawPanel(c, t, LK); c.restore();
