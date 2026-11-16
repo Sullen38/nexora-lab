@@ -239,11 +239,14 @@
   const V3 = [[-2, 3], [-2.4, 3.5], [-2, 3], [3, 14], [3, 14], [3, 25.5], [3, 25.5], [3, 25.5], [3.4, 36], [3.4, 36]].map(([x, dp]) => [x * TSX, dp * DSX]);     // (x, dp) острівців VS.ISL: стовпчик за лицьовою гранню й два — за бічною
   const VFAR = [[-4.6, 9, 9, 2], [-5, 20, 30, 5], [-4.4, 30, 14, 7], [-2, 37.5, 44, 1], [2.5, 38, 20, 3], [-5.2, 13, 47, 6], [0, 38.5, 33, 4]].map(([x, dp, h, k]) => [x * TSX, dp * DSX, h * (VIT ? VIT.HT / 59.25 : 1), k]);   // дальній план: x, dp, h, вид
   const VDR = [[0, 1, 2, 1], [3, 4, 7, 6, 5], [8, 9, 6]];
+  /** (16.11, власник на знімку: «щось з'їло частину гриба у вежі») де кромка плити галереї виходить з-під дальнього ребра вежі — міряється
+   *  з геометрії (раз), а не числом 21.5: після збільшення вежі старе число обрізало низ бічної грані навскіс. */
+  const sEnd = V => { if (V.sE2 == null) { const xe = V.at(1, 1, CONV.M.top)[0]; let s = 5; while (s < 90 && CONV.P(s, CONV.M.top - .4)[0] < xe) s += .25; V.sE2 = s; } return V.sE2; };
   function vit3d(c, t, V, nt) {
     const S = V.S, M = V.M, hw = PYL.w / 2, D = M.D, y0 = V.y0, P3 = V.P3, rail = M.deck - RAIL - 1, K = 1.04, HT = V.HT;
     const poly = pts => { pts.forEach((p, k) => k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); };
     c.save(); c.globalCompositeOperation = 'source-over'; c.beginPath();
-    poly([V.at(0, 0, V.top - 4), V.at(0, 1, V.top - 4), V.at(0, 1, y0), V.at(0, 0, y0)]); { const A = V.at(1, 0, V.top - 4), B = V.at(1, 1, V.top - 4), dk = CONV ? [CONV.P(V.sE, CONV.M.top - .4), CONV.P(-.8, CONV.M.top - .4)] : [V.at(1, 1, rail), V.at(1, 0, rail)]; poly([A, B, dk[0], dk[1]]); } c.clip();   // бічна грань — до кромки плити галереї (крізь скло поруччя видно низ вежі)
+    poly([V.at(0, 0, V.top - 4), V.at(0, 1, V.top - 4), V.at(0, 1, y0), V.at(0, 0, y0)]); { const A = V.at(1, 0, V.top - 4), B = V.at(1, 1, V.top - 4), dk = CONV ? [CONV.P(sEnd(V), CONV.M.top - .4), CONV.P(-.8, CONV.M.top - .4)] : [V.at(1, 1, rail), V.at(1, 0, rail)]; poly([A, B, dk[0], dk[1]]); } c.clip();   // бічна грань — до кромки плити галереї (крізь скло поруччя видно низ вежі)
     // кімната за склом: ліва задня стінка (x = −hw) темніша, дальня (dp = D) світліша, між ними — дальнє ребро
     const e0 = P3(-hw, 0, HT + 3), e1 = P3(-hw, D, HT + 3), e2 = P3(hw, D, HT + 3), f0 = P3(-hw, 0, 0), f1 = P3(-hw, D, 0), f2 = P3(hw, D, 0);
     c.globalAlpha = 1; c.fillStyle = '#03101c'; c.beginPath(); poly([e0, e1, f1, f0]); c.fill(); c.fillStyle = '#082838'; c.beginPath(); poly([e1, e2, f2, f1]); c.fill();
