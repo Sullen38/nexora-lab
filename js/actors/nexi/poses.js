@@ -22,7 +22,7 @@ function poseFor(a,t,moving){
  case'sitPet':{const k=Math.sin(t*6)>0;p.sit=1;p.bob=3;p.ra={x:6,y:k?2:1};p.la={x:-3,y:4};p.face='happy';break}
  case'sitTablet':p.sit=1;p.bob=3;p.la={x:1,y:3};p.ra={x:-1,y:3};p.tool='tablet';p.hy=1;if(Math.floor(t/2.5)%3===1)p.face='think';break;
  case'sitWork':{const k=Math.floor(t*9)%2;p.sit=1;p.bob=3;p.la={x:-5,y:1+k};p.ra={x:-3,y:2-k};p.hx=-1;if(Math.floor(t/3)%3===2){p.face='think';p.la={x:-3,y:5};p.ra={x:3,y:-6}}break}
- case'sitType':{const k=Math.floor(t*9)%2;p.back=1;p.sit=1;p.bob=3;p.la={x:-2,y:-2+k};p.ra={x:2,y:-1-k};break}
+ case'sitType':{const k=Math.floor(t*9)%2;p.back=1;p.work=1;p.sit=1;p.bob=3;p.la={x:-2,y:-2+k};p.ra={x:2,y:-1-k};break}
  case'sit':p.sit=1;p.bob=3;p.la={x:-3,y:4};p.ra={x:3,y:4};p.ll={dx:-1,lift:0};p.rl={dx:1,lift:0};break;
  case'sitCheer':{const j=Math.abs(s(t*6.28319));p.sit=1;p.bob=3-Math.round(j);p.la={x:-4,y:-5};p.ra={x:4,y:-5};p.face='happy';break}   // сидячи радіє (крісло маркетингу)
  case'sitRead':p.sit=1;p.bob=3;p.la={x:3,y:2};p.ra={x:-1,y:2};p.hy=1;p.book=1;break;
@@ -53,7 +53,7 @@ case'sitGaze':p.sit=1;p.back=1;p.bob=3;p.la={x:1,y:5};p.ra={x:-1,y:5};p.ll={dx:-
 case'hoverScan':{const k=Math.floor(t*6)%2;p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:7,y:-2+(k?1:0)};p.la={x:-4,y:4};p.tool='scanner';p.look=1;p.bob=Math.round(Math.sin(t*5));break}   // (Декор стін · 19) сканує рослину ручним сканером
 case'hoverCall':p.jet=1;p.ll={dx:0,lift:1};p.rl={dx:0,lift:1};p.ra={x:5,y:-3+Math.round(Math.sin(t*9.42478)*2)};p.la={x:-4,y:4};p.tool='can';p.face='happy';p.bob=Math.round(Math.sin(t*5));break;
  case'toss':{const k=(t%1.2)<.5;p.ra=k?{x:3,y:-8}:{x:7,y:0};p.tool=k?'coin':null;p.face='happy';break}
- case'push':{const k=Math.floor(t*5)%2;p.back=1;p.ra={x:3,y:k?-2:0};p.la={x:-3,y:k?0:-2};break}
+ case'push':{const k=Math.floor(t*5)%2;p.back=1;p.work=1;p.ra={x:3,y:k?-2:0};p.la={x:-3,y:k?0:-2};break}
  case'carry':p.la={x:-2,y:3};p.ra={x:2,y:3};p.tool='tablet';break;
  case'wave':p.ra={x:4,y:-4+Math.round(s(t*9.42478)*2)};p.hy=0;p.bob=Math.sin(t*4.71239)>0?0:-1;break;
  case'bye':p.ra={x:5,y:-3+Math.round(s(t*12.56637)*2)};p.la={x:-3,y:6};break;

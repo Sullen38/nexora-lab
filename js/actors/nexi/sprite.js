@@ -54,6 +54,18 @@ function renderBot(look, pose, t, cv) {
   const b = Q(pose.bob), hxo = Q(pose.hx), hyo = Q(pose.hy), vel = pose.vel || 0;
   const bx = 13, by = 33 + b, bw = 22, bh = 12, hX = 9 + hxo, hY = 10 + b + hyo;
 
+  // ---------- 0. ЗІ СПИНИ: реліквія в руці — ЗА тілом (власник, 16.11: «він дивно реліквії тримає в руках, коли стоїть спиною») ----------
+  // Спереду предмет малюється поверх усього (блок 9). Зі спини Nexi тримає його ПЕРЕД собою — тобто далі від глядача: раніше меч,
+  // молот чи тризуб лягали просто на спину й потилицю. Тепер у позах спиною: рука з предметом відведена вбік (предмет видно
+  // поруч із тілом), сам предмет малюється ПЕРШИМ — тіло, плащ, рука й голова закривають його там, де перетинаються; щит — без
+  // логотипа (видно виворіт). Рукавиця — на руці, тож лишається поверх. Руки зайняті роботою (pose.work: друкує, штовхає) —
+  // реліквію не показуємо (як і з інструментом пози).
+  const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
+  const showItem = look.hand && !pose.book && (look.hand === 'shield' || !pose.tool) && !(pose.work && look.hand !== 'gauntlet'), itemBehind = showItem && pose.back && look.hand !== 'gauntlet';
+  if (itemBehind) { if (look.hand === 'shield') hands[0].x = Math.min(hands[0].x, -3); else hands[1].x = Math.max(hands[1].x, 5);
+    const hp = i => { const s0 = sh[i], ex = s0[0] + Q(hands[i].x), ey = s0[1] + Q(hands[i].y); return { ex, ey, mx: Math.round((s0[0] + ex) / 2 + (i ? 1 : -1)), my: Math.round((s0[1] + ey) / 2) }; };
+    drawHandItem(B, look.hand, hp(0), hp(1), t, true); }
+
   // ---------- 1. спина: плащ / крила / рюкзак ----------
   if (look.back === 'cape' && !pose.back) { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cl = shade(cc, .35);   // плащ спереду — видно краї з-за спини (колір — від теми); зі спини — нижче, поверх тулуба
     for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? cc : cd); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, cl); } }
@@ -128,7 +140,6 @@ function renderBot(look, pose, t, cv) {
     RR(bx + 5, by + 7, bw - 10, 5, 1, shade(C, -.12)); P(bx + 6, by + 8, bw - 12, 1, shade(C, .3)); P(bx + 2, by - 2, 3, 2, D); P(bx + bw - 5, by - 2, 3, 2, D); }
 
   // ---------- 5. руки ----------
-  const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
   hands.forEach((hd, i) => {
     const s = sh[i], ex = s[0] + Q(hd.x), ey = s[1] + Q(hd.y), mx = Math.round((s[0] + ex) / 2 + (i ? 1 : -1)), my = Math.round((s[1] + ey) / 2);
     line(s[0], s[1], mx, my, limb); line(mx, my, ex, ey, limb); line(s[0], s[1] - 1, mx, my - 1, shade(limb, .45), 1);
@@ -189,7 +200,7 @@ function renderBot(look, pose, t, cv) {
 
   // ---------- 9. предмети в руках (drawHandItem; поки руки зайняті інструментом пози чи книгою — праву не чіпаємо) ----------
   const L0 = hands[0], R0 = hands[1];
-  if (look.hand && !pose.book && (look.hand === 'shield' || !pose.tool)) drawHandItem(B, look.hand, L0, R0, t);
+  if (showItem && !itemBehind) drawHandItem(B, look.hand, L0, R0, t);
   const ex = R0.ex, ey = R0.ey;
   switch (pose.tool) {
     case 'hammer': P(ex, ey - 8, 2, 10, '#8a5a2a'); BLK(ex - 3, ey - 11, 8, 4, 1, '#aab4d6'); break;
@@ -220,7 +231,7 @@ function renderBot(look, pose, t, cv) {
  * центру), ЗОЛОТА РУКАВИЦЯ (золоті пластини й світна доріжка-схема Nexi).
  * Малюються поверх кисті: (ex, ey) — центр кисті, (mx, my) — лікоть (для наручі); L0 — ліва рука (щит), R0 — права.
  * f — кадр анімації (10 за секунду): блискавки, полум'я, відблиски. */
-function drawHandItem(B, id, L0, R0, t) {
+function drawHandItem(B, id, L0, R0, t, back) {
   const { P, RR, BLK, line, map } = B, ex = R0.ex, ey = R0.ey, f = Math.floor(t * 10);
   switch (id) {
     case 'shield': {                                     // ЩИТ NEXI: круглий, хромований обідок зі світлом угорі, блакитне неонове кільце, що дихає,
@@ -231,7 +242,8 @@ function drawHandItem(B, id, L0, R0, t) {
         P(cx + i, cy + j, 1, 1, d > 5.4 ? (i + j < -3 ? '#f2f6ff' : i + j > 3 ? '#5a6288' : '#aab4d6') : d > 4.4 ? (f % 8 < 4 ? '#3be8ff' : '#7af4ff') : i + j < -1 ? '#2e3f86' : '#1c2858');
         if (d <= 4.4 && i - j === g) P(cx + i, cy + j, 1, 1, 'rgba(210,235,255,.4)');
       }
-      map(['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'], cx - 2, cy - 2, (ch, i, j) => i === 0 || j < 2 ? '#ffffff' : '#9af6ff');
+      if (back) { P(cx - 3, cy - 1, 7, 2, '#5a3a22'); P(cx - 3, cy - 1, 7, 1, '#8a5a32'); }                                          // зі спини — виворіт щита: ремінь замість логотипа
+      else map(['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'], cx - 2, cy - 2, (ch, i, j) => i === 0 || j < 2 ? '#ffffff' : '#9af6ff');
       break;
     }
     case 'sword': P(ex, ey - 17, 2, 17, '#dfe8ff'); P(ex, ey - 17, 1, 17, '#ffffff'); P(ex - 2, ey, 6, 2, '#ffc94d'); P(ex, ey + 2, 2, 3, '#7a4a22'); break;
