@@ -278,35 +278,49 @@
   function shed(p, t, n = 6) { const pts = flowerPts(p, t); if (!pts.length) return; for (let i = 0; i < n; i++) { const q = pts[(i * 7 + p.seed) % pts.length]; PET.push({ x: q[0] + (Math.random() - .5) * 2, y: q[1], vx: (Math.random() - .5) * 6, vy: -4 - Math.random() * 6, col: q[2], t0: t, ph: Math.random() * TAU }); } }
   /** (16.11) Квіти арки (секція p) у координатах кімнати з кольором — звідси летять пелюстки й сюди підлітає дрон-колібрі. */
   function hangPts(p, t) { const cv = spriteOf(p, p.kind, Math.round(stageOf(p, t) * (STAGES - 1))); return cv.pts.map(([x, y, col]) => [p.x + x, HOOK_Y + y + p.h, col]); }
-  /** Пелюстки з арки: колір — тієї квітки, з якої зірвались; падають повільно, кружляючи, аж до канта саду. */
-  function shedHang(p, t, n = 1) { const pts = hangPts(p, t); if (!pts.length) return; for (let i = 0; i < n; i++) { const q = pts[Math.floor(Math.random() * pts.length)]; PET.push({ x: q[0] + (Math.random() - .5) * 2, y: q[1] + 1, vx: (Math.random() - .5) * 5, vy: .5 + Math.random() * 2, col: q[2], t0: t, ph: Math.random() * TAU, life: 40, cap: 4.5 + Math.random() * 2.5, big: 1 }); } }
-  const ARC = { next: 2 };
+  /** Пелюстки з арки: колір — тієї квітки, з якої зірвались. (16.11, 21:58, власник: «щоб пелюсток падало менше — іноді одна-дві, і щоб
+   *  падали реалістичніше, як падає пелюстка») падають рідко й «гойдалкою»: пелюстка ковзає вбік, сповільнюється й перевертається на
+   *  краю розмаху, тоді ковзає назад (sw — частота, amp — розмах, vt — швидкість падіння, dr — знесення). */
+  function shedHang(p, t, n = 1) { const pts = hangPts(p, t); if (!pts.length) return; for (let i = 0; i < n; i++) { const q = pts[Math.floor(Math.random() * pts.length)]; PET.push({ x: q[0] + (Math.random() - .5) * 2, y: q[1] + 1, col: q[2], t0: t + i * .9, ph: Math.random() * TAU, life: 70, big: 1, sw: 1.5 + Math.random() * .9, amp: 5 + Math.random() * 5, vt: 2.6 + Math.random() * 1.6, dr: (Math.random() - .5) * 1.6 }); } }
+  const ARC = { next: 4 };
   function tickLife(t, dt) {
-    for (const p of HANG) { const st = stageOf(p, t); if (p.lastSt === 1 && st === 0) shedHang(p, t, 14); p.lastSt = st; }                 // (16.11) секція відцвіла — пелюстки дощем
-    if (t > ARC.next) { const bl = HANG.filter(p => stageOf(p, t) > .6); if (bl.length) shedHang(bl[Math.floor(Math.random() * bl.length)], t, 1); ARC.next = t + 1 + Math.random() * 2.4; }   // зрідка — по одній
+    for (const p of HANG) { const st = stageOf(p, t); if (p.lastSt === 1 && st === 0) shedHang(p, t, 2); p.lastSt = st; }                  // (16.11) секція відцвіла — дві пелюстки
+    if (t > ARC.next) { const bl = HANG.filter(p => stageOf(p, t) > .6); if (bl.length) shedHang(bl[Math.floor(Math.random() * bl.length)], t, Math.random() < .25 ? 2 : 1); ARC.next = t + 8 + Math.random() * 10; }   // зрідка — одна, часом дві
     for (const p of FL) { const st = stageOf(p, t); if (p.lastSt === 1 && st === 0) shed(p, t, 7); p.lastSt = st; }                  // цикл добіг до опадання
     HUM.v = Math.max(0, HUM.v - dt / 300); if (HUM.v < .3) HUM.drip = 1; if (HUM.drip) { HUM.v = Math.min(1, HUM.v + dt / 40); if (HUM.v >= .95) HUM.drip = 0; }   // сама поливається, як пересохла
-    for (let i = PET.length - 1; i >= 0; i--) { const q = PET[i], a = t - q.t0; if (a > (q.life || 9)) { PET.splice(i, 1); continue; } if (q.y < TOP() + 3) { q.vy += 14 * dt; q.vy = Math.min(q.vy, q.cap || 9); q.x += (q.vx + Math.sin(t * 5 + q.ph) * 6) * dt; q.y += q.vy * dt; if (q.y >= TOP() + 3) { q.y = TOP() + 3 + Math.random() * 3; q.land = t; } } }
+    for (let i = PET.length - 1; i >= 0; i--) { const q = PET[i], a = t - q.t0; if (a > (q.life || 9)) { PET.splice(i, 1); continue; } if (a < 0) continue;
+      if (q.big && q.y < TOP() + 3) { const ph = q.ph + q.sw * a; q.x += (q.amp * Math.sin(ph) + q.dr) * dt; q.y += q.vt * (.4 + .6 * Math.abs(Math.cos(ph))) * dt; if (q.y >= TOP() + 3) { q.y = TOP() + 3 + Math.random() * 3; q.land = t; } continue; }
+      if (q.y < TOP() + 3) { q.vy += 14 * dt; q.vy = Math.min(q.vy, q.cap || 9); q.x += (q.vx + Math.sin(t * 5 + q.ph) * 6) * dt; q.y += q.vy * dt; if (q.y >= TOP() + 3) { q.y = TOP() + 3 + Math.random() * 3; q.land = t; } } }
   }
-  /** (16.11) ЖИТТЯ АРКИ: дрон-колібрі перелітає від квітки до квітки (зависає, крильця миготять, дзьоб до квітки) і поливальник —
-   *  каретка, що їздить стельовою рейкою туди-сюди й час від часу пускає вниз хмарку туману. */
-  const HB = { x: 777, y: 40, t: 0, k: -1, tx: 777, ty: 40, dir: 1 };
+  /** (16.11, 21:58, власник: «дрон хай один той великий літає, малих прибери; додай краще метеликів — і щоб, коли підлітає дрон, вони
+   *  розліталися, а потім знову прилітали») ЖИТТЯ АРКИ: один дрон-колібрі перелітає від квітки до квітки (зависає, крильця миготять);
+   *  шість метеликів сидять на квітах і зрідка перепурхують на іншу; щойно дрон наближається — зриваються й розлітаються врізнобіч, а
+   *  коли він відлетить, повертаються на свої квітки. Каретку-поливальник прибрано. Метелики арки літають і вдень, і ввечері. */
+  const HB = { x: 777, y: 40, t: 0, k: -1, tx: 777, ty: 40, dir: 1 }, BFS = Array.from({ length: 6 }, (_, i) => ({ i, x: 700 + i * 30, y: 30, sc: -99, fx: 0, fy: 0, k: -1, home: null, face: 1 }));
   function drawArcLife(c, t) {
-    const k = Math.floor(t / 5.2); if (k !== HB.k) { HB.k = k; const p = HANG[Math.floor(hash(k, 3) * HANG.length)], pts = hangPts(p, t); if (pts.length) { const q = pts[Math.floor(hash(k, 5) * pts.length)]; HB.dir = q[0] > HB.x ? 1 : -1; HB.tx = q[0] - HB.dir * 5.4; HB.ty = q[1] - .6; } }
+    const all = HANG.flatMap(p => hangPts(p, t)); if (!all.length) return;
+    const k = Math.floor(t / 5.2); if (k !== HB.k) { HB.k = k; const q = all[Math.floor(hash(k, 5) * all.length)]; HB.dir = q[0] > HB.x ? 1 : -1; HB.tx = q[0] - HB.dir * 7; HB.ty = q[1] - .8; }
     const dt = Math.min(.1, Math.max(0, t - HB.t)); HB.t = t; HB.x += (HB.tx - HB.x) * Math.min(1, dt * 2.4); HB.y += (HB.ty - HB.y) * Math.min(1, dt * 2.4);
-    { const x = HB.x + Math.sin(t * 2.1) * .5, y = HB.y + Math.sin(t * 3.3) * .7, wf = Math.sin(t * 40); c.save(); c.translate(x, y); c.scale(HB.dir, 1); c.lineCap = 'round';
+    const dx = HB.x + Math.sin(t * 2.1) * .5, dy = HB.y + Math.sin(t * 3.3) * .7;
+    { c.save(); c.imageSmoothingEnabled = false;
+      for (const B of BFS) { const kb = Math.floor((t + B.i * 2.7) / (9 + B.i * 1.3)); if (kb !== B.k || !B.home) { B.k = kb; B.home = all[Math.floor(hash(kb, B.i + 11) * all.length)]; }   // раз на 9–16 с — на іншу квітку
+        const hx = B.home[0] + (B.i % 2 ? 2.6 : -2.6), hy = B.home[1] - 3.4; if (Math.hypot(dx - hx, dy - hy) < 17 || Math.hypot(dx - B.x, dy - B.y) < 13) { if (t - B.sc > 1.2) { const an = Math.atan2(hy - dy, hx - dx) + (hash(B.i, Math.floor(t)) - .5) * 1.6, r = 24 + hash(B.i, 3) * 12; B.fx = Math.max(668, Math.min(886, hx + Math.cos(an) * r)); B.fy = Math.max(10, Math.min(96, hy + Math.sin(an) * r * .7 + 8)); } B.sc = t; }   // дрон поруч — тікати
+        const fl = t - B.sc < 2.2, tx = fl ? B.fx : hx, ty = fl ? B.fy : hy, ox = B.x, oy = B.y, rate = Math.min(1, dt * (fl ? 3.4 : 1.5)); B.x += (tx - B.x) * rate; B.y += (ty - B.y) * rate;
+        const sp = Math.hypot(B.x - ox, B.y - oy) / Math.max(.001, dt), mv = Math.min(1, sp / 5); if (Math.abs(B.x - ox) > .02) B.face = B.x > ox ? 1 : -1;
+        const wing = mv > .15 ? (Math.floor(t * 13 + B.i) % 2 ? .5 : 1) : .62 + .38 * Math.abs(Math.sin(t * 1.7 + B.i * 2));                                              // у польоті крильця миготять, на квітці — повільно розкриваються
+        c.save(); c.translate(B.x, B.y + Math.sin(t * 9 + B.i) * 1.1 * mv); c.scale(B.face, 1); c.drawImage(bug(['bfA', 'bfB', 'bfC', 'bfD'][B.i % 4]), -7.5 * wing, -4.5, 15 * wing, 9); c.restore(); }
+      c.restore(); }
+    { const wf = Math.sin(t * 40); c.save(); c.translate(dx, dy); c.scale(HB.dir * 1.3, 1.3); c.lineCap = 'round';
       c.globalAlpha = .5; c.fillStyle = '#bff6ff'; c.beginPath(); c.moveTo(-.4, -.6); c.lineTo(-3.8, -3.4 - wf * 1.3); c.lineTo(1.3, -2.8 - wf * .9); c.closePath(); c.fill(); c.globalAlpha = .28; c.beginPath(); c.moveTo(-.4, .2); c.lineTo(-3.6, 2.6 + wf * 1.1); c.lineTo(.8, 2 + wf * .7); c.closePath(); c.fill();   // крильця миготять
       c.globalAlpha = 1; c.fillStyle = '#04120c'; c.beginPath(); c.moveTo(-2.4, 0); c.lineTo(-5, -1.1); c.lineTo(-4.7, 1.3); c.closePath(); c.fill(); c.fillStyle = '#1a2048'; c.beginPath(); c.moveTo(-2.4, .1); c.lineTo(-4.5, -.6); c.lineTo(-4.3, .9); c.closePath(); c.fill();   // хвіст
       c.fillStyle = '#04120c'; c.beginPath(); c.ellipse(0, 0, 3, 1.8, 0, 0, TAU); c.fill(); c.beginPath(); c.arc(2.3, -.6, 1.6, 0, TAU); c.fill(); c.fillStyle = '#2ac8c0'; c.beginPath(); c.ellipse(0, 0, 2.4, 1.25, 0, 0, TAU); c.fill(); c.fillStyle = '#8af0e0'; c.fillRect(-1.6, -.9, 2.6, .4);
       c.fillStyle = '#e8f0ff'; c.beginPath(); c.ellipse(.3, .6, 1.5, .5, 0, 0, TAU); c.fill(); c.fillStyle = '#1a2048'; c.beginPath(); c.arc(2.3, -.6, 1.1, 0, TAU); c.fill(); c.fillStyle = '#3be8ff'; c.fillRect(2.5, -1, .7, .7);
       c.strokeStyle = '#04120c'; c.lineWidth = .8; c.beginPath(); c.moveTo(3.2, -.5); c.lineTo(5.8, -.1); c.stroke(); c.strokeStyle = '#b8c8d8'; c.lineWidth = .36; c.stroke();
       c.globalCompositeOperation = 'lighter'; c.globalAlpha = .7; c.fillStyle = '#3be8ff'; c.fillRect(-2.9, .7, .8, .8); c.restore(); }
-    { const x = RAIL.x0 + 12 + (RAIL.x1 - RAIL.x0 - 24) * (.5 - .5 * Math.cos(t * .11)), y = RAIL.y + 2.4, on = (t % 11) < 3.4; c.save(); c.globalAlpha = 1;                                    // поливальник на рейці
-      c.fillStyle = '#04060e'; c.fillRect(x - 3.6, y - .4, 7.2, 3.6); c.fillStyle = '#2a3468'; c.fillRect(x - 3, y, 6, 2.6); c.fillStyle = '#5a6aa0'; c.fillRect(x - 3, y, 6, .6); c.fillStyle = on ? '#7af6ff' : '#1a4a5a'; c.fillRect(x + 1.4, y + 1.1, 1, .9); c.fillStyle = '#b8c8d8'; c.fillRect(x - .6, y + 2.6, 1.2, 1.2);
-      if (on) { c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 14; i++) { const u = (t * .8 + i / 14) % 1; c.globalAlpha = (1 - u) * .55; c.fillStyle = i % 3 ? '#bff6ff' : '#ffffff'; const r = .5 + u * .9; c.fillRect(x + (hash(i, 9) - .5) * (2 + 11 * u) - r / 2, y + 4 + u * 15, r, r); } }
-      c.restore(); }
   }
-  function drawPetals(c, t) { for (const q of PET) { const a = q.land ? Math.max(0, 1 - (t - q.land) / 6) : 1; c.globalAlpha = a; c.fillStyle = q.col; const r = q.land ? 0 : Math.sin(t * 6 + q.ph); if (q.big) { c.fillStyle = '#04120c'; c.fillRect(q.x - 1.5, q.y - 1, 3 + Math.abs(r), 2); c.fillStyle = q.col; } c.fillRect(q.x - 1, q.y - .6, 2 + Math.abs(r), 1.2); } c.globalAlpha = 1; }
+  function drawPetals(c, t) { for (const q of PET) { const a = q.land ? Math.max(0, 1 - (t - q.land) / 6) : 1; c.globalAlpha = a; c.fillStyle = q.col; const r = q.land ? 0 : Math.sin(t * 6 + q.ph); if (q.big) { if (t < q.t0) continue; const ph = q.ph + q.sw * (t - q.t0), tilt = q.land ? .2 : Math.sin(ph) * .95, wd = q.land ? 1 : .35 + .65 * Math.abs(Math.cos(ph));   // пелюстка-човник: нахиляється за рухом, на краю розмаху видно ребром
+      c.save(); c.translate(q.x, q.y); c.rotate(tilt); c.fillStyle = '#04120c'; c.beginPath(); c.ellipse(0, 0, 1.9, 1.15 * wd + .45, 0, 0, TAU); c.fill(); c.fillStyle = q.col; c.beginPath(); c.ellipse(0, 0, 1.45, .8 * wd, 0, 0, TAU); c.fill(); c.globalAlpha = a * .45; c.fillStyle = '#ffffff'; c.fillRect(-.9, -.35 * wd, .9, .3); c.restore(); continue; }
+      c.fillRect(q.x - 1, q.y - .6, 2 + Math.abs(r), 1.2); } c.globalAlpha = 1; }
   /** Голодисплей на лівому краю канта: вологість (крапля + смуга), температура (стовпчик), кільце таймера поливу. Без тексту. */
   function drawPanel(c, t, LK) {
     const x = JAR.x0 + 2, y = TOP() - 32, w = 54, h = 24, a = .75 + .15 * Math.sin(t * 3), T = NX.t, n = NX.planters.PL.length;
@@ -323,7 +337,8 @@
   }
   // ---------- гості: 2 метелики по квітах удень, колібрі-бражник, нічний метелик до квітки цереуса ----------
   const BUG = {}; function bug(kind) { if (BUG[kind]) return BUG[kind]; const S = 2, cv = document.createElement('canvas'); cv.width = 20 * S; cv.height = 12 * S; const c = cv.getContext('2d'); c.scale(S, S);
-    if (kind === 'bfA' || kind === 'bfB') { const cc = kind === 'bfA' ? ['#ffb84a', '#ff6a30', '#2a1a10'] : ['#8ad8ff', '#4a6ae0', '#101a3a']; for (const sd of [-1, 1]) { c.fillStyle = cc[2]; c.beginPath(); c.ellipse(10 + sd * 4.2, 5, 4.6, 3.6, sd * .3, 0, TAU); c.fill(); c.fillStyle = cc[0]; c.beginPath(); c.ellipse(10 + sd * 4.2, 5, 3.4, 2.6, sd * .3, 0, TAU); c.fill(); c.fillStyle = cc[1]; c.beginPath(); c.ellipse(10 + sd * 3, 8, 2.4, 1.8, 0, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.fillRect(10 + sd * 5 - .5, 3.5, 1, 1); } c.fillStyle = '#101018'; c.fillRect(9.5, 2, 1, 8); }
+    const BF = { bfA: ['#ffb84a', '#ff6a30', '#2a1a10'], bfB: ['#8ad8ff', '#4a6ae0', '#101a3a'], bfC: ['#ff9ae0', '#e83a9a', '#3a1030'], bfD: ['#fff6c0', '#ffd84a', '#3a3010'] };   // (16.11) bfC, bfD — метелики арки
+    if (BF[kind]) { const cc = BF[kind]; for (const sd of [-1, 1]) { c.fillStyle = cc[2]; c.beginPath(); c.ellipse(10 + sd * 4.2, 5, 4.6, 3.6, sd * .3, 0, TAU); c.fill(); c.fillStyle = cc[0]; c.beginPath(); c.ellipse(10 + sd * 4.2, 5, 3.4, 2.6, sd * .3, 0, TAU); c.fill(); c.fillStyle = cc[1]; c.beginPath(); c.ellipse(10 + sd * 3, 8, 2.4, 1.8, 0, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.fillRect(10 + sd * 5 - .5, 3.5, 1, 1); } c.fillStyle = '#101018'; c.fillRect(9.5, 2, 1, 8); }
     if (kind === 'moth') { for (const sd of [-1, 1]) { c.fillStyle = '#2a2018'; c.beginPath(); c.ellipse(10 + sd * 4, 6, 4.4, 3, sd * .5, 0, TAU); c.fill(); c.fillStyle = '#9a8a60'; c.beginPath(); c.ellipse(10 + sd * 4, 6, 3.2, 2, sd * .5, 0, TAU); c.fill(); c.fillStyle = '#e8d8a0'; c.fillRect(10 + sd * 4 - .5, 5.5, 1, 1); } c.fillStyle = '#3a2a18'; c.fillRect(9, 3, 2, 7); }
     if (kind === 'hum' || kind === 'humW') { c.fillStyle = '#2a1a10'; c.beginPath(); c.ellipse(10, 7, 4.5, 2.4, 0, 0, TAU); c.fill(); c.fillStyle = '#8a6a3a'; c.beginPath(); c.ellipse(10, 7, 3.4, 1.6, 0, 0, TAU); c.fill(); c.fillStyle = '#ff7a30'; c.fillRect(11.5, 7.5, 2.5, 1); c.fillStyle = '#2a1a10'; c.fillRect(14.5, 6.5, 5, .8);   // тіло, помаранчеві задні крила, хоботок
       c.fillStyle = kind === 'hum' ? '#6a5a40' : '#c8b890'; c.beginPath(); c.ellipse(9, kind === 'hum' ? 3.5 : 5, 2.2, kind === 'hum' ? 3 : 1.4, .3, 0, TAU); c.fill(); }
@@ -408,7 +423,7 @@
     tap(x, y) { let best = null; for (const p of HEROES) { const top = TOP(); if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= top - p.h && y <= top) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } }
       if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; if (FLOWERS.includes(hit)) shed(best.p, NX.time, 3); return true; },
     get lastKind() { return hit; },
-    tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= HOOK_Y - 3 && y <= HOOK_Y + profile(x) + 5) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; shedHang(best.p, NX.time, 4); return true; },
+    tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= HOOK_Y - 3 && y <= HOOK_Y + profile(x) + 5) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; shedHang(best.p, NX.time, 1); return true; },
     sprite: spriteOf,
     /** Полив (Nexi, activities.js jardin): вологість повна, бутони, що чекали, одразу йдуть у розкривання; квіти «кивають» пелюстками. */
     water(t = NX.time) { HUM.v = 1; HUM.drip = 0; for (const p of LEAFY) if (!p.young && hash(Math.floor(t), p.seed) < .7) p.young = { t0: t + 20 + 40 * hash(p.seed, 5) }; for (const p of FL) { const u = ((t - p.t0) % PERIOD + PERIOD) % PERIOD / PERIOD; if (u < .15 || u >= .8) p.t0 = t - PERIOD * .15; shed(p, t, 2); } },
