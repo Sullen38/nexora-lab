@@ -32,7 +32,8 @@
   // (16.11, 22:29, власник: «зробимо на всю площину вікна, і менше розміром, і щоб були різні види; не треба таким довгим донизу — просто
   // попід верх усі види ліан») НИЗЬКА ГІРЛЯНДА на всю ширину вікна: десять видів квітучих ліан упритул (крок 23 од.), короткі батоги
   const HANG = ['petrea', 'allamanda', 'bougainvillea', 'plumbago', 'jasmine', 'campsis', 'clematis', 'quisqualis', 'lonicera', 'mandevilla']
-    .map((kind, i) => ({ kind, x: 572.5 + 45 * i, w: 28, h: 24, seed: 31 + i, hang: 1, S: 3 }));
+    .map((kind, i) => ({ kind, x: 572.5 + 45 * i, w: 28, h: 24, seed: 31 + i, hang: 1, S: 4 }));
+  const RVINE = { kind: '_railvine', x: (552 + 998) / 2, w: 998 - 552, h: 6, seed: 77, hang: 1, S: 4 };   // лоза вздовж рейки — один спрайт
   // ---------- палітри ----------
   const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0', silver: '#b8c8d8', sage: '#7aa890', dusty: '#6a9a98', gray: '#98ac9c', grayD: '#5a7064', moss: '#3a6a30', copper: '#c8803a', copperHi: '#f0b070', terra: '#b05a3a', terraHi: '#d88a5a', teal: '#2ac8c0', navy: '#1a2048', navyHi: '#2a3468', magenta: '#e83a9a', sky: '#8ac8ff' };
   const HEX = Object.values(PAL).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
@@ -41,42 +42,66 @@
   const bud = (c, x, y, st, col) => { if (st >= .3) return false; const k = .6 + st; c.fillStyle = PAL.out; c.beginPath(); c.ellipse(x, y, 1.6 * k + 1, 2.2 * k + 1, 0, 0, TAU); c.fill(); c.fillStyle = PAL.d3; c.beginPath(); c.ellipse(x, y, 1.6 * k, 2.2 * k, 0, 0, TAU); c.fill(); c.fillStyle = col; c.beginPath(); c.ellipse(x, y - 1.2 * k, .9 * k, 1.1 * k, 0, 0, TAU); c.fill(); return true; };
   const pt = (c, x, y, col) => { if (c.__pts) c.__pts.push([x, y, col]); };
   // ---------- малювання героїв (полотно 2 px/од.) ----------
-  /** Довжина батогів гірлянди над вікном у точці X кімнати: коротка бахрома 7–18 од. з легкою хвилею. */
-  const profile = X => 12.5 + 3.5 * Math.sin(X * .083) + 2 * Math.sin(X * .19 + 1);
-  /** Квітка виду у вузлі батога N {x, y, i, v, back}; st — стадія (бутон → повний цвіт). pt() запам'ятовує центр і колір — звідти летять пелюстки. */
+  /** (16.11, 23:10, власник: «можемо ми їх краще намалювати?» → «так») ВДАЧА ВИДУ — у кожної ліани свій силует, листя й зелень:
+   *  n — пагонів, len — їх довжина від/до, sp — розліт убік, py — дуга (більше — спершу вбік, тоді донизу), wav — хвиля,
+   *  leaf — форма листка (oval | lance | round — парні | tri — трійчастий | pinn — перистий), lk — розмір, ld — крок листя,
+   *  g — три тони зелені (тінь, тіло, світло), fl — квіти 'a' уздовж пагона чи 't' лише на кінці, fd — крок квітів. */
+  const HAB = {
+    petrea:        { n: 6, len: [3, 8],   sp: 8,  py: 1.3, wav: .5,  leaf: 'oval',  lk: 1.2,  ld: 2, g: ['d1', 'd2', 'd3'],           fl: 't', fd: 9 },
+    allamanda:     { n: 6, len: [6, 17],  sp: 6,  py: 1.1, wav: 1,   leaf: 'lance', lk: 1.15, ld: 2, g: ['d1', 'd2', 'hi'],           fl: 'a', fd: 4 },
+    bougainvillea: { n: 8, len: [7, 18],  sp: 9,  py: 1.5, wav: 1.3, leaf: 'oval',  lk: .75,  ld: 3, g: ['d0', 'd1', 'd2'],           fl: 'a', fd: 2 },
+    plumbago:      { n: 6, len: [5, 17],  sp: 7,  py: 1.1, wav: 1,   leaf: 'oval',  lk: .8,   ld: 2, g: ['grayD', 'dusty', 'sage'],   fl: 't', fd: 9 },
+    jasmine:       { n: 7, len: [8, 21],  sp: 6,  py: 1,   wav: 1.7, leaf: 'pinn',  lk: .8,   ld: 2, g: ['d1', 'd2', 'd3'],           fl: 'a', fd: 3 },
+    campsis:       { n: 5, len: [6, 16],  sp: 8,  py: 1.2, wav: .8,  leaf: 'pinn',  lk: 1.35, ld: 3, g: ['d1', 'd2', 'hi'],           fl: 't', fd: 9 },
+    clematis:      { n: 6, len: [8, 19],  sp: 7,  py: 1.1, wav: 1.9, leaf: 'tri',   lk: .95,  ld: 2, g: ['d1', 'd2', 'hi'],           fl: 'a', fd: 4 },
+    quisqualis:    { n: 5, len: [6, 15],  sp: 8,  py: 1.2, wav: .9,  leaf: 'oval',  lk: 1.1,  ld: 2, g: ['d1', 'd2', 'd3'],           fl: 't', fd: 9 },
+    lonicera:      { n: 6, len: [8, 18],  sp: 7,  py: 1.1, wav: 1.4, leaf: 'round', lk: 1.1,  ld: 2, g: ['grayD', 'sage', 'gray'],    fl: 'a', fd: 5 },
+    mandevilla:    { n: 6, len: [8, 18],  sp: 8,  py: 1.1, wav: 1.6, leaf: 'oval',  lk: 1.4,  ld: 3, g: ['d0', 'd1', 'd3'],           fl: 'a', fd: 4 },
+  };
+  /** Еліпси з контуром: спершу всі контури, тоді всі заливки — сусідні пелюстки не ріжуть одна одну. L = [x, y, rx, ry, rot, колір]. */
+  const EL = (c, L, o = .55) => { for (const pass of [0, 1]) for (const [x, y, rx, ry, rot, col] of L) { c.fillStyle = pass ? col : PAL.out; c.beginPath(); c.ellipse(x, y, rx + (pass ? 0 : o), ry + (pass ? 0 : o), rot || 0, 0, TAU); c.fill(); } };
+  /** Гостра пластинка (листок чи пелюстка) від (0,0) уздовж осі x: довжина L, піврозмах Wd. */
+  const blade = (c, L, Wd) => { c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(L * .45, -Wd, L, 0); c.quadraticCurveTo(L * .45, Wd, 0, 0); c.closePath(); };
+  const tube = (c, x0, y0, x1, y1, w, col, bend = 0) => { const mx = (x0 + x1) / 2 + bend, my = (y0 + y1) / 2; for (const pass of [0, 1]) { c.strokeStyle = pass ? col : PAL.out; c.lineWidth = w + (pass ? 0 : 1.1); c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(mx, my, x1, y1); c.stroke(); } };
+  /** Квітка виду у вузлі N {x, y, i, v, back, sd}; st — стадія (бутон → повний цвіт). pt() запам'ятовує центр і колір — звідти летять пелюстки. */
   const FLW = {
-    petrea(c, N, st) { if (bud(c, N.x, N.y + 2, st, PAL.lilac)) return; const n = 3 + Math.round(5 * st);                                              // бузкове гроно, що звужується донизу
-      for (const pass of [0, 1]) for (let j = 0; j < n; j++) { const x = N.x + Math.sin(j * 1.9 + N.i) * 1.5 * (1 - j / 9), y = N.y + 1.5 + j * 1.5, r = 1.9 * (1 - j / 11); c.fillStyle = pass ? (N.back ? PAL.purple : (j % 3 ? PAL.lilac : PAL.white)) : PAL.out; c.beginPath(); c.arc(x, y, r + (pass ? 0 : 1), 0, TAU); c.fill(); }
-      pt(c, N.x, N.y + 4, PAL.lilac); },
-    bougainvillea(c, N, st) { if (bud(c, N.x, N.y, st, PAL.magenta)) return; const m = .55 + .45 * st;                                                 // три гострі приквітки навколо кремової серединки
-      for (const pass of [0, 1]) for (let j = 0; j < 3; j++) { const a = j / 3 * TAU + N.i; c.save(); c.translate(N.x + Math.cos(a) * 1.5 * m, N.y + Math.sin(a) * 1.5 * m); c.rotate(a); c.fillStyle = pass ? (N.back ? PAL.red : (j ? PAL.magenta : PAL.pink)) : PAL.out; c.beginPath(); c.ellipse(0, 0, 2.5 * m + (pass ? 0 : 1), 1.8 * m + (pass ? 0 : 1), 0, 0, TAU); c.fill(); c.restore(); }
-      c.fillStyle = PAL.cream; c.fillRect(N.x - .7, N.y - .7, 1.4, 1.4); pt(c, N.x, N.y, PAL.magenta); },
-    jasmine(c, N, st) { if (bud(c, N.x, N.y, st, PAL.pink)) return; const m = .55 + .45 * st;                                                          // біла п'ятипелюсткова зірочка
-      for (const pass of [0, 1]) for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.i * .7; c.save(); c.translate(N.x + Math.cos(a) * 1.9 * m, N.y + Math.sin(a) * 1.9 * m); c.rotate(a); c.fillStyle = pass ? (N.back ? PAL.silver : PAL.white) : PAL.out; c.beginPath(); c.ellipse(0, 0, 1.7 * m + (pass ? 0 : .9), .95 * m + (pass ? 0 : .9), 0, 0, TAU); c.fill(); c.restore(); }
-      c.fillStyle = PAL.yellow; c.fillRect(N.x - .7, N.y - .7, 1.4, 1.4); pt(c, N.x, N.y, PAL.white); },
-    clematis(c, N, st) { if (N.i % 2 && N.v % 2) return; if (bud(c, N.x, N.y, st, PAL.blue)) return; const m = .55 + .45 * st;                          // велика синя зірка з шести пелюсток
-      for (const pass of [0, 1]) for (let j = 0; j < 6; j++) { const a = j / 6 * TAU + N.v; c.save(); c.translate(N.x + Math.cos(a) * 2.3 * m, N.y + Math.sin(a) * 2.3 * m); c.rotate(a); c.fillStyle = pass ? (N.back ? PAL.purple : PAL.blue) : PAL.out; c.beginPath(); c.ellipse(0, 0, 2.5 * m + (pass ? 0 : 1), 1.15 * m + (pass ? 0 : 1), 0, 0, TAU); c.fill(); if (pass && !N.back) { c.fillStyle = PAL.lilac; c.fillRect(-1.6 * m, -.25, 3 * m, .5); } c.restore(); }
-      c.fillStyle = PAL.out; c.beginPath(); c.arc(N.x, N.y, 1.5, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.fillRect(N.x - .8, N.y - .8, 1.6, 1.6); pt(c, N.x, N.y, PAL.blue); },
-    campsis(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.orange)) return; const m = .55 + .45 * st;                                                    // дві помаранчеві сурми з червоним розтрубом
-      for (const sd of [-1, 1]) { const ex = N.x + sd * 3.2 * m, ey = N.y + 4.6 * m; for (const pass of [0, 1]) { c.strokeStyle = pass ? PAL.orange : PAL.out; c.lineWidth = (pass ? 1.9 : 3.9) * m; c.beginPath(); c.moveTo(N.x, N.y); c.lineTo(ex, ey); c.stroke(); c.fillStyle = pass ? (N.back ? PAL.terra : PAL.red) : PAL.out; c.beginPath(); c.ellipse(ex, ey, 2.4 * m + (pass ? 0 : 1), 1.7 * m + (pass ? 0 : 1), sd * .6, 0, TAU); c.fill(); }
-        c.fillStyle = PAL.yellow; c.fillRect(ex - .7, ey - .5, 1.4, 1.1); }
-      pt(c, N.x, N.y + 3, PAL.orange); },
-    allamanda(c, N, st) { if (N.i % 2 && N.v % 2) return; if (bud(c, N.x, N.y, st, PAL.yellow)) return; const m = .55 + .45 * st;                       // золота сурма: п'ять широких пелюсток, помаранчевий зів
-      for (const pass of [0, 1]) for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.v; c.fillStyle = pass ? (N.back ? PAL.orange : PAL.yellow) : PAL.out; c.beginPath(); c.arc(N.x + Math.cos(a) * 1.7 * m, N.y + Math.sin(a) * 1.7 * m, 1.55 * m + (pass ? 0 : 1), 0, TAU); c.fill(); }
-      c.fillStyle = PAL.orange; c.beginPath(); c.arc(N.x, N.y, 1.1 * m, 0, TAU); c.fill(); c.fillStyle = PAL.red; c.fillRect(N.x - .4, N.y - .4, .8, .8); pt(c, N.x, N.y, PAL.yellow); },
-    plumbago(c, N, st) { if (bud(c, N.x, N.y, st, PAL.sky)) return; const m = .55 + .45 * st;                                                         // блакитна кулька з дрібних п'ятипелюсткових квіточок
-      for (const pass of [0, 1]) for (let j = 0; j < 6; j++) { const a = j / 6 * TAU + N.i, r = j ? 1.9 * m : 0; c.fillStyle = pass ? (N.back || j % 2 ? PAL.sky : PAL.white) : PAL.out; c.beginPath(); c.arc(N.x + Math.cos(a) * r, N.y + Math.sin(a) * r * .9, 1.2 * m + (pass ? 0 : .9), 0, TAU); c.fill(); }
-      c.fillStyle = PAL.blue; for (let j = 0; j < 6; j++) { const a = j / 6 * TAU + N.i, r = j ? 1.9 * m : 0; c.fillRect(N.x + Math.cos(a) * r - .3, N.y + Math.sin(a) * r * .9 - .3, .6, .6); } pt(c, N.x, N.y, PAL.sky); },
-    quisqualis(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.red)) return; const m = .55 + .45 * st, cols = [PAL.white, PAL.pink, PAL.red, PAL.pink, PAL.red];   // гроно зірочок, що з віком міняють колір: біла → рожева → червона
-      for (let j = 0; j < 5; j++) { const x = N.x + (j - 2) * 1.5 * m, y = N.y + 1.2 + Math.abs(j - 2) * -.5 + (j % 2) * 1.6; c.strokeStyle = PAL.out; c.lineWidth = 1.6; c.beginPath(); c.moveTo(N.x, N.y); c.lineTo(x, y); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .6; c.stroke();
-        for (const pass of [0, 1]) for (let q = 0; q < 5; q++) { const a = q / 5 * TAU + j; c.fillStyle = pass ? cols[j] : PAL.out; c.beginPath(); c.arc(x + Math.cos(a) * .9 * m, y + Math.sin(a) * .9 * m, .7 * m + (pass ? 0 : .8), 0, TAU); c.fill(); } }
-      pt(c, N.x, N.y + 1.5, PAL.red); },
-    lonicera(c, N, st) { if (bud(c, N.x, N.y, st, PAL.pink)) return; const m = .55 + .45 * st;                                                          // пучок тонких трубочок: рожева основа, кремовий розтруб із тичинками
-      for (const pass of [0, 1]) for (let j = 0; j < 5; j++) { const a = Math.PI * (.12 + .76 * j / 4), ex = N.x + Math.cos(a) * 3.4 * m, ey = N.y + Math.sin(a) * 3.2 * m; c.strokeStyle = pass ? (j % 2 ? PAL.pink : PAL.cream) : PAL.out; c.lineWidth = (pass ? 1 : 2.8) * m; c.beginPath(); c.moveTo(N.x, N.y); c.lineTo(ex, ey); c.stroke(); c.fillStyle = pass ? (N.back ? PAL.yellow : PAL.cream) : PAL.out; c.beginPath(); c.arc(ex, ey, 1.05 * m + (pass ? 0 : .9), 0, TAU); c.fill(); if (pass) { c.fillStyle = PAL.yellow; c.fillRect(ex - .3, ey + .5 * m, .6, .9 * m); } }
-      pt(c, N.x, N.y + 2, PAL.cream); },
-    mandevilla(c, N, st) { if (N.i % 2 && N.v % 2) return; if (bud(c, N.x, N.y, st, PAL.pink)) return; const m = .55 + .45 * st;                        // рожевий «вітрячок» із п'яти закручених пелюсток, жовтий зів
-      for (const pass of [0, 1]) for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.v * .8; c.save(); c.translate(N.x + Math.cos(a) * 1.8 * m, N.y + Math.sin(a) * 1.8 * m); c.rotate(a + .5); c.fillStyle = pass ? (N.back ? PAL.magenta : PAL.pink) : PAL.out; c.beginPath(); c.ellipse(0, 0, 2 * m + (pass ? 0 : 1), 1.35 * m + (pass ? 0 : 1), 0, 0, TAU); c.fill(); c.restore(); }
-      c.fillStyle = PAL.magenta; c.beginPath(); c.arc(N.x, N.y, 1 * m, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.fillRect(N.x - .5, N.y - .5, 1, 1); pt(c, N.x, N.y, PAL.pink); },
+    petrea(c, N, st) { if (bud(c, N.x, N.y + 2, st, PAL.lilac)) return; const n = 5 + Math.round(7 * st), L = [];                                       // довге бузкове гроно, що звужується донизу
+      tube(c, N.x, N.y, N.x + Math.sin(N.v) * .8, N.y + n * 1.25, .5, PAL.stem);
+      for (let j = 0; j < n; j++) { const f = j / n; L.push([N.x + (j % 2 ? 1 : -1) * 1.25 * (1 - f * .7) + Math.sin(j * 1.3 + N.v) * .35 + Math.sin(N.v) * .8 * f, N.y + 1.2 + j * 1.25, 1.15 * (1 - f * .45), 1.15 * (1 - f * .45), 0, N.back ? PAL.purple : (j % 4 === 1 ? PAL.white : PAL.lilac)]); }
+      EL(c, L); c.fillStyle = N.back ? PAL.lilac : PAL.purple; for (const q of L) if (q[2] > .8) c.fillRect(q[0] - .25, q[1] - .25, .5, .5);
+      pt(c, N.x, N.y + n * .7, PAL.lilac); },
+    allamanda(c, N, st) { if (bud(c, N.x, N.y, st, PAL.yellow)) return; const m = .6 + .4 * st, L = [];                                               // золота сурма: п'ять круглих лопатей вітрячком
+      for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.v; L.push([N.x + Math.cos(a) * 1.65 * m, N.y + Math.sin(a) * 1.65 * m, 1.75 * m, 1.3 * m, a + .6, N.back ? PAL.copperHi : (j === 3 ? PAL.cream : PAL.yellow)]); }
+      EL(c, L); c.fillStyle = PAL.orange; c.beginPath(); c.arc(N.x, N.y, .95 * m, 0, TAU); c.fill(); c.fillStyle = PAL.red; c.fillRect(N.x - .3, N.y - .3, .6, .6); pt(c, N.x, N.y, PAL.yellow); },
+    bougainvillea(c, N, st) { if (bud(c, N.x, N.y, st, PAL.magenta)) return; const m = .6 + .4 * st, L = [];                                           // три паперові приквітки навколо кремових квіточок
+      for (let j = 0; j < 3; j++) { const a = j / 3 * TAU + N.i * 1.3 + N.v; L.push([N.x + Math.cos(a) * 1.25 * m, N.y + Math.sin(a) * 1.25 * m, 1.9 * m, 1.3 * m, a, N.back ? PAL.red : (j ? PAL.magenta : PAL.pink)]); }
+      EL(c, L); c.fillStyle = PAL.cream; c.fillRect(N.x - .5, N.y - .5, .5, .5); c.fillRect(N.x + .1, N.y, .5, .5); pt(c, N.x, N.y, PAL.magenta); },
+    plumbago(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.sky)) return; const n = 4 + Math.round(5 * st), L = [];                                      // блакитна куля з дрібних п'ятипелюсткових квіток
+      for (let j = 0; j < n; j++) { const rr = 3 * Math.sqrt(j / n), a = j * 2.4 + N.v; L.push([N.x + Math.cos(a) * rr, N.y + 1.8 + Math.sin(a) * rr * .85, 1.15, 1.15, 0, N.back ? PAL.blue : (j % 3 === 1 ? PAL.white : PAL.sky)]); }
+      EL(c, L); c.fillStyle = N.back ? PAL.sky : PAL.blue; for (const q of L) c.fillRect(q[0] - .25, q[1] - .25, .5, .5); pt(c, N.x, N.y + 1.8, PAL.sky); },
+    jasmine(c, N, st) { EL(c, [[N.x - N.sd * 1.7, N.y + 1.5, .5, .95, N.sd * .4, PAL.pink]], .45); if (bud(c, N.x, N.y, st, PAL.pink)) return; const m = .6 + .4 * st, L = [];   // біла зірочка з вузьких пелюсток і рожевий бутон поруч
+      for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.i * .7; L.push([N.x + Math.cos(a) * 1.55 * m, N.y + Math.sin(a) * 1.55 * m, 1.35 * m, .62 * m, a, N.back ? PAL.silver : PAL.white]); }
+      EL(c, L, .5); c.fillStyle = PAL.yellow; c.fillRect(N.x - .4, N.y - .4, .8, .8); pt(c, N.x, N.y, PAL.white); },
+    campsis(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.orange)) return; const m = .6 + .4 * st, A = st > .6 ? [-.75, .05, .8] : [-.5, .5], E = [];   // пучок помаранчевих сурм із червоним розтрубом
+      for (const a of A) { const l = (4.4 + (a === .05 ? 1 : 0)) * m, ex = N.x + Math.sin(a) * l, ey = N.y + Math.cos(a) * l; tube(c, N.x, N.y, ex, ey, 1.25 * m, PAL.orange, Math.sin(a) * .8); E.push([ex, ey, 1.75 * m, 1.25 * m, -a, N.back ? PAL.terra : PAL.red]); }
+      EL(c, E); c.fillStyle = PAL.yellow; for (const q of E) { c.beginPath(); c.ellipse(q[0], q[1], .8 * m, .5 * m, q[4], 0, TAU); c.fill(); } pt(c, N.x, N.y + 3, PAL.orange); },
+    clematis(c, N, st) { if (bud(c, N.x, N.y, st, PAL.blue)) return; const m = .6 + .4 * st;                                                            // велика зірка з шести гострих пелюсток зі світлою смужкою
+      for (const pass of [0, 1]) for (let j = 0; j < 6; j++) { c.save(); c.translate(N.x, N.y); c.rotate(j / 6 * TAU + N.v); blade(c, 3.5 * m, 1.15 * m); if (!pass) { c.strokeStyle = PAL.out; c.lineWidth = 1.1; c.stroke(); } else { c.fillStyle = N.back ? PAL.purple : PAL.blue; c.fill(); c.strokeStyle = N.back ? PAL.blue : PAL.lilac; c.lineWidth = .32; c.beginPath(); c.moveTo(.9, 0); c.lineTo(2.9 * m, 0); c.stroke(); } c.restore(); }
+      EL(c, [[N.x, N.y, .95, .95, 0, PAL.cream]], .45); c.fillStyle = PAL.yellow; c.fillRect(N.x - .35, N.y - .35, .7, .7); pt(c, N.x, N.y, PAL.blue); },
+    quisqualis(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.pink)) return; const n = 3 + Math.round(2 * st), COL = [PAL.white, PAL.pink, PAL.red, PAL.pink, PAL.red, PAL.white];   // гроно на довгих трубочках: білі, рожеві й червоні разом
+      const F = []; for (let j = 0; j < n; j++) { const a = (j / (n - 1) - .5) * 2.1 + Math.sin(N.v + j) * .15, l = 4 + (j % 2) * 1.6; F.push([N.x + Math.sin(a) * l, N.y + Math.cos(a) * l * .9 + 1, a, COL[(j + N.v) % 6]]); }
+      for (const f of F) tube(c, N.x, N.y, f[0], f[1], .45, PAL.pink, Math.sin(f[2]) * .6);
+      for (const f of F) { const L = []; for (let k = 0; k < 5; k++) { const a = k / 5 * TAU + f[2]; L.push([f[0] + Math.cos(a) * 1.05, f[1] + Math.sin(a) * 1.05, 1.05, .62, a, N.back && f[3] === PAL.white ? PAL.pink : f[3]]); } EL(c, L, .45); c.fillStyle = PAL.cream; c.fillRect(f[0] - .25, f[1] - .25, .5, .5); }
+      pt(c, N.x, N.y + 3.5, PAL.pink); pt(c, N.x, N.y + 3.5, PAL.red); },
+    lonicera(c, N, st) { if (bud(c, N.x, N.y + 1, st, PAL.cream)) return; const m = .6 + .4 * st, n = 4;                                               // віночок тонких кремових трубочок із тичинками
+      for (let j = 0; j < n; j++) { const a = (j / (n - 1) - .5) * 2.2, l = 3.9 * m, ex = N.x + Math.sin(a) * l, ey = N.y + .6 + Math.cos(a) * l * .85, col = N.back ? PAL.yellow : (j % 2 ? PAL.cream : PAL.yellow);
+        tube(c, N.x, N.y + .4, ex, ey, .9 * m, col, Math.sin(a) * 1.1); EL(c, [[ex, ey, 1.25 * m, .8 * m, -a, j % 2 ? PAL.white : PAL.cream]], .5); if (N.back) continue;
+        c.strokeStyle = PAL.white; c.lineWidth = .25; c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex + Math.sin(a) * 1.5, ey + Math.cos(a) * 1.3); c.stroke(); c.fillStyle = PAL.yellow; c.fillRect(ex + Math.sin(a) * 1.5 - .25, ey + Math.cos(a) * 1.3 - .25, .5, .5); }
+      pt(c, N.x, N.y + 2.5, PAL.cream); },
+    mandevilla(c, N, st) { if (bud(c, N.x, N.y, st, PAL.pink)) return; const m = .6 + .4 * st, L = [];                                                 // велика рожева лійка з жовтим горлом
+      for (let j = 0; j < 5; j++) { const a = j / 5 * TAU + N.v * .9; L.push([N.x + Math.cos(a) * 1.75 * m, N.y + Math.sin(a) * 1.75 * m, 1.95 * m, 1.5 * m, a + .7, N.back ? PAL.magenta : PAL.pink]); }
+      EL(c, L); if (!N.back) { c.fillStyle = PAL.white; c.beginPath(); c.ellipse(L[3][0] - .3, L[3][1] - .4, .8 * m, .4 * m, .4, 0, TAU); c.fill(); }
+      c.fillStyle = PAL.magenta; c.beginPath(); c.arc(N.x, N.y, 1.15 * m, 0, TAU); c.fill(); c.fillStyle = PAL.yellow; c.beginPath(); c.arc(N.x, N.y, .6 * m, 0, TAU); c.fill(); pt(c, N.x, N.y, PAL.pink); },
   };
   const DRAW = {
     /** Філодендрон Селло: товсте стебло-«стовбурець», 7 великих перисто-розсічених листків: кожен — середня жилка й по 6 округлих
@@ -192,24 +217,37 @@
       const m = .5 + .5 * st; for (const pass of [0, 1]) for (let f = 0; f < 6; f++) { const a = f / 6 * TAU + .3, fx = cx + Math.cos(a) * 6.5, fy = by - H * .66 + Math.sin(a) * 3.5; if (st < .3) { if (pass) bud(c, fx, fy, st, f % 2 ? PAL.pink : PAL.cream); continue; } for (let k = 0; k < 5; k++) { const b = k / 5 * TAU + f; c.fillStyle = pass ? (f % 2 ? PAL.pink : PAL.cream) : PAL.out; c.beginPath(); c.arc(fx + Math.cos(b) * 1.9 * m, fy + Math.sin(b) * 1.9 * m, 1.5 * m + (pass ? 0 : 1), 0, TAU); c.fill(); } if (pass) { c.fillStyle = PAL.yellow; c.beginPath(); c.arc(fx, fy, 1.1, 0, TAU); c.fill(); pt(c, fx, fy, f % 2 ? PAL.pink : PAL.cream); } }
     },
     // ---------- (· 39) висячі: малюються від ГОРИ (y 0 — гачок), кашпо зверху, рослина звисає ----------
-    /** (16.11, 21:36, чат «Кімната — правки»; власник обрав «квітучу арку»: «реалізовуй це все, роби відразу хорошу якість, і щоб
-     *  пелюстки падали відповідного кольору») КВІТУЧА АРКА над вікном замість окремих вазонів: уздовж стельової рейки йде здерев'яніла
-     *  лоза з листям, з неї нерівними пасмами звисають батоги — ДОВГІ з боків вікна, короткі посередині (profile), тож краєвид у
-     *  квітковій рамці, а кільце планети й вивіска міста відкриті. П'ять видів переходять один в одного зліва направо: петрея (бузкові
-     *  грона), бугенвілія (малинові приквітки), жасмин (білі зірочки), клематис (сині зірки), кампсис (помаранчеві сурми). Кожен вид —
-     *  своя секція-спрайт (3 px/од.), зі стадією цвітіння st (0 — бутони, 1 — повний цвіт). FLW[вид] малює квітку у вузлі батога. */
-    _garland(c, W, H, seed, st, kind) { const P = HANG.find(q => q.seed === seed), gx0 = P.x - W / 2, [lr, c0, c1, c2] = ({ petrea: [1.8, PAL.d1, PAL.d2, PAL.d3], bougainvillea: [1.7, PAL.d1, PAL.d2, PAL.hi], jasmine: [1.4, PAL.d1, PAL.d2, PAL.d3], clematis: [1.7, PAL.d1, PAL.d2, PAL.hi], campsis: [1.7, PAL.d1, PAL.d2, PAL.d3], allamanda: [1.8, PAL.d1, PAL.d2, PAL.hi], plumbago: [1.4, PAL.d1, PAL.d2, PAL.d3], quisqualis: [1.7, PAL.d1, PAL.d2, PAL.d3], lonicera: [1.6, PAL.d1, PAL.d2, PAL.hi], mandevilla: [1.8, PAL.d0, PAL.d1, PAL.d3] })[kind];
-      c.lineCap = 'round'; c.lineJoin = 'round'; const leaf = (x, y, sd, back, k = 1) => { for (const pass of [0, 1]) { c.save(); c.translate(x + sd * (lr * k + .5), y + .5); c.rotate(sd * .65); c.fillStyle = pass ? (back ? c0 : c1) : PAL.out; c.beginPath(); c.ellipse(0, 0, lr * 1.25 * k + (pass ? 0 : 1), lr * .7 * k + (pass ? 0 : 1), 0, 0, TAU); c.fill(); if (pass && !back) { c.fillStyle = c2; c.fillRect(-lr * .8 * k, -.25, lr * 1.6 * k, .5); } c.restore(); } };
-      const n = Math.round(W / 4.6), st0 = []; for (let i = 0; i < n; i++) { const x0 = (i + .5) * W / n + (hash(seed, i) - .5) * 2.4, Lm = profile(gx0 + x0), len = Math.max(5, Lm * (i % 3 === 1 ? 1.15 : .55 + .4 * hash(seed, i + 20))), K = Math.max(4, Math.round(len / 2.8)), pts = [];
-        for (let k = 0; k <= K; k++) { const t = k / K; pts.push([x0 + Math.sin(t * 4.5 + i * 1.7 + seed) * (.5 + 1.7 * t), 2.6 + len * t]); } st0.push({ pts, back: i % 2 === 0, i }); }
-      st0.sort((p, q) => q.back - p.back); const nodes = [];
-      for (const V of st0) { c.strokeStyle = PAL.out; c.lineWidth = 2.5; c.beginPath(); V.pts.forEach((q, k) => k ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); c.strokeStyle = V.back ? PAL.stem : PAL.stemHi; c.lineWidth = 1; c.stroke();
-        for (let k = 1; k < V.pts.length; k++) { const [x, y] = V.pts[k], sd = (k + V.i) % 2 ? -1 : 1; if (y > 5.5 && k % 3 === ((V.i * 2) % 3)) nodes.push({ x: x - sd * 1.1, y, i: k, v: V.i, back: V.back }); else leaf(x, y, sd, V.back); }
-        const e = V.pts[V.pts.length - 1]; c.strokeStyle = PAL.out; c.lineWidth = 2; c.beginPath(); c.moveTo(e[0], e[1]); c.quadraticCurveTo(e[0] + 1.6, e[1] + 2, e[0] + .4, e[1] + 3.2); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .7; c.stroke(); }   // вусик на кінці
-      const top = []; for (let x = -3; x <= W + 3; x += 2) top.push([x, 2.3 + Math.sin((gx0 + x) * .21) * 1.1]);                                                                                     // здерев'яніла лоза вздовж рейки
-      c.strokeStyle = PAL.out; c.lineWidth = 3.6; c.beginPath(); top.forEach((q, k) => k ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); c.strokeStyle = PAL.bark; c.lineWidth = 2; c.stroke(); c.strokeStyle = PAL.barkHi; c.lineWidth = .6; c.beginPath(); top.forEach((q, k) => k ? c.lineTo(q[0], q[1] - .5) : c.moveTo(q[0], q[1] - .5)); c.stroke();
-      for (let x = 1, k = 0; x < W; x += 3.1, k++) leaf(x, 2.3 + Math.sin((gx0 + x) * .21) * 1.1 + (k % 2 ? 1.3 : -1.3), k % 2 ? 1 : -1, k % 3 === 0, .9);
-      nodes.sort((p, q) => q.back - p.back); for (const N of nodes) FLW[kind](c, N, st); },
+    /** (16.11, 23:10) КУЩ ЛІАНИ над вікном (спрайт 4 px/од., гачок — центр верху): від вузла під кліпсою розходяться пагони за вдачею
+     *  виду (HAB) — свій силует, своє листя, своя зелень; квіти FLW[вид] уздовж пагонів чи на кінцях, зі стадією st (0 — бутони,
+     *  1 — повний цвіт); на вільних кінцях — вусики. Над пагонами — шапка листя, що ховає вузол. */
+    _garland(c, W, H0, seed, st, kind) { const H = HAB[kind], G = H.g.map(k => PAL[k]), cx = W / 2; c.lineCap = 'round'; c.lineJoin = 'round';
+      const one = (L, Wd, back) => { blade(c, L, Wd); c.strokeStyle = PAL.out; c.lineWidth = 1.1; c.stroke(); c.fillStyle = back ? G[0] : G[1]; c.fill(); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(L * .45, -Wd, L, 0); c.closePath(); c.fillStyle = back ? G[1] : G[2]; c.fill(); c.strokeStyle = back ? PAL.out : G[0]; c.lineWidth = .28; c.beginPath(); c.moveTo(.3, 0); c.lineTo(L * .85, 0); c.stroke(); };
+      const leaf = (x, y, ang, back, k = 1, type = H.leaf) => { const s = H.lk * k; c.save(); c.translate(x, y); c.rotate(ang);
+        if (type === 'oval') one(4.2 * s, 1.7 * s, back); else if (type === 'lance') one(5.4 * s, 1.15 * s, back);
+        else if (type === 'round') { one(2.9 * s, 2 * s, back); c.rotate(Math.PI); one(2.9 * s, 2 * s, back); }
+        else if (type === 'tri') { c.strokeStyle = PAL.out; c.lineWidth = .9; c.beginPath(); c.moveTo(0, 0); c.lineTo(1.6 * s, 0); c.stroke(); c.strokeStyle = G[1]; c.lineWidth = .35; c.stroke(); c.translate(1.6 * s, 0); for (const a of [-.75, .75, 0]) { c.save(); c.rotate(a); one(3.3 * s, 1 * s, back); c.restore(); } }
+        else { const R = 5.2 * s; c.strokeStyle = PAL.out; c.lineWidth = .9; c.beginPath(); c.moveTo(0, 0); c.lineTo(R, 0); c.stroke(); c.strokeStyle = G[1]; c.lineWidth = .35; c.stroke(); for (let j = 1; j <= 3; j++) for (const sd of [-1, 1]) { c.save(); c.translate(R * j / 3.6, 0); c.rotate(sd * 1.05); one(2.1 * s, .8 * s, back); c.restore(); } c.save(); c.translate(R, 0); one(2.2 * s, .8 * s, back); c.restore(); }
+        c.restore(); };
+      const S0 = [], nodes = []; for (let i = 0; i < H.n; i++) { const u = H.n > 1 ? i / (H.n - 1) * 2 - 1 : 0, r = hash(seed, i), len = H.len[0] + (H.len[1] - H.len[0]) * (1 - Math.abs(u) * .25) * (.1 + .9 * hash(seed * 3, i * 7 + 2)), K = Math.max(4, Math.round(len / 1.7)), sx = cx + u * 5.5, dx = u * H.sp + (r - .5) * 2, pts = [];
+        for (let k = 0; k <= K; k++) { const t = k / K; pts.push([sx + dx * (1 - (1 - t) * (1 - t)) + Math.sin(t * 4.2 + i * 1.7 + seed) * H.wav * t, 2.4 + len * Math.pow(t, H.py)]); } S0.push({ pts, back: i % 2 === 0, i, u }); }
+      S0.sort((p, q) => q.back - p.back);
+      for (const V of S0) { c.strokeStyle = PAL.out; c.lineWidth = 1.5; c.beginPath(); V.pts.forEach((q, k) => k ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); c.strokeStyle = V.back ? PAL.stem : PAL.stemHi; c.lineWidth = .55; c.stroke();
+        const K = V.pts.length - 1, endFl = H.fl === 't' || V.i % 2 === 1;
+        for (let k = 1; k <= K; k++) { const [x, y] = V.pts[k], sd = (k + V.i) % 2 ? -1 : 1, isFl = H.fl === 'a' ? (k >= 2 && k < K && (k + V.i) % H.fd === 0) : false;
+          if (k === K) { if (endFl) nodes.push({ x, y, i: k, v: V.i, back: V.back, sd }); continue; }
+          if (isFl) nodes.push({ x: x - sd * .9, y, i: k, v: V.i, back: V.back, sd }); else if (k % H.ld === 0 || H.ld === 2 && H.fl === 't') leaf(x, y, (sd > 0 ? .55 : Math.PI - .55) + (hash(seed + V.i, k) - .5) * .5, V.back, .8 + .3 * hash(seed + k, V.i)); }
+        if (!endFl) { const e = V.pts[K]; c.strokeStyle = PAL.out; c.lineWidth = 1.2; c.beginPath(); c.moveTo(e[0], e[1]); c.bezierCurveTo(e[0] + 1.6, e[1] + 1.6, e[0] + 1.8, e[1] + 3.4, e[0] + .4, e[1] + 3.2); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .4; c.stroke(); } }   // вусик на вільному кінці
+      const CN = H.leaf === 'pinn' || H.leaf === 'tri' ? 7 : 9; for (const back of [true, false]) for (let j = 0; j < CN; j++) { if ((j % 2 === 0) !== back) continue; const f = j / (CN - 1), a = Math.PI * (.2 + .6 * f) + (hash(seed, j + 40) - .5) * .4; leaf(cx + (f - .5) * 10, 2.4 + Math.sin(f * Math.PI) * .6, a, back, .95); }   // шапка листя над вузлом
+      EL(c, [[cx, 1.7, 2.2, 1.1, 0, PAL.bark]]); c.fillStyle = PAL.barkHi; c.fillRect(cx - 1.4, 1.1, 2.4, .4);                                                                                    // здерев'янілий вузол під кліпсою
+      nodes.sort((p, q) => q.back - p.back || p.y - q.y); for (const N of nodes) FLW[kind](c, N, st); },
+    /** (16.11, 23:10) ЛОЗА ВЗДОВЖ РЕЙКИ: тонкий пагін обвиває рейку від куща до куща (видно лише витки «спереду»), з дрібним листям і
+     *  вусиками — десять кущів читаються як один сад. Один спрайт на всю довжину рейки. */
+    _railvine(c, W, H0, seed) { c.lineCap = 'round'; c.lineJoin = 'round'; const Y = x => 2.6 + 1.9 * Math.sin(x * .42), front = x => Math.cos(x * .42) > -.25;
+      const seg = (lw, col, dy = 0) => { c.strokeStyle = col; c.lineWidth = lw; let on = false; c.beginPath(); for (let x = 0; x <= W; x += .5) { if (front(x)) { on ? c.lineTo(x, Y(x) + dy) : c.moveTo(x, Y(x) + dy); on = true; } else on = false; } c.stroke(); };
+      seg(1.5, PAL.out); seg(.7, PAL.stem); seg(.25, PAL.stemHi, -.2);
+      for (let x = 3, k = 0; x < W - 2; x += 3.4 + hash(seed, k) * 2.6, k++) { if (!front(x) || Math.abs(((x + 2.5) % 45) - 22.5) < 7) continue; const up = k % 2 === 0, a = up ? -1.1 - hash(k, 3) * .8 : 1.1 + hash(k, 4) * .8; c.save(); c.translate(x, Y(x)); c.rotate(a);
+        if (k % 7 === 3) { c.strokeStyle = PAL.out; c.lineWidth = 1.1; c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(1.5, .2, 2.6, -1, 1.6, -1.6); c.stroke(); c.strokeStyle = PAL.stemHi; c.lineWidth = .35; c.stroke(); }
+        else { const L = 2.3 + hash(k, 9) * 1.2; blade(c, L, L * .42); c.strokeStyle = PAL.out; c.lineWidth = 1; c.stroke(); c.fillStyle = k % 3 ? PAL.d2 : PAL.d1; c.fill(); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(L * .45, -L * .42, L, 0); c.closePath(); c.fillStyle = k % 3 ? PAL.d3 : PAL.d2; c.fill(); } c.restore(); } },
     /** Калатея (мала, передня): розетка округлих листків із темно-світлими смугами й пурпуровим низом. */
     calathea(c, W, H, seed) { const cx = W / 2, by = H - 2; c.lineJoin = 'round';
       const ls = []; for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 3 + (hash(seed, i) - .5) * .2; ls.push({ a, len: H * (.55 + .4 * hash(seed, i + 2)), back: i % 2 === 0 }); } ls.sort((p, q) => q.back - p.back);
@@ -307,8 +345,27 @@
   /** (16.11) ДРОН-КОЛІБРІ гірлянди: один, перелітає від квітки до квітки (зависає, крильця миготять). Метелики кімнати — окремий модуль
    *  objects/decor_bfly.js: вони тікають від цього дрона (NX.planters.drone()) й сідають на ці квіти (NX.planters.perches()). */
   const HB = { x: 777, y: 24, t: 0, k: -1, tx: 777, ty: 24, dir: 1 };
-  function drawArcLife(c, t) {
-    const all = HANG.flatMap(p => hangPts(p, t)); if (!all.length) return;
+  const BEES = [0, 1, 2].map(i => ({ x: 610 + i * 160, y: 16, tx: 0, ty: 0, next: 0, i, dir: 1 })), BT = { t: 0 };
+  /** (16.11, 23:10) БДЖОЛИ-ЗАПИЛЮВАЧІ (три, вдень): перелітають із квітки на квітку, частіше на сусідній кущ; уночі спочивають. */
+  function drawBees(c, t, night, all) {
+    const dt = Math.min(.1, Math.max(0, t - BT.t)); BT.t = t; if (night > .6) return;
+    for (const b of BEES) { if (t > b.next) { const near = all.filter(q => Math.abs(q[0] - b.x) < 70), L = near.length && Math.random() < .7 ? near : all, q = L[Math.floor(Math.random() * L.length)]; b.tx = q[0] + (Math.random() - .5) * 1.5; b.ty = q[1] - 1.6; b.next = t + 2.5 + Math.random() * 4.5; }
+      const dx = b.tx - b.x, dy = b.ty - b.y, d = Math.hypot(dx, dy), stp = Math.min(d, 34 * dt); if (d > .05) { b.x += dx / d * stp; b.y += dy / d * stp; if (Math.abs(dx) > .5) b.dir = dx > 0 ? 1 : -1; }
+      const x = b.x + Math.sin(t * 9 + b.i * 2) * (d > 1 ? 1.1 : .35), y = b.y + Math.sin(t * 13 + b.i) * (d > 1 ? .9 : .3), wf = Math.sin(t * 70 + b.i);
+      c.save(); c.translate(x, y); c.scale(b.dir, 1); c.globalAlpha = (1 - night / .6);
+      c.fillStyle = '#04120c'; c.beginPath(); c.ellipse(0, 0, 1.75, 1.2, 0, 0, TAU); c.fill(); c.fillStyle = '#ffd84a'; c.beginPath(); c.ellipse(0, 0, 1.3, .8, 0, 0, TAU); c.fill(); c.fillStyle = '#04120c'; c.fillRect(-.55, -.8, .4, 1.6); c.fillRect(.25, -.75, .4, 1.5); c.fillRect(1.05, -.4, .5, .5);
+      c.globalAlpha *= .6; c.fillStyle = '#e8f6ff'; c.beginPath(); c.ellipse(-.3, -1.2 - wf * .3, 1.1, .55, -.5 + wf * .3, 0, TAU); c.fill(); c.beginPath(); c.ellipse(.5, -1.1 + wf * .3, .9, .45, .4 - wf * .3, 0, TAU); c.fill(); c.restore(); }
+  }
+  /** (16.11, 23:10) НІЧ У ВИСЯЧОМУ САДУ: квіти ледь світяться своїм кольором, між кущами — світлячки. */
+  function drawNightGarden(c, t, night, all) {
+    if (night < .03) return; c.save(); c.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < all.length; i++) { const q = all[i]; c.globalAlpha = night * (.3 + .1 * Math.sin(t * 1.1 + i)); c.fillStyle = q[2]; c.beginPath(); c.arc(q[0], q[1], 3, 0, TAU); c.fill(); }
+    for (let i = 0; i < 8; i++) { const a = night * Math.max(0, Math.sin(t * 1.25 + i * 1.9)); if (a < .03) continue; const w = RAIL.x1 - RAIL.x0 - 20, x = RAIL.x0 + 10 + ((i * 61 + Math.sin(t * .17 + i * 2.3) * 34 + 800) % w), y = 23 + 10 * Math.sin(t * .29 + i * 1.7) + 3 * Math.sin(t * .9 + i);
+      c.globalAlpha = a * .3; c.fillStyle = '#c8ff6a'; c.beginPath(); c.arc(x, y, 3.6, 0, TAU); c.fill(); c.globalAlpha = a; c.fillStyle = '#eaffa0'; c.fillRect(x - .8, y - .8, 1.6, 1.6); }
+    c.restore();
+  }
+  function drawArcLife(c, t, night = 0) {
+    const all = HANG.flatMap(p => hangPts(p, t)); if (!all.length) return; drawNightGarden(c, t, night, all); drawBees(c, t, night, all);
     const k = Math.floor(t / 5.2); if (k !== HB.k) { HB.k = k; const q = all[Math.floor(hash(k, 5) * all.length)]; HB.dir = q[0] > HB.x ? 1 : -1; HB.tx = q[0] - HB.dir * 7; HB.ty = q[1] - .8; }
     const dt = Math.min(.1, Math.max(0, t - HB.t)); HB.t = t; HB.x += (HB.tx - HB.x) * Math.min(1, dt * 2.4); HB.y += (HB.ty - HB.y) * Math.min(1, dt * 2.4);
     const dx = HB.x + Math.sin(t * 2.1) * .5, dy = HB.y + Math.sin(t * 3.3) * .7; HB.dx = dx; HB.dy = dy;
@@ -358,11 +415,12 @@
   function drawHanging(c, t, LK, night) {
     const { x0, x1, y } = RAIL; px(c, x0, y, x1 - x0, 3, '#0c1026'); px(c, x0, y + 3, x1 - x0, .8, '#2a3468');
     c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .6 + .4 * night; for (let x = x0 + 6; x < x1 - 4; x += 11) px(c, x, y + 1.2, 2, .8, Math.floor(x / 11 + t * 2) % 7 === 0 ? '#ffffff' : '#3be8ff'); c.restore();
-    for (const p of HANG) { const cv = spriteOf(p, p.kind, Math.round(stageOf(p, t) * (STAGES - 1))), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, by = cv.base[1] / S, sh = Math.sin(t * .55 + p.x * .012) * .016 + Math.sin(t * 1.7 + p.x * .03) * .004;   // (16.11) арка гойдається одним подихом — секції не розходяться
-      px(c, p.x - 1.5, y + 2, 3, 3, '#0c1026'); px(c, p.x - .8, y + 3, 1.6, 2, PAL.silver);                                                             // гачок
-      c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, HOOK_Y); c.transform(1, 0, sh, 1, 0, 0); c.drawImage(cv, -bx, -by, w, h);
-      c.restore(); }
-    drawArcLife(c, t);   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
+    { const cv = spriteOf(RVINE), S = cv.S; c.save(); c.imageSmoothingEnabled = false; c.drawImage(cv, RVINE.x - cv.base[0] / S, y - 1 - cv.base[1] / S, cv.width / S, cv.height / S); c.restore(); }   // лоза вздовж рейки
+    for (const p of HANG) { const st = stageOf(p, t), cv = spriteOf(p, p.kind, Math.round(st * (STAGES - 1))), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, by = cv.base[1] / S, sh = Math.sin(t * .55 + p.x * .012) * .016 + Math.sin(t * 1.7 + p.x * .03) * .004;   // кущі гойдаються одним подихом
+      c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, HOOK_Y); c.transform(1, 0, sh, 1, 0, 0); c.drawImage(cv, -bx, -by, w, h); c.restore();
+      px(c, p.x - 3, y - .4, 6, 5, '#04060f'); px(c, p.x - 2.5, y, 5, 4.2, '#161c40'); px(c, p.x - 2.5, y, 5, .7, '#3a4a8a'); px(c, p.x - 2.5, y + 3.6, 5, .6, '#0a0e22'); px(c, p.x - 1.4, y + 1.5, 2.8, 1.5, '#04060f');   // кліпса-тримач
+      c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = st >= 1 ? .75 + .25 * Math.sin(t * 2.2 + p.x) : st > 0 ? .9 : .55; px(c, p.x - 1, y + 1.8, 2, .9, st >= 1 ? '#ff6ad8' : st > 0 ? '#ffd84a' : '#3be8ff'); c.restore(); }   // вогник: бутони — блакитний, розкривається — жовтий, цвіте — рожевий
+    drawArcLife(c, t, night);   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
   }
   // ---------- (· 41) ЖИТТЯ ЛИСТЯ: новий листок після поливу, пожовклий листок падає на кант, Nexi прибирає (prune); гекон; гроу-лампа; роса ----------
   const LEAFY = HEROES.filter(p => p.young), FALLEN = [], LIFE = { nextOld: 240 + Math.random() * 120 };
@@ -421,7 +479,7 @@
     tap(x, y) { let best = null; for (const p of HEROES) { const top = TOP(); if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= top - p.h && y <= top) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } }
       if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; if (FLOWERS.includes(hit)) shed(best.p, NX.time, 3); return true; },
     get lastKind() { return hit; },
-    tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= HOOK_Y - 3 && y <= HOOK_Y + profile(x) + 5) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; shedHang(best.p, NX.time, 1); return true; },
+    tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 - 4 && x <= p.x + p.w / 2 + 4 && y >= HOOK_Y - 3 && y <= HOOK_Y + p.h + 2) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; shedHang(best.p, NX.time, 1); return true; },
     sprite: spriteOf,
     /** (16.11) Для метеликів кімнати (objects/decor_bfly.js): квіти, на які можна сісти — гірлянда над вікном і квіти на підвіконні. */
     perches(t = NX.time) { return HANG.flatMap(p => hangPts(p, t)).concat(FL.flatMap(p => flowerPts(p, t))); },
