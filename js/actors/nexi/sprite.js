@@ -55,12 +55,12 @@ function renderBot(look, pose, t, cv) {
   const bx = 13, by = 33 + b, bw = 22, bh = 12, hX = 9 + hxo, hY = 10 + b + hyo;
 
   // ---------- 1. спина: плащ / крила / рюкзак ----------
-  if (look.back === 'cape') { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cl = shade(cc, .35);   // плащ (колір — від теми)
+  if (look.back === 'cape' && !pose.back) { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cl = shade(cc, .35);   // плащ спереду — видно краї з-за спини (колір — від теми); зі спини — нижче, поверх тулуба
     for (let i = 0; i < 20; i++) { const w = 18 + Math.round(i * .6), sw = Math.round((Math.sin(t * 9 + i * .3) * 1.5 - vel * 7) * i / 20); P(24 - (w >> 1) + sw, by + 1 + i, w, 1, i % 6 < 4 ? cc : cd); if (i % 6 === 0) P(24 - (w >> 1) + sw + 3, by + 1 + i, 2, 1, cl); } }
   if (look.back === 'wings') { const f = Math.round(Math.abs(Math.sin(t * (pose.jet ? 14 : 4.7))) * 3);   // крила: 7 рядів пір'я, махають
     for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const L = 15 - Math.round(i * 1.6), y0 = by - 13 + i * 2 - (i < 4 ? f : f >> 1), xL = s < 0 ? bx + 2 - L : bx + bw - 2;
       P(xL, y0, L, 2, i % 2 ? '#bff2ff' : '#e4d4ff'); P(xL, y0 + 1, L, 1, i % 2 ? '#6ac8f0' : '#a88af0'); P(s < 0 ? xL : xL + L - 1, y0, 1, 2, '#ffffff'); } }
-  if (look.back === 'backpack') { BLK(bx - 4, by - 1, bw + 8, 14, 3, '#c9812e'); P(bx - 3, by + 7, 4, 4, '#8a5a1e'); P(bx + bw - 1, by + 7, 4, 4, '#8a5a1e'); }
+  if (look.back === 'backpack' && !pose.back) { BLK(bx - 4, by - 1, bw + 8, 14, 3, '#c9812e'); P(bx - 3, by + 7, 4, 4, '#8a5a1e'); P(bx + bw - 1, by + 7, 4, 4, '#8a5a1e'); }
   if (look.back === 'scarf') { const sc = shade(acc, -.1);                                    // шарф: два хвости майорять позаду
     for (const [o, n] of [[0, 13], [3, 10]]) for (let i = 0; i < n; i++) { const w = Math.round(Math.sin(t * 8 - i * .55 + o) * 1.4 * i / n - vel * 4 * i / n), y = by + o + Math.round(i * .3) + w;
       P(bx + 3 - i, y, 1, 3, i % 4 < 2 ? sc : shade(sc, -.25)); if (i % 4 === 0) P(bx + 3 - i, y, 1, 1, shade(sc, .4)); } }
@@ -114,6 +114,18 @@ function renderBot(look, pose, t, cv) {
   BLK(bx - 3, by + 1, 5, 5, 2, acc); BLK(bx + bw - 2, by + 1, 5, 5, 2, acc);                    // плечові шарніри
   if (bd.pat === 'armor') [bx - 6, bx + bw - 1].forEach(x0 => { BLK(x0, by, 7, 7, 2, bShell); P(x0 + 1, by + 2, 5, 1, bAcc); P(x0 + 1, by + 4, 5, 1, bAcc); });       // наплічники
   if (bd.pat === 'royal') [bx - 5, bx + bw - 2].forEach(x0 => { BLK(x0, by, 7, 3, 1, '#ffc94d'); for (let k = 0; k < 4; k++) P(x0 + k * 2, by + 3, 1, 2, '#ffe27a'); });   // еполети з бахромою
+
+  // ---------- 4б. ЗІ СПИНИ: плащ і рюкзак — ПОВЕРХ тулуба й ніг (власник, 16.11: «дивись, як Nexi спиною стоїть з плащем» — плащ
+  //             малювався за тулубом, тож зі спини з-під нього було видно батарейний відсік, пояс і ноги). Руки — поверх плаща.
+  if (pose.back && look.back === 'cape') { const cc = th.cape || '#d93a4a', cd = shade(cc, -.22), cd2 = shade(cc, -.42), cl = shade(cc, .3), n = pose.sit ? 15 : 21, G = '#ffd45a';
+    for (let i = 0; i < n; i++) { const fl = pose.sit && i >= n - 3 ? (i - (n - 4)) * 2 : 0, w = 20 + Math.round(i * .42) + fl, sw = Math.round((Math.sin(t * 9 + i * .3) * 1.2 - vel * 7) * i / n), x0 = 24 - (w >> 1) + sw, y = by + i;   // сидить — поділ лягає ширше
+      P(x0, y, w, 1, i >= n - 2 ? cd : cc); P(x0, y, 1, 1, cl); P(x0 + w - 1, y, 1, 1, cd2);
+      if (i > 2 && i < n - 1) for (const f of [.27, .5, .74]) { const fx = x0 + Math.round(w * f); P(fx, y, 1, 1, cd); P(fx + 1, y, 1, 1, cl); }            // три складки згори донизу
+      if (i === n - 1) { P(x0, y, w, 1, cd2); for (let k = 2; k < w - 2; k += 4) P(x0 + k, y, 2, 1, G); } }                                                    // поділ із золотою облямівкою
+    P(bx + 1, by - 1, bw - 2, 2, cd); P(bx + 2, by - 1, bw - 4, 1, cl); RR(21, by - 2, 6, 4, 1, G); P(23, by - 1, 2, 2, '#fff2c0'); }                           // комір і золота застібка
+  if (pose.back && look.back === 'backpack') { const C = '#c9812e', D = '#8a5a1e';                                                                             // рюкзак на спині: клапан із пряжкою, кишеня, лямки на плечах
+    BLK(bx + 1, by - 1, bw - 2, 14, 3, C); BLK(bx + 1, by - 1, bw - 2, 6, 3, shade(C, .12)); P(bx + 2, by + 4, bw - 4, 1, D); RR(22, by + 3, 4, 3, 1, '#ffe27a');
+    RR(bx + 5, by + 7, bw - 10, 5, 1, shade(C, -.12)); P(bx + 6, by + 8, bw - 12, 1, shade(C, .3)); P(bx + 2, by - 2, 3, 2, D); P(bx + bw - 5, by - 2, 3, 2, D); }
 
   // ---------- 5. руки ----------
   const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
