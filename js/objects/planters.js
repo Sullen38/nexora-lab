@@ -28,11 +28,11 @@
     { slot: 1, kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
   ];
   // (· 39) висячий сад над вікном: гачок на стельовій рейці (y HOOK_Y), рослина звисає вниз; x — центр, w/h — од.
-  const RAIL = { x0: 662, x1: 892, y: 1 }, HOOK_Y = 4;
+  const RAIL = { x0: 552, x1: 998, y: 1 }, HOOK_Y = 4;
   // (16.11, 22:29, власник: «зробимо на всю площину вікна, і менше розміром, і щоб були різні види; не треба таким довгим донизу — просто
   // попід верх усі види ліан») НИЗЬКА ГІРЛЯНДА на всю ширину вікна: десять видів квітучих ліан упритул (крок 23 од.), короткі батоги
   const HANG = ['petrea', 'allamanda', 'bougainvillea', 'plumbago', 'jasmine', 'campsis', 'clematis', 'quisqualis', 'lonicera', 'mandevilla']
-    .map((kind, i) => ({ kind, x: 662 + 11.5 + 23 * i, w: 23, h: 24, seed: 31 + i, hang: 1, S: 3 }));
+    .map((kind, i) => ({ kind, x: 572.5 + 45 * i, w: 28, h: 24, seed: 31 + i, hang: 1, S: 3 }));
   // ---------- палітри ----------
   const PAL = { out: '#04120c', d0: '#082218', d1: '#0f3a2a', d2: '#176a44', d3: '#2a9a62', hi: '#5cd08a', stem: '#3a5a2e', stemHi: '#6a8a4a', rimL: '#3be8ff', rimR: '#ff6ad8', bark: '#4a3a2a', barkHi: '#7a6040', spine: '#e8e0a0', white: '#e8f0ff', blue: '#4a6ae0', purple: '#7a3ac8', lilac: '#b88aff', yellow: '#ffd84a', orange: '#ff7a30', red: '#e8304a', pink: '#ff8ad0', cream: '#fff0c0', silver: '#b8c8d8', sage: '#7aa890', dusty: '#6a9a98', gray: '#98ac9c', grayD: '#5a7064', moss: '#3a6a30', copper: '#c8803a', copperHi: '#f0b070', terra: '#b05a3a', terraHi: '#d88a5a', teal: '#2ac8c0', navy: '#1a2048', navyHi: '#2a3468', magenta: '#e83a9a', sky: '#8ac8ff' };
   const HEX = Object.values(PAL).map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
@@ -454,10 +454,10 @@
     catSpot() { const x = 846, [fx, fy] = NX.cfg.sofaPt ? NX.cfg.sofaPt(x, 384) : [x, 384]; return { x, y: TOP() + 1, from: [fx, fy], flower: 'viola' }; },
   };
   NX.addObject({
-    id: 'planters', span: [600, 950],
+    id: 'planters', span: [540, 1010],
     drawBack(c, t) {
       const dt = Math.min(.1, Math.max(0, t - lastT)); lastT = t; tickLife(t, dt); lifeTick(t, dt);
-      const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 80, vx1 = NX.cam.x + NX.cam.viewW + 80; if (JAR.x1 < vx0 || JAR.x0 > vx1) return;
+      const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 80, vx1 = NX.cam.x + NX.cam.viewW + 80; if (RAIL.x1 < vx0 || RAIL.x0 > vx1) return;
       drawJar(c, t, LK);
       const top = TOP(), night = Math.max(0, Math.min(1, (LK - 1) / .7));
       c.save(); c.beginPath(); c.rect(JAR.x0 - 80, 0, JAR.x1 - JAR.x0 + 160, top + 1); c.clip();                           // нижче канта героїв не малюємо — вони «в ґрунті»
