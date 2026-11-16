@@ -20,7 +20,7 @@
  * входять у реєстр урятованих видів (свій лічильник count).
  * ========================================================================== */
 (() => {
-  const X = NX.px3d, HIDE = 6.5, HIDE_ART = 12, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly', 'shroom'];   // (15.11) shroom — гриби грибниці (у кінці: номери решти видів не зсуваються)   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
+  const X = NX.px3d, HIDE = 6.5, HIDE_ART = 12, GROUPS = ['wall', 'garden', 'floor', 'farm', 'reef', 'jelly', 'shroom', 'bfly'];   // (15.11) shroom — гриби грибниці (у кінці: номери решти видів не зсуваються)   // (· 43) garden — сад за диваном (жардиньєр + висячі)   // (· 31) floor — вазони перед вікном
   const $ = id => document.getElementById(id);
   let REG = null, cur = null, timer = 0, LAST = null;                                                            // LAST — остання показана картка (· 60: голо-монітор рифу показує скан виду)
   /** Реєстр видів зі словника: [{grp, kind, no}] і мапа kind -> запис. */
@@ -110,6 +110,7 @@
       c.drawImage(o, Math.round((CW - dw) / 2), Math.round(PY - 6 - dh), dw, dh); };
     try {
       if (e.grp === 'art') return;                                                                             // (· 55) артефакт соти малює artCard (живий кадр)
+      if (e.grp === 'bfly') { if (NX.bfly) fit(NX.bfly.sprite(e.kind), 2, true); return; }                                                  // (16.11) метелик кімнати — objects/decor_bfly.js
       if (e.grp === 'shroom') { const k = NX.shroom ? NX.shroom.KINDS.indexOf(e.kind) : -1; if (k < 0) return; const m = NX.arc.mushCanvas(k, 96, 2), o = document.createElement('canvas'); o.width = 132; o.height = 122; const oc = o.getContext('2d');   // (15.11) гриб на своєму лотку з ґрунтом
         oc.imageSmoothingEnabled = false; oc.save(); oc.translate(66, 98); oc.scale(16, 16); const sh = NX.shroom.tray(oc, k, 1.2); oc.restore(); oc.drawImage(m, 18, 98 - sh * 16 - 94); fit(o, 2, true); return; }
       if (e.grp === 'floor' || e.grp === 'garden') { const p = NX.planters && NX.planters.PL.find(q => q.kind === e.kind); if (!p) return;
@@ -217,10 +218,10 @@
     el.querySelector('b').textContent = T(e.grp === 'shroom' && NX.shroom && NX.shroom.KINDS.indexOf(e.kind) >= 8 ? 'decor.guide.bred' : 'decor.guide.head') + ' · ' + T('decor.guide.no') + String(e.no).padStart(3, '0');
     el.querySelector('.gn').textContent = T(`decor.guide.sp.${e.grp}.${e.kind}`);
     const lat = T('decor.guide.latin.' + e.kind), dsc = e.grp === 'shroom' ? T('decor.guide.shroomd.' + e.kind) : ''; el.querySelector('small').textContent = (lat.startsWith('decor.') ? '' : lat) + (dsc && !dsc.startsWith('decor.') ? ' — ' + dsc : '');   // (15.11) у грибів — ще й підпис-історія
-    const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : e.grp === 'shroom' ? 'shroom' : 'plant', gs = e.grp === 'wall' && NX.decorGrow ? NX.decorGrow.state(e.kind) : null;   // (· 22) росте / цвіте
+    const kindT = e.grp === 'reef' ? 'fish' : e.grp === 'jelly' ? 'jel' : e.grp === 'shroom' ? 'shroom' : e.grp === 'bfly' ? 'bfly' : 'plant', gs = e.grp === 'wall' && NX.decorGrow ? NX.decorGrow.state(e.kind) : null;   // (· 22) росте / цвіте
     el.querySelector('.gw').textContent = T('decor.guide.kind.' + kindT) + ' · ' + T('decor.guide.where.' + e.grp) + (e.grp === 'farm' && info && info.s != null ? ' · ' + T('decor.guide.stage', { s: Math.min(6, Math.floor(info.s * 6) + 1) }) : '') + (gs ? ' · ' + T('decor.guide.grow.' + gs) : '');
     el.querySelector('.gc').textContent = T('decor.guide.count', { n: R.n });
-    el.style.borderColor = { wall: '#3bff8a', garden: '#7aff9a', floor: '#9aff6a', farm: '#b8ff3a', reef: '#3be8ff', jelly: '#d94bff', shroom: '#c77dff' }[e.grp];
+    el.style.borderColor = { wall: '#3bff8a', garden: '#7aff9a', floor: '#9aff6a', farm: '#b8ff3a', reef: '#3be8ff', jelly: '#d94bff', shroom: '#c77dff', bfly: '#ffd23a' }[e.grp];
     drawSprite(e, info);
   }
   function show(e, info) {
@@ -251,6 +252,7 @@
     tap(hit, x, y, t, L) {
       if (hit === 'plant' && L && L.e && L.e.sp) return show(find('wall', L.e.sp.kind));
       if (WALL_ALIAS[hit]) return show(find('wall', WALL_ALIAS[hit]));
+      if (hit === 'bfly') { const TP = NX.decorLive && NX.decorLive.TP; return show(find('bfly', TP && TP.bfly)); }                         // (16.11) спійманий метелик
       if (hit === 'shroom' && NX.shroom) { const TP = NX.decorLive && NX.decorLive.TP; return show(find('shroom', NX.shroom.KINDS[TP && TP.shroom ? TP.shroom.k : 0])); }   // (15.11) гриб грибниці
       if (hit === 'hex') return void this.tapStatic(x, y);
       if (hit === 'vine' && NX.decorVines) return show(find('wall', NX.decorVines.lastKind));                          // (· 57) ліана між сотами

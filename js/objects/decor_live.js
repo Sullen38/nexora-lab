@@ -893,25 +893,9 @@
   }
 
   // =============================== МЕТЕЛИКИ, ЛИСТОЧКИ, СВІТЛЯЧКИ ===============================
-  const BUTTER = [0, 1].map(v => [0, 1].map(f => sprite(16, 12, S => {               // кібер-метелик: два кадри (крила розкриті / складені)
-    const cc = v ? ['#3be8ff', '#9af6ff', '#1a4a8a'] : ['#ff4fd8', '#ffb0f0', '#6a1a6a'], k = f ? .45 : 1;
-    for (const sd of [-1, 1]) { S.ell(8 + sd * 3.6 * k, 4.5, 3.4 * k, 3.4, (x, y, u, w) => u * u + w * w > .55 ? cc[2] : cc[0]); S.ell(8 + sd * 2.6 * k, 8.4, 2.4 * k, 2.2, cc[1]); S.set(8 + sd * 3.5 * k, 4, '#ffffff'); }
-    for (let y = 3; y < 10; y++) S.set(8, y, '#101018'); S.set(7, 2, '#101018'); S.set(9, 2, '#101018');
-  })));
-  const ROUTES = [['dc_basket', 'dc_tr0', 'dc_hp0', 'dc_tr1', 'dc_rfp0', 'dc_hp2', 'dc_rfp1'], ['dc_kk0', 'dc_kk1', 'dc_kk2', 'dc_hangR', 'dc_hp3', 'dc_mzv1']]
-    .map(r => r.map(id => byId[id]).filter(Boolean).map(B => { const { P } = basis(B), y = B.yt + (B.yb - B.yt) * (B.st === 'dc_hang' ? .32 : .2); return proj(P(0, B.dep / 2, y)); }));
-  /** Де метелик v у час t (екран, од. кімнати): від рослини до рослини дугою вгору, з тремтінням. */
-  function butterflyAt(v, t) {
-    const R = ROUTES[v]; if (!R || R.length < 2) return null; t += (TP.fly[v] || []).reduce((a, t0) => a + (t >= t0 ? 4 * (1 - Math.exp(-(t - t0) / .7)) : 0), 0);   // тап — тікає
-    const n = R.length, T = n * 3.4, u = ((t + v * 7) % T) / 3.4, i = Math.floor(u), f = u - i, a = R[i % n], b = R[(i + 1) % n], e = f * f * (3 - 2 * f);
-    return { x: a[0] + (b[0] - a[0]) * e + Math.sin(t * 2.3 + v) * 2, y: a[1] + (b[1] - a[1]) * e - Math.sin(f * Math.PI) * 6 + Math.sin(t * 3.1 + v * 2) * 1.5, dir: b[0] >= a[0] ? 1 : -1 };
-  }
-  function drawButterflies(c, t, vx0, vx1) {
-    c.save(); c.imageSmoothingEnabled = true;
-    ROUTES.forEach((R, v) => { const B = butterflyAt(v, t); if (!B || B.x < vx0 - 8 || B.x > vx1 + 8) return;
-      const S = BUTTER[v][Math.floor(t * 9 + v) % 2], w = 4.4, h = w * S.h / S.w; c.translate(B.x, B.y); if (B.dir < 0) c.scale(-1, 1); c.drawImage(S.cv, -w / 2, -h / 2, w, h); c.setTransform(c.__base[0], c.__base[1], c.__base[2], c.__base[3], c.__base[4], c.__base[5]); });
-    c.restore();
-  }
+  // (16.11, власник: «метеликів зроби штук 5 на всю кімнату… реальні види… і коли його ловиш — теж карточка») двох кібер-метеликів на
+  // маршрутах замінено п'ятьма справжніми видами — objects/decor_bfly.js; butterflyAt лишився для кота (actors/cat/cat.js)
+  const butterflyAt = (v, t) => NX.bfly ? NX.bfly.at(v, t) : null;
   const LEAF = sprite(6, 4, S => { S.ell(3, 2, 2.6, 1.4, (x, y, u, w) => u < 0 ? '#5ac85a' : '#2a8a3a'); S.set(1, 2, '#1a5a2a'); });
   const DROP = items.filter(B => ['dc_basket', 'dc_hp1', 'dc_hangR', 'dc_hp0', 'dc_hp3'].includes(B.id)).map(B => { const { P } = basis(B), a = proj(P(0, B.dep / 2, B.yt + (B.yb - B.yt) * .35)), b = proj(P(0, B.dep / 2, B.yb)); return { x: a[0], y0: a[1], y1: b[1] - 3, w: B.w * .3 }; });
   function drawLeaves(c, t, vx0, vx1) {
@@ -933,7 +917,7 @@
    *  сота зі штучкою, дрон, метелик, плакат Рудика (лазер одразу), двері пілона (відчиняються), неонова вивіска (серце
    *  частіше, неон блимає), рослина, що гойдається (потрушується, падає листочок), акваріум (риби розпливаються від пальця,
    *  бульбашки), ліхтар, міні-оранжерея. -> true, якщо тап наш. */
-  const TP = { door: -99, poster: -99, posterTgt: 0, neon: -99, drone: -99, lamp: -99, green: -99, fungi: -99, shroom: null, snail: -99, hex: {}, fly: [[], []], aq: null, marks: [], fall: [], note: -1 };
+  const TP = { door: -99, poster: -99, posterTgt: 0, neon: -99, drone: -99, lamp: -99, green: -99, fungi: -99, shroom: null, snail: -99, hex: {}, bfly: null, aq: null, marks: [], fall: [], note: -1 };
   const boxOf = F => { const xs = [F.S0[0], F.S1[0], F.S3[0], F.S1[0] + F.S3[0] - F.S0[0]], ys = [F.S0[1], F.S1[1], F.S3[1], F.S1[1] + F.S3[1] - F.S0[1]]; return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
   const inB = (x, y, b, pad = 0) => x >= b[0] - pad && x <= b[2] + pad && y >= b[1] - pad && y <= b[3] + pad;
   /** (15.11, власник: «у них ще немає своїх карточок») Який гриб під пальцем: лоток конвеєра чи порту (CONV.HIT — де вони були в
@@ -945,12 +929,12 @@
   }
   function tap(x, y) {
     let LPhit = null;                                                                   // (· 18) яку рослину зачепили (для довідника)
-    const pre = NX.planters && NX.planters.tapHang && NX.planters.tapHang(x, y);                                   // (· 39) висячий сад над вікном — раніше за вікно
-    if (!pre && NX.input && NX.input.objectAt(x, y)) return false;
-    const t = NX.time; let hit = pre ? 'planter' : null;
+    const bf = NX.bfly ? NX.bfly.tap(x, y) : null;                                                                 // (16.11) спіймав метелика — картка виду; раніше за все, бо він сидить на квітах і літає перед вікном
+    const pre = !bf && NX.planters && NX.planters.tapHang && NX.planters.tapHang(x, y);                                   // (· 39) висячий сад над вікном — раніше за вікно
+    if (!bf && !pre && NX.input && NX.input.objectAt(x, y)) return false;
+    const t = NX.time; let hit = bf ? 'bfly' : pre ? 'planter' : null; if (bf) TP.bfly = bf;
     for (const B of HEX) { const { P } = basis(B), c0 = proj(P(0, B.dep * .2, (B.yt + B.yb) / 2)), r = B.w * .48 * (520 / (520 + P(0, 0, 0)[2])); if (Math.hypot(x - c0[0], y - c0[1]) < r) { TP.hex[B.id] = t; hit = 'hex'; break; } }
     if (!hit && NX.decor.droneAt) { const D = NX.decor.droneAt(t); if (D && Math.hypot(x - D.x, y - Math.max(10, D.y)) < 7) { TP.drone = t; hit = 'drone'; } }
-    if (!hit) for (let v = 0; v < ROUTES.length; v++) { const B = butterflyAt(v, t); if (B && Math.hypot(x - B.x, y - B.y) < 6) { TP.fly[v].push(t); hit = 'fly'; break; } }
     if (!hit && RUD && inB(x, y, boxOf(faceOf(RUD)))) { const e = rudikEv(t); if (!e || e.k > 4.8) { TP.poster = t; TP.posterTgt = (TP.posterTgt + 1) % 3; } hit = 'poster'; }
     if (!hit && AQ.door && inB(x, y, boxOf(faceOf(AQ.door.B)), 1.5)) { if (doorOpen(t) <= 0) TP.door = t; hit = 'door'; }
     if (!hit && NEON && inB(x, y, boxOf(faceOf(NEON)))) { TP.neon = t; hit = 'neon'; }
@@ -1094,7 +1078,7 @@
         if (k < 120) for (const C of CONES) { const f = k / 119, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f; c.fillRect(C.x - hw, y - .3, hw * 2, .6); }
         if (k % 4 === 0) for (const m of MOTES) { const [x, y] = moteAt(m, t * 2); c.fillRect(x - .2, y - .2, .4, .4); }
         if (PYL && PYL.dc.fungi && k < 200) { const { P } = basis(PYL); for (const [fu, fY, fr] of PYL.dc.fungi) { const f = k / 200, pp = proj(P(fu + Math.sin(f * 7) * (fr * .75 + .7), -.4 - f * 1.6, fY + fr * .35 - f * 14)); c.fillRect(pp[0] - .3, pp[1] - .3, .6, .6); } }
-        for (let v = 0; v < ROUTES.length; v++) { const B = butterflyAt(v, t); if (B) c.fillRect(B.x - 2.2, B.y - 1.6, 4.4, 3.2); }
+        if (NX.bfly) for (const B of NX.bfly.all) c.fillRect(B.x - 5, B.y - 4, 10, 8);
         for (const f of FLY2) { const x = f.x + Math.sin(t * (.27 + hash(f.sd, 1) * .2) + f.sd) * f.ax, y = f.y + Math.sin(t * (.39 + hash(f.sd, 2) * .2) + f.sd * 2) * f.ay; c.fillRect(x - .6, y - .6, 1.2, 1.2); }
       }
       c.restore(); LP.forEach(L => { L.q = -1; });
@@ -1113,7 +1097,7 @@
       T('snail', () => drawSnail(c, t, vx0, vx1));
       T('air', () => drawAir(c, t, vx0, vx1));
       T('care', () => { drawCare(c, t); if (NX.decorAqua && NX.decorAqua.drawFeeders) NX.decorAqua.drawFeeders(c, t, vx0, vx1); });   // (· 6) полив і годівнички
-      T('fx', () => { drawLeaves(c, t, vx0, vx1); drawButterflies(c, t, vx0, vx1); drawFlies2(c, t, vx0, vx1); drawTapFx(c, t); });
+      T('fx', () => { drawLeaves(c, t, vx0, vx1); if (NX.bfly) NX.bfly.draw(c, t, vx0, vx1); drawFlies2(c, t, vx0, vx1); drawTapFx(c, t); });
       T('light', () => { if (NX.decorLight) NX.decorLight.draw(c, t, vx0, vx1); });                                 // (· 23) ореоли джерел світла на стінах, коли темніє
     },
   };
