@@ -58,6 +58,9 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
           const wrap = (o, f, k) => { const g = o[f]; if (typeof g !== 'function') return; o[f] = function (c) { fl(c); const a = now(); try { return g.apply(this, arguments); } finally { fl(c); add(k, now() - a); } }; };
           const wrapL = (o, id) => { const L = o.layers || o.layer; if (typeof L !== 'function') return; const key = o.layers ? 'layers' : 'layer';
             o[key] = function () { const r = L.apply(this, arguments), one = l => l && Object.assign({}, l, { draw: (c, t) => { fl(c); const a = now(); try { return l.draw(c, t); } finally { fl(c); add(id + (c.isRefl ? '.refl' : '.layer'), now() - a); } } }); return Array.isArray(r) ? r.map(one) : one(r); }; };
+          // сад гріє свої растри «по 1 мс раз на 4 кадри» за справжнім годинником (js/garden/garden.js, warmStep); на годиннику, що стоїть,
+          // він збирав усе за один кадр (~0.9 с) посеред заміру — це давало несправжні «gardenScene.update 7 мс» і кадр-велетень
+          { const g = NX.objects.gardenScene; if (g && typeof g.update === 'function') { const u = g.update; g.update = function () { const pn = performance.now; performance.now = RN; try { return u.apply(this, arguments); } finally { performance.now = pn; } }; } }
           for (const id in NX.objects) { const o = NX.objects[id]; wrap(o, 'update', id + '.update'); wrap(o, 'drawBack', id + '.back'); wrapL(o, id); }
           wrap(NX.room, 'draw', 'room'); wrap(NX.city, 'draw', 'city'); wrap(NX.nexi, 'update', 'nexi.update'); wrap(NX.cat, 'update', 'cat.update'); wrapL(NX.nexi, 'nexi'); wrapL(NX.cat, 'cat');
           wrap(NX.fx, 'draw', 'fx'); wrap(NX.ui.hud, 'update', 'hud');
