@@ -1,7 +1,7 @@
 /* ============================================================================
  * tools/bench.js — ЗАМІРИ: запуск (заставка, кімната готова, довгі задачі) і fps по місцях камери + розклад кадру
  * ----------------------------------------------------------------------------
- *   node tools/bench.js [ref] [--dev desk|ph] [--cpu 1|4] [--secs 5] [--dpr 3] [--runs 1] [--det 1 [--frames 120]]
+ *   node tools/bench.js [ref] [--dev desk|ph] [--cpu 1|4] [--secs 5] [--dpr 3] [--runs 1] [--det 1 [--frames 120] [--json файл]]
  * Без ref — робоча копія; з ref (HEAD, хеш коміту) — та версія (git archive у тимчасову теку): так міряємо «до» й «після».
  * Сайт віддає локальний сервер (як Vercel: index.html + окремі js); шрифти Google вимкнено. --cpu 4 — процесор у 4 рази
  * повільніший (CDP). desk — 1600×900, ph — телефон 390×844 (DPR 3 -> кімната малюється у 2×; --dpr — інший).
@@ -18,6 +18,7 @@
  *   window.__benchAdd(ключ, мс), час — window.__benchNow() (годинник кадру стоїть).
  *   --flush 1 (з --det) — після кожного малювання об'єкта полотно екрана «дорисовується» (getImageData 1×1): Chrome малює
  *   відкладено, і без цього ціна растеризації падає на випадковий пізніший виклик; так видно справжню ціну кожного шару.
+ *   --json файл (з --det) — ті самі цифри ще й файлом JSON (запуск, місця, мс кожного шару): їх читає tools/budget.js.
  * ========================================================================== */
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), { execSync } = require('child_process');
@@ -98,6 +99,7 @@ const DEVS = { desk: { viewport: { width: 1600, height: 900 }, deviceScaleFactor
         const top = Object.entries(r.per).sort((a, b) => b[1] - a[1]).slice(0, 9).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(' · ');
         console.log(`  ${r.name.padEnd(10)} ${r.fps.toFixed(1).padStart(5)} fps · кадр p50 ${r.p50.toFixed(1)} p95 ${r.p95.toFixed(1)} max ${r.max.toFixed(1)} мс · JS ${r.js.toFixed(1)} мс | ${top}`); }
       if (errs.length) console.log('  ПОМИЛКИ:', errs.join(' ; '));
+      if (opt.json) fs.writeFileSync(opt.json, JSON.stringify({ name: NAME, dev: DEV, boot, places: R, errs }));
       await ctx.close(); continue;
     }
     await p.waitForFunction(() => NX.loop.frames >= 100, null, { timeout: 300000, polling: 200 });
