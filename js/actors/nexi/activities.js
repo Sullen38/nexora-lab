@@ -42,6 +42,9 @@
   const faceOk = () => Number.isFinite(NX.nexiPhys && NX.nexiPhys.sq), sideOf = d => (faceOk() ? d : 1);
   const hoverAt = sp => { const dy = floorAt(sp.z), s = sprK(dy), d = sideOf(sp.dir); return { p: [inRoom(sp.x - d * 23 * s), sp.y + 17 * s], dy, d }; };
   const hoverBeside = e => { const dy = floorAt(e.z), s = sprK(dy); return { p: [inRoom(e.x + e.side * (24 * s + 3)), e.y + 28 * s], dy, d: -e.side }; };   // кнопка — на пульті: бік руки неважливий
+  // (Кімната — правки · 19) у сад за диваном і назад — через спинку (objects/sofa.js: flyIn / flyOut), не крізь диван
+  const sofaIn = (f, h) => { const S = NX.objects.sofa; return S && S.flyIn ? S.flyIn(f, h.p, h.dy) : [{ fly: h.p, dy: h.dy }]; };
+  const sofaOut = (h, f) => { const S = NX.objects.sofa; return [...(S && S.flyOut ? S.flyOut(h.p, f, h.dy) : []), { fly: f }]; };
   const wallFloor = side => NX.room.clampWalk(side === 'left' ? 230 : 1460, 446, 'nexi');
   const pourFx = dir => { const n = NX.nexi, s = sprK(n.depthY()), d = sideOf(dir); for (let k = 0; k < 3; k++) NX.fx.emit('rain', n.x + d * (24 + Math.random() * 2) * s, n.y - (18 - Math.random() * 2) * s, { vx: d * (8 + Math.random() * 16), vy: 6 + Math.random() * 20, g: 170, ttl: .5, h: 2.4, s: 1.2, col: Math.random() < .7 ? '#8ad8ff' : '#e8fbff' }); };
   const pourInto = () => { const n = NX.nexi, s = sprK(n.depthY()), d = sideOf(1); for (let k = 0; k < 2; k++) NX.fx.emit('rain', n.x + d * (24 + Math.random() * 2) * s, n.y - (18 - Math.random() * 2) * s, { vx: d * (10 + Math.random() * 8), vy: 14 + Math.random() * 10, g: 170, ttl: .16 + Math.random() * .05, h: 2.4, s: 1.2, col: Math.random() < .7 ? '#8ad8ff' : '#e8fbff' }); };   // (· 7) з лійки — у бачок дрона
@@ -161,9 +164,9 @@
     jardin: { color: '#7aff9a', route() {
       const PL = NX.planters, n = NX.nexi; if (!PL || !PL.waterSpots) return [line('jardin')];
       const f = NX.room.clampWalk(774, 446, 'nexi'), L = [{ walk: f }, { face: 1 }, line('jardin'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }];
-      PL.waterSpots().forEach((sp, i) => { const h = hoverAt(sp); let done = false;
-        L.push({ fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverWater', dur: 2.2, tick: (dt, k) => { pourFx(h.d); if (!done && k > .35) { done = true; if (i === 1) PL.water(NX.time); } } } }); });
-      L.push({ work: { pose: 'hoverLook', dur: 1.1 } }, { fly: f }, { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.2 } });
+      let hl = null; PL.waterSpots().forEach((sp, i) => { const h = hoverAt(sp); let done = false;
+        L.push(...(i ? [{ fly: h.p, dy: h.dy }] : sofaIn(f, h))); hl = h; L.push({ face: h.d }, { work: { pose: 'hoverWater', dur: 2.2, tick: (dt, k) => { pourFx(h.d); if (!done && k > .35) { done = true; if (i === 1) PL.water(NX.time); } } } }); });
+      L.push({ work: { pose: 'hoverLook', dur: 1.1 } }, ...(hl ? sofaOut(hl, f) : [{ fly: f }]), { loc: 'floor' }, { face: 1 }, { do: () => n.emote('love', 2.2) }, { work: { pose: 'cheer', dur: 1.2 } });
       return L; } },
 
     // ---------- (Декор стін · 41) ПРИБИРАННЯ ЛИСТЯ в саду за диваном: пожовклий або опалий листок — Nexi з кошиком, зриває,
@@ -172,8 +175,8 @@
       const PL = NX.planters, n = NX.nexi; if (!PL || !PL.pruneSpot) return [line('prune')];
       const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.pruneSpot(), h = hoverAt(sp); let done = false;
       return [{ walk: f }, { face: 1 }, line('prune'), { do: () => { n.basket = 0; } }, { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
-        { fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.6, tick: (dt, k) => { if (!done && k > .45) { done = true; n.basket = PL.prune(NX.time); for (let i = 0; i < 4; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 14, { ttl: .6 }); n.emote('happy', 1.5); } } } },
-        { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.prune.done') }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
+        ...sofaIn(f, h), { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.6, tick: (dt, k) => { if (!done && k > .45) { done = true; n.basket = PL.prune(NX.time); for (let i = 0; i < 4; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 14, { ttl: .6 }); n.emote('happy', 1.5); } } } },
+        ...sofaOut(h, f), { loc: 'floor' }, { face: 1 }, { say: NX.t('act.prune.done') }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
     } },
 
     // ---------- (Декор стін · 42) ПОСИДІТИ В САДУ ЗА ДИВАНОМ: злітає на кант жардиньєра між рослинами, сідає спиною (ноги на спинці
@@ -182,8 +185,17 @@
       const PL = NX.planters, n = NX.nexi; if (!PL || !PL.sitSpot) return [line('jarSit')];
       const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.sitSpot(), h = hoverAt(sp);
       return [{ walk: f }, { face: 1 }, line('jarSit'), { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
-        { fly: h.p, dy: h.dy }, { face: 1 }, { work: { pose: 'sitGaze', dur: 14 + Math.random() * 8, back: true } }, { do: () => n.emote('love', 2) }, { work: { pose: 'sit', dur: 1.6 } },
-        { fly: f }, { loc: 'floor' }, { face: 1 }, { say: NX.t('act.jarSit.done') }];
+        ...sofaIn(f, h), { face: 1 }, { work: { pose: 'sitGaze', dur: 14 + Math.random() * 8, back: true } }, { do: () => n.emote('love', 2) }, { work: { pose: 'sit', dur: 1.6 } },
+        ...sofaOut(h, f), { loc: 'floor' }, { face: 1 }, { say: NX.t('act.jarSit.done') }];
+    } },
+
+    // ---------- (Кімната — правки · 19, власник: «за диваном перед садом теж має бути прохідна зона для Nexi») СТАТИ НА КАНТ САДУ:
+    // тап по смузі короба над спинкою дивана — Nexi перелітає спинку й стає на кант у тому місці (planters.js: rimSpot); далі тапи
+    // по канту — перестрибує вздовж нього (planters.js: tapFirst), тап по підлозі — вертається через спинку (nexi.js: exitRoute). ----------
+    jarStand: { color: '#7aff9a', route() {
+      const PL = NX.planters, n = NX.nexi; if (!PL || !PL.rimSpot) return [];
+      const sp = PL.rimSpot(), h = { p: [sp.x, sp.y], dy: floorAt(sp.z) }, f = NX.room.clampWalk(sp.x, 446, 'nexi');
+      return [{ walk: f }, { face: 1 }, { work: { pose: 'crouch', dur: .2 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' }, ...sofaIn(f, h), { face: sp.x < 774 ? 1 : -1 }, { do: () => n.emote('happy', 1.6) }];
     } },
 
     // ---------- (Декор стін · 44) ПЕРЕСАДЖУВАННЯ в саду за диваном: Nexi несе новий горщик (кошик повний), зависає над переднім
@@ -192,8 +204,8 @@
       const PL = NX.planters, n = NX.nexi; if (!PL || !PL.repotSpot) return [line('repot')];
       const f = NX.room.clampWalk(774, 446, 'nexi'), sp = PL.repotSpot(), h = hoverAt(sp); let done = false;
       return [{ walk: f }, { face: 1 }, line('repot'), { do: () => { n.basket = 1; } }, { work: { pose: 'crouch', dur: .25 } }, { do: () => { n.wallFloor = f; } }, { loc: 'wallHover' },
-        { fly: h.p, dy: h.dy }, { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.8, tick: (dt, k) => { if (!done && k > .5) { done = true; const r = PL.repot(NX.time); n.basket = 0; for (let i = 0; i < 6; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 10, { ttl: .7 }); if (r) n.say(NX.t('act.repot.done', { plant: NX.t('decor.guide.sp.garden.' + r.to) })); n.emote('happy', 1.6); } } } },
-        { fly: f }, { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
+        ...sofaIn(f, h), { face: h.d }, { work: { pose: 'hoverBasket', dur: 2.8, tick: (dt, k) => { if (!done && k > .5) { done = true; const r = PL.repot(NX.time); n.basket = 0; for (let i = 0; i < 6; i++) NX.fx.emit('dust', n.x + h.d * 10, n.y - 10, { ttl: .7 }); if (r) n.say(NX.t('act.repot.done', { plant: NX.t('decor.guide.sp.garden.' + r.to) })); n.emote('happy', 1.6); } } } },
+        ...sofaOut(h, f), { loc: 'floor' }, { face: 1 }, { work: { pose: 'cheer', dur: 1 } }, { do: () => { n.basket = 0; } }];
     } },
 
     feedFish: { color: '#3be8ff', route() {

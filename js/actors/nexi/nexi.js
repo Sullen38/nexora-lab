@@ -169,7 +169,7 @@ NX.nexi = {
       wsPad: ws ? [up, { do: () => ws.leave() }, { fly: ws.front() }] : [],
       tlHover: tl ? [up, { fly: tl.stand() }] : [],
       aiDesk: ai ? [up, { do: () => ai.finish() }, { fly: ai.front() }] : [],
-      wallHover: [up, { fly: this.wallFloor || NX.room.clampWalk(this.x, 440, 'nexi') }],                    // (· 6) біля стіни на ранці — спершу вниз
+      wallHover: (to => [up, ...(NX.objects.sofa && NX.objects.sofa.flyOut ? NX.objects.sofa.flyOut([this.x, this.y], to, this.dy) : []), { fly: to }])(this.wallFloor || NX.room.clampWalk(this.x, 440, 'nexi')),   // (Кімната — правки · 19) із саду за диваном — через спинку, не крізь диван (objects/sofa.js: flyOut)                    // (· 6) біля стіни на ранці — спершу вниз
       portalPad: [up, { do: () => { this.alpha = 1; this.zoom = 1; if (NX.party) NX.party.close(); if (NX.objects.portal) NX.objects.portal.active = false; } },   // (вечірка) з майданчика брами — вниз
         { hop: NX.room.clampWalk(...((NX.arc && NX.arc.zone && NX.arc.zone('portal')) ? NX.arc.zone('portal').S(100, 352, -30) : [this.x, 400]), 'nexi') }],
     }[this.loc] || []).concat([{ loc: 'floor' }, up]);

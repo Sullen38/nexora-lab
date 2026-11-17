@@ -536,6 +536,7 @@
       if (FLOWERS.includes(to) && !FL.includes(p)) FL.push(p); if (!FLOWERS.includes(to)) { const i = FL.indexOf(p); if (i >= 0) FL.splice(i, 1); } hit = to; return { from, to }; },
     repotSpot() { const slots = HEROES.filter(p => p.slot), p = slots.reduce((a, b) => (a.rep || 0) <= (b.rep || 0) ? a : b), top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: p.x, y: top - 30, z, dir: p.x < 790 ? 1 : -1 }; },
     /** (· 42) Де Nexi сидить на канті: між філодендроном і арекою; hoverAt ставить її на точку (y — рівень канта, вона «сидить» на ньому). */
+    rimSpot() { const top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: RIMX, y: top + 6, z }; },   // (17.11) де стати на канті — за останнім тапом
     sitSpot() { const top = TOP(), z = NX.persp.zOf((352 - NX.persp.VP[1]) / (372 - NX.persp.VP[1])); return { x: 764, y: top - 14, z, dir: 1 }; },
     /** (· 42) Рудик копає ґрунт: грудки летять, вологість трохи падає; Nexi (якщо вільна) свариться. */
     dig(x, t = NX.time) { for (let i = 0; i < 5; i++) PET.push({ x: x + (Math.random() - .5) * 4, y: TOP() + 1, vx: (Math.random() - .5) * 14, vy: -8 - Math.random() * 10, col: Math.random() < .5 ? '#3a2a18' : '#1c1410', t0: t - 6, ph: Math.random() * TAU }); HUM.v = Math.max(0, HUM.v - .05); },
@@ -551,8 +552,16 @@
     /** Місце для Рудика на канті між віолою й примулою: точка на канті й точка підлоги перед диваном, звідки стрибати. */
     catSpot() { const x = 846, [fx, fy] = NX.cfg.sofaPt ? NX.cfg.sofaPt(x, 384) : [x, 384]; return { x, y: TOP() + 1, from: [fx, fy], flower: 'viola' }; },
   };
+  let RIMX = 774;
   NX.addObject({
     id: 'planters', span: [540, 1010],
+    /** (17.11) ПРОХІДНА СМУГА ЗА ДИВАНОМ: тап по коробу між рослинами й спинкою дивана — Nexi стає на кант саду в тому місці
+     *  (activities.js: jarStand). Уже стоїть на канті — перестрибує вздовж нього, без спуску на підлогу. */
+    tapFirst(x, y) { const S = NX.objects.sofa, top = TOP(), n = NX.nexi; if (!S || !n || x < JAR.x0 || x > JAR.x1 || y <= top || y >= (S.backTop || top + 22)) return false;
+      RIMX = Math.max(JAR.x0 + 14, Math.min(JAR.x1 - 14, x)); const sp = NX.planters.rimSpot();
+      if (n.loc === 'wallHover' && n.dy != null && !n.cur && !n.queue.length && Math.abs(n.y - sp.y) < 4 && n.x > JAR.x0 && n.x < JAR.x1) { n.lastCmd = NX.time; n.queue = [{ hop: [sp.x, sp.y], dy: n.dy }, { face: sp.x < n.x ? -1 : 1 }]; n.cur = null; }
+      else n.do('jarStand');
+      return true; },
     drawBack(c, t) {
       const dt = Math.min(.1, Math.max(0, t - lastT)); lastT = t; tickLife(t, dt); lifeTick(t, dt);
       const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 80, vx1 = NX.cam.x + NX.cam.viewW + 80; if (RAIL.x1 < vx0 || RAIL.x0 > vx1) return;

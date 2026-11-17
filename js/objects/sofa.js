@@ -145,6 +145,13 @@
   const sofa = NX.addObject({
     id: 'sofa', name: 'obj.sofa', act: 'sofa', hit: { x: OX, y: OY, w: GW * U, h: GH * U },
     foot: [OX, OX + GW * U, 330, SY + 12],                                         // слід на підлозі: від вікна до переднього краю (+ запас, щоб ноги були явно перед диваном) — Nexi й кіт обходять спереду (world/room.js: route)
+    /** (17.11, власник: «він летить скрізь нього — баги») ПЕРЕЛІТ ЧЕРЕЗ СПИНКУ. Раніше Nexi летів з підлоги в сад за диваном (і назад)
+     *  прямою, а глибина мінялась посеред шляху — диван «з'їдав» йому ноги. Тепер два плеча: спершу над спинку (ноги вище її верху),
+     *  глибина лишається ПЕРЕД диваном; далі — до місця, і глибина міняється вже там, де диван його не перекриває.
+     *  flyIn(from, to, dy) — кроки з підлоги за диван; flyOut(from, to, depth) — перше плече назад (порожньо, якщо він не за диваном). */
+    flyIn(from, to, dy) { return [{ fly: [P.lerp(from[0], to[0], .55), Math.min(OY - 16, to[1])], dy: SY - 18 }, { fly: to, dy }]; },
+    flyOut(from, to, depth) { if (depth == null || depth >= SY - 24 || from[0] < OX - 40 || from[0] > OX + GW * U + 40) return []; return [{ fly: [P.lerp(from[0], to[0], .45), Math.min(OY - 16, from[1])], dy: SY - 18 }]; },
+    backTop: OY,
     mode: 'idle', flash: 0, waves: [], sq: 1, sqV: 0, sweep: null, nextSweep: 6,
     /** Що Nexi зробить на дивані — вирішує сам (зважений рандом + контекст). */
     pick() {
