@@ -1,0 +1,57 @@
+{
+ "що це": "Бюджет швидкодії: ліміт мс на кадр для кожного шару. Пише лише tools/budget.js --write (чат «Ядро»). Таблиця для людей — docs/chats/core.md.",
+ "measured": "2026-11-17",
+ "commit": "59336a3",
+ "desk": {
+  "frame": 45.9,
+  "now": 39.9,
+  "layers": {
+   "decorLive.back": 13.6,
+   "workshop.back": 5.8,
+   "arcRight.back": 5.1,
+   "arcLeft.back": 3.6,
+   "city": 2.5,
+   "planters.back": 2.4,
+   "room": 2.3,
+   "tools.back": 2.2,
+   "інше": 2,
+   "aicenter.back": 1.8,
+   "marketing.back": 1.6,
+   "analytics.back": 1.5,
+   "gardenScene.update": 1.5,
+   "sofa.layer": 1.2,
+   "rug.back": 1,
+   "windowFrame.back": 0.9,
+   "sofa.back": 0.9,
+   "nexi.refl": 0.9
+  }
+ },
+ "ph": {
+  "frame": 30.9,
+  "now": 26.9,
+  "layers": {
+   "decorLive.back": 12.7,
+   "workshop.back": 8.5,
+   "aicenter.back": 8,
+   "arcRight.back": 7.3,
+   "arcLeft.back": 7.1,
+   "tools.back": 6.3,
+   "analytics.back": 5.7,
+   "gardenScene.update": 4.5,
+   "city": 4.1,
+   "planters.back": 2.7,
+   "marketing.back": 2.2,
+   "інше": 1.9,
+   "room": 1.8,
+   "portal.back": 1.8,
+   "sofa.layer": 1.7,
+   "windowFrame.back": 1.6,
+   "rug.back": 1.1,
+   "mkChair.layer": 1.1,
+   "anChair.layer": 1.1,
+   "nexi.layer": 1.1,
+   "sofa.back": 1,
+   "nexi.refl": 0.9
+  }
+ }
+}

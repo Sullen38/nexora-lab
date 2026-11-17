@@ -1,0 +1,57 @@
+# ==============================================================================
+# .github/workflows/check.yml — АВТОПЕРЕВІРКА НА КОЖЕН PUSH (GitHub Actions)
+# ------------------------------------------------------------------------------
+# Запускає tools/check.sh --ci: описи файлів, збірка, консоль (комп'ютер + телефон), тексти 4 мовами, декор поза зонами
+# і швидкодія «до / після» проти попереднього коміту на тому самому сервері (падіння — кадр дорожчий більш ніж на 25 %:
+# сервери GitHub без відеокарти й різні, тому точна цифра fps тут нічого не важить — лише велике падіння).
+# Упало — червоний хрестик біля коміту; знімки комп'ютера й телефона — у «Artifacts» запуску.
+# Коміти, що міняють лише документи (docs/, *.md), не перевіряються. Веде чат «Ядро й оптимізація».
+# ==============================================================================
+name: Перевірка
+on:
+  push:
+    paths-ignore: ['docs/**', '**.md', 'LICENSE', 'brand/**']
+  workflow_dispatch:
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Playwright і Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: З чим порівнювати швидкодію
+        id: base
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          B="$BEFORE"
+          if [ -z "$B" ] || ! git cat-file -e "$B^{commit}" 2>/dev/null; then B=$(git rev-parse HEAD~1 2>/dev/null || true); fi
+          echo "sha=$B" >> "$GITHUB_OUTPUT"; echo "порівнюю з: $B"
+      - name: Перевірка (tools/check.sh)
+        run: tools/check.sh --ci "${{ steps.base.outputs.sha }}"
+      - name: Знімки
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: znimky
+          path: |
+            shot.png
+            shot_phone.png
+          if-no-files-found: ignore
+          retention-days: 7
