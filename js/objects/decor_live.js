@@ -186,6 +186,35 @@
     c.fillStyle = g; c.fillRect(0, by - 5, fw, 10);
     return true;
   }
+  /** (17.11, рецепт чату «Ядро»: fps на комп'ютері) ШАР ВЕЖІ-ГРИБНИЦІ Й КОРИДОРУ З ЛОТКАМИ. Раніше все це (7 мс на кадр) малювалось
+   *  щокадру просто на екран. Тепер — у своє полотно в пікселях екрана (малюється й копіюється лише прямокутник блока; полотно накладене на екран один в один —
+   *  той самий зсув, інакше краї ліній згладжуються на соті частки інакше), і перемальовується РАЗ НА 3 КАДРИ (рух там
+   *  повільний); щокадру — лише копія на екран. Усередині багато світіння ('lighter'), якому потрібне тло, тож перед малюванням у шар
+   *  копіюється те, що вже є на екрані під блоком (стіна кімнати), — складається піксель у піксель, як і раніше.
+   *  Камера зсунулась між перемальовуваннями — шар кладеться зі зсувом на цілі пікселі; змінився масштаб або блок частково за краєм
+   *  екрана й камера їде — перемальовується одразу. Стан пензля (згладжування, кінці ліній…) передається в шар і назад — як було. */
+  const VL = { cv: null, key: '', e: 0, f: 0, X0: 0, Y0: 0, st: null, cut: false };
+  const CST = ['imageSmoothingEnabled', 'imageSmoothingQuality', 'lineCap', 'lineJoin', 'lineWidth', 'miterLimit', 'lineDashOffset', 'font', 'textAlign', 'textBaseline', 'fillStyle', 'strokeStyle', 'globalAlpha', 'globalCompositeOperation', 'shadowBlur', 'shadowColor', 'shadowOffsetX', 'shadowOffsetY', 'filter'];
+  const stGet = c => { const o = {}; for (const k of CST) o[k] = c[k]; o.dash = c.getLineDash(); return o; }, stSet = (c, o) => { for (const k of CST) if (c[k] !== o[k]) c[k] = o[k]; c.setLineDash(o.dash); };
+  const vitBody = (c, t, vx0, vx1) => { drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); drawConv(c, t, vx0, vx1); };
+  let VBOX = null; const vitBox = () => { if (VBOX) return VBOX; if (!VIT || !CONV || !PYL) return null; const X = [], Y = [];
+    for (const f of [0, 1]) for (const a of [0, 1]) for (const yy of [VIT.top, VIT.bot]) { const q = VIT.at(f, a, yy); X.push(q[0]); Y.push(q[1]); } for (const sv of [0, CONV.smax]) { const q = CONV.P(sv, CONV.fl); X.push(q[0]); Y.push(q[1]); }
+    return VBOX = { x0: Math.min(...X) - 12, x1: Math.min(NX.cfg.ROOM_X1 + 2, Math.max(...X) + 12), y0: -3, y1: Math.max((PYL.dc.Yb || 104) + 12, Math.max(...Y) + 40) }; };   // заміряно: малюнок блока займає x 1374…1600, y −1…110.5 (день, сутінки, ніч)
+  function vitLayer(c, t, vx0, vx1) {
+    const B = vitBox(), m = c.getTransform(), cw = c.canvas.width, ch = c.canvas.height; if (!B || m.b || m.c || m.a <= 0 || m.d <= 0 || NX.decorLive.noLayer) return vitBody(c, t, vx0, vx1);
+    const fx0 = Math.floor(m.a * B.x0 + m.e), fy0 = Math.floor(m.d * B.y0 + m.f), fx1 = Math.ceil(m.a * B.x1 + m.e), fy1 = Math.ceil(m.d * B.y1 + m.f);
+    const X0 = Math.max(0, fx0), Y0 = Math.max(0, fy0), w = Math.min(cw, fx1) - X0, h = Math.min(ch, fy1) - Y0, L = VL; if (w <= 0 || h <= 0) return;                    // блок за краєм екрана
+    const key = m.a + ',' + m.d + ',' + w + ',' + h, fr = NX.loop && NX.loop.frames || 0, sx = Math.round(m.e - L.e), sy = Math.round(m.f - L.f), cut = X0 !== fx0 || Y0 !== fy0 || X0 + w !== fx1 || Y0 + h !== fy1;
+    const moved = m.e !== L.e || m.f !== L.f, redraw = !L.cv || L.key !== key || fr % 3 === 1 || (moved && (cut || L.cut));
+    if (redraw) {
+      if (!L.cv) { L.cv = document.createElement('canvas'); L.cv.width = L.cv.height = 1; } if (L.cv.width < X0 + w || L.cv.height < Y0 + h) { L.cv.width = Math.max(L.cv.width, X0 + w); L.cv.height = Math.max(L.cv.height, Y0 + h); L.g = null; }
+      const g = L.g || (L.g = L.cv.getContext('2d')); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = false; g.clearRect(X0, Y0, w, h); g.drawImage(c.canvas, X0, Y0, w, h, X0, Y0, w, h);   // тло з екрана
+      stSet(g, stGet(c)); g.setTransform(m.a, 0, 0, m.d, m.e, m.f); g.__base = c.__base;
+      vitBody(g, t, vx0, vx1); L.st = stGet(g); L.key = key; L.e = m.e; L.f = m.f; L.X0 = X0; L.Y0 = Y0; L.w = w; L.h = h; L.cut = cut;
+    }
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = false; c.drawImage(L.cv, L.X0, L.Y0, L.w, L.h, L.X0 + (redraw ? 0 : sx), L.Y0 + (redraw ? 0 : sy), L.w, L.h); c.restore();
+    stSet(c, L.st);                                                                                                                                                           // стан пензля — як після прямого малювання
+  }
   /** (15.11, власник: «там все живе само собою… пусти всі ресурси саме на промальовку та анімацію всього того блоку») ЖИТТЯ ВІТРИНИ-
    *  ГРИБНИЦІ — усе саме, без Nexi: спори підіймаються вгору (вночі світяться яскравіше), туман стікає з-під лампи й клубочиться,
    *  краплі конденсату сповзають склом, світні плями «дихають» — кожна у своєму такті, раз на ~3 хв — «дощ» усередині; уночі вежа
@@ -1078,7 +1107,6 @@
         if (k < 120) for (const C of CONES) { const f = k / 119, y = C.y0 + (C.y1 - C.y0) * f, hw = C.w0 + (C.w1 - C.w0) * f; c.fillRect(C.x - hw, y - .3, hw * 2, .6); }
         if (k % 4 === 0) for (const m of MOTES) { const [x, y] = moteAt(m, t * 2); c.fillRect(x - .2, y - .2, .4, .4); }
         if (PYL && PYL.dc.fungi && k < 200) { const { P } = basis(PYL); for (const [fu, fY, fr] of PYL.dc.fungi) { const f = k / 200, pp = proj(P(fu + Math.sin(f * 7) * (fr * .75 + .7), -.4 - f * 1.6, fY + fr * .35 - f * 14)); c.fillRect(pp[0] - .3, pp[1] - .3, .6, .6); } }
-        if (NX.bfly) for (const B of NX.bfly.all) c.fillRect(B.x - 5, B.y - 4, 10, 8);
         for (const f of FLY2) { const x = f.x + Math.sin(t * (.27 + hash(f.sd, 1) * .2) + f.sd) * f.ax, y = f.y + Math.sin(t * (.39 + hash(f.sd, 2) * .2) + f.sd * 2) * f.ay; c.fillRect(x - .6, y - .6, 1.2, 1.2); }
       }
       c.restore(); LP.forEach(L => { L.q = -1; });
@@ -1088,7 +1116,7 @@
       T('build', () => { buildPlants(); liftStep('left'); liftStep('right'); });
       const m = c.getTransform(); c.__base = [m.a, m.b, m.c, m.d, m.e, m.f];
       T('farm', () => { if (NX.decorFarm && NX.decorFarm.frame) NX.decorFarm.frame(c, t, vx0, vx1); });   // (15.11) рама ферми чітким шаром — objects/decor_farm.js
-      T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); drawPylonBits(c, t, vx0, vx1); drawFungi(c, t, vx0, vx1); drawConv(c, t, vx0, vx1); });
+      T('pylon', () => { maskedDraw(c, 'door', t, Rd, vx0, vx1, paintDoor); maskedDraw(c, 'pylon', t, Rd, vx0, vx1, paintGlass); vitLayer(c, t, vx0, vx1); });
       T('led', () => drawLED(c, t, vx0, vx1));
       T('art', () => { if (NX.decorCollage) NX.decorCollage.draw(c, t, { items, proj, basis, vx0, vx1 }); drawArt(c, t, vx0, vx1); });   // (· 53) колаж довкола сот — під сяйвом сот
       T('rudik', () => drawRudik(c, t, vx0, vx1));
