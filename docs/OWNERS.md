@@ -2,7 +2,7 @@
 
 | Чат | Файл чату | Його файли |
 |---|---|---|
-| Архітектор | `docs/chats/architect.md` | `docs/*` (RULES, OWNERS, ROADMAP, chats/), код не пише |
+| Архітектор | `docs/chats/architect.md` | `CLAUDE.md`, `docs/*` (RULES, OWNERS, ROADMAP, chats/), код не пише |
 | Ядро й оптимізація | `docs/chats/core.md` | `js/core/*`, `js/main.js`, `js/fx/*`, `js/ui/input.js`, `hud.js`, `chat.js`, `splash.js`, `js/world/*` (кімната, підлога, місто за вікном), `js/objects/window_frame.js`, `css/*`, `index.html`, `tools/build.py`, `bench.js`, `first.js`, `same.js`, `roam.js`, `texts.js`, `shot.js`, `tools/splash`, `tools/image` |
 | Кімната — правки (з 15.11) | `docs/chats/room.md` | уся основна кімната візуально: усе з рядків «Декор стін і диван» і «Робочі зони» (слово власника 15.11, 21:50: «усе, що в ній є візуально, підпадає під цей чат; робочі зони теж») |
 | ~~Декор стін і диван~~ (закрито 15.11, передано в «Кімната — правки») | `docs/chats/decor.md` | `js/objects/decor*.js`, `dc_paint.js`, `dc_plants.js`, `planters.js`, `sofa.js`, `tools/wingbox/decor.py`, `decor_check.js`; дії догляду в `activities.js` |
