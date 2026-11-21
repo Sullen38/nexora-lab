@@ -226,7 +226,7 @@ NX.nexi = {
   },
   begin(a) {
     if (a.walk) {                                                                     // шлях в обхід меблів (world/room.js: route)
-      a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk); a.pi = 0;
+      a.from = [this.x, this.y]; a.path = NX.room.route(a.from, a.walk, 'nexi', true); a.pi = 0;   // true — можна пройти за диваном, якщо так ближче (world/room.js: route; «Кімната — правки», 21.11)
       let L = 0, p = a.from; a.path.forEach(q => { L += Math.hypot(q[0] - p[0], q[1] - p[1]); p = q; }); a.run = L > NX.cfg.RUN_FROM;
       if (a.far && L > 650) a.dash = a.far;                                              // далекий тап по підлозі — ривок
       if (a.style) { a.L = L; a.T = this.moveTime(a.style, L); a.cum = []; let c = 0, o = a.from; a.path.forEach(q => { c += Math.hypot(q[0] - o[0], q[1] - o[1]); a.cum.push(c); o = q; });   // спосіб тапу: час у дорозі й довжини відрізків шляху

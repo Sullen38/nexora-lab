@@ -93,7 +93,7 @@ NX.room = {
     for (const id in NX.objects) {
       const o = NX.objects[id]; if (cat && o.catOk) continue;                          // catOk — слід лише для Nexi (так був куточок кота, be2f780)
       const f = o.foot; if (!f) continue;
-      (Array.isArray(f[0]) ? f : [f]).forEach(r => out.push([r[0] - px, r[1] + px, r[2] - 3, r[3] + (cat ? 3 : 4)]));
+      (Array.isArray(f[0]) ? f : [f]).forEach(r => { const q = [r[0] - px, r[1] + px, r[2] - 3, r[3] + (cat ? 3 : 4)]; if (o.footBack && !cat) q.back = o.footBack - 3; out.push(q); });   // footBack — за меблями є прохід (див. route)
     }
     return out;
   },
@@ -112,9 +112,13 @@ NX.room = {
   },
   /** Шлях від from до to в обхід перешкод: точки після старту (остання — ціль). Старт або ціль усередині сліду (щойно
    *  зістрибнув з дивану; точка «перед диваном», звідки милуються вікном) — спершу виходить на найближчий край сліду
-   *  (freeAt), а до цілі заходить з її найближчого краю — тож крізь меблі не йде навіть тоді. Не знайшов — прямо. */
-  route(from, to, who) {
-    const R = this.obstacles(who), inS = p => R.some(r => p[0] > r[0] + .01 && p[0] < r[1] - .01 && p[1] > r[2] + .01 && p[1] < r[3] - .01), pre = [], post = [];
+   *  (freeAt), а до цілі заходить з її найближчого краю — тож крізь меблі не йде навіть тоді. Не знайшов — прямо.
+   *  (21.11, «Кімната — правки», слово власника: «за диваном — підлога, яку не видно; він просто проходить за диваном, якщо так
+   *  ближче») pass = true — у меблів із footBack (objects/sofa.js: де на підлозі кінчається диван ззаду) задня частина сліду
+   *  шляхові не заважає: за ними можна ПРОЙТИ, але не стати — clampWalk / freeAt і список obstacles() лишаються як були, тож
+   *  ціль там не опиниться. Кіт, м'ячик і гості ходять як раніше (pass не передають). */
+  route(from, to, who, pass) {
+    const R = pass ? this.obstacles(who).map(r => r.back ? [r[0], r[1], r.back, r[3]] : r) : this.obstacles(who), inS = p => R.some(r => p[0] > r[0] + .01 && p[0] < r[1] - .01 && p[1] > r[2] + .01 && p[1] < r[3] - .01), pre = [], post = [];
     if (inS(from)) { const e = this.freeAt(from[0], from[1], who); if (!inS(e)) { pre.push(e); from = e; } }
     if (inS(to)) { const e = this.freeAt(to[0], to[1], who); if (!inS(e)) { post.push(to); to = e; } }
     return [...pre, ...this.path(from, to, R), ...post];
