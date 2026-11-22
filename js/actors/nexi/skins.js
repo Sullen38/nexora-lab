@@ -105,6 +105,24 @@ rainbow:{rar:'legendary',look:{theme:'rainbow',body:'holo',ant:'neon',back:'wing
 const skinLook=(id,base)=>Object.assign({},DEFAULT_LOOK,{hand:base?base.hand:null,fx:base?base.fx:'none'},SKINS[id].look,{face:'standard'});
 /** Який готовий скін зараз на Nexi (або null). */
 const skinOf=L=>Object.keys(SKINS).find(id=>{const s=skinLook(id);return['theme','body','arms','legs','ant','head','back'].every(k=>(s[k]??DEFAULT_LOOK[k])===(L[k]??DEFAULT_LOOK[k]));})||null;
+/** Який готовий скін на Nexi — з кешем (renderBot питає щокадру). */
+const SKIN_CACHE=new Map();
+const skinOfC=L=>{const k=[L.theme,L.body,L.arms,L.legs,L.ant,L.head,L.back].join('|');let v=SKIN_CACHE.get(k);if(v===undefined){v=skinOf(L);if(SKIN_CACHE.size>400)SKIN_CACHE.clear();SKIN_CACHE.set(k,v)}return v};
+// ПІДПИС СКІНА (власник, 23.11: «пропрацювати краще скіни всі»): коли на Nexi ПОВНИЙ готовий скін (усі його частини), він
+// отримує свою живу деталь (sprite.js -> skinSig: прапор самурая, супутник астронавта, кільце планети космосу, жар лави…),
+// свій колір блискавки й сліду (zap: [сяйво, жила]; rb — веселка) і свою реліквію-пару (pair): з нею здібність сильніша
+// (relics.js: pow). Своє поєднання частин підпису не має — це бонус саме готового образу.
+const SKIN_SIG={
+classic:{},neon:{zap:['#ff2ad0','#ff9af0']},forest:{zap:['#2d9a3a','#b6ff8a']},winter:{zap:['#5ab8ff','#d8f2ff']},
+gamer:{zap:['#6a5cff','#ffe14d'],pair:'gauntlet'},techno:{zap:['#17c3c9','#9af6ff'],pair:'shield'},candy:{zap:['#ff4fd8','#ffd0f0']},
+astro:{zap:['#ff8a2a','#ffd27a'],pair:'magnet'},captain:{zap:['#6a4aa8','#c8a0ff'],pair:'sword'},
+samurai:{zap:['#c22e44','#ff9a8a'],pair:'katana'},cyber:{zap:['#17a860','#8affc0'],pair:'blade'},pumpkin:{zap:['#ff7a1a','#ffc93a']},
+frost:{zap:['#3a9aff','#cff4ff'],pair:'staff'},royal:{zap:['#e0902a','#ffe27a'],pair:'excalibur'},lava:{zap:['#ff3b1a','#ffb03a'],pair:'torch'},
+cosmos:{zap:['#6a4aff','#c8b0ff'],pair:'wand'},rainbow:{rb:true,pair:'balloon'}};
+/** Колір блискавки й сліду для образу: [сяйво, жила] (без готового скіна — жовтий, як було). */
+const skinZap=(L,t)=>{const g=SKIN_SIG[skinOfC(L)];if(g&&g.rb)return[hsl2hex((t*160)%360,.9,.55),hsl2hex((t*160+40)%360,.95,.78)];return g&&g.zap||['#ffb52e','#ffe27a']};
+/** Чи реліквія id — пара до скіна, що зараз на Nexi. */
+const skinPair=(L,id)=>{const g=SKIN_SIG[skinOfC(L)];return !!(g&&id&&g.pair===id)};
 const FX={none:'Без ефекту',sparks:'Іскри',energy:'Енергія',aura:'Аура',trail:'Слід',rain:'Дощ',snow:'Сніг',fire:'Вогонь',water:'Вода',neon:'Неон'};
 const MOODS={happy:'Радість',love:'Любов',surprise:'Сюрприз',idea:'Ідея',sleepy:'Сон',sad:'Сум',angry:'Злість',cool:'Круто'};
 const ACTIONS={stand:'Стоїть',walk:'Ходить',run:'Біжить',wave:'Привіт',think:'Думає',point:'Вказує',talk:'Розповідає',cheer:'Радіє',spin:'Оберт',stretch:'Потягується',look:'Роззирається',jump:'Стрибає',work:'Працює',sleep:'Сон',dance:'Танцює',read:'Читає',meditate:'Медитує',bye:'Прощається',drink:'П\'є каву',hammer:'Ремонтує'};

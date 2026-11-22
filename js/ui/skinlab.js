@@ -68,7 +68,7 @@ NX.ui.skinlab = {
   isOn(c, id) { const L = NX.nexi.look; if (c.k === 'skin') return skinOf(L) === id; if (c.k === 'acc' || c.k === 'relic') return L[ACCS[id].slot] === id; if (c.k === 'act' || c.k === 'mood') return false; return (L[c.k] ?? DEFAULT_LOOK[c.k]) === id; },
   apply(c, id) {
     const n = NX.nexi, L = n.look; n.lastCmd = NX.time;
-    if (c.k === 'skin') Object.assign(L, skinLook(id, L));                                  // готовий скін — увесь образ; реліквія в руці лишається (власник, 06.11)
+    if (c.k === 'skin') { Object.assign(L, skinLook(id, L)); n.morph(id); }                                  // готовий скін — увесь образ; реліквія в руці лишається (власник, 06.11)
     else if (c.k === 'acc' || c.k === 'relic') { const s = ACCS[id].slot; L[s] = L[s] === id ? null : id; }
     else if (c.k === 'act') { n.temp = id; n.tempT = NX.time + 4; }
     else if (c.k === 'mood') n.emote(id, 3);
@@ -94,7 +94,9 @@ NX.ui.skinlab = {
         sm.textContent = ow ? O.noText(ow) + (ow.mine ? ' · ' + NX.t('own.you') : '') : NX.t('skin.rar.' + rar); b.append(sm); }
       let l = { ...NX.nexi.look }, po = poseFor('stand', .5, false);                                   // t .5 — очі відкриті (у t 0 — кліп)
       if (c.k === 'skin') l = skinLook(id, l); else if (c.k === 'acc' || c.k === 'relic') l[ACCS[id].slot] = id; else if (c.k === 'act') po = poseFor(id, .3, false); else if (c.k === 'mood') po.face = NX.nexi.faceOf(id); else l[c.k] = id;
-      renderBot(l, po, .5, this.tcr); cn.getContext('2d').drawImage(this.tcr, 0, 0); b.onclick = () => this.apply(c, id); g.appendChild(b);
+      renderBot(l, po, .5, this.tcr); const tx = cn.getContext('2d'); tx.drawImage(this.tcr, 0, 0);
+      if (c.k === 'relic' && skinPair(NX.nexi.look, id)) { tx.fillStyle = '#ffd45a'; tx.fillRect(2, 4, 7, 1); tx.fillRect(5, 1, 1, 7); tx.fillRect(4, 3, 3, 3); tx.fillStyle = '#ffffff'; tx.fillRect(5, 4, 1, 1); }   // (23.11) золота зірка: ця реліквія — пара до скіна, що зараз на Nexi (здібність сильніша)
+      b.onclick = () => this.apply(c, id); g.appendChild(b);
     });
   },
   /** Вкладка ВЛАСНИКИ: усі картки за номером (ім'я, #001; своя — «ТИ»); тап — картка NFT (свою можна вдягнути). */

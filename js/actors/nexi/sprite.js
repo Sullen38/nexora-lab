@@ -77,6 +77,9 @@ function renderBot(look, pose, t, cv) {
     for (const [o, n] of [[0, 13], [3, 10]]) for (let i = 0; i < n; i++) { const w = Math.round(Math.sin(t * 8 - i * .55 + o) * 1.4 * i / n - vel * 4 * i / n), y = by + o + Math.round(i * .3) + w;
       P(bx + 3 - i, y, 1, 3, i % 4 < 2 ? sc : shade(sc, -.25)); if (i % 4 === 0) P(bx + 3 - i, y, 1, 1, shade(sc, .4)); } }
 
+  const sk = skinOfC(look), SG = { hX, hY, bx, by, bw, bh, back: !!pose.back, sit: !!pose.sit };
+  if (sk) skinSig(B, sk, SG, t, false);                                                          // підпис готового скіна — те, що ЗА Nexi
+
   // ---------- 2. реактивний ранець (у польоті) ----------
   if (pose.jet) for (const jx of [6, 36]) {
     BLK(jx, by - 2, 6, 13, 2, '#8a93b8'); P(jx, by - 2, 6, 2, '#d93a4a'); P(jx + 1, by + 11, 4, 2, '#3a4060');
@@ -215,12 +218,64 @@ function renderBot(look, pose, t, cv) {
     case 'tablet': BLK(ex - 4, ey - 6, 9, 7, 1, '#2a2f5e'); P(ex - 3, ey - 5, 7, 5, Math.sin(t * 3) > 0 ? '#3be8ff' : '#2a8cff'); break;
   }
 
+  if (sk) skinSig(B, sk, SG, t, true);                                                           // підпис готового скіна — те, що ПОВЕРХ
+
   // ---------- 10. голо-скін: скан-лінії ----------
   if (bd.pat === 'holo') { x.globalCompositeOperation = 'source-atop'; for (let yy = (Math.floor(t * 20) % 2); yy < SH; yy += 2) { x.fillStyle = 'rgba(160,240,255,.28)'; x.fillRect(0, yy, SW, 1); } x.globalCompositeOperation = 'source-over'; }
 
   // ---------- 11. темний контур ----------
   pxOutline(x, SW, SH);
   return cv;
+}
+
+/* ---------- ПІДПИС ГОТОВОГО СКІНА (23.11; skins.js -> SKIN_SIG) ----------
+ * Жива деталь, яку має лише повний готовий скін (не окрема частина): так кожен скін відрізняється не тільки кольором.
+ * Малюється двічі за кадр: over = false — те, що за Nexi (до тулуба й голови), over = true — поверх усього (до контуру).
+ * g — геометрія кадру: голова (hX, hY, 30×22), тулуб (bx, by, bw×bh), back — Nexi спиною. Усе — пікселями спрайта. */
+function skinSig(B, sk, g, t, over) {
+  const { P, line, map } = B, { hX, hY, bx, by, bw, bh } = g, f = Math.floor(t * 10), cx = hX + 15, sn = Math.sin;
+  const orbit = (sp, rx, ry, dy, tilt, draw) => { const a = t * sp, s = sn(a), x = Math.round(cx + Math.cos(a) * rx), y = Math.round(hY + dy + s * ry + Math.cos(a) * tilt); if ((s > 0) === over) draw(x, y, a); };
+  switch (sk) {
+    case 'neon': if (over) { const c1 = f % 6 < 3 ? '#ff4fd8' : '#3be8ff', c2 = f % 6 < 3 ? '#3be8ff' : '#ff4fd8', q = f % 12;                    // неонові трубки з боків голови, по них біжить вогник
+        P(hX + 1, hY + 5, 1, 12, c1); P(hX + 28, hY + 5, 1, 12, c2); P(hX + 1, hY + 5 + q, 1, 1, '#ffffff'); P(hX + 28, hY + 16 - q, 1, 1, '#ffffff'); P(bx + 1, by + 1, 1, bh - 4, c2); P(bx + bw - 2, by + 1, 1, bh - 4, c1); } break;
+    case 'forest': if (over) { const sw = Math.round(sn(t * 2.2) * 1.2), x0 = hX + 23, y0 = hY;                                                  // паросток на голові: стебло й два листки, гойдається
+        P(x0, y0 - 3, 1, 4, '#2d7a3a'); P(x0 + sw, y0 - 5, 1, 2, '#3f9a4a'); P(x0 + 1 + sw, y0 - 5, 3, 2, '#7ad06a'); P(x0 + 2 + sw, y0 - 6, 2, 1, '#b6ff8a'); P(x0 - 3 + sw, y0 - 4, 3, 2, '#5fae6a'); P(x0 - 3 + sw, y0 - 5, 2, 1, '#9ae88a');
+        if (!g.back) { P(bx + bw - 6, by + 2, 3, 2, '#7ad06a'); P(bx + bw - 5, by + 1, 2, 1, '#b6ff8a'); } } break;                                // листок-значок на грудях
+    case 'winter': if (over) { for (let i = 0; i < 14; i++) if (i % 3 !== 2) P(hX + 2 + i * 2, hY + (i % 4 === 1 ? 0 : 1), 2, 1, '#ffffff');       // сніг на краю шапки й три сніжинки, що падають
+        for (let k = 0; k < 3; k++) { const q = (t * .45 + k / 3) % 1, x = [3, 44, 41][k] + Math.round(sn(t * 2 + k * 2) * 1.5), y = Math.round(2 + q * 44); P(x, y, 1, 1, '#ffffff'); if (f % 4 < 2) { P(x - 1, y, 3, 1, 'rgba(255,255,255,.6)'); P(x, y - 1, 1, 3, 'rgba(255,255,255,.6)'); } } } break;
+    case 'gamer': if (over) { for (let i = 0; i < 12; i++) P(hX + 4 + i * 2, hY - 3, 2, 1, hsl2hex((i * 30 + t * 220) % 360, .95, .62));           // RGB-хвиля по дузі навушників і по поясу
+        for (let i = 0; i < bw - 2; i += 2) P(bx + 1 + i, by + bh - 3, 2, 1, hsl2hex((i * 18 - t * 220 + 720) % 360, .95, .6)); } break;
+    case 'techno': if (over && !g.back) { const q = f % 14; [hX + 6, hX + 17].forEach(gx => { if (q < 8) P(gx + q, hY + 6, 1, 6, 'rgba(255,255,255,.75)'); });   // промінь сканера по лінзах окулярів, індикатори на скроні
+        P(hX + 1, hY + 15, 1, 1, f % 8 < 4 ? '#3bffe0' : '#0a5a50'); P(hX + 28, hY + 15, 1, 1, f % 8 < 4 ? '#0a5a50' : '#3bffe0'); } break;
+    case 'candy': if (over) { [[5, 1, '#ff5ad8'], [9, 2, '#4ee0c0'], [13, 1, '#ffe27a'], [17, 2, '#7a8aff'], [21, 1, '#ff5ad8'], [24, 2, '#ffe27a'], [7, 3, '#ffffff'], [19, 3, '#4ee0c0']].forEach(([a, b, c], i) => P(hX + a, hY + b, i % 2 ? 2 : 1, i % 2 ? 1 : 2, (f + i * 3) % 16 < 2 ? '#ffffff' : c));   // посипка на голові
+        const q = Math.floor(t * 4) % 4; [hX - 3, hX + 30].forEach(ex => { P(ex, hY + 9, 3, 3, '#ffffff'); P(ex + [0, 2, 2, 0][q], hY + 9 + [0, 0, 2, 2][q], 1, 1, '#ff4fd8'); P(ex + 1, hY + 10, 1, 1, '#ff4fd8'); }); } break;   // льодяник-спіраль на «вухах» крутиться
+    case 'astro': orbit(1.7, 23, 4, 4, -3, (x, y) => { P(x - 3, y, 2, 1, '#ff8a2a'); P(x + 2, y, 2, 1, '#ff8a2a'); P(x - 1, y - 1, 3, 3, '#e8ecff'); P(x, y, 1, 1, f % 6 < 3 ? '#ff3b3b' : '#7a1a1a'); });   // супутник облітає шолом (за головою — ховається)
+      if (over) { P(hX + 9, hY + 22, 1, 1, f % 10 < 5 ? '#3bff8a' : '#1f5a3a'); P(hX + 20, hY + 22, 1, 1, f % 10 < 5 ? '#1f5a3a' : '#3bff8a'); } break;
+    case 'captain': if (over) { const sw = sn(t * 3) * 1.3; for (let i = 0; i < 8; i++) { const x = hX + 23 + i + Math.round(sw * i / 8), y = hY - 8 - Math.round(Math.sqrt(i) * 2.2); P(x, y, 2, 2, i < 5 ? '#d93a4a' : '#ff8a5a'); if (i % 2) P(x, y, 1, 1, '#ff9a8a'); } P(hX + 22, hY - 7, 2, 2, '#ffe27a'); } break;   // перо на капітанці
+    case 'samurai': if (!over) { const C = '#c22e44', D = '#7a1626';                                                                                 // прапор сашимоно за спиною: держак і червоне полотнище з золотим колом, майорить
+        P(10, 1, 1, by + 4, '#3a2a1a'); P(9, 0, 3, 1, '#ffc94d');
+        for (let j = 0; j < 12; j++) { const o = Math.round(sn(t * 5 + j * .5) * (j / 12) * 1.4); P(2 + o, 1 + j, 8, 1, j % 5 === 4 ? D : C); P(2 + o, 1 + j, 1, 1, '#ff6a7a'); }
+        const o2 = Math.round(sn(t * 5 + 2.5) * .6); P(4 + o2, 4, 4, 4, '#ffc94d'); P(5 + o2, 3, 2, 6, '#ffc94d'); P(5 + o2, 5, 2, 2, '#fff2c0'); } break;
+    case 'cyber': if (over) { [bx + 2, bx + 5, bx + bw - 6, bx + bw - 3].forEach((x, i) => { const q = Math.floor(t * 9 + i * 2.7) % (bh - 3); P(x, by + 1 + q, 1, 1, '#e0ffe8'); if (q > 0) P(x, by + q, 1, 1, '#3bff8a'); if (q > 1) P(x, by + q - 1, 1, 1, '#17a860'); });   // «дощ даних» по тулубу
+        [hX + 1, hX + 28].forEach((x, i) => { const q = Math.floor(t * 7 + i * 4) % 14; P(x, hY + 4 + q, 1, 2, '#3bff8a'); }); if (f % 37 < 2) P(hX + 2, hY + 6 + (f % 9), 26, 1, 'rgba(59,255,138,.45)'); } break;   // і по скронях; зрідка — рядок-збій
+    case 'pumpkin': orbit(2.3, 22, 5, 2, 4, (x, y) => { const w = f % 4 < 2; P(x - 1, y, 3, 2, '#2a1040'); P(x - 3, y - (w ? 1 : -1), 2, 1, '#4a2a7a'); P(x + 2, y - (w ? 1 : -1), 2, 1, '#4a2a7a'); P(x - 1, y, 1, 1, '#ffc93a'); P(x + 1, y, 1, 1, '#ffc93a'); });   // кажан кружляє довкола голови
+      if (over && !g.back && f % 9 === 0) P(bx + 9 + (f % 5), by + 4, 2, 1, '#fff0a0'); break;
+    case 'frost': if (over) { [[5, 4], [10, 6], [19, 6], [24, 4]].forEach(([a, h], i) => { for (let j = 0; j < h; j++) { const w = j < 2 ? 3 : j < h - 1 ? 2 : 1; P(hX + a + (3 - w >> 1), hY - j, w, 1, j === h - 1 ? '#ffffff' : j % 2 ? '#cff4ff' : '#7ad0ff'); } if ((f + i * 5) % 20 < 2) { P(hX + a, hY - h - 1, 3, 1, '#ffffff'); P(hX + a + 1, hY - h - 2, 1, 3, '#ffffff'); } });   // вінець із крижаних кристалів, на вістрях спалахують іскри
+        const q = (t * .5) % 1; P(4, Math.round(8 + q * 38), 1, 1, '#ffffff'); P(43, Math.round(8 + ((q + .5) % 1) * 38), 1, 1, '#cff4ff'); } break;
+    case 'royal': if (over) { const q = Math.floor(t * 2.5) % 3, [sx, sy] = [[hX + 11, hY - 7], [hX + 15, hY - 9], [hX + 19, hY - 7]][q]; P(sx - 1, sy, 3, 1, '#ffffff'); P(sx, sy - 1, 1, 3, '#ffffff');   // самоцвіти корони спалахують по черзі
+        if (!g.back) { P(bx + 1, by - 1, bw - 2, 2, '#ffffff'); P(bx + 2, by - 1, bw - 4, 1, '#f2ecff'); for (let i = 0; i < 6; i++) P(bx + 3 + i * 3, by + (i % 2 ? 0 : -1), 1, 1, '#1a1430'); }                      // горностаєвий комір
+        for (let k = 0; k < 4; k++) { const u = (t * .4 + k / 4) % 1; P([3, 44, 6, 41][k], Math.round(46 - u * 40), 1, 1, u < .8 ? (f + k) % 4 < 2 ? '#ffe27a' : '#fff6cc' : 'rgba(255,226,122,.4)'); } } break;       // золоті іскри здіймаються обабіч
+    case 'lava': if (over) { const q = f % 26; if (q < 19) { P(hX + 5 + q, hY + 1, 2, 1, '#fff2b0'); P(hX + 4 + q, hY + 1, 1, 1, '#ffb03a'); }                                                 // жар пробігає по верху голови
+        const d = (t * .8) % 1; if (d < .7) { const y = by + bh - 2 + Math.round(d / .7 * (FOOT - by - bh + 1)); P(bx + 4, y, 1, 2, '#ff9a3a'); P(bx + 4, y + 1, 1, 1, '#ffe27a'); }           // розпечена крапля падає з тулуба
+        for (let k = 0; k < 4; k++) { const u = (t * .7 + k * .27) % 1, x = hX + 4 + ((k * 7) % 22) + Math.round(sn(t * 3 + k) * 1.5); P(x, Math.round(hY - 1 - u * 9), 1, 1, u < .5 ? '#ffe27a' : u < .8 ? '#ff7a2a' : '#7a2a1a'); }   // жаринки злітають над головою
+        if (f % 5 < 3) { P(bx + 1, by + bh - 4, 2, 1, '#ff9a3a'); P(bx + bw - 3, by + 1, 2, 1, '#ff9a3a'); } } break;
+    case 'cosmos': for (let i = 0; i < 26; i++) { const a = i / 26 * 6.2832 + t * .5, s = sn(a); if ((s > 0) !== over) continue; const x = Math.round(cx + Math.cos(a) * 22), y = Math.round(hY + 12 + s * 4 - Math.cos(a) * 4); P(x, y, 1, 1, i % 5 === 0 ? '#ffffff' : i % 2 ? '#9ad0ff' : '#6a5cff'); }   // кільце планети довкола голови (задня половина — за головою)
+      orbit(.5, 22, 4, 12, -4, (x, y) => { P(x - 1, y - 1, 3, 3, '#ffd45a'); P(x - 1, y - 1, 1, 1, '#fff6cc'); P(x + 1, y + 1, 1, 1, '#c07a1a'); });                                      // і планета на ньому
+      if (over) for (let k = 0; k < 5; k++) { const x = hX + 3 + ((k * 11 + Math.floor(t * 2)) % 24), y = hY + 1 + (k % 3); if ((f + k * 3) % 7 < 4) P(x, y, 1, 1, k % 2 ? '#ffffff' : '#c8b0ff'); } break;   // зорі пливуть по голові
+    case 'rainbow': if (!over) { const C = ['#ff5a5a', '#ffb03a', '#ffe14d', '#3bff8a', '#3bb8ff', '#b06bff'];                                       // веселка-дуга за головою, по ній біжить блиск
+        for (let i = 0; i <= 64; i++) { const a = Math.PI + i / 64 * Math.PI; C.forEach((c, k) => { const R = 22 - k; P(Math.round(cx + Math.cos(a) * R), Math.round(hY + 13 + sn(a) * (R - 6)), 1, 1, (i + f) % 32 === k ? '#ffffff' : c); }); } }
+      else for (let k = 0; k < 3; k++) if ((f + k * 4) % 12 < 3) { const x = [4, 43, 24][k], y = [20, 16, 2][k]; P(x - 1, y, 3, 1, '#ffffff'); P(x, y - 1, 1, 3, '#ffffff'); } break;
+  }
 }
 
 /* ---------- ПРЕДМЕТИ В РУКАХ (слот hand у skins.js → ACCS) ----------

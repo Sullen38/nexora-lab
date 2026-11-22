@@ -66,7 +66,8 @@ NX.objects.relics = (() => {
   function show(id, why, light) {
     if (S.act || !POSE[id]) return false; if (!light && !free()) return false;
     const N = n(), t = NX.time, D = DUR[id];
-    S.act = { id, t0: t, D, why, done: {}, light: !!light }; S.flash = 0; S.bits = []; S.fxT = {};
+    S.act = { id, t0: t, D, why, done: {}, light: !!light, pow: skinPair(N.look, id) }; S.flash = 0; S.bits = []; S.fxT = {}; S.cut2 = null;
+    if (S.act.pow) { const th = THEMES[N.look.theme] || THEMES.standard; S.act.col = th.acc; NX.fx.emit('ring', N.x, N.y, { col: th.acc, gr: 130, ttl: .6 }); NX.fx.emit('ring', N.x, N.y, { col: '#ffd45a', gr: 80, ttl: .5 }); }   // ПАРА «скін + реліквія»: посилена здібність
     N.lastCmd = t; N.emote(MOOD[id], D + .4);
     if (!light) { N.back = false; N.temp = POSE[id]; N.tempT = t + D; N.hiT = 0; }
     if (why === 'tap') N.say(NX.pick('act.relic.' + id));
@@ -84,6 +85,7 @@ NX.objects.relics = (() => {
     const A = S.act, k = (t - A.t0) / A.D;
     if (k >= 1 || (N.cur && !A.light) || N.look.hand !== A.id) { S.act = null; S.bits = []; if (N.temp === POSE[A.id]) N.tempT = 0; S.next = t + 30 + r() * 40; return; }
     const G = geo(), F = NX.fx, P = relicPose(A.id, k, t), H = hand(G, A.light ? { ra: { x: 3, y: -8 }, la: { x: -3, y: 5 }, bob: 0, item: P.item } : P), tip = H.tip(LEN[A.id] || 0);
+    if (A.pow && r() < .55) F.emit('energy', G.X + (r() - .5) * 40 * G.s, G.Y - r() * G.top * .5, { col: r() < .5 ? A.col : '#ffd45a' });   // пара: енергія здіймається довкола весь час здібності
     const once = (key, at, f) => { if (k >= at && !A.done[key]) { A.done[key] = 1; S.fxT[key] = t; f(); } }, kick = v => NX.nexiPhys.kick(v);
     switch (A.id) {
       case 'hammer': {                                                               // .54 — удар об підлогу: блискавка з неба в місце удару, тріщини, грім; .72 і .86 — відлуння
@@ -103,10 +105,11 @@ NX.objects.relics = (() => {
         break; }
       case 'katana': {                                                               // .36 — зблиск на цубі; .46 — розчерк; далі з лінії розрізу сиплються пелюстки
         once('glint', .36, () => F.emit('spark', H.x, H.y, { col: '#ffffff', vx: 0, vy: 0, g: 0, ttl: .2 }));
-        once('cut', .46, () => { S.flash = .12; kick(1.6); S.cut = { x0: G.X - G.d * 14 * G.s, x1: G.X + G.d * 150 * G.s, y: G.Y - G.top * .56, d: G.d, s: G.s };
+        once('cut', .46, () => { S.flash = .12; kick(1.6); S.cut = { x0: G.X + G.d * 22 * G.s, x1: G.X + G.d * 170 * G.s, y: G.Y - G.top * .56, d: G.d, s: G.s };
           for (let i = 0; i < 8; i++) F.emit('line', G.X + G.d * r() * 120 * G.s, S.cut.y + (r() - .5) * 6, { w: 14, col: '#ffffff', vx: G.d * 160 }); });
         const C = S.cut, age = t - (S.fxT.cut || t);
         if (C && age > .12 && age < 1.25 && r() < .75) { const q = r(), x = C.x0 + (C.x1 - C.x0) * q; F.emit('snow', x, C.y - q * 8 * C.s, { col: ['#ffb6dc', '#ff8fc8', '#ffe0f0'][r() * 3 | 0], vx: -C.d * (4 + r() * 14), vy: 12 + r() * 16, ttl: 1.3 + r() * .8, s: 1.6 }); }
+        if (A.pow) once('cut2', .6, () => { S.flash = .1; kick(1.2); S.cut2 = { x0: C.x1, x1: C.x0 - C.d * 20 * C.s, y: C.y - 22 * C.s, d: -C.d, s: -C.s * 2.6 }; });   // пара із самураєм: другий розчерк навхрест
         once('split', .58, () => { const mx = (C.x0 + C.x1) / 2; for (let i = 0; i < 10; i++) F.emit('spark', mx + (r() - .5) * 60, C.y, { col: '#ffffff', vx: (r() - .5) * 60, vy: (r() < .5 ? -1 : 1) * (20 + r() * 50), g: 30, ttl: .45 }); });
         break; }
       case 'gauntlet': {                                                             // кулак угору, сяйво росте; .5 — клацання: золоті іскри й біти
@@ -120,8 +123,8 @@ NX.objects.relics = (() => {
         break; }
       case 'staff': {                                                                // .3 — удар посохом: крижане кільце й шипи; .86 — шипи розсипаються
         once('strike', .3, () => { kick(1.6); F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 120, ttl: .7 });
-          S.ice = [...Array(8)].map((_, i) => { const a = (i + .5) / 8 * Math.PI + (r() - .5) * .2; return { a, h: 9 + r() * 14, w: 3 + (r() * 3 | 0), dl: r() * .12 }; }); });
-        once('shatter', .86, () => { (S.ice || []).forEach(q => { const x = G.X + Math.cos(q.a) * 36 * G.s, y = G.Y + Math.sin(q.a) * 9 * G.s; for (let i = 0; i < 4; i++) F.emit('spark', x, y - r() * q.h * G.s, { col: r() < .5 ? '#cfefff' : '#ffffff', vx: (r() - .5) * 70, vy: -20 - r() * 50 }); }); });
+          const nI = A.pow ? 13 : 8; S.ice = [...Array(nI)].map((_, i) => { const a = (i + .5) / nI * Math.PI + (r() - .5) * .2; return { a, R: A.pow && i % 2 ? 50 : 36, h: (9 + r() * 14) * (A.pow ? 1.25 : 1), w: 3 + (r() * 3 | 0), dl: r() * .12 }; }); });   // пара з «Інеєм»: шипів більше й вони вищі
+        once('shatter', .86, () => { (S.ice || []).forEach(q => { const x = G.X + Math.cos(q.a) * q.R * G.s, y = G.Y + Math.sin(q.a) * q.R * .25 * G.s; for (let i = 0; i < 4; i++) F.emit('spark', x, y - r() * q.h * G.s, { col: r() < .5 ? '#cfefff' : '#ffffff', vx: (r() - .5) * 70, vy: -20 - r() * 50 }); }); });
         if (k > .25 && k < .86 && r() < .5) { const a = t * 6 + r() * .4, rr = 12 + k * 22; F.emit('snow', G.X + Math.cos(a) * rr * G.s, G.Y - G.top * (.2 + k * .9), { vy: -10, vx: 0, ttl: 1.2 }); }
         if (r() < .3) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1] - 4, { col: '#cfefff', vy: -20 });
         break; }
@@ -173,6 +176,7 @@ NX.objects.relics = (() => {
         drawItem(H.ang, 1);
       }
       c.globalCompositeOperation = 'lighter';
+      if (A.pow) { const m = k < .15 ? k / .15 : k > .85 ? (1 - k) / .15 : 1, cc = hx(A.col); Pg.glow(c, G.X, G.Y - G.top * .5, G.top * 1.25, `rgba(${cc[0]},${cc[1]},${cc[2]},.55)`, m * (A.id === 'excalibur' ? .16 : .3 + .1 * Math.sin(t * 9))); }   // пара: аура кольору скіна
       switch (A.id) {
         case 'hammer': {
           Pg.glow(c, tip[0], tip[1], 14 * G.s, 'rgba(120,230,255,.8)', .3 + .3 * Math.sin(t * 20));
@@ -202,8 +206,7 @@ NX.objects.relics = (() => {
           break; }
         case 'katana': {
           const g = age('glint'); if (g >= 0 && g < .16) star(H.x, H.y, 2 + Math.round((1 - g / .16) * 4), '#ffffff');
-          const a = age('cut'), C = S.cut;
-          if (C && a >= 0 && a < .9) {                                                  // лінія розрізу: миттєво простягається, тримається, потім розсипається «шахівницею»
+          for (const [a, C] of [[age('cut'), S.cut], [age('cut2'), S.cut2]]) if (C && a >= 0 && a < .9) {                                                  // лінія розрізу: миттєво простягається, тримається, потім розсипається «шахівницею»
             const rev = Math.min(1, a / .07), nn = Math.round(Math.abs(C.x1 - C.x0) / u), fade = a < .4 ? 1 : 1 - (a - .4) / .5;
             for (let i = 0; i < nn * rev; i += 1) { const q = i / nn, x = C.x0 + (C.x1 - C.x0) * q, y = C.y - q * 8 * C.s, th = q < .08 || q > .92 ? 0 : 1;
               if (a > .4 && hash(i, 3) > fade) continue;
@@ -214,14 +217,14 @@ NX.objects.relics = (() => {
         case 'gauntlet': Pg.glow(c, G.up[0], G.up[1], (10 + 10 * k) * G.s, 'rgba(255,212,90,.9)', .3 + .3 * Math.sin(t * 12)); break;
         case 'excalibur': if (k > .3) {                                                // стовп світла: суцільне осердя й «шахові» краї, що течуть униз
           const a = Math.min(1, (k - .3) * 5) * (k > .86 ? (1 - k) / .14 : 1), y0 = G.Y - G.top - 190, hh = G.Y - y0, rows = Math.round(hh / (2 * u));
-          [[-7, 14, .16], [-4, 8, .22], [-1, 3, .5]].forEach(([dx, w, al]) => blk(G.X + dx * u, y0, w, hh / u, `rgba(255,246,200,${al * a})`));
+          (A.pow ? [[-13, 26, .07], [-7, 14, .13], [-4, 8, .2], [-1, 3, .45]] : [[-7, 14, .16], [-4, 8, .22], [-1, 3, .5]]).forEach(([dx, w, al]) => blk(G.X + dx * u, y0, w, hh / u, `rgba(255,246,200,${al * a})`));
           for (let j = 0; j < rows; j++) { const y = y0 + j * 2 * u, ph2 = (j - fr) & 3; [-11, -9, 8, 10].forEach((dx, q) => { if (((q + ph2) & 3) < 2) blk(G.X + dx * u, y, 2, 2, `rgba(255,236,170,${a * (q === 0 || q === 3 ? .16 : .3) * Math.min(1, j / 8)})`); }); }
           Pg.glow(c, tip[0], tip[1], 16 * G.s, 'rgba(255,255,255,.9)', a * .6); Pg.glow(c, G.X, G.Y, 30 * G.s, 'rgba(255,240,180,.8)', a * .35);
         } break;
         case 'staff': {
           Pg.glow(c, tip[0], tip[1] - 2 * G.s, 14 * G.s, 'rgba(160,230,255,.9)', .3 + .3 * Math.sin(t * 8));
           if (S.ice && k < .86) { c.globalCompositeOperation = 'source-over';             // крижані шипи: ростуть по черзі, грань світла / темна, біла верхівка
-            S.ice.forEach(q => { const gr = Math.max(0, Math.min(1, (k - .3 - q.dl) / .14)), hh = Math.round(q.h * gr), x = G.X + Math.cos(q.a) * 36 * G.s, y = G.Y + Math.sin(q.a) * 9 * G.s;
+            S.ice.forEach(q => { const gr = Math.max(0, Math.min(1, (k - .3 - q.dl) / .14)), hh = Math.round(q.h * gr), x = G.X + Math.cos(q.a) * q.R * G.s, y = G.Y + Math.sin(q.a) * q.R * .25 * G.s;
               for (let j = 0; j < hh; j++) { const w = Math.max(1, Math.round(q.w * (1 - j / q.h))), yy = y - (j + 1) * u; blk(x - w * u, yy, w, 1, j > hh - 3 ? '#ffffff' : '#cff4ff'); blk(x, yy, w, 1, j > hh - 3 ? '#e6fbff' : j % 5 === 4 ? '#8a7aef' : '#6ac4f0'); }
               if (hh > 2) { blk(x - (q.w + 1) * u, y - u, 1, 1, '#0a0f2e'); blk(x + q.w * u, y - u, 1, 1, '#0a0f2e'); } });
             c.globalCompositeOperation = 'lighter'; if (k > .3) Pg.glow(c, G.X, G.Y, 44 * G.s, 'rgba(150,225,255,.7)', .25); }

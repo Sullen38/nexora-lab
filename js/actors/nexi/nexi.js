@@ -122,8 +122,9 @@ NX.nexi = {
     c.beginPath(); c.moveTo(x0, y0);
     for (let i = 1; i < n; i++) { const v = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453, h = v - Math.floor(v), k = i / n + (h - .5) * .5 / n, o = (i % 2 ? 1 : -1) * (.3 + .7 * h) * amp; c.lineTo(x0 + (x1 - x0) * k + nx * o, y0 + (y1 - y0) * k + ny * o); }
     c.lineTo(x1, y1);
-    if (!lite) { c.lineWidth = Math.max(1, w * 5.5); c.strokeStyle = '#ffb52e'; c.globalAlpha = al * .22; c.stroke(); }                 // lite (старий хвіст, гілочки) — без широкого сяйва
-    c.lineWidth = Math.max(.8, w * 2.4); c.strokeStyle = '#ffe27a'; c.globalAlpha = al * .85; c.stroke();
+    const Z = skinZap(this.look, NX.time);                                                                                             // (23.11) колір блискавки — підпис готового скіна (skins.js: SKIN_SIG); без скіна — жовтий
+    if (!lite) { c.lineWidth = Math.max(1, w * 5.5); c.strokeStyle = Z[0]; c.globalAlpha = al * .22; c.stroke(); }                 // lite (старий хвіст, гілочки) — без широкого сяйва
+    c.lineWidth = Math.max(.8, w * 2.4); c.strokeStyle = Z[1]; c.globalAlpha = al * .85; c.stroke();
     c.lineWidth = Math.max(.6, w); c.strokeStyle = '#ffffff'; c.globalAlpha = al; c.stroke();
   },
   /** Окремий розряд (удар згори, дуги у підлогу) — живе ttl с. */
@@ -141,7 +142,7 @@ NX.nexi = {
       this.zapUntil = T + .12;
       if (T - (this.ghT || 0) > .035) { this.ghT = T; this.ghosts.push({ x: this.x, y: this.y, d: this.dir, t: T, ttl: .28 }); }
       if (r() < .6) F.emit('spark', this.x - d * 6 * s, this.y - r() * 30 * s, { vx: -d * (40 + r() * 90), vy: (r() - .5) * 70, g: 30, ttl: .3, col: r() < .6 ? '#ffe27a' : '#ffffff' });
-      F.emit('line', this.x - d * (8 + r() * 14) * s, this.y - (4 + r() * 30) * s, { w: Math.max(6, (14 + r() * 16) * s | 0), vx: -d * 40, col: r() < .5 ? '#ffe27a' : '#fff6c9' });
+      F.emit('line', this.x - d * (8 + r() * 14) * s, this.y - (4 + r() * 30) * s, { w: Math.max(6, (14 + r() * 16) * s | 0), vx: -d * 40, col: r() < .5 ? skinZap(this.look, NX.time)[1] : '#fff6c9' });
     } else if (sty === 'twist') {
       if (r() < .8) F.list.push({ type: 'portal', x: this.x, y: this.y - 18 * s, orbit: (10 + r() * 14) * s, cx: this.x, cy: this.y - (4 + r() * 34) * s, a0: r() * 6.3, age: 0, ttl: .45, s: 1.5, col: r() < .5 ? '#3be8ff' : '#ffffff', vx: 0, vy: 0 });
       if (r() < .6) F.emit('dust', this.x - d * 6 * s, this.y - 1, { vx: -d * (10 + r() * 30), vy: -8 - r() * 16 });
@@ -184,6 +185,16 @@ NX.nexi = {
    *  крісло на мить крутиться лицем до нас (mk_chair.js: peek). Кожне друге-третє привітання — підказка, що вигляд змінюють
    *  у зоні СКІНИ; у самій зоні — питає, як тобі вигляд; три тапи поспіль — «лоскотно!».
    *  Поки махає, нові тапи лише подовжують помах і підкидають його — без нових фраз (щоб не засипати чат). */
+  /** ПЕРЕТВОРЕННЯ при вдяганні готового скіна (власник, 23.11): силует спалахує, від ніг розходиться кільце кольору рідкості,
+   *  угору злітають пікселі кольорів скіна — що рідкісніший скін, то більше. Викликає ui/skinlab.js (apply). */
+  morphT: 0,
+  morph(id) {
+    const S0 = SKINS[id]; if (!S0) return; const th = THEMES[S0.look.theme] || THEMES.standard, n = { common: 10, rare: 16, epic: 24, legendary: 36 }[S0.rar] || 10, rc = RARITY[S0.rar], F = NX.fx, r = Math.random;
+    const s = NX.room.scaleAt(Math.max(this.depthY(), 352)) * SPRITE_K, top = FOOT * s; this.morphT = NX.time + .45; NX.nexiPhys.kick(S0.rar === 'legendary' ? 2.6 : 1.8);
+    F.emit('ring', this.x, this.y, { col: rc, gr: 70 + n * 2, ttl: .55 }); if (n > 20) F.emit('ring', this.x, this.y, { col: '#ffffff', gr: 40 + n, ttl: .4 });
+    for (let i = 0; i < n; i++) F.emit('spark', this.x + (r() - .5) * 26 * s, this.y - r() * top, { col: [th.shell, th.acc, th.eye, rc][i % 4], vx: (r() - .5) * 50, vy: -30 - r() * 90, g: 40, ttl: .7 + r() * .5 });
+    if (S0.rar === 'legendary') for (let i = 0; i < 10; i++) F.emit('energy', this.x + (r() - .5) * 30 * s, this.y - r() * top * .4, { col: rc });
+  },
   hiT: 0, hiN: 0,
   hi() {
     const t = NX.time, busy = !!(this.cur || this.queue.length), ws = this.loc === 'wsPad' || NX.ui.skinlab.open, waving = t < this.hiT;
@@ -447,7 +458,9 @@ NX.nexi = {
       if (this.roll && this.cur) { c.translate(X, Y - top * .5); c.rotate(this.roll); c.translate(0, top * .5); }                              // колесо: обертається довкола середини тіла
       else { c.translate(X, Y); c.rotate(((this.rot || 0) + (this.rot ? 0 : ph.lean)) * Math.PI / 180); }
       c.scale((this.dir < 0 ? -1 : 1) * (1 + (1 - ph.sq) * .55), ph.sq);                 // стискання/розтяг
-      c.drawImage(this.scr, -w / 2, -top, w, h); c.restore();
+      c.drawImage(this.scr, -w / 2, -top, w, h);
+      if (NT < this.morphT) { const mk = (this.morphT - NT) / .45; c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, mk * 1.4) * this.alpha; c.drawImage(this.scr, -w / 2, -top, w, h); if (mk > .5) c.drawImage(this.scr, -w / 2, -top, w, h); }   // перетворення (morph): силует спалахує білим і гасне
+      c.restore();
       if ((this.fxNow === 'rain' || this.fxNow === 'snow') && this.alpha > .5) {   // піксельна хмаринка над головою
         const cy = Y - top - 22 + Math.sin(t * 2) * 1.5, cx = X; c.save(); c.globalAlpha = .92;
         [[-11, 2, 22, 5], [-14, 4, 28, 4], [-7, -1, 10, 4], [0, -2, 8, 5]].forEach(([dx, dy, w2, h2]) => NX.px.rect(c, cx + dx, cy + dy, w2, h2, this.fxNow === 'rain' ? '#5a6590' : '#c3cbea'));
