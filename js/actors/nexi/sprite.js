@@ -204,6 +204,9 @@ function renderBot(look, pose, t, cv) {
   // ---------- 9. предмети в руках (drawHandItem; поки руки зайняті інструментом пози чи книгою — праву не чіпаємо) ----------
   const L0 = hands[0], R0 = hands[1];
   if (showItem && !itemBehind) drawHandItem(B, look.hand, L0, R0, t);
+  if (look.hand && pose.work && pose.back && !pose.noItem && look.hand !== 'gauntlet' && look.hand !== 'balloon') {   // (23.11) ЗА РОБОТОЮ реліквія не зникає, а висить ЗА СПИНОЮ на ремені (щит — логотипом до нас)
+    P(bx + 3, by + 1, bw - 6, 1, '#5a3a22'); P(bx + 3, by + 1, 2, 1, '#ffd45a');
+    drawHandItem(B, look.hand, { ex: 26, ey: by + 7 }, { ex: 28, ey: by + 9, mx: 28, my: by + 4 }, t, false); }
   const ex = R0.ex, ey = R0.ey;
   switch (pose.tool) {
     case 'hammer': P(ex, ey - 8, 2, 10, '#8a5a2a'); BLK(ex - 3, ey - 11, 8, 4, 1, '#aab4d6'); break;

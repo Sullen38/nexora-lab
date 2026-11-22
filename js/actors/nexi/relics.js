@@ -15,6 +15,12 @@
  *     молот чи меч обрізався краєм); кадр предмета — sprite.js renderItem, оновлюється 10 разів/с;
  *   • ефекти — піксельні блоки розміром у піксель спрайта (купол щита, стовп світла, блискавка, крига), без гладких ліній;
  *   • нова реліквія КАТАНА.
+ *   • ПАРА «скін + реліквія» (skins.js: SKIN_SIG.pair — самурай + катана, король + Екскалібур, іній + посох…): здібність
+ *     посилена (S.act.pow) — аура кольору скіна, енергія довкола; катана б'є навхрест, шипів посоха більше, стовп ширший;
+ *   • ВЗАЄМОДІЇ: реліквія лишає свій слід під час швидкого руху Nexi й сплеск на фініші (trail); м'ячик відлітає від удару
+ *     молота / меча / хвилі тризуба, котиться до магніту, примерзає від посоха (ballPush); Рудик тікає від грому й хвилі,
+ *     б'є лапою кульку й пелюстки, мружиться від палички, гріється біля факела (actors/cat/cat.js: react);
+ *     за роботою реліквія висить за спиною (sprite.js, блок 9).
  * Здібності (D — тривалість, с):
  *   hammer    ГРОМОВИЙ МОЛОТ — замах за плече й удар об підлогу: у місце удару б'є блискавка з неба, підлогою біжать світні тріщини
  *   blade     ЛАЗЕРНИЙ МЕЧ — два повні оберти леза: неонові відбитки леза й слід вістря по колу
@@ -77,8 +83,28 @@ NX.objects.relics = (() => {
   /** Подвійний тап по Nexi з реліквією в руці (nexi.js: hi); busy — Nexi зайнятий: лише ефект, без пози. */
   const tap = (id, busy) => show(id, 'tap', busy);
 
+  /** РЕЛІКВІЯ ЗМІНЮЄ РУХ (23.11): поки Nexi швидко переміщується з реліквією в руці, за ним лишається її слід (іскри молота,
+   *  пелюстки катани, бульбашки тризуба, сніг посоха…), а на фініші — коротке кільце й сплеск того самого. */
+  const TRAIL = { hammer: ['spark', ['#9af6ff', '#ffffff']], blade: ['line', ['#ff4fd8', '#3be8ff']], sword: ['line', ['#ffffff', '#c6d0ee']], katana: ['snow', ['#ffb6dc', '#ff8fc8']], gauntlet: ['bit', ['#ffd45a', '#fff6c0']],
+    excalibur: ['spark', ['#ffe9a0', '#ffffff']], staff: ['snow', ['#ffffff', '#cfefff']], trident: ['bubble', ['#9ad8ff', '#4ac0ff']], wand: ['spark', ['#ffe27a', '#ff7af0']], balloon: ['heart', ['#ff5ae0', '#ff9af0']],
+    torch: ['fire', ['#ffe27a', '#ff7a2a']], magnet: ['bit', ['#ff6a6a', '#6a8aff']], shield: ['bit', ['#3be8ff', '#7af4ff']] };
+  function trail(dt, t) {
+    const N = n(), hd = N.look.hand, T = TRAIL[hd], sp = Math.hypot(N.x - (S.px ?? N.x), N.y - (S.py ?? N.y)) / Math.max(dt, 1e-3); S.px = N.x; S.py = N.y;
+    if (!T || S.act) { S.mv = 0; return; }
+    const G = geo(), F = NX.fx, col = () => T[1][r() * 2 | 0], fast = sp > 150 && sp < 3000 && N.alpha > .5 && !!N.cur;
+    if (fast) { S.mv = (S.mv || 0) + dt; S.mvT = t;
+      if (r() < (hd === 'balloon' ? .12 : .55)) F.emit(T[0], G.X - G.d * (4 + r() * 10) * G.s, G.Y - (6 + r() * 30) * G.s, T[0] === 'line' ? { w: 9, col: col(), vx: -G.d * 30 } : T[0] === 'snow' ? { col: col(), vy: 10 + r() * 14, ttl: 1.1 } : { col: col(), ttl: .6 }); }
+    else if (S.mv > .22 && t - S.mvT > .05 && sp < 40) { S.mv = 0;                                                                // фініш
+      F.emit('ring', G.X, G.Y, { col: T[1][0], gr: 70, ttl: .45 }); for (let i = 0; i < 8; i++) F.emit(T[0] === 'line' ? 'spark' : T[0], G.X + (r() - .5) * 26 * G.s, G.Y - r() * 14 * G.s, T[0] === 'snow' ? { col: col(), vy: 8 + r() * 10, vx: (r() - .5) * 40, ttl: 1 } : { col: col() }); }
+    else if (t - (S.mvT || 0) > .3) S.mv = 0;
+  }
+  /** М'ячик і Рудик відгукуються на здібність (objects/ball.js, actors/cat/cat.js: react). */
+  const cat = kind => { const C = NX.cat; if (C && C.react) C.react(kind); };
+  function ballPush(x, y, R, pw, dirX) { const b = NX.objects.ball; if (!b) return; const dx = b.x - x, dy = (b.y - y) * 2, d = Math.hypot(dx, dy) || 1; if (d > R) return; const k = pw * (1 - d / R * .6); b.kick(dirX != null ? dirX * k : dx / d * k, dirX != null ? 0 : dy / d * k * .4); }
+
   function update(dt, t) {
     const N = n(), hd = N.look.hand;
+    trail(dt, t);
     if (S.flash > 0) S.flash -= dt;
     // іноді сам — раз на 30–70 с, лише вільний на підлозі
     if (!S.act) { if (!S.next) S.next = t + 20 + r() * 30; if (hd && t > S.next && !N.talking && t - N.lastCmd > 6) { S.next = t + 30 + r() * 40; show(hd, 'idle'); } return; }
@@ -91,6 +117,7 @@ NX.objects.relics = (() => {
       case 'hammer': {                                                               // .54 — удар об підлогу: блискавка з неба в місце удару, тріщини, грім; .72 і .86 — відлуння
         once('hit', .54, () => { S.imp = [tip[0], G.Y]; S.flash = .35; kick(2.6); F.emit('ring', tip[0], G.Y, { col: '#9af6ff', gr: 150, ttl: .6 });
           S.cracks = [...Array(7)].map((_, i) => ({ a: -Math.PI * (i + .5) / 7 * 2 + r() * .3, L: 26 + r() * 30, sd: i * 11 + (r() * 90 | 0) }));
+          ballPush(tip[0], G.Y, 240, 260); cat('boom');
           for (let i = 0; i < 18; i++) F.emit('spark', tip[0] + (r() - .5) * 12, G.Y - 2, { col: r() < .6 ? '#9af6ff' : '#ffffff', vx: (r() - .5) * 200, vy: -40 - r() * 130 }); for (let i = 0; i < 6; i++) F.emit('dust', tip[0] + (r() - .5) * 30, G.Y); });
         [.72, .86].forEach((at, i) => once('echo' + i, at, () => { kick(1); F.emit('ring', S.imp[0], G.Y, { col: '#9af6ff', gr: 70, ttl: .4 }); }));
         if (k < .5 && r() < .35) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1], { col: '#9af6ff', vy: -30 - r() * 40, ttl: .35 });
@@ -100,12 +127,12 @@ NX.objects.relics = (() => {
         once('end', .82, () => { kick(1.2); F.emit('ring', G.X, G.Y, { col: '#ff4fd8', gr: 100, ttl: .5 }); F.emit('ring', G.X, G.Y, { col: '#3be8ff', gr: 60, ttl: .5 }); });
         break; }
       case 'sword': {                                                                // .52 — клинок у підлогу: сталева хвиля, іскри
-        once('plant', .52, () => { S.imp = [tip[0], G.Y]; S.flash = .15; kick(2); F.emit('ring', tip[0], G.Y, { col: '#dfe8ff', gr: 120, ttl: .6 });
+        once('plant', .52, () => { S.imp = [tip[0], G.Y]; S.flash = .15; kick(2); ballPush(tip[0], G.Y, 180, 180); F.emit('ring', tip[0], G.Y, { col: '#dfe8ff', gr: 120, ttl: .6 });
           for (let i = 0; i < 14; i++) F.emit('spark', tip[0], G.Y - 2, { col: r() < .7 ? '#ffffff' : '#ffe27a', vx: (r() - .5) * 160, vy: -30 - r() * 90 }); for (let i = 0; i < 5; i++) F.emit('dust', tip[0] + (r() - .5) * 24, G.Y); });
         break; }
       case 'katana': {                                                               // .36 — зблиск на цубі; .46 — розчерк; далі з лінії розрізу сиплються пелюстки
         once('glint', .36, () => F.emit('spark', H.x, H.y, { col: '#ffffff', vx: 0, vy: 0, g: 0, ttl: .2 }));
-        once('cut', .46, () => { S.flash = .12; kick(1.6); S.cut = { x0: G.X + G.d * 22 * G.s, x1: G.X + G.d * 170 * G.s, y: G.Y - G.top * .56, d: G.d, s: G.s };
+        once('cut', .46, () => { S.flash = .12; kick(1.6); ballPush(G.X + G.d * 60, G.Y, 150, 200, G.d); setTimeout(() => cat('toy'), 500); S.cut = { x0: G.X + G.d * 22 * G.s, x1: G.X + G.d * 170 * G.s, y: G.Y - G.top * .56, d: G.d, s: G.s };
           for (let i = 0; i < 8; i++) F.emit('line', G.X + G.d * r() * 120 * G.s, S.cut.y + (r() - .5) * 6, { w: 14, col: '#ffffff', vx: G.d * 160 }); });
         const C = S.cut, age = t - (S.fxT.cut || t);
         if (C && age > .12 && age < 1.25 && r() < .75) { const q = r(), x = C.x0 + (C.x1 - C.x0) * q; F.emit('snow', x, C.y - q * 8 * C.s, { col: ['#ffb6dc', '#ff8fc8', '#ffe0f0'][r() * 3 | 0], vx: -C.d * (4 + r() * 14), vy: 12 + r() * 16, ttl: 1.3 + r() * .8, s: 1.6 }); }
@@ -122,26 +149,28 @@ NX.objects.relics = (() => {
         if (k > .3 && k < .88 && r() < .5) F.emit('spark', G.X + (r() - .5) * 34 * G.s, G.Y - G.top - 10 - r() * 90, { col: r() < .7 ? '#ffffff' : '#ffe9a0', vx: 0, vy: 40 + r() * 50, g: 0, ttl: .9 });
         break; }
       case 'staff': {                                                                // .3 — удар посохом: крижане кільце й шипи; .86 — шипи розсипаються
-        once('strike', .3, () => { kick(1.6); F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 120, ttl: .7 });
+        once('strike', .3, () => { kick(1.6); { const b = NX.objects.ball; if (b && Math.hypot(b.x - G.X, (b.y - G.Y) * 2) < 150) { b.vx = 0; b.vy = 0; } }   /* м'ячик поруч примерзає — зупиняється */ F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 120, ttl: .7 });
           const nI = A.pow ? 13 : 8; S.ice = [...Array(nI)].map((_, i) => { const a = (i + .5) / nI * Math.PI + (r() - .5) * .2; return { a, R: A.pow && i % 2 ? 50 : 36, h: (9 + r() * 14) * (A.pow ? 1.25 : 1), w: 3 + (r() * 3 | 0), dl: r() * .12 }; }); });   // пара з «Інеєм»: шипів більше й вони вищі
         once('shatter', .86, () => { (S.ice || []).forEach(q => { const x = G.X + Math.cos(q.a) * q.R * G.s, y = G.Y + Math.sin(q.a) * q.R * .25 * G.s; for (let i = 0; i < 4; i++) F.emit('spark', x, y - r() * q.h * G.s, { col: r() < .5 ? '#cfefff' : '#ffffff', vx: (r() - .5) * 70, vy: -20 - r() * 50 }); }); });
         if (k > .25 && k < .86 && r() < .5) { const a = t * 6 + r() * .4, rr = 12 + k * 22; F.emit('snow', G.X + Math.cos(a) * rr * G.s, G.Y - G.top * (.2 + k * .9), { vy: -10, vx: 0, ttl: 1.2 }); }
         if (r() < .3) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1] - 4, { col: '#cfefff', vy: -20 });
         break; }
       case 'trident': {                                                              // .42 — випад: хвиля вперед і бризки
-        once('wave', .42, () => { kick(1.4); S.wave = { x: tip[0], y: G.Y, d: G.d, s: G.s }; F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 });
+        once('wave', .42, () => { kick(1.4); ballPush(G.X + G.d * 70, G.Y, 180, 280, G.d); cat('boom'); S.wave = { x: tip[0], y: G.Y, d: G.d, s: G.s }; F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 });
           for (let i = 0; i < 16; i++) F.emit('bubble', tip[0] + G.d * r() * 30, G.Y - r() * 20, { vx: G.d * (20 + r() * 70), vy: -10 - r() * 30 }); });
         if (k > .42 && r() < .5) F.emit('bubble', tip[0] + G.d * (10 + r() * 70), G.Y - r() * 12, { vx: G.d * 30, vy: -20 });
         break; }
       case 'wand': {                                                                 // зорі з кінчика, .5 — кільце зірок, наприкінці — сердечка
         if (k > .12 && k < .9 && r() < .8) F.emit('spark', tip[0] + (r() - .5) * 4, tip[1] + (r() - .5) * 4, { col: ['#ffe27a', '#ff7af0', '#ffffff'][r() * 3 | 0], vx: (r() - .5) * 16, vy: -6 - r() * 16, g: 14, ttl: .9 });
-        once('ring', .5, () => { for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; F.emit('spark', G.X + Math.cos(a) * 26 * G.s, G.Y - G.top * .5 + Math.sin(a) * 18 * G.s, { col: '#ffe27a', vx: Math.cos(a) * 34, vy: Math.sin(a) * 34 - 10, g: 0, ttl: .8 }); } });
+        once('ring', .5, () => { cat('love'); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; F.emit('spark', G.X + Math.cos(a) * 26 * G.s, G.Y - G.top * .5 + Math.sin(a) * 18 * G.s, { col: '#ffe27a', vx: Math.cos(a) * 34, vy: Math.sin(a) * 34 - 10, g: 0, ttl: .8 }); } });
         if (k > .6 && r() < .25) F.emit('heart', G.X + (r() - .5) * 30 * G.s, G.Y - G.top);
         break; }
       case 'balloon': {                                                              // три підскоки — кулька тягне вгору
+        once('cat', .05, () => cat('toy'));
         [.1, .45, .8].forEach((at, i) => once('h' + i, at, () => { kick(2.4); for (let q = 0; q < 5; q++) F.emit('dust', G.X + (r() - .5) * 20, G.Y); }));
         break; }
       case 'torch': {                                                                // полум'я з чаші, жаринки
+        once('cat', .2, () => cat('warm'));
         if (r() < .9) F.emit('fire', tip[0] + (r() - .5) * 5 * G.s, tip[1] - 2 * G.s, { vy: -50 - r() * 50 });
         if (r() < .25) F.emit('spark', tip[0] + (r() - .5) * 10, tip[1] - 6, { col: '#ff9a3a', vy: -40 - r() * 60, g: 20, ttl: .9 });
         break; }
@@ -149,6 +178,7 @@ NX.objects.relics = (() => {
         if (r() < .7 && k > .15 && k < .8) { const a = r() * TAU, rr = 60 + r() * 40; S.bits.push({ x: tip[0] + Math.cos(a) * rr, y: tip[1] + Math.sin(a) * rr * .6, col: r() < .5 ? '#ff6a6a' : '#6a8aff', age: 0 }); }
         S.bits.forEach(b => { b.age += dt; const dx = tip[0] - b.x, dy = tip[1] - b.y, dd = Math.hypot(dx, dy) || 1, sp = (60 + b.age * 200) * dt; b.x += dx / dd * Math.min(sp, dd); b.y += dy / dd * Math.min(sp, dd); if (dd < 3) { b.dead = 1; F.emit('spark', b.x, b.y, { col: '#ffffff', vx: 0, vy: -10, ttl: .2 }); } });
         S.bits = S.bits.filter(b => !b.dead && b.age < 2);
+        if (k > .15 && k < .85) { const b = NX.objects.ball; if (b) { const dx = tip[0] - b.x, dy = G.Y - b.y, d = Math.hypot(dx, dy * 2) || 1; if (d < 340 && d > 14) b.kick(dx / d * 520 * dt, dy / d * 200 * dt); if (d < 44) { b.vx *= .8; b.vy *= .8; } } }   // м'ячик котиться до магніту
         break; }
       case 'shield': {                                                               // купол, біти відскакують (місце удару по куполу спалахує — S.hits)
         once('dome', .15, () => { F.emit('ring', G.X, G.Y, { col: '#3be8ff', gr: 80 }); kick(1); S.hits = []; });

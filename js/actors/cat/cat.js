@@ -109,6 +109,27 @@ NX.cat = {
     this.onSofa = false; this.mode = 'jump'; this.jump = { x0: this.x, y0: this.y, x1: x, y1: y, t: 0, hi: 26 + dh * .35, dur: .5 + dh / 380, up: !!up }; this.then = done; },
   purr(d) { if (this.hunting) this.huntEnd(); this.set('happy', d, null); this.dir = NX.nexi.x > this.x ? 1 : -1; for (let i = 0; i < 4; i++) setTimeout(() => NX.fx.emit('heart', this.x, this.y - 24), i * 500); },   // гладять — забуває про вірус (крок 15)
 
+  /** (23.11) РЕАКЦІЯ НА РЕЛІКВІЮ NEXI (actors/nexi/relics.js; власник: «пропрацювати реліквії та взаємодії з ними»). Лише коли Рудик
+   *  поруч (до 300 од.), не полює й не в стрибку; не частіше, ніж раз на 8 с. kind:
+   *    'boom' — грім молота, хвиля тризуба: на підлозі підскакує й тікає від Nexi, сідає віддалік і дивиться; на меблях — сердито зиркає;
+   *    'toy'  — кулька, пелюстки катани: підбігає й тричі б'є лапою;   'love' — зоряна паличка: мружиться, сердечка;
+   *    'warm' — факел: підходить і сідає грітися. Сплячого Рудика 'toy' / 'love' / 'warm' не будять. */
+  react(kind) {
+    const n = NX.nexi, t = NX.time, d = Math.hypot(n.x - this.x, (n.y - this.ground) * 2);
+    if (this.hunting || this.mode === 'jump' || t < (this.reactT || 0) || d > 300) return false;
+    const away = this.x >= n.x ? 1 : -1, near = (dx, f) => this.goTo(n.x + away * dx, Math.max(n.y, this.FLOOR), () => { this.dir = -away; f(); }, null, true);
+    if (kind === 'boom') { this.reactT = t + 8;
+      if (this.alt > 0) { this.dir = -away; this.grr(1.4); return true; }
+      NX.fx.emit('dust', this.x, this.y); const [x, y] = NX.room.clampWalk(this.x + away * 150, this.ground + (Math.random() - .5) * 30, 'cat');
+      this.startJump(this.x + away * 14, this.ground, () => this.goTo(x, y, () => { this.dir = -away; this.set('sit', 3); }, null, true)); return true; }
+    if (this.alt > 0 || (this.mode === 'act' && this.pose === 'sleep')) return false;
+    this.reactT = t + 8;
+    if (kind === 'toy') { let k = 0; const hit = () => this.set('paw', .45, () => { if (++k < 3) this.set('sit', .25, hit); else this.set('sit', 2); }); near(24, hit); }
+    else if (kind === 'love') this.purr(2.4);
+    else if (kind === 'warm') near(30, () => this.set('happy', 4));
+    return true;
+  },
+
   /* ---------------- КРОК 15: СТІЛ AI-ЦЕНТРУ, ХАРАКТЕР, ЛАЗЕР ---------------- */
   /** На стільниці: дивиться на екран (AI бачить його на радарі), грається з голо-рибкою AI, вмивається, дрімає на теплому столі. */
   deskLife(k) {
