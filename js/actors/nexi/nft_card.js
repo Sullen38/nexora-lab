@@ -84,7 +84,7 @@ NX.nftCard = (() => {
     //    ЗДІБНІСТЬ РЕЛІКВІЇ (власник, 06.11: «на кожній картці Nexi має показувати цей самий ефект періодично»): у вікні циклу
     //    (relics.js cardK) Nexi стає в позу реліквії, а поверх — її ефект у піксель-арті (cardFx); кулька — підскоки
     const RL = NX.objects.relics, rk = look.hand && RL && RL.POSE[look.hand] ? RL.cardK(u) : -1, hop = look.hand === 'balloon' && rk >= 0 ? Math.round(Math.abs(Math.sin(rk * Math.PI * 3)) * 4) : 0;
-    const tn = t + 2, po = poseFor(rk >= 0 ? RL.POSE[look.hand] : 'stand', tn, false); po.antX = Math.sin(TAU * u) * 1.4; po.antY = 0; if (rk >= 0) po.face = 'standard';
+    const tn = t + 2, po = rk >= 0 ? RL.pose(look.hand, rk, tn) : poseFor('stand', tn, false);   /* (23.11) своя постановка кожної реліквії */ po.antX = Math.sin(TAU * u) * 1.4; po.antY = 0; if (rk >= 0) po.face = 'standard';
     renderBot(Object.assign({}, look, { face: 'standard' }), po, tn, bot);
     x.drawImage(bot, 24, HOR + 1 - FOOT - hop);
     if (rk >= 0) RL.cardFx(x, look.hand, rk, Math.floor(u * 48), HOR);

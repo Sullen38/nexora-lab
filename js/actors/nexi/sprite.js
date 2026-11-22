@@ -61,7 +61,7 @@ function renderBot(look, pose, t, cv) {
   // логотипа (видно виворіт). Рукавиця — на руці, тож лишається поверх. Руки зайняті роботою (pose.work: друкує, штовхає) —
   // реліквію не показуємо (як і з інструментом пози).
   const sh = [[bx - 1, by + 3], [bx + bw, by + 3]], hands = [pose.la || { x: -2, y: 7 }, pose.ra || { x: 2, y: 7 }];
-  const showItem = look.hand && !pose.book && (look.hand === 'shield' || !pose.tool) && !(pose.work && look.hand !== 'gauntlet'), itemBehind = showItem && pose.back && look.hand !== 'gauntlet';
+  const showItem = look.hand && !pose.noItem && !pose.book && (look.hand === 'shield' || !pose.tool) && !(pose.work && look.hand !== 'gauntlet'), itemBehind = showItem && pose.back && look.hand !== 'gauntlet';
   if (itemBehind) { if (look.hand === 'shield') hands[0].x = Math.min(hands[0].x, -3); else hands[1].x = Math.max(hands[1].x, 5);
     const hp = i => { const s0 = sh[i], ex = s0[0] + Q(hands[i].x), ey = s0[1] + Q(hands[i].y); return { ex, ey, mx: Math.round((s0[0] + ex) / 2 + (i ? 1 : -1)), my: Math.round((s0[1] + ey) / 2) }; };
     drawHandItem(B, look.hand, hp(0), hp(1), t, true); }
@@ -246,7 +246,30 @@ function drawHandItem(B, id, L0, R0, t, back) {
       else map(['X...X', 'XX..X', 'X.X.X', 'X..XX', 'X...X'], cx - 2, cy - 2, (ch, i, j) => i === 0 || j < 2 ? '#ffffff' : '#9af6ff');
       break;
     }
-    case 'sword': P(ex, ey - 17, 2, 17, '#dfe8ff'); P(ex, ey - 17, 1, 17, '#ffffff'); P(ex - 2, ey, 6, 2, '#ffc94d'); P(ex, ey + 2, 2, 3, '#7a4a22'); break;
+    case 'sword': {                                      // МЕЧ лицаря (23.11, перемальовано): широкий сталевий клинок з долом і вістрям, пряма гарда з
+                                                         // кінцями-«лапками», руків'я в шкірі, кругле навершя; по лезу зрідка пробігає відблиск
+      for (let j = 0; j < 20; j++) { const y = ey - 3 - j, w = j > 17 ? 1 : 3, x0 = j > 17 ? ex : ex - 1;
+        if (w === 3) { P(x0, y, 1, 1, '#f4f8ff'); P(x0 + 1, y, 1, 1, j % 5 === 4 ? '#aab6d8' : '#8a96bc'); P(x0 + 2, y, 1, 1, '#c6d0ee'); } else P(x0, y, 1, 1, '#ffffff'); }
+      P(ex - 1, ey - 21, 1, 1, '#dfe8ff'); P(ex + 1, ey - 21, 1, 1, '#aab6d8');
+      const g = (f * 2) % 46; if (g < 19) { P(ex - 1, ey - 3 - g, 3, 1, '#ffffff'); P(ex - 1, ey - 4 - g, 1, 1, '#ffffff'); }
+      P(ex - 4, ey - 2, 9, 2, '#8a93b8'); P(ex - 4, ey - 2, 9, 1, '#dfe6ff'); P(ex - 5, ey - 3, 2, 3, '#aab4d6'); P(ex + 4, ey - 3, 2, 3, '#6a7298'); P(ex, ey - 2, 1, 1, '#ff3b4a');
+      P(ex - 1, ey, 3, 4, '#5a3a22'); P(ex - 1, ey + 1, 3, 1, '#8a5a32'); P(ex - 1, ey + 3, 3, 1, '#8a5a32');
+      RR(ex - 1, ey + 4, 4, 3, 1, '#aab4d6'); P(ex, ey + 4, 1, 1, '#ffffff');
+      break;
+    }
+    case 'katana': {                                     // КАТАНА (власник, 23.11: «додай ще катану»): довгий вигнутий клинок (вигин — убік спинки леза),
+                                                         // лінія гартування хамон, кругла золота цуба, руків'я в ромбах обмотки, темне навершя; відблиск біжить до вістря
+      const BL = 27, cur = j => Math.round((j / BL) * (j / BL) * 3.2);                                   // зсув клинка від осі на висоті j
+      for (let j = 0; j < BL; j++) { const y = ey - 3 - j, x0 = ex + cur(j);
+        if (j < BL - 3) { P(x0 - 1, y, 1, 1, '#ffffff'); P(x0, y, 1, 1, (j + (f >> 2)) % 6 < 3 ? '#cfd8f2' : '#e6ecff'); P(x0 + 1, y, 1, 1, '#5a6490'); }   // лезо: край, хамон, спинка
+        else if (j < BL - 1) { P(x0, y, 1, 1, '#ffffff'); P(x0 + 1, y, 1, 1, '#8a96bc'); } else P(x0 + 1, y, 1, 1, '#ffffff'); }
+      const g = (f * 2) % 52; if (g < BL - 2) { const x0 = ex + cur(g); P(x0 - 1, ey - 3 - g, 2, 2, '#ffffff'); }
+      P(ex - 1, ey - 3, 3, 1, '#c9a040');                                                                // хабакі
+      P(ex - 3, ey - 2, 7, 2, '#d9a02a'); P(ex - 3, ey - 2, 7, 1, '#ffe27a'); P(ex - 4, ey - 2, 1, 1, '#ffd45a'); P(ex + 4, ey - 1, 1, 1, '#8a5a10');   // цуба
+      for (let j = 0; j < 7; j++) { P(ex - 1, ey + j, 3, 1, '#1a1430'); P(ex - 1 + (j % 3), ey + j, 1, 1, j % 2 ? '#ff4fd8' : '#f4e6ff'); }               // руків'я: темна основа й ромби обмотки
+      P(ex - 1, ey + 7, 3, 1, '#d9a02a');
+      break;
+    }
     case 'hammer': {                                     // громовий молот: короткий держак з обмоткою, важкий боєк з руною-блискавкою, розряди
       P(ex, ey - 7, 2, 12, '#5a3a22'); for (let j = 0; j < 12; j += 2) P(ex, ey - 7 + j, 2, 1, '#8a5a32');
       P(ex - 1, ey + 5, 4, 2, '#9aa6c8'); P(ex - 1, ey + 5, 4, 1, '#dfe6ff');

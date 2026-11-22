@@ -76,7 +76,7 @@ kabuto:{n:'Шолом самурая',slot:'head',noAnt:1},helmet:{n:'Шолом
 // РЕЛІКВІЇ — предмети в руках (малюються в sprite.js → drawHandItem; назви — js/i18n/*.js → skin.acc)
 hammer:{n:'Громовий молот',slot:'hand'},blade:{n:'Лазерний меч',slot:'hand'},gauntlet:{n:'Золота рукавиця',slot:'hand'},excalibur:{n:'Екскалібур',slot:'hand'},
 staff:{n:'Кришталевий посох',slot:'hand'},trident:{n:'Морський тризуб',slot:'hand'},wand:{n:'Зоряна паличка',slot:'hand'},balloon:{n:'Кулька',slot:'hand'},
-torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит Nexi',slot:'hand'},sword:{n:'Меч',slot:'hand'}};
+torch:{n:'Факел',slot:'hand'},magnet:{n:'Магніт',slot:'hand'},shield:{n:'Щит Nexi',slot:'hand'},sword:{n:'Меч',slot:'hand'},katana:{n:'Катана',slot:'hand'}};
 const HAND_ITEMS=Object.keys(ACCS).filter(k=>ACCS[k].slot==='hand');            // реліквії
 const WEAR_ACCS=Object.keys(ACCS).filter(k=>ACCS[k].slot!=='hand');              // аксесуари (спина, голова)
 const ACC_ITEMS=Object.fromEntries(WEAR_ACCS.map(k=>[k,ACCS[k]])), RELICS=Object.fromEntries(HAND_ITEMS.map(k=>[k,ACCS[k]]));

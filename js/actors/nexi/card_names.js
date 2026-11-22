@@ -24,7 +24,7 @@ NX.cardNames = (() => {
       candy: ['CANDY', 'candy'], pumpkin: ['PUMPKIN', 'pumpkin'], cyber: ['CYBER', 'tech'], royal: ['ROYAL', 'gold'], frost: ['FROST', 'ice'], lava: ['LAVA', 'fire'] },
     relic: { hammer: ['THUNDER HAMMER', 'bolt'], blade: ['LASER SWORD', 'laser'], gauntlet: ['GOLDEN GAUNTLET', 'gold'], excalibur: ['EXCALIBUR', 'steel'], staff: ['CRYSTAL STAFF', 'ice'],
       trident: ['SEA TRIDENT', 'sea'], wand: ['STAR WAND', 'star'], balloon: ['BALLOON', 'balloon'], torch: ['TORCH', 'fire'], magnet: ['MAGNET', 'magnet'], shield: ['NEXI SHIELD', 'tech'],
-      sword: ['SWORD', 'steel'] },
+      sword: ['SWORD', 'steel'], katana: ['KATANA', 'blade'] },
   };
   // стилі: g — перелив (верх, середина, низ), o — контур, fx — оздоблення
   const STYLES = {

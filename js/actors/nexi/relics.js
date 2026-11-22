@@ -1,50 +1,72 @@
 /* ============================================================================
  * actors/nexi/relics.js — ЗДІБНОСТІ РЕЛІКВІЙ У РУКАХ NEXI (NX.objects.relics)
  * ----------------------------------------------------------------------------
- * Власник (06.11): «реліквії в руках — кожна зі своєю здібністю: молот — Nexi іноді підіймає його вгору, і з нього б'є
- * блискавка вгору; до кожної реліквії — свій ефект, коли тапаєш на Nexi».
- * Дві нагоди показати реліквію (skins.js: ACCS slot 'hand', зараз у look.hand):
+ * Власник (06.11): «реліквії в руках — кожна зі своєю здібністю… до кожної реліквії — свій ефект, коли тапаєш на Nexi».
+ * Власник (23.11): «пропрацювати краще реліквії та взаємодії з ними… додай ще катану… реалізовуй усе».
+ * Коли показується (skins.js: ACCS slot 'hand', зараз у look.hand):
  *   ІНОДІ САМ (idle): Nexi вільний і стоїть на підлозі чи на доку — раз на 30–70 с (update);
- *   ПОДВІЙНИЙ ТАП ПО NEXI (власник, 06.11: «коли на Nexi два рази тапаємо — повністю»; nexi.js: hi -> tap(id, busy)): перший
- *     тап — привітання, як було; другий поспіль — здібність реліквії, емоція й коротка фраза (act.relic.<id>, 4 мови). Якщо
- *     Nexi зайнятий (крісло, капсула, політ) — лише ефект у кімнаті, без зміни пози; третій тап — «лоскотно», як було.
- *   НА КАРТЦІ NFT (власник: «на кожній картці Nexi має показувати цей самий ефект періодично»): cardFx — та сама здібність у
- *     піксель-арті картки раз за цикл 4 с (nft_card.js), без випадковості.
- * Кожна здібність — поза Nexi (poses.js: raise / swing / present / guard — тимчасова, nexi.temp) + ефект у кімнаті (шар
- * поверх Nexi: layers) + частинки (fx/particles.js). Тривалість — D с; ефект залежить від фази k = 0..1.
- *   hammer    ГРОМОВИЙ МОЛОТ — підіймає вгору, з бойка б'є блискавка в стелю, спалах, кільце грому по підлозі, іскри
- *   blade     ЛАЗЕРНИЙ МЕЧ — два розчерки лезом, неонові дуги й риски
- *   gauntlet  ЗОЛОТА РУКАВИЦЯ — стискає кулак, золоте сяйво пульсує, клацання — золоті іскри й біти
- *   excalibur ЕКСКАЛІБУР — підіймає, з неба падає стовп світла на Nexi, зорі
- *   staff     КРИШТАЛЕВИЙ ПОСОХ — кристал пульсує, сніжинки кружляють спіраллю, крижане кільце
- *   trident   МОРСЬКИЙ ТРИЗУБ — випад уперед, хвиля по підлозі й бризки-бульбашки
- *   wand      ЗОРЯНА ПАЛИЧКА — змах, зоряний слід і кільце зірок, сердечка
+ *   ПОДВІЙНИЙ ТАП ПО NEXI (nexi.js: hi -> tap(id, busy)): перший тап — привітання; другий поспіль — здібність реліквії,
+ *     емоція й коротка фраза (act.relic.<id>, 4 мови). Nexi зайнятий (крісло, капсула, політ) — лише ефект, без пози;
+ *   НА КАРТЦІ NFT (nft_card.js): cardFx — та сама здібність у піксель-арті картки раз за цикл 4 с, без випадковості.
+ * ЩО ЗМІНИЛОСЯ 23.11:
+ *   • у КОЖНОЇ реліквії своя постановка (poses.js: relicPose — ключові кадри руки, присіду й кута предмета за фазою k);
+ *     раніше було 5 спільних поз на 12 реліквій, а «Меч» і «Лазерний меч» мали одну здібність;
+ *   • поки триває здібність, предмет малює ЦЕЙ файл шаром поверх Nexi — цілим і з обертанням (у спрайті 48×56 піднятий
+ *     молот чи меч обрізався краєм); кадр предмета — sprite.js renderItem, оновлюється 10 разів/с;
+ *   • ефекти — піксельні блоки розміром у піксель спрайта (купол щита, стовп світла, блискавка, крига), без гладких ліній;
+ *   • нова реліквія КАТАНА.
+ * Здібності (D — тривалість, с):
+ *   hammer    ГРОМОВИЙ МОЛОТ — замах за плече й удар об підлогу: у місце удару б'є блискавка з неба, підлогою біжать світні тріщини
+ *   blade     ЛАЗЕРНИЙ МЕЧ — два повні оберти леза: неонові відбитки леза й слід вістря по колу
+ *   sword     МЕЧ — лицарський салют (зблиск на гарді), потім клинок у підлогу й на коліно: сталева хвиля в обидва боки
+ *   katana    КАТАНА — іай: стійка з клинком біля стегна, зблиск, миттєвий розчерк — довга тонка лінія розрізу, з неї сиплються пелюстки сакури
+ *   gauntlet  ЗОЛОТА РУКАВИЦЯ — кулак угору, сяйво росте, клацання — золоті іскри й біти
+ *   excalibur ЕКСКАЛІБУР — двома руками над головою: з неба падає піксельний стовп світла, зорі
+ *   staff     КРИШТАЛЕВИЙ ПОСОХ — удар п'ятою посоха об підлогу: довкола виростають крижані шипи, наприкінці розсипаються
+ *   trident   МОРСЬКИЙ ТРИЗУБ — відвів назад і випад: підлогою вперед котяться три гребені хвилі, бульбашки
+ *   wand      ЗОРЯНА ПАЛИЧКА — кінчик малює два кола: слід із зірочок, кільце зірок, сердечка
  *   balloon   КУЛЬКА — Nexi підстрибує тричі, кулька тягне вгору, пил
- *   torch     ФАКЕЛ — підіймає, полум'я вгору, тепле сяйво блимає, жаринки
- *   magnet    МАГНІТ — виставляє вперед, біти злітаються до магніту
- *   shield    ЩИТ NEXI — стає в захист, навколо енергетичний купол, що відбиває біти
- *   sword     МЕЧ — два розчерки, сталеві зблиски
- * Без текстів у сцені (усе — частинки й світло); фрази — лише словники.
+ *   torch     ФАКЕЛ — підняв і поводить з боку в бік: полум'я з чаші, тепле сяйво, жаринки
+ *   magnet    МАГНІТ — полюсами вперед: біти злітаються до полюсів
+ *   shield    ЩИТ NEXI — стає в захист: над ним піксельний купол із панелей, біти відскакують
+ * Без текстів у сцені (усе — світло й частинки); фрази — лише словники.
  * ========================================================================== */
 NX.objects.relics = (() => {
   const TAU = Math.PI * 2, r = Math.random;
-  const POSE = { hammer: 'raise', blade: 'swing', gauntlet: 'raise', excalibur: 'raise', staff: 'raise', trident: 'present', wand: 'swing', balloon: 'hop', torch: 'raise', magnet: 'present', shield: 'guard', sword: 'swing' };
-  const DUR = { hammer: 2.2, blade: 1.6, gauntlet: 2, excalibur: 2.6, staff: 2.4, trident: 1.8, wand: 2, balloon: 2.2, torch: 2.2, magnet: 2, shield: 2.4, sword: 1.6 };
-  const MOOD = { hammer: 'cool', blade: 'cool', gauntlet: 'cool', excalibur: 'idea', staff: 'surprise', trident: 'happy', wand: 'love', balloon: 'happy', torch: 'happy', magnet: 'surprise', shield: 'cool', sword: 'cool' };
-  const S = { act: null, next: 0, bolt: null, flash: 0, bits: [] };
-  const n = () => NX.nexi;
-  /** Геометрія Nexi в кімнаті: центр X, підлога Y, масштаб s (1 піксель спрайта), верх, напрям; рука вгорі / попереду. */
+  const POSE = { hammer: 'relic', blade: 'relic', gauntlet: 'raise', excalibur: 'relic', staff: 'relic', trident: 'relic', wand: 'relic', balloon: 'hop', torch: 'relic', magnet: 'relic', shield: 'relic', sword: 'relic', katana: 'relic' };
+  const DUR = { hammer: 2.4, blade: 2, gauntlet: 2, excalibur: 2.6, staff: 2.6, trident: 1.9, wand: 2.2, balloon: 2.2, torch: 2.2, magnet: 2, shield: 2.4, sword: 2.4, katana: 2.6 };
+  const MOOD = { hammer: 'cool', blade: 'cool', gauntlet: 'cool', excalibur: 'idea', staff: 'surprise', trident: 'happy', wand: 'love', balloon: 'happy', torch: 'happy', magnet: 'surprise', shield: 'cool', sword: 'cool', katana: 'cool' };
+  const LEN = { hammer: 11, blade: 29, sword: 22, katana: 29, excalibur: 24, staff: 25, trident: 24, wand: 15, torch: 14, magnet: 12, shield: 0 };   // від кисті до «робочого» кінця, пікселів спрайта
+  const IW = 44, IH = 60, PV = { r: [22, 47], l: [24, 43] };                           // полотно предмета й точка кисті на ньому (renderItem: права — W/2, H-13; щит — ліва)
+  const S = { act: null, next: 0, flash: 0, bits: [], fxT: {} };
+  const n = () => NX.nexi, Q = v => Math.round((v || 0) * 4 / 3);
+  const hash = (a, b) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  let itemCv = null, itemKey = '';
+  /** Кадр предмета (10 разів/с, один на всі шари). */
+  function item(id, t) { const key = id + '|' + Math.floor(t * 10); if (!itemCv) itemCv = document.createElement('canvas'); if (key !== itemKey) { itemKey = key; renderItem(id, t, itemCv, IW, IH); } return itemCv; }
+
+  /** Геометрія Nexi в кімнаті: центр X, підлога Y, масштаб s (1 піксель спрайта), верх, напрям. */
   function geo() {
     const N = n(), s = NX.room.scaleAt(Math.max(N.depthY(), 352)) * N.zoom * SPRITE_K, top = FOOT * s, d = N.dir < 0 ? -1 : 1;
     return { X: N.x, Y: N.y, s, top, d, up: [N.x + d * 6 * s, N.y - top - 4 * s], fwd: [N.x + d * 14 * s, N.y - top * .55], mid: [N.x, N.y - top * .5] };
   }
+  /** Кисть із предметом у кімнаті за позою p (та сама арифметика, що в sprite.js: плечі 12 / 35, y 36) і кінець предмета на відстані len. */
+  function hand(G, p) {
+    const L = p.item && p.item.hand === 'l', a = L ? p.la : p.ra, ex = (L ? 12 : 35) + Q(a.x), ey = 36 + Q(p.bob) + Q(a.y), ph = NX.nexiPhys, sq = ph && isFinite(ph.sq) ? ph.sq : 1,   /* пружина зараз дає NaN (відоме питання до власника) — тоді без стискання, як і сам спрайт */ fx = 1 + (1 - sq) * .55;
+    const x = G.X + G.d * (ex - 24) * G.s * fx, y = G.Y - (FOOT - ey) * G.s * sq, ang = p.item ? p.item.ang : 0;
+    return { x, y, ang, fx, sq, L, tip: (len, side = 0) => [x + G.d * (Math.sin(ang) * len + Math.cos(ang) * side) * G.s, y - (Math.cos(ang) * len - Math.sin(ang) * side) * G.s] };
+  }
   const free = () => { const N = n(); return !N.cur && !N.queue.length && !NX.ui.skinlab.open && (N.loc === 'floor' || N.loc === 'dock') && N.alpha > .9 && !N.rot; };
+  /** Що зараз показує Nexi (для poses.js: поза 'relic'): { id, k } або null. */
+  const cur = () => S.act && !S.act.light ? { id: S.act.id, k: Math.min(1, (NX.time - S.act.t0) / S.act.D) } : null;
+  /** Поза реліквії за фазою (картка NFT, майстерня). */
+  const pose = (id, k, t) => relicPose(id, k, t);
 
   /** Почати здібність реліквії id (why: 'tap' | 'idle'). Повертає false, якщо Nexi зайнятий або здібність уже триває. */
   function show(id, why, light) {
     if (S.act || !POSE[id]) return false; if (!light && !free()) return false;
     const N = n(), t = NX.time, D = DUR[id];
-    S.act = { id, t0: t, D, why, done: {}, light: !!light }; S.bolt = null; S.flash = 0; S.bits = [];
+    S.act = { id, t0: t, D, why, done: {}, light: !!light }; S.flash = 0; S.bits = []; S.fxT = {};
     N.lastCmd = t; N.emote(MOOD[id], D + .4);
     if (!light) { N.back = false; N.temp = POSE[id]; N.tempT = t + D; N.hiT = 0; }
     if (why === 'tap') N.say(NX.pick('act.relic.' + id));
@@ -55,124 +77,231 @@ NX.objects.relics = (() => {
   const tap = (id, busy) => show(id, 'tap', busy);
 
   function update(dt, t) {
-    const N = n(), hand = N.look.hand;
+    const N = n(), hd = N.look.hand;
     if (S.flash > 0) S.flash -= dt;
-    // іноді сам — раз на 30–70 с, лише вільний на підлозі (власник: «молот іноді підіймає вгору»)
-    if (!S.act) { if (!S.next) S.next = t + 20 + r() * 30; if (hand && t > S.next && !N.talking && t - N.lastCmd > 6) { S.next = t + 30 + r() * 40; show(hand, 'idle'); } return; }
-    const A = S.act, k = (t - A.t0) / A.D; if (k >= 1 || (N.cur && !A.light) || N.look.hand !== A.id) { S.act = null; S.bolt = null; S.bits = []; if (N.temp === POSE[A.id]) N.tempT = 0; S.next = t + 30 + r() * 40; return; }
-    const G = geo(), F = NX.fx, once = (key, f) => { if (!A.done[key]) { A.done[key] = 1; f(); } };
+    // іноді сам — раз на 30–70 с, лише вільний на підлозі
+    if (!S.act) { if (!S.next) S.next = t + 20 + r() * 30; if (hd && t > S.next && !N.talking && t - N.lastCmd > 6) { S.next = t + 30 + r() * 40; show(hd, 'idle'); } return; }
+    const A = S.act, k = (t - A.t0) / A.D;
+    if (k >= 1 || (N.cur && !A.light) || N.look.hand !== A.id) { S.act = null; S.bits = []; if (N.temp === POSE[A.id]) N.tempT = 0; S.next = t + 30 + r() * 40; return; }
+    const G = geo(), F = NX.fx, P = relicPose(A.id, k, t), H = hand(G, A.light ? { ra: { x: 3, y: -8 }, la: { x: -3, y: 5 }, bob: 0, item: P.item } : P), tip = H.tip(LEN[A.id] || 0);
+    const once = (key, at, f) => { if (k >= at && !A.done[key]) { A.done[key] = 1; S.fxT[key] = t; f(); } }, kick = v => NX.nexiPhys.kick(v);
     switch (A.id) {
-      case 'hammer': {                                                               // 0.35: удар блискавки вгору зі спалахом і громом, далі ще два коротші
-        [.35, .62, .8].forEach((at, i) => { if (k >= at) once('b' + i, () => { S.bolt = { t0: t, len: i ? 70 + r() * 40 : 150 + r() * 60, main: !i }; if (!i) { S.flash = .35; NX.nexiPhys.kick(2); F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 140, ttl: .55 }); } }); });
-        if (k > .3 && r() < .5) F.emit('spark', G.up[0] + (r() - .5) * 10, G.up[1], { col: r() < .5 ? '#9af6ff' : '#ffffff', vy: -40 - r() * 60 });
+      case 'hammer': {                                                               // .54 — удар об підлогу: блискавка з неба в місце удару, тріщини, грім; .72 і .86 — відлуння
+        once('hit', .54, () => { S.imp = [tip[0], G.Y]; S.flash = .35; kick(2.6); F.emit('ring', tip[0], G.Y, { col: '#9af6ff', gr: 150, ttl: .6 });
+          S.cracks = [...Array(7)].map((_, i) => ({ a: -Math.PI * (i + .5) / 7 * 2 + r() * .3, L: 26 + r() * 30, sd: i * 11 + (r() * 90 | 0) }));
+          for (let i = 0; i < 18; i++) F.emit('spark', tip[0] + (r() - .5) * 12, G.Y - 2, { col: r() < .6 ? '#9af6ff' : '#ffffff', vx: (r() - .5) * 200, vy: -40 - r() * 130 }); for (let i = 0; i < 6; i++) F.emit('dust', tip[0] + (r() - .5) * 30, G.Y); });
+        [.72, .86].forEach((at, i) => once('echo' + i, at, () => { kick(1); F.emit('ring', S.imp[0], G.Y, { col: '#9af6ff', gr: 70, ttl: .4 }); }));
+        if (k < .5 && r() < .35) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1], { col: '#9af6ff', vy: -30 - r() * 40, ttl: .35 });
         break; }
-      case 'blade': case 'sword': {                                                    // розчерки: два змахи, неонові (лазер) чи сталеві (меч) риски
-        if (r() < .7) F.emit('line', G.fwd[0] + (r() - .5) * 20 * G.s, G.fwd[1] - r() * 18 * G.s, { w: 10, col: A.id === 'blade' ? (r() < .5 ? '#ff4fd8' : '#3be8ff') : '#ffffff', vx: G.d * 40 });
-        if (A.id === 'sword' && r() < .3) F.emit('spark', G.fwd[0], G.fwd[1] - 10 * G.s, { col: '#ffffff' });
+      case 'blade': {                                                                // оберти: неонові риски з вістря, наприкінці — кільце
+        if (k > .14 && k < .82 && r() < .8) F.emit('line', tip[0], tip[1], { w: 6, col: r() < .5 ? '#ff4fd8' : '#3be8ff', vx: (r() - .5) * 30, vy: (r() - .5) * 30 });
+        once('end', .82, () => { kick(1.2); F.emit('ring', G.X, G.Y, { col: '#ff4fd8', gr: 100, ttl: .5 }); F.emit('ring', G.X, G.Y, { col: '#3be8ff', gr: 60, ttl: .5 }); });
         break; }
-      case 'gauntlet': {                                                             // кулак угору, сяйво росте; 0.5 — клацання: золоті іскри й біти
-        if (k >= .5) once('snap', () => { S.flash = .25; NX.nexiPhys.kick(1.6); for (let i = 0; i < 18; i++) F.emit('spark', G.up[0], G.up[1], { col: r() < .6 ? '#ffd45a' : '#fff6c0', vx: (r() - .5) * 140, vy: -r() * 120 }); F.emit('ring', G.X, G.Y, { col: '#ffd45a', gr: 100 }); });
+      case 'sword': {                                                                // .52 — клинок у підлогу: сталева хвиля, іскри
+        once('plant', .52, () => { S.imp = [tip[0], G.Y]; S.flash = .15; kick(2); F.emit('ring', tip[0], G.Y, { col: '#dfe8ff', gr: 120, ttl: .6 });
+          for (let i = 0; i < 14; i++) F.emit('spark', tip[0], G.Y - 2, { col: r() < .7 ? '#ffffff' : '#ffe27a', vx: (r() - .5) * 160, vy: -30 - r() * 90 }); for (let i = 0; i < 5; i++) F.emit('dust', tip[0] + (r() - .5) * 24, G.Y); });
+        break; }
+      case 'katana': {                                                               // .36 — зблиск на цубі; .46 — розчерк; далі з лінії розрізу сиплються пелюстки
+        once('glint', .36, () => F.emit('spark', H.x, H.y, { col: '#ffffff', vx: 0, vy: 0, g: 0, ttl: .2 }));
+        once('cut', .46, () => { S.flash = .12; kick(1.6); S.cut = { x0: G.X - G.d * 14 * G.s, x1: G.X + G.d * 150 * G.s, y: G.Y - G.top * .56, d: G.d, s: G.s };
+          for (let i = 0; i < 8; i++) F.emit('line', G.X + G.d * r() * 120 * G.s, S.cut.y + (r() - .5) * 6, { w: 14, col: '#ffffff', vx: G.d * 160 }); });
+        const C = S.cut, age = t - (S.fxT.cut || t);
+        if (C && age > .12 && age < 1.25 && r() < .75) { const q = r(), x = C.x0 + (C.x1 - C.x0) * q; F.emit('snow', x, C.y - q * 8 * C.s, { col: ['#ffb6dc', '#ff8fc8', '#ffe0f0'][r() * 3 | 0], vx: -C.d * (4 + r() * 14), vy: 12 + r() * 16, ttl: 1.3 + r() * .8, s: 1.6 }); }
+        once('split', .58, () => { const mx = (C.x0 + C.x1) / 2; for (let i = 0; i < 10; i++) F.emit('spark', mx + (r() - .5) * 60, C.y, { col: '#ffffff', vx: (r() - .5) * 60, vy: (r() < .5 ? -1 : 1) * (20 + r() * 50), g: 30, ttl: .45 }); });
+        break; }
+      case 'gauntlet': {                                                             // кулак угору, сяйво росте; .5 — клацання: золоті іскри й біти
+        once('snap', .5, () => { S.flash = .25; kick(1.6); for (let i = 0; i < 18; i++) F.emit('spark', G.up[0], G.up[1], { col: r() < .6 ? '#ffd45a' : '#fff6c0', vx: (r() - .5) * 140, vy: -r() * 120 }); F.emit('ring', G.X, G.Y, { col: '#ffd45a', gr: 100 }); });
         if (k > .5 && r() < .4) F.emit('bit', G.X + (r() - .5) * 40 * G.s, G.Y - r() * G.top, { col: '#ffd45a', ttl: .6 });
         break; }
-      case 'excalibur': {                                                            // стовп світла з неба на Nexi, зорі-іскри
-        if (k >= .3) once('beam', () => { S.flash = .2; F.emit('ring', G.X, G.Y, { col: '#fff6c0', gr: 90 }); });
-        if (k > .3 && r() < .5) F.emit('spark', G.X + (r() - .5) * 30 * G.s, G.Y - G.top - 10 - r() * 60, { col: '#ffffff', vy: 30 + r() * 40, g: 0, ttl: .8 });
+      case 'excalibur': {                                                            // .3 — стовп світла з неба; зорі падають уздовж нього
+        once('beam', .3, () => { S.flash = .2; kick(1); F.emit('ring', G.X, G.Y, { col: '#fff6c0', gr: 90 }); });
+        once('fade', .86, () => F.emit('ring', G.X, G.Y, { col: '#ffd45a', gr: 130, ttl: .6 }));
+        if (k > .3 && k < .88 && r() < .5) F.emit('spark', G.X + (r() - .5) * 34 * G.s, G.Y - G.top - 10 - r() * 90, { col: r() < .7 ? '#ffffff' : '#ffe9a0', vx: 0, vy: 40 + r() * 50, g: 0, ttl: .9 });
         break; }
-      case 'staff': {                                                                // кристал пульсує, сніжинки по спіралі вгору, крижане кільце
-        if (k >= .25) once('frost', () => F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 110, ttl: .7 }));
-        if (r() < .6) { const a = t * 6 + r() * .4, rr = 10 + k * 22; F.emit('snow', G.X + Math.cos(a) * rr * G.s, G.Y - G.top * (.2 + k * .9), { vy: -10, vx: 0, ttl: 1.2 }); }
-        if (k > .25 && r() < .3) F.emit('spark', G.up[0] + (r() - .5) * 8, G.up[1] - 4, { col: '#cfefff', vy: -20 });
+      case 'staff': {                                                                // .3 — удар посохом: крижане кільце й шипи; .86 — шипи розсипаються
+        once('strike', .3, () => { kick(1.6); F.emit('ring', G.X, G.Y, { col: '#9af6ff', gr: 120, ttl: .7 });
+          S.ice = [...Array(8)].map((_, i) => { const a = (i + .5) / 8 * Math.PI + (r() - .5) * .2; return { a, h: 9 + r() * 14, w: 3 + (r() * 3 | 0), dl: r() * .12 }; }); });
+        once('shatter', .86, () => { (S.ice || []).forEach(q => { const x = G.X + Math.cos(q.a) * 36 * G.s, y = G.Y + Math.sin(q.a) * 9 * G.s; for (let i = 0; i < 4; i++) F.emit('spark', x, y - r() * q.h * G.s, { col: r() < .5 ? '#cfefff' : '#ffffff', vx: (r() - .5) * 70, vy: -20 - r() * 50 }); }); });
+        if (k > .25 && k < .86 && r() < .5) { const a = t * 6 + r() * .4, rr = 12 + k * 22; F.emit('snow', G.X + Math.cos(a) * rr * G.s, G.Y - G.top * (.2 + k * .9), { vy: -10, vx: 0, ttl: 1.2 }); }
+        if (r() < .3) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1] - 4, { col: '#cfefff', vy: -20 });
         break; }
-      case 'trident': {                                                              // випад — хвиля по підлозі вперед і бризки
-        if (k >= .3) once('wave', () => { NX.nexiPhys.kick(1.2); F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 }); for (let i = 0; i < 14; i++) F.emit('bubble', G.fwd[0] + G.d * r() * 30, G.Y - r() * 20, { vx: G.d * (20 + r() * 60), vy: -30 - r() * 50 }); });
-        if (k > .3 && r() < .5) F.emit('bubble', G.fwd[0] + G.d * (10 + r() * 50), G.Y - r() * 12, { vx: G.d * 30, vy: -20 });
+      case 'trident': {                                                              // .42 — випад: хвиля вперед і бризки
+        once('wave', .42, () => { kick(1.4); S.wave = { x: tip[0], y: G.Y, d: G.d, s: G.s }; F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 });
+          for (let i = 0; i < 16; i++) F.emit('bubble', tip[0] + G.d * r() * 30, G.Y - r() * 20, { vx: G.d * (20 + r() * 70), vy: -10 - r() * 30 }); });
+        if (k > .42 && r() < .5) F.emit('bubble', tip[0] + G.d * (10 + r() * 70), G.Y - r() * 12, { vx: G.d * 30, vy: -20 });
         break; }
-      case 'wand': {                                                                 // зоряний слід за кінчиком, кільце зірок, сердечка
-        if (r() < .8) F.emit('spark', G.fwd[0] + (r() - .5) * 16 * G.s, G.fwd[1] - 20 * G.s + (r() - .5) * 12, { col: ['#ffe27a', '#ff7af0', '#ffffff'][r() * 3 | 0], vy: -10 - r() * 20, g: 10, ttl: .9 });
-        if (k >= .45) once('ring', () => { for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; F.emit('spark', G.X + Math.cos(a) * 26 * G.s, G.Y - G.top * .5 + Math.sin(a) * 18 * G.s, { col: '#ffe27a', vx: Math.cos(a) * 30, vy: Math.sin(a) * 30 - 10, g: 0, ttl: .8 }); } });
+      case 'wand': {                                                                 // зорі з кінчика, .5 — кільце зірок, наприкінці — сердечка
+        if (k > .12 && k < .9 && r() < .8) F.emit('spark', tip[0] + (r() - .5) * 4, tip[1] + (r() - .5) * 4, { col: ['#ffe27a', '#ff7af0', '#ffffff'][r() * 3 | 0], vx: (r() - .5) * 16, vy: -6 - r() * 16, g: 14, ttl: .9 });
+        once('ring', .5, () => { for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; F.emit('spark', G.X + Math.cos(a) * 26 * G.s, G.Y - G.top * .5 + Math.sin(a) * 18 * G.s, { col: '#ffe27a', vx: Math.cos(a) * 34, vy: Math.sin(a) * 34 - 10, g: 0, ttl: .8 }); } });
         if (k > .6 && r() < .25) F.emit('heart', G.X + (r() - .5) * 30 * G.s, G.Y - G.top);
         break; }
       case 'balloon': {                                                              // три підскоки — кулька тягне вгору
-        [.1, .45, .8].forEach((at, i) => { if (k >= at) once('h' + i, () => { NX.nexiPhys.kick(2.4); for (let q = 0; q < 5; q++) F.emit('dust', G.X + (r() - .5) * 20, G.Y); }); });
+        [.1, .45, .8].forEach((at, i) => once('h' + i, at, () => { kick(2.4); for (let q = 0; q < 5; q++) F.emit('dust', G.X + (r() - .5) * 20, G.Y); }));
         break; }
-      case 'torch': {                                                                // полум'я вгору, жаринки
-        if (r() < .9) F.emit('fire', G.up[0] + (r() - .5) * 6 * G.s, G.up[1] - 6 * G.s, { vy: -50 - r() * 50 });
-        if (r() < .2) F.emit('spark', G.up[0] + (r() - .5) * 10, G.up[1] - 10, { col: '#ff9a3a', vy: -40 - r() * 60, g: 20, ttl: .9 });
+      case 'torch': {                                                                // полум'я з чаші, жаринки
+        if (r() < .9) F.emit('fire', tip[0] + (r() - .5) * 5 * G.s, tip[1] - 2 * G.s, { vy: -50 - r() * 50 });
+        if (r() < .25) F.emit('spark', tip[0] + (r() - .5) * 10, tip[1] - 6, { col: '#ff9a3a', vy: -40 - r() * 60, g: 20, ttl: .9 });
         break; }
-      case 'magnet': {                                                               // біти злітаються до магніту
-        if (r() < .7 && k < .8) { const a = r() * TAU, rr = 60 + r() * 40; S.bits.push({ x: G.fwd[0] + Math.cos(a) * rr, y: G.fwd[1] + Math.sin(a) * rr * .6, col: r() < .5 ? '#ff6a6a' : '#6a8aff', age: 0 }); }
-        S.bits.forEach(b => { b.age += dt; const dx = G.fwd[0] - b.x, dy = G.fwd[1] - b.y, dd = Math.hypot(dx, dy) || 1, sp = (60 + b.age * 200) * dt; b.x += dx / dd * Math.min(sp, dd); b.y += dy / dd * Math.min(sp, dd); if (dd < 3) { b.dead = 1; F.emit('spark', b.x, b.y, { col: b.col, ttl: .3 }); } });
+      case 'magnet': {                                                               // біти злітаються до полюсів
+        if (r() < .7 && k > .15 && k < .8) { const a = r() * TAU, rr = 60 + r() * 40; S.bits.push({ x: tip[0] + Math.cos(a) * rr, y: tip[1] + Math.sin(a) * rr * .6, col: r() < .5 ? '#ff6a6a' : '#6a8aff', age: 0 }); }
+        S.bits.forEach(b => { b.age += dt; const dx = tip[0] - b.x, dy = tip[1] - b.y, dd = Math.hypot(dx, dy) || 1, sp = (60 + b.age * 200) * dt; b.x += dx / dd * Math.min(sp, dd); b.y += dy / dd * Math.min(sp, dd); if (dd < 3) { b.dead = 1; F.emit('spark', b.x, b.y, { col: '#ffffff', vx: 0, vy: -10, ttl: .2 }); } });
         S.bits = S.bits.filter(b => !b.dead && b.age < 2);
         break; }
-      case 'shield': {                                                               // купол, біти відскакують
-        if (r() < .4 && k > .15 && k < .85) { const a = -r() * Math.PI; F.emit('bit', G.X + Math.cos(a) * 34 * G.s, G.Y - G.top * .5 + Math.sin(a) * 30 * G.s, { col: '#3be8ff', vx: Math.cos(a) * 60, vy: Math.sin(a) * 60, ttl: .5 }); }
-        if (k >= .15) once('dome', () => { F.emit('ring', G.X, G.Y, { col: '#3be8ff', gr: 80 }); NX.nexiPhys.kick(1); });
+      case 'shield': {                                                               // купол, біти відскакують (місце удару по куполу спалахує — S.hits)
+        once('dome', .15, () => { F.emit('ring', G.X, G.Y, { col: '#3be8ff', gr: 80 }); kick(1); S.hits = []; });
+        if (k > .2 && k < .85 && r() < .25) { const a = -r() * Math.PI; S.hits.push({ a, t }); F.emit('bit', G.X + Math.cos(a) * 38 * G.s, G.Y - G.top * .45 + Math.sin(a) * 34 * G.s, { col: '#3be8ff', vx: Math.cos(a) * 70, vy: Math.sin(a) * 70, ttl: .5 }); }
         break; }
     }
   }
 
-  /** Шар поверх Nexi: блискавка молота, стовп світла, купол щита, сяйво рукавиці / факела / посоха. */
+  /** Шар поверх Nexi: сам предмет (цілим, з обертанням) і піксельні ефекти здібності. */
   function layers(t) {
     const A = S.act; if (!A && S.flash <= 0) return [];
-    const N = n(), G = geo(), P = NX.px;
+    const N = n(), G = geo(), Pg = NX.px;
     return [{ y: N.depthY() + 1, draw: c => {
-      c.save(); c.globalCompositeOperation = 'lighter';
-      if (S.flash > 0) P.glow(c, G.X, G.Y - G.top * .5, G.top * 1.4, 'rgba(255,255,255,.9)', Math.min(1, S.flash * 3));
+      const u = Math.max(.75, G.s), blk = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(Math.round(x / u) * u, Math.round(y / u) * u, w * u, h * u); };
+      c.save(); c.imageSmoothingEnabled = false;
+      if (S.flash > 0) { c.globalCompositeOperation = 'lighter'; Pg.glow(c, G.X, G.Y - G.top * .5, G.top * 1.4, 'rgba(255,255,255,.9)', Math.min(1, S.flash * 3)); c.globalCompositeOperation = 'source-over'; }
       if (!A) { c.restore(); return; }
-      const k = (t - A.t0) / A.D, [hx, hy] = G.up;
-      if (A.id === 'hammer') {
-        P.glow(c, hx, hy, 14 * G.s, 'rgba(120,230,255,.8)', .35 + .35 * Math.sin(t * 20));
-        const B = S.bolt; if (B && t - B.t0 < .45) { const a = 1 - (t - B.t0) / .45, top = hy - B.len * (B.main ? 1 : .7), segs = 9;
-          for (let pass = 0; pass < 2; pass++) { c.strokeStyle = pass ? `rgba(255,255,255,${a})` : `rgba(120,230,255,${a * .8})`; c.lineWidth = pass ? 1.5 : 4.5; c.beginPath(); c.moveTo(hx, hy);
-            for (let q = 1; q <= segs; q++) { const f = q / segs, j = q < segs ? (P.hash(q * 7 + Math.floor(t * 30)) - .5) * 18 : 0; c.lineTo(hx + j, hy + (top - hy) * f); } c.stroke();
-            if (B.main && pass) { c.lineWidth = 1.2; [[.5, 16 * G.d, -22], [.3, -14 * G.d, -16]].forEach(([f, dx, dy]) => { c.beginPath(); c.moveTo(hx, hy + (top - hy) * f); c.lineTo(hx + dx, hy + (top - hy) * f + dy); c.stroke(); }); } }
-          P.glow(c, hx, top, 34, 'rgba(180,240,255,.9)', a * .8); P.glow(c, hx, hy, 30, 'rgba(180,240,255,.9)', a * .6); }
-      } else if (A.id === 'excalibur' && k > .3) {                                     // стовп світла з неба
-        const a = Math.min(1, (k - .3) * 4) * (k > .85 ? (1 - k) / .15 : 1), w = 22 * G.s, g = c.createLinearGradient(0, G.Y - G.top - 160, 0, G.Y);
-        g.addColorStop(0, `rgba(255,246,200,0)`); g.addColorStop(.3, `rgba(255,246,200,${.5 * a})`); g.addColorStop(1, `rgba(255,246,200,${.15 * a})`);
-        c.fillStyle = g; c.fillRect(G.X - w, G.Y - G.top - 160, w * 2, G.top + 160); P.glow(c, hx, hy - 6 * G.s, 16 * G.s, 'rgba(255,255,255,.9)', a * .6);
-      } else if (A.id === 'shield' && k > .15) {                                       // купол
-        const a = (k < .3 ? (k - .15) / .15 : k > .85 ? (1 - k) / .15 : 1) * .8, R = 36 * G.s;
-        c.strokeStyle = `rgba(59,232,255,${a})`; c.lineWidth = 1.5; c.beginPath(); c.ellipse(G.X, G.Y - G.top * .45, R, R * .95, 0, Math.PI, TAU); c.stroke();
-        c.strokeStyle = `rgba(122,244,255,${a * .5})`; c.setLineDash([3, 4]); c.lineDashOffset = -t * 30; c.beginPath(); c.ellipse(G.X, G.Y - G.top * .45, R * .85, R * .8, 0, Math.PI, TAU); c.stroke(); c.setLineDash([]);
-        P.glow(c, G.X, G.Y - G.top * .45, R, 'rgba(59,232,255,.5)', a * .4);
-      } else if (A.id === 'gauntlet') P.glow(c, hx, hy, (10 + 10 * k) * G.s, 'rgba(255,212,90,.9)', .3 + .3 * Math.sin(t * 12));
-      else if (A.id === 'torch') P.glow(c, hx, hy - 6 * G.s, 22 * G.s, 'rgba(255,170,70,.8)', .45 + .2 * Math.sin(t * 17) + .1 * Math.sin(t * 31));
-      else if (A.id === 'staff') P.glow(c, hx, hy - 4 * G.s, 14 * G.s, 'rgba(160,230,255,.9)', .3 + .3 * Math.sin(t * 8));
-      else if (A.id === 'magnet') { S.bits.forEach(b => { c.fillStyle = b.col; c.fillRect(b.x - 1, b.y - 1, 2, 2); }); P.glow(c, G.fwd[0], G.fwd[1], 12 * G.s, 'rgba(255,120,120,.6)', .3); }
-      else if (A.id === 'blade') { const sw = Math.sin(t * 12); c.strokeStyle = sw > 0 ? 'rgba(255,79,216,.6)' : 'rgba(59,232,255,.6)'; c.lineWidth = 2; c.beginPath(); c.arc(G.X + G.d * 6 * G.s, G.Y - G.top * .6, 24 * G.s, G.d > 0 ? -1.2 : Math.PI - .4, G.d > 0 ? .4 : Math.PI + 1.2); c.stroke(); }
+      const k = Math.min(1, (t - A.t0) / A.D), P = relicPose(A.id, k, t), H = hand(G, P), tip = H.tip(LEN[A.id] || 0), age = key => t - (S.fxT[key] ?? 1e9), fr = Math.floor(t * 20);
+      const drawItem = (ang, alpha) => { const pv = PV[H.L ? 'l' : 'r']; c.save(); c.globalAlpha = alpha * N.alpha; c.translate(H.x, H.y); c.scale(G.d * H.fx, H.sq); c.rotate(ang); c.drawImage(item(A.id, t), -pv[0] * G.s, -pv[1] * G.s, IW * G.s, IH * G.s); c.restore(); };
+      const star = (x, y, R, col) => { blk(x - R * u, y, 2 * R + 1, 1, col); blk(x, y - R * u, 1, 2 * R + 1, col); blk(x - u, y - u, 3, 3, col); };   // чотирипроменева піксельна зірка
+      // ---- сам предмет (поки триває постановка; «легкий» показ — Nexi зайнятий, предмет лишається в його руці) ----
+      if (!A.light && P.noItem) {
+        if (A.id === 'blade' && k > .14 && k < .84) { c.globalCompositeOperation = 'lighter'; for (let g = 4; g >= 1; g--) drawItem(relicPose('blade', k - g * .014, t).item.ang, .3 - g * .055); c.globalCompositeOperation = 'source-over'; }
+        if (A.id === 'katana' && age('cut') >= 0 && age('cut') < .12) { c.globalCompositeOperation = 'lighter'; for (let g = 1; g <= 4; g++) drawItem(H.ang - g * .42, .34 - g * .06); c.globalCompositeOperation = 'source-over'; }   // віяло розчерку
+        drawItem(H.ang, 1);
+      }
+      c.globalCompositeOperation = 'lighter';
+      switch (A.id) {
+        case 'hammer': {
+          Pg.glow(c, tip[0], tip[1], 14 * G.s, 'rgba(120,230,255,.8)', .3 + .3 * Math.sin(t * 20));
+          const a = age('hit'), I = S.imp;
+          if (I && a >= 0 && a < .45) {                                                 // блискавка з неба: ламана з блоків — блакитна оболонка й біле осердя, дві гілки
+            const al = 1 - a / .45, f2 = Math.floor(t * 24), H0 = 250, nn = 16; let px = I[0], py = I[1];
+            for (let q = 1; q <= nn; q++) { const y = I[1] - H0 * q / nn, x = I[0] + (hash(q * 7, f2) - .5) * 30 * (q < nn ? 1 : .3), st = Math.max(1, Math.round((py - y) / u));
+              for (let j = 0; j <= st; j++) { const xx = px + (x - px) * j / st, yy = py + (y - py) * j / st; blk(xx - 2 * u, yy, 5, 1, `rgba(90,210,255,${al * .55})`); blk(xx - u, yy, 3, 1, `rgba(190,245,255,${al})`); blk(xx, yy, 1, 1, `rgba(255,255,255,${al})`); }
+              if (q === 5 || q === 10) for (let j = 1; j < 9; j++) blk(x + (q === 5 ? 1 : -1) * j * 2 * u, y - j * u + (hash(j, f2) - .5) * 3 * u, 2, 1, `rgba(190,245,255,${al * (1 - j / 9)})`);
+              px = x; py = y; }
+            Pg.glow(c, I[0], I[1], 40 * G.s, 'rgba(180,240,255,.9)', al * .8);
+          }
+          if (I && a >= 0 && a < 1.3 && S.cracks) { const al = a < .9 ? 1 : (1.3 - a) / .4, gr = Math.min(1, a / .18);   // світні тріщини в підлозі розбігаються від удару
+            S.cracks.forEach(q => { const st = Math.round(q.L * gr); for (let j = 2; j < st; j++) { const w = (hash(j >> 2, q.sd) - .5) * 5, x = I[0] + (Math.cos(q.a) * j + Math.sin(q.a) * w) * u, y = I[1] + (Math.sin(q.a) * j * .3) * u;
+              blk(x, y, 1, 1, j > st - 3 ? `rgba(255,255,255,${al})` : `rgba(110,225,255,${al * (1 - j / q.L * .6)})`); } }); }
+          break; }
+        case 'blade': {                                                               // слід вістря по колу — неонові блоки, що гаснуть
+          if (k > .14 && k < .86) for (let g = 0; g < 16; g++) { const kk = k - g * .009; if (kk < .14) break; const q = hand(G, relicPose('blade', kk, t)).tip(29); blk(q[0] - u, q[1] - u, g < 3 ? 3 : 2, g < 3 ? 3 : 2, g % 2 ? `rgba(255,79,216,${.9 - g * .05})` : `rgba(59,232,255,${.9 - g * .05})`); }
+          Pg.glow(c, tip[0], tip[1], 10 * G.s, 'rgba(120,240,255,.8)', .5);
+          break; }
+        case 'sword': {
+          if (k > .18 && k < .44) { const R = 2 + Math.round(Math.abs(Math.sin((k - .18) / .26 * Math.PI)) * 4); star(H.x, H.y - 2 * G.s, R, '#ffffff'); }   // зблиск на гарді під час салюту
+          const a = age('plant'), I = S.imp;
+          if (I && a >= 0 && a < .7) { const al = 1 - a / .7, ds = a * 130 * G.s;                                                   // сталева хвиля: шеврони розбігаються в обидва боки
+            [-1, 1].forEach(sd => { for (let w = 0; w < 3; w++) { const x = I[0] + sd * (ds - w * 9 * u); if ((x - I[0]) * sd < 4) continue; for (let j = 0; j < 4; j++) blk(x - sd * j * u, I[1] - j * u, 2, 1, `rgba(${w ? '190,205,240' : '255,255,255'},${al * (1 - w * .3)})`); } });
+            Pg.glow(c, I[0], I[1], 18 * G.s, 'rgba(230,240,255,.8)', al * .6); }
+          break; }
+        case 'katana': {
+          const g = age('glint'); if (g >= 0 && g < .16) star(H.x, H.y, 2 + Math.round((1 - g / .16) * 4), '#ffffff');
+          const a = age('cut'), C = S.cut;
+          if (C && a >= 0 && a < .9) {                                                  // лінія розрізу: миттєво простягається, тримається, потім розсипається «шахівницею»
+            const rev = Math.min(1, a / .07), nn = Math.round(Math.abs(C.x1 - C.x0) / u), fade = a < .4 ? 1 : 1 - (a - .4) / .5;
+            for (let i = 0; i < nn * rev; i += 1) { const q = i / nn, x = C.x0 + (C.x1 - C.x0) * q, y = C.y - q * 8 * C.s, th = q < .08 || q > .92 ? 0 : 1;
+              if (a > .4 && hash(i, 3) > fade) continue;
+              blk(x, y, 1, 1, `rgba(255,255,255,${fade})`); if (th) { blk(x, y - u, 1, 1, `rgba(255,150,210,${fade * .7})`); blk(x, y + u, 1, 1, `rgba(255,150,210,${fade * .45})`); } }
+            if (a < .12) Pg.glow(c, C.x0 + (C.x1 - C.x0) * rev, C.y - rev * 8 * C.s, 16 * G.s, 'rgba(255,220,240,.9)', .8);
+          }
+          break; }
+        case 'gauntlet': Pg.glow(c, G.up[0], G.up[1], (10 + 10 * k) * G.s, 'rgba(255,212,90,.9)', .3 + .3 * Math.sin(t * 12)); break;
+        case 'excalibur': if (k > .3) {                                                // стовп світла: суцільне осердя й «шахові» краї, що течуть униз
+          const a = Math.min(1, (k - .3) * 5) * (k > .86 ? (1 - k) / .14 : 1), y0 = G.Y - G.top - 190, hh = G.Y - y0, rows = Math.round(hh / (2 * u));
+          [[-7, 14, .16], [-4, 8, .22], [-1, 3, .5]].forEach(([dx, w, al]) => blk(G.X + dx * u, y0, w, hh / u, `rgba(255,246,200,${al * a})`));
+          for (let j = 0; j < rows; j++) { const y = y0 + j * 2 * u, ph2 = (j - fr) & 3; [-11, -9, 8, 10].forEach((dx, q) => { if (((q + ph2) & 3) < 2) blk(G.X + dx * u, y, 2, 2, `rgba(255,236,170,${a * (q === 0 || q === 3 ? .16 : .3) * Math.min(1, j / 8)})`); }); }
+          Pg.glow(c, tip[0], tip[1], 16 * G.s, 'rgba(255,255,255,.9)', a * .6); Pg.glow(c, G.X, G.Y, 30 * G.s, 'rgba(255,240,180,.8)', a * .35);
+        } break;
+        case 'staff': {
+          Pg.glow(c, tip[0], tip[1] - 2 * G.s, 14 * G.s, 'rgba(160,230,255,.9)', .3 + .3 * Math.sin(t * 8));
+          if (S.ice && k < .86) { c.globalCompositeOperation = 'source-over';             // крижані шипи: ростуть по черзі, грань світла / темна, біла верхівка
+            S.ice.forEach(q => { const gr = Math.max(0, Math.min(1, (k - .3 - q.dl) / .14)), hh = Math.round(q.h * gr), x = G.X + Math.cos(q.a) * 36 * G.s, y = G.Y + Math.sin(q.a) * 9 * G.s;
+              for (let j = 0; j < hh; j++) { const w = Math.max(1, Math.round(q.w * (1 - j / q.h))), yy = y - (j + 1) * u; blk(x - w * u, yy, w, 1, j > hh - 3 ? '#ffffff' : '#cff4ff'); blk(x, yy, w, 1, j > hh - 3 ? '#e6fbff' : j % 5 === 4 ? '#8a7aef' : '#6ac4f0'); }
+              if (hh > 2) { blk(x - (q.w + 1) * u, y - u, 1, 1, '#0a0f2e'); blk(x + q.w * u, y - u, 1, 1, '#0a0f2e'); } });
+            c.globalCompositeOperation = 'lighter'; if (k > .3) Pg.glow(c, G.X, G.Y, 44 * G.s, 'rgba(150,225,255,.7)', .25); }
+          break; }
+        case 'trident': {
+          const a = age('wave'), W = S.wave;
+          if (W && a >= 0 && a < 1) for (let w = 0; w < 3; w++) { const q = (a - w * .12) / .75; if (q < 0 || q > 1) continue; const x = W.x + W.d * q * 120 * W.s, al = Math.min(1, (1 - q) * 1.6), hh = 5 + Math.round(8 * Math.sin(q * Math.PI));   // три гребені хвилі котяться вперед: тіло хвилі, біла піна на гребені й завиток
+            for (let j = 0; j < hh; j++) { const w = 4 + (hh - j) * 2, x0 = x - W.d * j * u - (W.d < 0 ? 0 : w * u); blk(x0, W.y - (j + 1) * u, w, 1, j >= hh - 2 ? `rgba(255,255,255,${al})` : j % 3 === 2 ? `rgba(150,225,255,${al * .9})` : `rgba(60,160,255,${al * .75})`); }
+            blk(x + W.d * 2 * u - (W.d < 0 ? 3 * u : 0), W.y - (hh + 1) * u, 3, 1, `rgba(255,255,255,${al})`); blk(x + W.d * 4 * u, W.y - hh * u, 2, 1, `rgba(255,255,255,${al})`); }
+          Pg.glow(c, tip[0], tip[1], 9 * G.s, 'rgba(122,244,255,.8)', .4);
+          break; }
+        case 'wand': {                                                                // слід із зірочок за кінчиком
+          if (k > .15 && k < .88) for (let g = 0; g < 6; g++) { const kk = k - g * .03; if (kk < .15) break; const q = hand(G, relicPose('wand', kk, t)).tip(15); star(q[0], q[1], g < 2 ? 2 : 1, ['#ffe27a', '#ff7af0', '#ffffff'][(g + fr) % 3]); }
+          break; }
+        case 'torch': Pg.glow(c, tip[0], tip[1] - 2 * G.s, 22 * G.s, 'rgba(255,170,70,.8)', .45 + .2 * Math.sin(t * 17) + .1 * Math.sin(t * 31)); break;
+        case 'magnet': { S.bits.forEach(b => blk(b.x, b.y, 2, 2, b.col)); Pg.glow(c, tip[0], tip[1], 12 * G.s, 'rgba(255,120,120,.6)', .3);
+          if (k > .15 && k < .85) for (let j = 0; j < 3; j++) { const q = ((t * 1.6 + j / 3) % 1), R = (6 + q * 16) * G.s; for (let i = -3; i <= 3; i++) blk(tip[0] + G.d * Math.cos(i * .3) * R, tip[1] + Math.sin(i * .3) * R, 1, 1, `rgba(154,246,255,${(1 - q) * .8})`); }   // хвилі поля від полюсів
+          break; }
+        case 'shield': if (k > .15) {                                                  // купол із панелей: обід, меридіани й паралелі з блоків, спалахи в місцях ударів
+          const a = (k < .3 ? (k - .15) / .15 : k > .86 ? (1 - k) / .14 : 1), R = 38 * G.s, cy = G.Y - G.top * .45, pt = (ang, m) => [G.X + Math.cos(ang) * R * m, cy + Math.sin(ang) * R * .95];
+          for (let i = 0; i <= 44; i++) { const an = Math.PI + i / 44 * Math.PI, q = pt(an, 1); blk(q[0] - u, q[1] - u, 2, 2, `rgba(59,232,255,${a * (i % 2 ? .9 : .55)})`); }
+          [-.62, -.22, .22, .62].forEach(m => { for (let i = 1; i < 22; i++) { if ((i + fr) % 3 === 0) continue; const q = pt(Math.PI + i / 22 * Math.PI, 1); blk(G.X + (q[0] - G.X) * Math.abs(m) * (m < 0 ? -1 : 1) * (q[0] < G.X ? -1 : 1), q[1], 1, 1, `rgba(122,244,255,${a * .45})`); } });
+          [.35, .7].forEach(lv => { const y = cy - R * .95 * lv, hw = R * Math.sqrt(1 - lv * lv); for (let x = -hw; x <= hw; x += 3 * u) blk(G.X + x, y, 2, 1, `rgba(122,244,255,${a * .4})`); });
+          for (let x = -R; x <= R; x += 2 * u) blk(G.X + x, cy + Math.sin(x / R * 9 + t * 6) * u, 1, 1, `rgba(59,232,255,${a * .7})`);
+          (S.hits || []).forEach(h => { const ag = t - h.t; if (ag > .35) return; const q = pt(h.a, 1), R2 = 1 + Math.round(ag / .35 * 4); star(q[0], q[1], R2, `rgba(255,255,255,${1 - ag / .35})`); });
+          Pg.glow(c, G.X, cy, R, 'rgba(59,232,255,.5)', a * .35);
+        } break;
+      }
       c.restore();
     } }];
   }
+
   /** ЗДІБНІСТЬ НА КАРТЦІ NFT (nft_card.js): піксель-арт 96×128, Nexi стоїть у (24, HOR-51), ноги на HOR+1. k — фаза здібності 0..1
-   *  (вікно всередині циклу картки), fr — номер кадру (для «тремтіння» без випадковості). Малює поверх Nexi. Повертає позу. */
-  const H = (a, b) => { let h = (a * 374761393 + b * 668265263) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+   *  (вікно всередині циклу картки), fr — номер кадру (для «тремтіння» без випадковості). Малює поверх Nexi: спершу сам предмет
+   *  (постановка та сама, що в кімнаті), потім ефект. */
+  const H = hash;
+  let cardCv = null;
   function cardFx(x, id, k, fr, HOR) {
-    const hx = 63, hy = HOR - 31, top = HOR - 46, px = (X, Y, c) => { x.fillStyle = c; x.fillRect(Math.round(X), Math.round(Y), 1, 1); }, ring = (r, c) => { x.fillStyle = c; for (let a = 0; a < 40; a++) px(48 + Math.cos(a / 40 * TAU) * r, HOR + 1 + Math.sin(a / 40 * TAU) * r * .3, c); };
+    const P = relicPose(id, k, fr / 12), px = (X, Y, c) => { x.fillStyle = c; x.fillRect(Math.round(X), Math.round(Y), 1, 1); }, ring = (cx, r2, c) => { for (let a = 0; a < 40; a++) px(cx + Math.cos(a / 40 * TAU) * r2, HOR + 1 + Math.sin(a / 40 * TAU) * r2 * .3, c); };
+    let hx = 63, hy = HOR - 31, tx = hx, ty = HOR - 46;
+    if (P.noItem && P.item) {                                                          // предмет у руці — цілим, з обертанням
+      const L = P.item.hand === 'l', a = L ? P.la : P.ra, pv = PV[L ? 'l' : 'r']; hx = 24 + (L ? 12 : 35) + Q(a.x); hy = HOR + 1 - FOOT + 36 + Q(P.bob) + Q(a.y);
+      const len = LEN[id] || 0; tx = hx + Math.sin(P.item.ang) * len; ty = hy - Math.cos(P.item.ang) * len;
+      if (!cardCv) cardCv = document.createElement('canvas'); renderItem(id, fr / 12, cardCv, IW, IH);
+      x.save(); x.imageSmoothingEnabled = false; x.translate(hx, hy); x.rotate(P.item.ang); x.drawImage(cardCv, -pv[0], -pv[1]); x.restore();
+    }
     x.save(); x.globalCompositeOperation = 'lighter';
     switch (id) {
-      case 'hammer': { if (k > .3 && k < .75) { const a = 1 - (k - .3) / .45; x.strokeStyle = `rgba(255,255,255,${a})`; x.lineWidth = 1.5; x.beginPath(); x.moveTo(hx, top);
-          for (let q = 1; q <= 8; q++) x.lineTo(hx + (H(q, fr) - .5) * 10, top - (top - 14) * q / 8); x.stroke(); x.strokeStyle = `rgba(120,230,255,${a * .6})`; x.lineWidth = 3; x.stroke();
-          if (k < .4) { x.fillStyle = `rgba(255,255,255,${(.4 - k) * 1.5})`; x.fillRect(3, 3, 90, 122); } ring(10 + (k - .3) * 60, `rgba(154,246,255,${a * .8})`); }
-        if (k > .25 && k < .8) for (let q = 0; q < 4; q++) if (H(q, fr >> 1) > .5) px(hx - 6 + H(q, 3) * 12, top - 2 - H(q, fr) * 8, '#9af6ff'); break; }
-      case 'blade': case 'sword': { const c = id === 'blade' ? (fr & 2 ? '#ff4fd8' : '#3be8ff') : '#ffffff', sw = Math.sin(k * TAU * 2); x.strokeStyle = c; x.lineWidth = 1; x.beginPath(); x.arc(56, hy + 4, 12, -1.3 + sw * .5, .5 + sw * .5); x.stroke();
-        for (let q = 0; q < 3; q++) px(60 + H(q, fr) * 14, hy - 8 + H(q + 5, fr) * 18, c); break; }
-      case 'gauntlet': { x.fillStyle = `rgba(255,212,90,${.25 + .2 * Math.sin(k * TAU * 3)})`; x.beginPath(); x.arc(hx, hy - 2, 5 + k * 4, 0, TAU); x.fill();
-        if (k > .5) { const q0 = (k - .5) * 2; for (let q = 0; q < 10; q++) { const a = q / 10 * TAU, r = 3 + q0 * 14; px(hx + Math.cos(a) * r, hy - 2 + Math.sin(a) * r - q0 * 6, q & 1 ? '#ffd45a' : '#fff6c0'); } } break; }
-      case 'excalibur': { if (k > .25) { const a = Math.min(1, (k - .25) * 4) * (k > .85 ? (1 - k) / .15 : 1); x.fillStyle = `rgba(255,246,200,${a * .3})`; x.fillRect(36, 10, 24, HOR - 10); x.fillStyle = `rgba(255,255,255,${a * .5})`; x.fillRect(46, 10, 4, HOR - 10);
+      case 'hammer': { if (k > .54 && k < .9) { const a = 1 - (k - .54) / .36, ix = Math.min(88, tx);
+          for (let q = 0; q < 34; q++) { const y = HOR - q * (HOR - 8) / 34, xx = ix + (H(q >> 1, fr) - .5) * 9; px(xx, y, `rgba(255,255,255,${a})`); px(xx - 1, y, `rgba(120,230,255,${a * .7})`); px(xx + 1, y, `rgba(120,230,255,${a * .7})`); }
+          if (k < .62) { x.fillStyle = `rgba(255,255,255,${(.62 - k) * 6})`; x.fillRect(3, 3, 90, 122); } ring(ix, 6 + (k - .54) * 70, `rgba(154,246,255,${a * .8})`);
+          for (let q = 0; q < 5; q++) for (let j = 2; j < 12 * Math.min(1, (k - .54) * 8); j++) px(ix + Math.cos(q * 1.26 + .4) * j + (H(j >> 1, q) - .5) * 2, HOR + 1 + Math.sin(q * 1.26 + .4) * j * .3, `rgba(110,225,255,${a})`); }
+        break; }
+      case 'blade': { if (k > .14 && k < .86) for (let g = 0; g < 12; g++) { const kk = k - g * .012; if (kk < .14) break; const p2 = relicPose('blade', kk, 0), a2 = p2.item.ang; px(24 + 35 + Q(p2.ra.x) + Math.sin(a2) * 29, HOR + 1 - FOOT + 36 + Q(p2.bob) + Q(p2.ra.y) - Math.cos(a2) * 29, g % 2 ? '#ff4fd8' : '#3be8ff'); } break; }
+      case 'sword': { if (k > .52 && k < .95) { const a = 1 - (k - .52) / .43; ring(tx, 4 + (k - .52) * 60, `rgba(223,232,255,${a})`); for (let q = 0; q < 6; q++) { const q0 = (k - .52) * 2.3; px(tx + (H(q, 2) - .5) * 40 * q0, HOR - q0 * 22 * H(q, 5) + q0 * q0 * 14, '#ffffff'); } }
+        if (k > .18 && k < .44) { const R = 1 + Math.round(Math.abs(Math.sin((k - .18) / .26 * Math.PI)) * 3); for (let j = -R; j <= R; j++) { px(hx + j, hy - 2, '#ffffff'); px(hx, hy - 2 + j, '#ffffff'); } } break; }
+      case 'katana': { if (k > .46) { const a = k < .7 ? 1 : Math.max(0, 1 - (k - .7) / .25), rev = Math.min(1, (k - .46) / .03);
+          for (let i = 0; i < 82 * rev; i++) { if (k > .7 && H(i, 3) > a) continue; const xx = 8 + i, yy = HOR - 27 - i * .06; px(xx, yy, `rgba(255,255,255,${a})`); if (i > 6 && i < 76) px(xx, yy - 1, `rgba(255,150,210,${a * .7})`); }
+          for (let q = 0; q < 9; q++) { const q0 = ((k - .5) * 1.6 + H(q, 7)) % 1; if (k > .5) px(12 + H(q, 1) * 72 - q0 * 6, HOR - 27 + q0 * 26, q & 1 ? '#ffb6dc' : '#ff8fc8'); } }
+        break; }
+      case 'gauntlet': { x.fillStyle = `rgba(255,212,90,${.25 + .2 * Math.sin(k * TAU * 3)})`; x.beginPath(); x.arc(63, HOR - 33, 5 + k * 4, 0, TAU); x.fill();
+        if (k > .5) { const q0 = (k - .5) * 2; for (let q = 0; q < 10; q++) { const a = q / 10 * TAU, r2 = 3 + q0 * 14; px(63 + Math.cos(a) * r2, HOR - 33 + Math.sin(a) * r2 - q0 * 6, q & 1 ? '#ffd45a' : '#fff6c0'); } } break; }
+      case 'excalibur': { if (k > .3) { const a = Math.min(1, (k - .3) * 5) * (k > .86 ? (1 - k) / .14 : 1); x.fillStyle = `rgba(255,246,200,${a * .22})`; x.fillRect(36, 10, 24, HOR - 9); x.fillStyle = `rgba(255,246,200,${a * .3})`; x.fillRect(42, 10, 12, HOR - 9); x.fillStyle = `rgba(255,255,255,${a * .45})`; x.fillRect(46, 10, 4, HOR - 9);
+          for (let j = 10; j < HOR; j += 2) [33, 34, 61, 62].forEach((cx, q) => { if (((q + (j >> 1) - fr) & 3) < 2) px(cx, j, `rgba(255,236,170,${a * .5})`); });
           for (let q = 0; q < 5; q++) px(38 + H(q, 9) * 20, 14 + ((H(q, 11) + k * 2) % 1) * (HOR - 20), '#ffffff'); } break; }
-      case 'staff': { for (let q = 0; q < 8; q++) { const a = k * TAU * 2 + q / 8 * TAU, r = 8 + k * 14; px(48 + Math.cos(a) * r, HOR - 10 - k * 34 - q, q & 1 ? '#ffffff' : '#cfefff'); } if (k > .2) ring(8 + k * 20, 'rgba(154,246,255,.5)'); px(hx, top + 2, fr & 1 ? '#ffffff' : '#9af6ff'); break; }
-      case 'trident': { if (k > .3) { ring((k - .3) * 50, 'rgba(74,192,255,.8)'); for (let q = 0; q < 8; q++) { const q0 = ((k - .3) * 1.4 + H(q, 3)) % 1; px(66 + H(q, 1) * 22 + q0 * 10, HOR - 2 - q0 * 20, '#9ad8ff'); } } break; }
-      case 'wand': { for (let q = 0; q < 8; q++) { const a = q / 8 * TAU + k * 2, r = 6 + k * 16; px(70 + Math.cos(a) * r, hy - 6 + Math.sin(a) * r * .7, ['#ffe27a', '#ff7af0', '#ffffff'][q % 3]); } if (k > .6 && (fr & 2)) { px(44, hy - 14 - (k - .6) * 20, '#ff5ae0'); px(45, hy - 14 - (k - .6) * 20, '#ff5ae0'); } break; }
-      case 'torch': { for (let q = 0; q < 6; q++) { const q0 = (H(q, 2) + k * 3) % 1; px(hx - 2 + H(q + 7, fr >> 1) * 4, top - 2 - q0 * 12, q0 < .5 ? '#ffe27a' : '#ff7a2a'); } x.fillStyle = 'rgba(255,170,70,.25)'; x.beginPath(); x.arc(hx, top - 2, 7 + Math.sin(k * TAU * 4), 0, TAU); x.fill(); break; }
-      case 'magnet': { for (let q = 0; q < 8; q++) { const a = H(q, 4) * TAU, r = 22 * (1 - ((k * 1.5 + H(q, 6)) % 1)); px(72 + Math.cos(a) * r, hy + 4 + Math.sin(a) * r * .6, q & 1 ? '#ff6a6a' : '#6a8aff'); } break; }
-      case 'shield': { const a = k < .2 ? k / .2 : k > .85 ? (1 - k) / .15 : 1; x.strokeStyle = `rgba(59,232,255,${a * .8})`; x.lineWidth = 1; x.beginPath(); x.ellipse(48, HOR - 22, 24, 26, 0, Math.PI, TAU); x.stroke();
-        for (let q = 0; q < 4; q++) { const ang = Math.PI + (H(q, 5) + k) % 1 * Math.PI; px(48 + Math.cos(ang) * 26, HOR - 22 + Math.sin(ang) * 28, '#3be8ff'); } break; }
+      case 'staff': { for (let q = 0; q < 8; q++) { const a = k * TAU * 2 + q / 8 * TAU, r2 = 8 + k * 14; px(48 + Math.cos(a) * r2, HOR - 10 - k * 34 - q, q & 1 ? '#ffffff' : '#cfefff'); } if (k > .3) ring(48, 8 + k * 20, 'rgba(154,246,255,.5)');
+        if (k > .3 && k < .86) { x.globalCompositeOperation = 'source-over'; for (let q = 0; q < 6; q++) { const sx = 22 + q * 10 + (q > 2 ? 2 : 0), hh = Math.round((6 + H(q, 4) * 10) * Math.min(1, (k - .3 - q * .015) / .14)); for (let j = 0; j < hh; j++) { const w = Math.max(1, Math.round(3 * (1 - j / 16))); x.fillStyle = j > hh - 3 ? '#ffffff' : '#cff4ff'; x.fillRect(sx - w, HOR + 2 - j, w, 1); x.fillStyle = j > hh - 3 ? '#e6fbff' : '#6ac4f0'; x.fillRect(sx, HOR + 2 - j, w, 1); } } x.globalCompositeOperation = 'lighter'; }
+        break; }
+      case 'trident': { if (k > .42) { ring(tx - 8, (k - .42) * 50, 'rgba(74,192,255,.8)'); for (let w = 0; w < 3; w++) { const q = (k - .42 - w * .07) / .45; if (q < 0 || q > 1) continue; const xx = Math.min(90, 60 + q * 30), hh = 2 + Math.round(3 * Math.sin(q * Math.PI)); for (let j = 0; j < hh; j++) for (let i = 0; i < 3 + hh - j; i++) px(xx - j + i, HOR - j, j === hh - 1 ? '#ffffff' : 'rgba(90,190,255,.8)'); } } break; }
+      case 'wand': { for (let q = 0; q < 8; q++) { const a = q / 8 * TAU + k * 2, r2 = 6 + k * 16; px(tx + Math.cos(a) * r2 * .5, ty + Math.sin(a) * r2 * .4, ['#ffe27a', '#ff7af0', '#ffffff'][q % 3]); } if (k > .6 && (fr & 2)) { px(44, hy - 14 - (k - .6) * 20, '#ff5ae0'); px(45, hy - 14 - (k - .6) * 20, '#ff5ae0'); } break; }
+      case 'torch': { for (let q = 0; q < 6; q++) { const q0 = (H(q, 2) + k * 3) % 1; px(tx - 2 + H(q + 7, fr >> 1) * 4, ty - 2 - q0 * 12, q0 < .5 ? '#ffe27a' : '#ff7a2a'); } x.fillStyle = 'rgba(255,170,70,.25)'; x.beginPath(); x.arc(tx, ty - 2, 7 + Math.sin(k * TAU * 4), 0, TAU); x.fill(); break; }
+      case 'magnet': { for (let q = 0; q < 8; q++) { const a = H(q, 4) * TAU, r2 = 22 * (1 - ((k * 1.5 + H(q, 6)) % 1)); px(Math.min(92, tx) + Math.cos(a) * r2, ty + Math.sin(a) * r2 * .6, q & 1 ? '#ff6a6a' : '#6a8aff'); } break; }
+      case 'shield': { const a = k < .2 ? k / .2 : k > .85 ? (1 - k) / .15 : 1; for (let i = 0; i <= 40; i++) { const an = Math.PI + i / 40 * Math.PI; px(48 + Math.cos(an) * 25, HOR - 22 + Math.sin(an) * 27, `rgba(59,232,255,${a * (i % 2 ? .9 : .5)})`); }
+        [-.5, .5].forEach(m => { for (let i = 1; i < 20; i++) if ((i + fr) % 3) px(48 + Math.cos(Math.PI + i / 20 * Math.PI) * 25 * m, HOR - 22 + Math.sin(Math.PI + i / 20 * Math.PI) * 27, `rgba(122,244,255,${a * .45})`); });
+        for (let q = 0; q < 4; q++) { const ang = Math.PI + (H(q, 5) + k) % 1 * Math.PI; px(48 + Math.cos(ang) * 27, HOR - 22 + Math.sin(ang) * 29, '#ffffff'); } break; }
       case 'balloon': { for (let q = 0; q < 4; q++) px(40 + H(q, 8) * 16, HOR + 1 - H(q, fr >> 2) * 3, 'rgba(200,180,255,.7)'); break; }
     }
     x.restore();
   }
-  /** Вікно здібності в циклі картки (u 0..1): [.5, .92] -> k 0..1, інакше -1. Поза Nexi в цьому вікні — POSE[id]. */
+  /** Вікно здібності в циклі картки (u 0..1): [.5, .92] -> k 0..1, інакше -1. Поза Nexi в цьому вікні — pose(id, k, t). */
   const cardK = u => u > .5 && u < .92 ? (u - .5) / .42 : -1;
-  return { S, show, tap, update, layers, POSE, DUR, busy: () => !!S.act, cardFx, cardK };
+  return { S, show, tap, update, layers, POSE, DUR, busy: () => !!S.act, cur, pose, cardFx, cardK };
 })();
