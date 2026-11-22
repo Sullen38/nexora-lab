@@ -13,19 +13,23 @@
   const C = NX.cfg, FY = C.FLOOR_Y, hash = NX.art.hash, TAU = Math.PI * 2;
   const JAR = { x0: 662, x1: 892, y: FY + 4, h: 86, d: 10 };                                                          // високий короб: кант на y≈282 — над спинкою дивана (≈288)                                                          // жардиньєр: x, низ (підлога), висота, «глибина» верху
   // герої: x — центр на верхній кромці жардиньєра; w, h — од.; kind — вид (довідник floor.*)
+  // (23.11, власник зі знімком: «деякі рослини в саду за диваном висять у висоті») dz — у якому РЯДУ ҐРУНТУ росте (од. від задньої
+  // кромки короба: високі — ззаду, квіти — спереду). Раніше всі стояли на задній кромці, а малюнки кількох видів ще й не
+  // доходили до своєї основи (антуріум — на 3.75 од., фіалка — на 2.25, юка й стреліція — на 2): між рослиною й ґрунтом було
+  // видно стіну. Тепер основа — там, де справді закінчується малюнок (cv.gap), у своєму ряду, з тінню й мульчею біля стебла (BY, mound).
   const HEROES = [
-    { kind: 'yucca', x: 760, w: 60, h: 104, seed: 11, back: 1, young: [10, -96, -.2], old: [-22, -50, -1.9] },                // задній шар: синюватий серпанок; young/old — якір нового / пожовклого листка (dx, dy, кут)
-    { kind: 'strelitzia', x: 836, w: 64, h: 116, seed: 5, back: 1, young: [6, -100, -.1], old: [-24, -42, -2.1] },
-    { kind: 'philodendron', x: 722, w: 96, h: 92, seed: 3, young: [-6, -72, -.35], old: [-38, -30, -2.3] },
-    { kind: 'areca', x: 796, w: 84, h: 94, seed: 7, young: [4, -82, .1], old: [34, -28, -.9] },
-    { kind: 'cereus', x: 880, w: 24, h: 84, seed: 9 },
-    { kind: 'asplenium', x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
+    { kind: 'yucca', dz: 1, x: 760, w: 60, h: 104, seed: 11, back: 1, young: [10, -96, -.2], old: [-22, -50, -1.9] },                // задній шар: синюватий серпанок; young/old — якір нового / пожовклого листка (dx, dy, кут)
+    { kind: 'strelitzia', dz: 1, x: 836, w: 64, h: 116, seed: 5, back: 1, young: [6, -100, -.1], old: [-24, -42, -2.1] },
+    { kind: 'philodendron', dz: 1.75, x: 722, w: 96, h: 92, seed: 3, young: [-6, -72, -.35], old: [-38, -30, -2.3] },
+    { kind: 'areca', dz: 2.25, x: 796, w: 84, h: 94, seed: 7, young: [4, -82, .1], old: [34, -28, -.9] },
+    { kind: 'cereus', dz: 2.5, x: 880, w: 24, h: 84, seed: 9 },
+    { kind: 'asplenium', dz: 3.25, x: 756, w: 54, h: 38, seed: 13 },                                                               // низький передній
     // (· 37) квітучі малята спереду: кожен — свій вид і свій колір
-    { slot: 1, kind: 'saintpaulia', x: 724, w: 30, h: 22, seed: 21 },
-    { slot: 1, kind: 'kalanchoe', x: 750, w: 28, h: 26, seed: 22 },
-    { kind: 'anthurium', x: 792, w: 34, h: 34, seed: 23 },
-    { slot: 1, kind: 'viola', x: 826, w: 30, h: 22, seed: 24 },
-    { slot: 1, kind: 'primula', x: 862, w: 30, h: 26, seed: 25 },
+    { slot: 1, kind: 'saintpaulia', dz: 4.5, x: 724, w: 30, h: 22, seed: 21 },
+    { slot: 1, kind: 'kalanchoe', dz: 5, x: 750, w: 28, h: 26, seed: 22 },
+    { kind: 'anthurium', dz: 3.75, x: 792, w: 34, h: 34, seed: 23 },
+    { slot: 1, kind: 'viola', dz: 5, x: 826, w: 30, h: 22, seed: 24 },
+    { slot: 1, kind: 'primula', dz: 4.5, x: 862, w: 30, h: 26, seed: 25 },
   ];
   // (· 39) висячий сад над вікном: гачок на стельовій рейці (y HOOK_Y), рослина звисає вниз; x — центр, w/h — од.
   const RAIL = { x0: 552, x1: 998, y: 1 }, HOOK_Y = 4;
@@ -326,6 +330,10 @@
     for (let y = 0; y < big.height; y++) for (let x = 0; x < big.width; x++) if (im[(y * big.width + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     if (x1 < 0) { x0 = y0 = 0; x1 = y1 = 1; } const cv = document.createElement('canvas'); cv.width = x1 - x0 + 1; cv.height = y1 - y0 + 1; cv.getContext('2d').drawImage(big, -x0, -y0);
     cv.base = [(P + p.w / 2) * S - x0, (P + (p.hang ? 0 : p.h)) * S - y0]; cv.S = S; cv.pts = pts;                        // висячі: основа — точка гачка (центр верху)                                        // точка основи (центр низу) у пікселях спрайта
+    cv.gap = p.hang ? 0 : Math.max(0, (cv.base[1] - cv.height) / S);                                                    // (23.11) на скільки од. малюнок не доходить до своєї основи
+    if (!p.hang) { const yb = Math.min(cv.height, Math.round(cv.base[1])) - 1, W = cv.width, d = cv.getContext('2d').getImageData(0, Math.max(0, yb - S + 1), W, Math.min(S, yb + 1)).data; let a = W, b = -1;   // слід: де малюнок торкається ґрунту (нижній ряд)
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 40) { const x = (i / 4) % W; if (x < a) a = x; if (x > b) b = x; }
+      cv.foot = b < 0 || (b - a) / S > 40 ? null : [(a - cv.base[0]) / S, (b + 1 - cv.base[0]) / S]; }
     if (!p.hang) { const g = cv.getContext('2d'), gy = cv.base[1], gr = g.createLinearGradient(0, gy - Math.min(cv.height * .55, 36 * S), 0, gy); g.globalCompositeOperation = 'source-atop';   // (17.11) глибина: низ куща в тіні сусідів, задній ряд — у синьому серпанку
       gr.addColorStop(0, 'rgba(4,10,26,0)'); gr.addColorStop(1, 'rgba(4,10,26,' + (p.back ? .62 : p.h < 40 ? .28 : .5) + ')'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height); if (p.back) { g.fillStyle = 'rgba(44,56,150,.2)'; g.fillRect(0, 0, cv.width, cv.height); } }
     return SPR[key] = cv;
@@ -358,12 +366,19 @@
   let hit = null;
   // ---------- (· 38) ЖИТТЯ ЖАРДИНЬЄРА: цвітіння по циклу, пелюстки, вологість і дисплей, гості-комахи, відблиск на дивані ----------
   const TOP = () => JAR.y - JAR.h + 2;
+  /** (23.11) Основа героя на екрані: його ряд ґрунту + те, чого малюнок не домальовує до основи (щоб низ стебел торкався ґрунту). */
+  const BY = p => TOP() + (p.dz || 0) + spriteOf(p).gap;
+  /** Тінь на ґрунті під рослиною (перед малюнком) і мульча біля стебел (після) — рослина сидить у ґрунті, а не стоїть на лінії. */
+  function mound(c, p, cv, after) { const f = cv.foot; if (!f) return; const w = f[1] - f[0], g = cv.gap;
+    if (!after) { c.fillStyle = 'rgba(3,2,8,.55)'; c.fillRect(f[0] - 1, -g - .75, w + 2, 1.75); return; }
+    const n = Math.max(3, Math.min(9, Math.round(w / 2.2))); for (let i = 0; i < n; i++) { const r = hash(p.seed, i + 70), x = Math.round((f[0] - .75 + hash(p.seed, i + 40) * (w + .5)) * 4) / 4, y = Math.round((-g - .75 + hash(p.seed, i + 55) * 1) * 4) / 4;
+      c.fillStyle = r < .4 ? '#4a3220' : r < .7 ? '#2e1f14' : r < .88 ? '#6a4a2c' : '#3a7a3e'; c.fillRect(x, y, r < .7 ? 1.25 : .75, .5); } }
   const FL = HEROES.filter(p => FLOWERS.includes(p.kind)); FL.forEach((p, i) => { p.t0 = -PERIOD * (.25 + .6 * i / FL.length); });   // цикли зсунуто — цвітуть не разом
   /** Стадія цвітіння 0..1 за часом: бутон (0–.15 циклу) → розкривання (до .25) → повне (до .8) → опадання (стрибком) → бутон. */
   HANG.forEach((p, i) => { p.t0 = -PERIOD * (.3 + .55 * ((i * 2) % HANG.length) / HANG.length); });   // (16.11) ліани над вікном цвітуть тим самим циклом, кожна у свій час
   const stageOf = (p, t) => { const u = ((t - p.t0) % PERIOD + PERIOD) % PERIOD / PERIOD; return u < .15 ? 0 : u < .25 ? (u - .15) / .1 : u < .8 ? 1 : 0; };
   const PET = [], HUM = { v: .9, drip: 0 };
-  function flowerPts(p, t) { const cv = spriteOf(p, p.kind, Math.round(stageOf(p, t) * (STAGES - 1))); return cv.pts.map(([x, y, col]) => [p.x + x, TOP() + y, col]); }
+  function flowerPts(p, t) { const cv = spriteOf(p, p.kind, Math.round(stageOf(p, t) * (STAGES - 1))); return cv.pts.map(([x, y, col]) => [p.x + x, BY(p) + y, col]); }
   /** Пелюстки летять з квіток рослини p (n штук) — лягають на кант і зникають. */
   function shed(p, t, n = 6) { const pts = flowerPts(p, t); if (!pts.length) return; for (let i = 0; i < n; i++) { const q = pts[(i * 7 + p.seed) % pts.length]; PET.push({ x: q[0] + (Math.random() - .5) * 2, y: q[1], vx: (Math.random() - .5) * 6, vy: -4 - Math.random() * 6, col: q[2], t0: t, ph: Math.random() * TAU }); } }
   /** (16.11) Квіти арки (секція p) у координатах кімнати з кольором — звідси летять пелюстки й сюди підлітає дрон-колібрі. */
@@ -447,7 +462,7 @@
       if (!VIS.tgt || t - VIS.t0 > 7) { VIS.from = VIS.tgt; VIS.tgt = pts[Math.floor(hash(Math.floor(t / 7), 1) * pts.length)]; VIS.t0 = t; }                  // бражник: зависає біля квітки, через 7 с — до іншої
       const q = VIS.tgt, f = Math.min(1, (t - VIS.t0) / 1.2), e = f * f * (3 - 2 * f), src = VIS.from || q, hx = src[0] + (q[0] - src[0]) * e - 9 + Math.sin(t * 7) * .6, hy = src[1] + (q[1] - src[1]) * e - 5 + Math.sin(t * 9) * .8;
       c.save(); c.globalAlpha = day; c.translate(hx, hy); c.drawImage(bug(Math.floor(t * 30) % 2 ? 'humW' : 'hum'), -7, -4.9, 14, 8.4); c.restore(); } }
-    if (night > .05) { const cp = HEROES.find(p => p.kind === 'cereus'), bx = cp.x - 4, by = TOP() - cp.h * .7 + 2, a = t * 1.6, r = 7 + Math.sin(t * .9) * 3, x = bx + Math.cos(a) * r, y = by + Math.sin(a * 1.3) * r * .5 - 2;   // нічний метелик кружляє біля квітки цереуса
+    if (night > .05) { const cp = HEROES.find(p => p.kind === 'cereus'), bx = cp.x - 4, by = BY(cp) - cp.h * .7 + 2, a = t * 1.6, r = 7 + Math.sin(t * .9) * 3, x = bx + Math.cos(a) * r, y = by + Math.sin(a * 1.3) * r * .5 - 2;   // нічний метелик кружляє біля квітки цереуса
       c.globalAlpha = night; c.translate(x, y); if (Math.cos(a) < 0) c.scale(-1, 1); const k = Math.floor(t * 12) % 2 ? .6 : 1; c.drawImage(bug('moth'), -6.5 * k, -4, 13 * k, 7.8); }
     c.restore();
   }
@@ -475,15 +490,15 @@
     c.fillStyle = '#8a5a2a'; for (let i = 0; i < 4; i++) c.fillRect(-2 + (i % 2) * 3, -L * .25 - i * 2.8, 1.2, 1.2); c.strokeStyle = '#8a7a2a'; c.lineWidth = .8; c.beginPath(); c.moveTo(0, -1); c.lineTo(0, -L * .9); c.stroke();
   }
   function lifeTick(t, dt) {
-    for (const p of LEAFY) { if (p.old && !p.old.dropped && t - p.old.t0 > 70) { p.old.dropped = 1; FALLEN.push({ x: p.x + p.old.dx, y: TOP() + p.old.dy, y1: TOP() + 2 + Math.random() * 3, vx: (Math.random() - .5) * 8, t0: t, ph: Math.random() * TAU, land: 0 }); p.old = null; }
+    for (const p of LEAFY) { if (p.old && !p.old.dropped && t - p.old.t0 > 70) { p.old.dropped = 1; FALLEN.push({ x: p.x + p.old.dx, y: BY(p) + p.old.dy, y1: TOP() + 2 + Math.random() * 3, vx: (Math.random() - .5) * 8, t0: t, ph: Math.random() * TAU, land: 0 }); p.old = null; }
       if (p.young && t - p.young.t0 > 110) p.young = null; }
     if (t > LIFE.nextOld) { LIFE.nextOld = t + 240 + Math.random() * 180; const cand = LEAFY.filter(p => !p.old); if (cand.length && FALLEN.length < 3) { const p = cand[Math.floor(Math.random() * cand.length)]; p.old = { t0: t, dx: p.oldA[0], dy: p.oldA[1] }; } }
     for (const f of FALLEN) { if (f.land) continue; f.y += Math.min(10, 4 + (t - f.t0) * 6) * dt; f.x += (f.vx + Math.sin(t * 4 + f.ph) * 7) * dt; if (f.y >= f.y1) { f.y = f.y1; f.land = t; } }
   }
   function drawLife(c, t, LK) {
     const top = TOP();
-    for (const p of LEAFY) { if (p.young) { const k = Math.min(1, (t - p.young.t0) / 90), a = t - p.young.t0 > 95 ? Math.max(0, 1 - (t - p.young.t0 - 95) / 15) : 1; c.save(); c.globalAlpha = a; c.translate(p.x + p.youngA[0], top + p.youngA[1]); c.rotate(p.youngA[2] + Math.sin(t * .9) * .04); c.scale(.6 + .4 * k, .6 + .4 * k); youngLeaf(c, k, !p.back); c.restore(); }
-      if (p.old) { const k = Math.min(1, (t - p.old.t0) / 70); c.save(); c.translate(p.x + p.oldA[0], top + p.oldA[1]); c.rotate(p.oldA[2] + Math.PI + Math.sin(t * 1.3) * .05); oldLeaf(c, k); c.restore(); } }
+    for (const p of LEAFY) { if (p.young) { const k = Math.min(1, (t - p.young.t0) / 90), a = t - p.young.t0 > 95 ? Math.max(0, 1 - (t - p.young.t0 - 95) / 15) : 1; c.save(); c.globalAlpha = a; c.translate(p.x + p.youngA[0], BY(p) + p.youngA[1]); c.rotate(p.youngA[2] + Math.sin(t * .9) * .04); c.scale(.6 + .4 * k, .6 + .4 * k); youngLeaf(c, k, !p.back); c.restore(); }
+      if (p.old) { const k = Math.min(1, (t - p.old.t0) / 70); c.save(); c.translate(p.x + p.oldA[0], BY(p) + p.oldA[1]); c.rotate(p.oldA[2] + Math.PI + Math.sin(t * 1.3) * .05); oldLeaf(c, k); c.restore(); } }
     for (const f of FALLEN) { c.save(); c.translate(f.x, f.y); c.rotate(f.land ? 1.4 : Math.sin(t * 3 + f.ph) * .6); c.scale(.7, .7); oldLeaf(c, 1); c.restore(); }
     void LK;
   }
@@ -495,7 +510,7 @@
     c.fillStyle = '#4a8a3a'; for (let i = 0; i < 4; i++) c.fillRect(5 + i * 2.4, 3.6, 1, 1); c.fillStyle = PAL.out; for (const [x, y] of [[6, 6.2], [11.5, 6.2], [6.5 + f, 2.6], [12 - f, 2.6]]) { c.fillRect(x, y, .9, 1.6 - (y < 3 ? .9 : 0)); c.fillRect(x - .6, y + (y < 3 ? -.4 : 1.2), 2.1, .6); }
     c.fillStyle = '#101010'; c.fillRect(16.3, 3.2, 1, 1); c.fillStyle = '#ffffff'; c.fillRect(16.3, 3.2, .5, .5); return cv; });
   function drawGecko(c, t, night) {
-    const A = HEROES.find(p => p.kind === 'areca'); if (!A) return; const top = TOP();
+    const A = HEROES.find(p => p.kind === 'areca'); if (!A) return; const top = BY(A);
     if (t > GK.next) { GK.next = t + 35 + Math.random() * 25; GK.i = GK.j; GK.j = (GK.j + 1 + Math.floor(Math.random() * 2)) % 3; GK.t0 = t; }
     const u = Math.min(1, (t - GK.t0) / 7), e = u * u * (3 - 2 * u), a = GK.pts[GK.i], b = GK.pts[GK.j], x = A.x + a[0] + (b[0] - a[0]) * e, y = top + a[1] + (b[1] - a[1]) * e, moving = u < 1, fr = moving ? Math.floor(t * 6) % 2 : 0, dir = b[0] >= a[0] ? 1 : -1;
     c.save(); c.imageSmoothingEnabled = false; c.translate(x, y); if (dir < 0) c.scale(-1, 1); c.rotate(moving ? Math.atan2(b[1] - a[1], Math.abs(b[0] - a[0])) * .5 : 0); c.drawImage(GECKO[fr], -9, -4, 18, 8);
@@ -510,13 +525,13 @@
   /** Роса на світанку: блискітки на квітках і листі, гаснуть із днем. */
   function drawDew(c, t) {
     const nm = NX.daylight && NX.daylight.name ? NX.daylight.name(t) : 'day'; if (nm !== 'dawn') return; const v = NX.daylight.v(t), a = Math.max(0, 1 - Math.abs(v - .45) / .4); if (a <= 0) return; const top = TOP();
-    c.save(); c.globalCompositeOperation = 'lighter'; for (const p of HEROES) { if (p.hang) continue; for (let i = 0; i < 6; i++) { const x = p.x + (hash(p.seed, i) - .5) * p.w * .8, y = top - p.h * (.15 + .7 * hash(p.seed, i + 9)), tw = .5 + .5 * Math.sin(t * 3 + i * 1.7 + p.seed); c.globalAlpha = a * tw; c.fillStyle = '#e8ffff'; c.fillRect(x, y, 1, 1); c.globalAlpha = a * tw * .4; c.fillRect(x - 1, y, 3, 1); c.fillRect(x, y - 1, 1, 3); } } c.restore();
+    c.save(); c.globalCompositeOperation = 'lighter'; for (const p of HEROES) { if (p.hang) continue; for (let i = 0; i < 6; i++) { const x = p.x + (hash(p.seed, i) - .5) * p.w * .8, y = BY(p) - p.h * (.15 + .7 * hash(p.seed, i + 9)), tw = .5 + .5 * Math.sin(t * 3 + i * 1.7 + p.seed); c.globalAlpha = a * tw; c.fillStyle = '#e8ffff'; c.fillRect(x, y, 1, 1); c.globalAlpha = a * tw * .4; c.fillRect(x - 1, y, 3, 1); c.fillRect(x, y - 1, 1, 3); } } c.restore();
   }
   for (const p of LEAFY) { p.youngA = p.young; p.oldA = p.old; p.young = null; p.old = null; }                              // якорі → youngA/oldA; стан — young/old
   let lastT = 0;
   NX.planters = {
     JAR, HEROES, HANG, RAIL, PL: HEROES.concat(HANG), FLOWERS,
-    tap(x, y) { let best = null; for (const p of HEROES) { const top = TOP(); if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= top - p.h && y <= top) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } }
+    tap(x, y) { let best = null; for (const p of HEROES) { const top = BY(p); if (x >= p.x - p.w / 2 && x <= p.x + p.w / 2 && y >= top - p.h && y <= top) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } }
       if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; if (FLOWERS.includes(hit)) shed(best.p, NX.time, 3); return true; },
     get lastKind() { return hit; },
     tapHang(x, y) { let best = null; for (const p of HANG) if (x >= p.x - p.w / 2 - 4 && x <= p.x + p.w / 2 + 4 && y >= HOOK_Y - 3 && y <= HOOK_Y + p.h + 2) { const d = Math.abs(x - p.x) / (p.w / 2); if (!best || d < best.d) best = { p, d }; } if (!best) return false; hit = best.p.kind; best.p.flash = NX.time; shedHang(best.p, NX.time, 1); return true; },
@@ -567,20 +582,23 @@
       const LK = NX.decorLight ? NX.decorLight.k(t) : 1, vx0 = NX.cam.x - 80, vx1 = NX.cam.x + NX.cam.viewW + 80; if (RAIL.x1 < vx0 || RAIL.x0 > vx1) return;
       drawJar(c, t, LK);
       const top = TOP(), night = Math.max(0, Math.min(1, (LK - 1) / .7));
-      c.save(); c.beginPath(); c.rect(JAR.x0 - 80, 0, JAR.x1 - JAR.x0 + 160, top + 1); c.clip();                           // нижче канта героїв не малюємо — вони «в ґрунті»
       for (const p of HEROES) { if (p.x + p.w < vx0 || p.x - p.w > vx1) continue; const cv = spriteOf(p, p.kind, FLOWERS.includes(p.kind) ? Math.round(stageOf(p, t) * (STAGES - 1)) : STAGES - 1), S = cv.S, w = cv.width / S, h = cv.height / S, bx = cv.base[0] / S, byy = cv.base[1] / S, sh = Math.sin(t * .7 + p.seed) * .012 + Math.sin(t * 1.9 + p.seed * 2) * .004;
-        c.save(); c.imageSmoothingEnabled = false; c.translate(p.x, top); c.transform(1, 0, sh, 1, 0, 0);                   // легке погойдування: верх ходить, основа стоїть
+        const by = top + (p.dz || 0) + cv.gap;                                                                            // (23.11) основа — у своєму ряду ґрунту; низ малюнка торкається ґрунту
+        c.save(); c.imageSmoothingEnabled = false; if (cv.height > cv.base[1] + 1) { c.beginPath(); c.rect(JAR.x0 - 80, 0, JAR.x1 - JAR.x0 + 160, by + 1); c.clip(); }   // нижче свого ряду героя не малюємо — він «у ґрунті» (обрізати треба лише тих, чий малюнок звисає нижче основи)
+        c.translate(p.x, by); mound(c, p, cv, 0); c.save(); c.transform(1, 0, sh, 1, 0, 0);                              // легке погойдування: верх ходить, основа стоїть
         c.drawImage(cv, -bx, -byy, w, h);
         if (p.kind === 'cereus' && night > .05) { const bl = spriteOf(p, 'cereusBloom'); c.globalAlpha = night; c.drawImage(bl, -bl.base[0] / S, -bl.base[1] / S, bl.width / S, bl.height / S); c.globalCompositeOperation = 'lighter'; c.globalAlpha = night * (.25 + .1 * Math.sin(t * 2)); c.fillStyle = '#fff6c0'; c.beginPath(); c.arc(-4, -p.h * .7 + 2, 9, 0, TAU); c.fill(); }   // (· 36) цереус квітне вночі
-        c.restore(); }   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
+        c.restore(); mound(c, p, cv, 1); c.restore(); }   // (13.11) білий спалах-прямокутник при тапі прибрано (власник: «без обводок і рамок»)
+      c.save(); c.beginPath(); c.rect(JAR.x0 - 80, 0, JAR.x1 - JAR.x0 + 160, top + 7); c.clip();                          // живе (молоді й опалі листки, гекон, табло): опале листя лежить на ґрунті (було зрізане по канту)
       drawLife(c, t, LK); drawGecko(c, t, night); drawPanel(c, t, LK); c.restore();
       drawPetals(c, t); drawVisitors(c, t, night); drawDew(c, t);
       if (night > .05) for (let i = 0; i < 7; i++) { const ph = t * (.25 + .08 * (i % 3)) + i * 1.7, x = JAR.x0 + 14 + ((i * 37 + Math.sin(ph) * 22 + 400) % (JAR.x1 - JAR.x0 - 28)), y = top - 24 - (i % 4) * 16 + Math.sin(ph * 1.6) * 9, a = night * (.35 + .65 * Math.max(0, Math.sin(ph * 3 + i)));   // світлячки над жардиньєром уночі
         c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.fillStyle = '#c8ff6a'; c.fillRect(x, y, 1.4, 1.4); c.globalAlpha = a * .35; c.beginPath(); c.arc(x + .7, y + .7, 3.5, 0, TAU); c.fill(); c.restore(); }
       drawHanging(c, t, LK, night); drawGrowLamp(c, t, night);
     },
-    /** Відблиск неону жардиньєра на спинці дивана (шар одразу після тіла дивана) — зв'язує рослини з кімнатою. */
-    layers(t) { const SF = NX.cfg.SOFA || { y: 414, k: 1.13 }; return [{ y: SF.y - 24 + .5, draw: c => { const LK = NX.decorLight ? NX.decorLight.k(t) : 1, y0 = SF.y - 126 * SF.k + 2, x0 = Math.max(JAR.x0, 650), x1 = Math.min(JAR.x1, 900);
+    /** Відблиск неону жардиньєра на спинці дивана (шар одразу після тіла дивана) — зв'язує рослини з кімнатою.
+     *  (23.11) Вада: рахувався від висоти дивана з хибним множником і лягав не на спинку, а смугою на ґрунт і низ рослин. Тепер — від верху спинки (sofa.backTop). */
+    layers(t) { const SF = NX.cfg.SOFA || { y: 414, k: 1.13 }; return [{ y: SF.y - 24 + .5, draw: c => { const LK = NX.decorLight ? NX.decorLight.k(t) : 1, y0 = (NX.objects.sofa && NX.objects.sofa.backTop || SF.y - 126) + 1, x0 = Math.max(JAR.x0, 650), x1 = Math.min(JAR.x1, 900);
       c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createLinearGradient(0, y0, 0, y0 + 9); g.addColorStop(0, 'rgba(59,232,255,' + (.28 * Math.min(1.3, LK)) + ')'); g.addColorStop(1, 'rgba(59,232,255,0)'); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, 9); c.restore(); } }]; },
   });
 })();
