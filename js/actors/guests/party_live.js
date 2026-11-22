@@ -27,7 +27,7 @@ NX.partyLive = (() => {
     if (!Pp || !S().on) return; const s = S(), g = G(), b = Pp.beat(), show = false, sleep = false;   // 13.11: сценарію й сну більше немає
     // ---- ДРОП у такт: розгін 4 біти → дроп (2 біти стрибають усі) ----
     const D = L.drop; if (!sleep) { if (b > D.next - 4 && b < D.next) D.build = (b - (D.next - 4)) / 4; else D.build = 0;
-      if (b >= D.next) { D.next += 32; D.k = 1; s.flashT = t + .14; cannons(); s.list.forEach(q => { if (!q.trip && !q.pouf && !q.sleep && !q.rest) q.cheerT = Math.max(q.cheerT || 0, t + 1.6); }); }
+      if (b >= D.next) { D.next += 32; D.k = 1; s.flashT = t + .14; cannons(); s.list.forEach(q => { if (!q.trip && !q.sleep) q.cheerT = Math.max(q.cheerT || 0, t + 1.6); }); }
       D.k = Math.max(0, D.k - dt * .55); s.dropK = D.k * Math.abs(Math.sin(b * Math.PI)); } else s.dropK = 0;
     // ---- кульки ----
     L.balloons.forEach((B, i) => { if (B.pop) { if (t > B.pop) Object.assign(B, mkBalloon(g, i, false), { pop: 0 }); return; } B.x += B.vx * dt; if (B.x < g.XL + 40 || B.x > g.XR - 40) B.vx = -B.vx; B.y = Math.max(g.CEIL + 24, B.y - 6 * dt); B.ph += dt;
@@ -36,10 +36,10 @@ NX.partyLive = (() => {
     const Sn = g.snack; if (rnd() < .5) L.bubbles.push({ x: Sn.x1 + 10 + rnd() * 20, y: Sn.y0 - 10, z: Sn.z0 + rnd() * 40, vy: 14 + rnd() * 10, r: 2 + rnd() * 3, ph: rnd() * 6, age: 0, ttl: 4 + rnd() * 4 });
     L.bubbles = L.bubbles.filter(bb => { bb.age += dt; bb.y -= bb.vy * dt; bb.x += Math.sin(bb.age * 2 + bb.ph) * 8 * dt; return bb.age < bb.ttl; });
     // ---- балачки: пари вільних гостей поруч ----
-    L.chat = L.chat.filter(ch => t < ch.until && !ch.a.mv && !ch.b.mv); if (!show && rnd() < .01 && L.chat.length < 3) { const free = s.list.filter(q => !q.sc && !q.trip && !q.mv && !q.fly && !q.up && !q.pouf && !q.rest && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && !L.chat.some(ch => ch.a === q || ch.b === q));
+    L.chat = L.chat.filter(ch => t < ch.until && !ch.a.mv && !ch.b.mv); if (!show && rnd() < .01 && L.chat.length < 3) { const free = s.list.filter(q => !q.sc && !q.trip && !q.mv && !q.fly && !q.up && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && !L.chat.some(ch => ch.a === q || ch.b === q));
       for (const a of free) { const bq = free.find(q => q !== a && Math.abs(q.x - a.x) < 70 && Math.abs(q.z - a.z) < 50); if (bq) { L.chat.push({ a, b: bq, until: t + 6 + rnd() * 5, t0: t }); a.dir = bq.x > a.x ? 1 : -1; bq.dir = -a.dir; a.next = Math.max(a.next, t + 8); bq.next = Math.max(bq.next, t + 8); break; } } }
     // ---- хвиля ----
-    const E = s.event; if (E && E.kind === 'wave') { if (!L.wave) { L.wave = { t0: t, order: s.list.filter(q => !q.fly && !q.trip && !q.pouf && !q.rest).sort((a, b2) => a.x - b2.x) }; } const W = L.wave, el = t - W.t0; W.order.forEach((q, i) => { const k = el * 3 - i * .35; q.waveK = k > 0 && k < 1 ? Math.sin(k * Math.PI) : 0; if (el > 6) q.waveK = 0; }); } else if (L.wave) { L.wave.order.forEach(q => { q.waveK = 0; }); L.wave = null; }
+    const E = s.event; if (E && E.kind === 'wave') { if (!L.wave) { L.wave = { t0: t, order: s.list.filter(q => !q.fly && !q.trip).sort((a, b2) => a.x - b2.x) }; } const W = L.wave, el = t - W.t0; W.order.forEach((q, i) => { const k = el * 3 - i * .35; q.waveK = k > 0 && k < 1 ? Math.sin(k * Math.PI) : 0; if (el > 6) q.waveK = 0; }); } else if (L.wave) { L.wave.order.forEach(q => { q.waveK = 0; }); L.wave = null; }
     s.glow = !!(E && E.kind === 'glow');
     // кіно-камери більше немає (власник, 13.11: «не треба, щоб воно само приближало») — камерою керує власник (party.js)
   }
@@ -62,7 +62,7 @@ NX.partyLive = (() => {
     // балачки: «…» над тим, хто говорить (по черзі кожні 1.2 с)
     c.save(); L.chat.forEach(ch => { const who = Math.floor((t - ch.t0) / 1.2) % 2 ? ch.b : ch.a, [sx, sy] = Pp.gxy(who), k = Pp.sc(who.z), [, GH, K] = NX.guestArt.size(who.id), top = sy - who.alt * k - GH * k * K - 4; c.globalAlpha = .9; c.fillStyle = '#0a0626dd'; c.fillRect(sx - 7, top - 8, 14, 8); c.strokeStyle = NX.cards ? NX.cards.col(who.id) : '#ff7af0'; c.strokeRect(sx - 6.5, top - 7.5, 13, 7); const d = Math.floor(t * 3) % 3; for (let i = 0; i < 3; i++) { c.fillStyle = i <= d ? '#ffffff' : '#6a6a9a'; c.fillRect(sx - 4 + i * 3, top - 5, 2, 2); } }); c.restore();
     // світні палички (подія glow)
-    if (s.glow) { c.save(); c.globalCompositeOperation = 'lighter'; s.list.forEach((q, i) => { if (q.fly || q.sleep || q.pouf || q.rest) return; const [sx, sy] = Pp.gxy(q), k = Pp.sc(q.z), [, GH, K] = NX.guestArt.size(q.id), hy = sy - q.alt * k - GH * k * K * .55, ang = Math.sin(b * Math.PI + i) * .6, col = NEON[i % 6], x1 = sx + q.dir * 10 * k + Math.sin(ang) * 16 * k, y1 = hy - Math.cos(ang) * 16 * k;
+    if (s.glow) { c.save(); c.globalCompositeOperation = 'lighter'; s.list.forEach((q, i) => { if (q.fly || q.sleep) return; const [sx, sy] = Pp.gxy(q), k = Pp.sc(q.z), [, GH, K] = NX.guestArt.size(q.id), hy = sy - q.alt * k - GH * k * K * .55, ang = Math.sin(b * Math.PI + i) * .6, col = NEON[i % 6], x1 = sx + q.dir * 10 * k + Math.sin(ang) * 16 * k, y1 = hy - Math.cos(ang) * 16 * k;
       c.strokeStyle = col; c.lineWidth = 2.5 * k; c.globalAlpha = .9; c.beginPath(); c.moveTo(sx + q.dir * 10 * k, hy); c.lineTo(x1, y1); c.stroke(); c.globalAlpha = .35; c.fillStyle = col; c.beginPath(); c.arc(x1, y1, 7 * k, 0, 6.283); c.fill(); }); c.restore(); }
   }
   /** Затемнення для події glow і розгону дропу (малюється в HUD перед субтитрами). */
