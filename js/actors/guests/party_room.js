@@ -10,7 +10,7 @@
  *               Збирається раз, при першому відкритті (кличе party.js: prepare() — поки Nexi іде до брами) і при зміні мови
  *               (вивіска й написи — NX.t). ~1.3 M пікселів, десятки мс.
  *   GEO      — геометрія для живого шару (party.js): танцпол, пульт, колонки, куля, лампи, гірлянди — у світових координатах.
- * Що в кімнаті: цегляна стіна з неоновими пілястрами, голі бічні стіни (22.11), плінтус-неон, стеля з балками й рейкою прожекторів,
+ * Що в кімнаті: цегляна стіна, голі бічні стіни (22.11), плінтус-неон, стеля з балками й рейкою прожекторів,
  * вивіска «ВЕЧІРКА NEXI» (party.sign) з лампочками, гірлянди лампочок від кутів, дзеркальна куля на ланцюгу, DJ-пульт з
  * подіумом (Nexi стоїть за ним — вище), два стеки колонок з динаміками, бар уздовж правої стіни (стійка з неоновою
  * кромкою, за нею бармен — party.js, полиця з пляшками, що світяться, неонова вивіска «БАР», підвісна полиця з келихами), стіл із
@@ -110,14 +110,13 @@ NX.partyRoom = (() => {
 
   // ============================ СВІТЛО КІМНАТИ (06.11: «світло пласке — гості наклеєні») ============================
   // Джерела кольорового світла: кожен піксель растра (стіни, підлога, меблі) підфарбовується найближчими — рожеве біля бару,
-  // золоте біля фуршету, cyan біля пульта й VJ-екрана, лілове від пілястрів, кольори прожекторів з рейки; кути темніші (ambient).
+  // золоте біля фуршету, cyan біля пульта й VJ-екрана, кольори прожекторів з рейки; кути темніші (ambient).
   // Те саме lightAt(x, y, z) кличе party.js для гостей, Nexi й бармена — спрайти в тому ж світлі, що й кімната.
   const LIGHTS = [
     { p: [1220, 300, 200], c: [1, .35, .85], r: 360, k: .9 }, { p: [1220, 150, 180], c: [1, .8, .4], r: 240, k: .6 }, { p: [1220, 220, 280], c: [.3, .9, 1], r: 260, k: .6 },   // бар: рожевий неон, лампи, підсвітка вітрини
     { p: [340, 300, 215], c: [1, .85, .45], r: 330, k: .9 }, { p: [340, 150, 190], c: [1, .5, .8], r: 240, k: .5 },            // фуршет: золота гірлянда, рожеві лампи
     { p: [774, 290, 232], c: [.25, .9, 1], r: 320, k: 1 }, { p: [774, 166, 432], c: [.3, .8, 1], r: 300, k: .8 },              // пульт і VJ-екран
     { p: [774, 370, 430], c: [.25, .9, 1], r: 520, k: .35 },                                                                   // плінтус-неон
-    ...[XL + 160, 774 - 330, 774 + 330, XR - 160].map(x => ({ p: [x, 220, 428], c: [.8, .45, 1], r: 240, k: .55 })),           // пілястри
     ...[[774 - 420, [1, .3, .85]], [774 - 140, [.25, .9, 1]], [774 + 140, [1, .9, .45]], [774 + 420, [.25, 1, .55]]].map(([x, c]) => ({ p: [x, 100, 150], c, r: 300, k: .55 })),   // прожектори
     ...[XL + 150, 774 - 300, 774 + 300, XR - 150].map(x => ({ p: [x, 130, -120], c: [1, .85, .5], r: 300, k: .5 })),              // підвісні лампи спереду (над прапорцями)
     { p: [XL + 60, 30, 416], c: [.3, .9, 1], r: 260, k: .5 }, { p: [XR - 60, 30, 416], c: [1, .35, .85], r: 260, k: .5 }, { p: [774, 30, 416], c: [1, .9, .5], r: 260, k: .5 },   // прожектори другого поверху
@@ -155,9 +154,7 @@ NX.partyRoom = (() => {
     X.face(L, [[XL, CEIL, ZF], [XL, CEIL, ZB], [XL, FLY, ZB], [XL, FLY, ZF]], [XL, CEIL, ZF], [0, 0, ZB - ZF], [0, FLY - CEIL, 0], brick(.42, ZB - ZF, FLY - CEIL, { grad: -.25, seed: 31 }), { id: ++id, n: [1, 0, 0] });
     X.face(L, [[XR, CEIL, ZF], [XR, CEIL, ZB], [XR, FLY, ZB], [XR, FLY, ZF]], [XR, CEIL, ZF], [0, 0, ZB - ZF], [0, FLY - CEIL, 0], brick(.42, ZB - ZF, FLY - CEIL, { grad: -.25, seed: 53 }), { id: ++id, n: [-1, 0, 0] });
     X.face(L, [[XL, CEIL, ZF], [XR, CEIL, ZF], [XR, CEIL, ZB], [XL, CEIL, ZB]], [XL, CEIL, ZF], [XR - XL, 0, 0], [0, 0, ZB - ZF], (u, v, i, j) => { const x = u * (XR - XL), z = v * (ZB - ZF); return ramp(PAL.CEIL, (x % 160 < 2.5 || z % 160 < 2.5 ? .95 : .5 + (hash(Math.floor(x / 160), Math.floor(z / 160)) - .5) * .2) - v * .3, i, j); }, { id: ++id, n: [0, 1, 0] });
-    // неонові пілястри на задній стіні (світяться — відбиваються в підлозі); бічні стіни — гола цегла, без пілястрів (22.11)
-    const pil = (x, z0, z1, n) => { ++id; box(L, id, x - 6, x + 6, CEIL, FLY, z0, z1, { all: mBevel(PAL.STEEL, 2) }); X.face(L, [[x - 1.5, CEIL + 8, z0 - .5], [x + 1.5, CEIL + 8, z0 - .5], [x + 1.5, FLY - 4, z0 - .5], [x - 1.5, FLY - 4, z0 - .5]], [x - 1.5, CEIL + 8, z0 - .5], [3, 0, 0], [0, FLY - CEIL - 12, 0], (u, v, i, j) => { X.SH.fl = F_EMIT; return Math.abs(u - .5) < .25 ? mixc(NEONC.lil, NEONC.white, .3) : dim(NEONC.lil, .6); }, { id, n }); };
-    for (const x of [XL + 160, 774 - 330, 774 + 330, XR - 160]) pil(x, ZB - 10, ZB, [0, 0, -1]);
+    // 22.11: неонових пілястрів більше немає (на задній стіні різали афішу колекції й фуршет, за баром їх не було видно)
     // плінтус-неон уздовж стін
     ++id; box(L, id, XL, XR, FLY - 5, FLY, ZB - 6, ZB, { front: mNeon(NEONC.cyan, .6), top: mFlat(PAL.STEEL, .3) });
     ++id; box(L, id, XL, XL + 6, FLY - 5, FLY, ZF, ZB - 6, { right: mNeon(NEONC.cyan, .6), top: mFlat(PAL.STEEL, .3) });
@@ -241,32 +238,67 @@ NX.partyRoom = (() => {
       [B.x0 + 40, B.x0 + bw / 2, B.x1 - 40].forEach(x => { const z = B.z0 - 10; ++id; X.tube(L, [x, CEIL, z], [x, CEIL + 70, z], 1.5, () => ramp(PAL.STEEL, .5, 0, 0), { id }); X.face(L, [[x - 16, CEIL + 88, z], [x + 16, CEIL + 88, z], [x + 4, CEIL + 70, z], [x - 4, CEIL + 70, z]], [x - 16, CEIL + 88, z], [32, 0, 0], [0, -18, 0], (u, v, i2, j2) => ramp(PAL.GOLD, .4 + (u < .5 ? .2 : -.1) * (1 - v), i2, j2), { id, n: [0, 0, -1] }); X.disc(L, [x, CEIL + 90, z - .5], 4, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .25 ? NEONC.white : NEONC.gold; }, { id }); });
     }
     // ============ ФУРШЕТ НА ЗАДНІЙ СТІНІ ЛІВОРУЧ ВІД DJ (06.11, власник: «стіл з їдою — попрацюй добре») ============
-    // фронтально, два ряди: задній (високе — марміти, підставки, фонтан, пунш) і передній (піца, сендвічі, суші, сир, пончики…)
-    { const C = GEO.snack, T0 = C.y0, zb = C.z1 - 14, zf = C.z0 + 14;
-      const cloth = (q, w, h) => (u, v, i, j) => { const x = u * w, y = v * h; if (y < 3) { X.SH.fl = F_EMIT; return ((x % 10) < 3) ? mixc(NEONC.gold, NEONC.white, .5) : dim(NEONC.gold, .5); } const fold = Math.sin(x * .45) * .5 + .5; return ramp(PAL.CERAM, .5 + fold * .45 - v * .3 + (y > h - 3 ? -.35 : 0), i, j); };
-      ++id; box(L, id, C.x0, C.x1, T0, FLY, C.z0, C.z1, { front: cloth, left: cloth, right: cloth, top: (q, w, h) => (u, v, i, j) => ramp(PAL.CERAM, .9 + ((Math.floor(u * w / 10) + Math.floor(v * h / 10)) % 2 ? -.12 : 0) - v * .15, i, j) });
-      const chrome = (q, w, h) => (u, v, i, j) => ramp(PAL.CHROME, .5 + (v < .2 ? .25 : 0) + (u < .15 ? .2 : 0), i, j);
-      // задній ряд
-      [C.x0 + 30, C.x0 + 90].forEach((x, k) => { ++id; box(L, id, x - 24, x + 24, T0 - 8, T0, zb - 18, zb + 14, { all: chrome }); X.disc(L, [x, T0 - 8, zb - 18.5], 22, (u, v) => { if (v > .5) return 0; const d = Math.hypot(u - .5, v - .5); return ramp(PAL.CHROME, .35 + (1 - d * 2) * .5 + (Math.hypot(u - .36, v - .36) < .12 ? .35 : 0), 0, 0); }, { id }); X.tube(L, [x, T0 - 30, zb - 19], [x, T0 - 36, zb - 19], 3, () => ramp(PAL.CHROME, .8, 0, 0), { id }); });   // марміти
-      { const x = C.x0 + 150; ++id; X.tube(L, [x, T0, zb], [x, T0 - 50, zb], 2.5, () => ramp(PAL.CHROME, .7, 0, 0), { id }); [[0, 26], [18, 19], [36, 12]].forEach(([dy, r]) => { X.disc(L, [x, T0 - dy - 2, zb - 1], r, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 3); return d > .5 ? 0 : ramp(PAL.CHROME, .55 + (d < .15 ? .3 : 0), 0, 0); }, { id });
-        const n = r > 20 ? 7 : r > 14 ? 5 : 3; for (let m = 0; m < n; m++) { const a = m / n * 6.283, bx = x + Math.cos(a) * (r - 7), bz = zb + Math.sin(a) * (r - 7) * .4, c = [NEONC.pink, NEONC.cyan, NEONC.gold, NEONC.lil, NEONC.green][m % 5]; ++id; box(L, id, bx - 5, bx + 5, T0 - dy - 12, T0 - dy - 2, bz - 5, bz + 5, { all: (q, w, h) => (u, v, i, j) => v < .5 ? mixc(c, NEONC.white, u < .3 ? .4 : .1) : ramp(PAL.WOOD, .6 - v * .3, i, j) }); X.disc(L, [bx, T0 - dy - 14, bz - 5.5], 2, () => col('#c81e3c'), { id }); } }); }   // підставка з кексами
-      { const x = C.x0 + 206; ++id; box(L, id, x - 16, x + 16, T0 - 4, T0, zb - 16, zb + 16, { all: mFlat(PAL.CHROME, .6) }); [[14, 0], [11, 12], [8, 24]].forEach(([r, dy]) => X.disc(L, [x, T0 - 6 - dy, zb - .5], r, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 2.5); if (d > .5) return 0; X.SH.fl = F_EMIT; return mixc(col('#7a3a14'), NEONC.white, d < .2 ? .25 : .05); }, { id })); X.tube(L, [x, T0 - 6, zb], [x, T0 - 40, zb], 3, () => ramp(PAL.CHROME, .75, 0, 0), { id }); X.disc(L, [x, T0 - 42, zb - 1], 5, () => ramp(PAL.CHROME, .9, 0, 0), { id }); }   // шоколадний фонтан
-      { const x = C.x0 + 256; ++id; box(L, id, x - 22, x + 22, T0 - 24, T0, zb - 18, zb + 14, { all: (q, w, h) => (u, v, i, j) => { if (v < .5) { X.SH.fl = F_EMIT; return hash(Math.floor(u * 8), Math.floor(v * 8) + 31) > .8 ? mixc(NEONC.orange, NEONC.white, .5) : mixc(NEONC.pink, NEONC.white, .2); } return ramp(PAL.CHROME, .5 + (u < .3 ? .25 : 0), i, j); } }); X.tube(L, [x + 14, T0 - 24, zb - 10], [x + 26, T0 - 46, zb - 10], 2, () => ramp(PAL.CHROME, .75, 0, 0), { id }); X.disc(L, [x + 27, T0 - 48, zb - 11], 3, () => ramp(PAL.CHROME, .8, 0, 0), { id }); }   // чаша пуншу
-      // передній ряд
-      { const x = C.x0 + 36; ++id; box(L, id, x - 30, x + 30, T0 - 3, T0, zf - 24, zf + 24, { all: mFlat(PAL.WOOD, .7) }); box(L, id, x - 26, x + 26, T0 - 7, T0 - 3, zf - 20, zf + 20, { top: (q, w, h) => (u, v, i, j) => { const dx = u - .5, dy = v - .5, d = Math.hypot(dx, dy) * 2; if (d > 1) return 0; const a = Math.atan2(dy, dx), cut = Math.abs(((a / Math.PI * 4) % 1 + 1) % 1 - .5) < .025; if (cut) return col('#5a2a10'); if (d > .84) return ramp(PAL.GOLD, .5 + (d - .84) * 3, i, j); const hv = hash(Math.floor(u * 9), Math.floor(v * 9)); return hv > .72 ? col('#c8302a') : hv > .62 ? col('#2a8a3a') : hv > .55 ? col('#3a3a3a') : ramp(PAL.GOLD, .74 + (hv - .5) * .1, i, j); }, front: mFlat(PAL.GOLD, .5), left: mFlat(PAL.GOLD, .45), right: mFlat(PAL.GOLD, .45) }); }   // піца
-      { const x = C.x0 + 92; ++id; for (let k = 0; k < 5; k++) box(L, id, x - 16 + (k % 2) * 4, x + 16 + (k % 2) * 4, T0 - 6 - k * 6, T0 - k * 6, zf - 12, zf + 12, { all: (q, w, h) => (u, v, i, j) => v < .3 ? ramp(PAL.CREAM, .7 - v, i, j) : v < .5 ? col('#3aa040') : v < .7 ? col('#e0b040') : v < .82 ? col('#c8302a') : ramp(PAL.CREAM, .65, i, j) }); X.tube(L, [x, T0 - 30, zf], [x, T0 - 44, zf], 1.5, () => ramp(PAL.CHROME, .7, 0, 0), { id }); X.disc(L, [x, T0 - 46, zf - 1], 3, () => NEONC.pink, { id }); }   // вежа сендвічів
-      { const x = C.x0 + 140; ++id; box(L, id, x - 20, x + 20, T0 - 3, T0, zf - 14, zf + 14, { all: mFlat(PAL.DARK, .6) }); for (let k = 0; k < 8; k++) box(L, id, x - 16 + (k % 4) * 9, x - 9 + (k % 4) * 9, T0 - 9, T0 - 3, zf - 10 + Math.floor(k / 4) * 12, zf - 2 + Math.floor(k / 4) * 12, { all: (q, w, h) => (u, v, i, j) => v < .35 ? [col('#ff6a4a'), col('#ffb040'), col('#f0f0ff'), col('#3aa040')][k % 4] : v < .55 ? col('#1a3a1a') : rgb(245, 245, 235) }); }   // суші
-      { const x = C.x0 + 186; ++id; box(L, id, x - 18, x + 18, T0 - 3, T0, zf - 14, zf + 14, { all: mFlat(PAL.WOOD, .75) }); [[x - 10, '#ffe27a', 8], [x + 2, '#ffd27a', 10], [x + 12, '#f0e0a0', 6]].forEach(([bx, cc, r]) => box(L, id, bx - r / 2, bx + r / 2, T0 - 10, T0 - 3, zf - 6, zf - 6 + r, { all: (q, w, h) => (u, v, i, j) => v < .3 ? mixc(col(cc), NEONC.white, .3) : hash(Math.floor(u * 5), Math.floor(v * 4) + 7) > .8 ? col('#c8a040') : col(cc) })); for (let k = 0; k < 7; k++) X.disc(L, [x - 12 + (k % 4) * 5, T0 - 4 - Math.floor(k / 4) * 3, zf + 8 - (k % 3)], 1.8, () => col('#6a2a9a'), { id }); }   // сирна дошка
-      { const x = C.x0 + 230; ++id; [[0, 10], [9, 8], [18, 5]].forEach(([dy, r]) => { for (let m = 0; m < (r > 9 ? 5 : r > 6 ? 3 : 1); m++) { const a = m / 5 * 6.283, dx = Math.cos(a) * (r - 4), dz = Math.sin(a) * (r - 4) * .5; box(L, id, x + dx - 5, x + dx + 5, T0 - dy - 7, T0 - dy, zf + dz - 5, zf + dz + 5, { all: (q, w, h) => (u, v, i, j) => { const ring = Math.hypot(u - .5, v - .5) < .18; return ring ? 0 : v < .4 ? [NEONC.pink, col('#7a3a14'), NEONC.cyan, NEONC.gold][(m + dy) % 4] : col('#e0a060'); } }); } }); }   // пончики
-      { const x = C.x0 + 270; ++id; box(L, id, x - 14, x + 14, T0 - 18, T0, zf - 12, zf + 12, { all: (q, w, h) => (u, v, i, j) => v > .55 ? ((u * w % 6) < 3 ? col('#c8302a') : rgb(245, 240, 232)) : (hash(Math.floor(u * 7), Math.floor(v * 4) + 41) > .5 ? rgb(255, 244, 200) : rgb(240, 220, 150)) }); for (let k = 0; k < 6; k++) X.disc(L, [x - 8 + k * 3, T0 - 20 - (k % 2) * 3, zf - 12.5 + (k % 3) * 4], 2.5, (u, v) => rgb(255, 246, 210), { id }); }   // попкорн
-      // дрібне між рядами: шашлички, макаруни, банки з цукерками, кренделі, фрукти, тарілки, серветки
-      { const zm = (zb + zf) / 2; ++id; for (let k = 0; k < 4; k++) { const z = zm - 6 + k * 4; X.tube(L, [C.x0 + 6, T0 - 2, z], [C.x0 + 40, T0 - 2, z], 1, () => ramp(PAL.CHROME, .7, 0, 0), { id }); for (let m = 0; m < 4; m++) box(L, id, C.x0 + 10 + m * 8, C.x0 + 16 + m * 8, T0 - 6, T0 - 1, z - 2, z + 2, { all: (q) => (u, v, i, j) => m % 2 ? col('#a04a2a') : [col('#ff4040'), col('#3aa040'), col('#ffe27a')][k % 3] }); }
-        ++id; for (let k = 0; k < 8; k++) box(L, id, C.x0 + 60 + (k % 4) * 8, C.x0 + 66 + (k % 4) * 8, T0 - 4 - Math.floor(k / 4) * 4, T0 - Math.floor(k / 4) * 4, zm - 4, zm + 2, { all: (q) => (u, v, i, j) => v > .4 && v < .6 ? rgb(255, 250, 240) : [NEONC.pink, NEONC.lil, NEONC.green, NEONC.gold][k % 4] });
-        ++id; [[C.x0 + 110, NEONC.pink], [C.x0 + 124, NEONC.cyan]].forEach(([x, cc]) => box(L, id, x - 5, x + 5, T0 - 16, T0, zm - 5, zm + 5, { all: (q, w, h) => (u, v, i, j) => { X.SH.fl = F_EMIT; return v < .15 ? ramp(PAL.CHROME, .7, i, j) : hash(Math.floor(u * 4), Math.floor(v * 6) + 53) > .5 ? mixc(cc, NEONC.white, .3) : rgb(230, 240, 255, 120); } }));
-        ++id; for (let k = 0; k < 4; k++) X.disc(L, [C.x0 + 150 + (k % 2) * 8, T0 - 3 - Math.floor(k / 2) * 3, zm - (k % 2) * 4], 4, (u, v) => { const d = Math.hypot(u - .5, v - .5); return d > .5 || d < .18 ? 0 : col(d > .42 ? '#8a5a2a' : '#c88a40'); }, { id });
-        ++id; X.disc(L, [C.x0 + 196, T0 - 1, zm], 16, (u, v) => { const d = Math.hypot(u - .5, (v - .5) * 3); return d > .5 ? 0 : ramp(PAL.CERAM, .75 + (d > .42 ? -.2 : 0), 0, 0); }, { id }); for (let k = 0; k < 9; k++) { const a = k / 9 * 6.283, r = k < 5 ? 9 : 4; X.disc(L, [C.x0 + 196 + Math.cos(a) * r, T0 - 4, zm + Math.sin(a) * r * .5 - .8], 2.6, (u, v) => { const d = Math.hypot(u - .5, v - .5); return mixc([NEONC.green, NEONC.pink, NEONC.orange][k % 3], NEONC.white, d < .2 ? .5 : .05); }, { id }); }
-        ++id; for (let k = 0; k < 6; k++) box(L, id, C.x0 + 236, C.x0 + 262, T0 - 3 - k * 2.4, T0 - k * 2.4, zm - 12, zm + 12, { all: (q, w, h) => (u, v, i, j) => ramp(PAL.CREAM, .88 - v * .5, i, j) });
-        ++id; box(L, id, C.x1 - 28, C.x1 - 6, T0 - 5, T0, zm - 10, zm + 10, { all: (q, w, h) => (u, v, i, j) => ramp(PAL.PINK, .8 - v * .2, i, j) }); for (let k = 0; k < 5; k++) X.tube(L, [C.x1 - 24 + k * 4, T0 - 5, zm], [C.x1 - 24 + k * 4, T0 - 16, zm], 1, () => ramp(PAL.CHROME, .7, 0, 0), { id }); }
+    { const C = GEO.snack, T0 = C.y0;
+      // 22.11 (власник: «покращити фуршет»; було — каша з двох рядів дрібних страв): ШІСТЬ ВЕЛИКИХ страв в один ряд, кожна на своїй
+      // підставці, між ними проміжки — впізнаються здалеку: піца на похилій дошці, вежа з кексами, ваза з фруктами, вежа сендвічів,
+      // диспенсер із соком (світиться), відро попкорну. Скатертина: складки, тінь під стільницею, фестони по низу, золота LED-кромка.
+      // Страви — піксельні спрайти лицем до глядача (tex: малюємо прямокутниками, 1 од. = 1 піксель), кожна — окремий предмет (свій id).
+      const cloth = (q, w, h) => (u, v, i, j) => { const x = u * w, y = v * h, k = x % 14, f = Math.abs(k - 7) / 7;   // f: 0 — гребінь складки, 1 — западина
+        if (y < 2) { X.SH.fl = F_EMIT; return mixc(NEONC.gold, NEONC.white, y < 1 ? .55 : .15); }                     // LED-кромка стільниці
+        if (y < 5) return ramp(PAL.CERAM, .28, i, j);                                                                  // тінь під кромкою
+        if (y > h - 6 && Math.hypot(k - 7, y - (h - 6)) > 7) return 0;                                                 // фестони: низ скатертини — півкола над підлогою
+        return ramp(PAL.CERAM, .72 - f * .46 - v * .2 + (k < 1.2 ? .1 : 0) - (y > h - 9 ? .12 : 0), i, j); };
+      ++id; box(L, id, C.x0, C.x1, T0, FLY, C.z0, C.z1, { front: cloth, left: cloth, right: cloth, top: (q, w, h) => (u, v, i, j) => ramp(PAL.CERAM, .78 - v * .14 - (u < .012 || u > .988 ? .2 : 0), i, j) });
+      const R = (c, x, y, w, h, cc) => { c.fillStyle = cc; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+      /** Піксельний еліпс рядками (без згладжування); half: -1 — лише верхня половина, 1 — лише нижня. */
+      const EL = (c, cx, cy, rx, ry, cc, half = 0) => { for (let dy = (half > 0 ? 0 : -ry); dy <= (half < 0 ? 0 : ry); dy++) { const w = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy / ry) ** 2))); if (w > 0) R(c, cx - w, cy + dy, w * 2, 1, cc); } };
+      /** Спрайт страви: низ стоїть на стільниці, x0 — лівий край, w × h — розмір у од.; emit(px, py) — які пікселі світяться. */
+      const spr = (x0, w, h, z, paint, emit) => { ++id; const t = tex(w, h, paint), y0 = T0 - h; X.face(L, [[x0, y0, z], [x0 + w, y0, z], [x0 + w, T0, z], [x0, T0, z]], [x0, y0, z], [w, 0, 0], [0, h, 0], (u, v) => { const cc = t(u, v); if (cc && emit && emit(u * w, v * h)) X.SH.fl = F_EMIT; return cc; }, { id, n: [0, 0, -1] }); };
+      const zm = (C.z0 + C.z1) / 2;
+      // 1. ПІЦА на похилій дошці (стоїть на хромованій підставці, нахилена до глядача): корж, сир, пепероні, базилік, розрізи, одного шматка немає
+      { const cx = C.x0 + 34, S = 54, t = tex(S, S, (c) => { for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const dx = x - S / 2 + .5, dy = y - S / 2 + .5, d = Math.hypot(dx, dy); if (d > 27) continue;
+            const a = (Math.atan2(dy, dx) + 6.2832) % 6.2832, gone = a > 4.72 && a < 5.5, cut = Math.abs(((a / .7854) % 1) - .5) > .46 && d > 2; let cc;
+            if (d > 24.5 || gone) cc = d > 26 ? '#5a3420' : ((x + y) % 7 === 0 ? '#7a4a2c' : '#8e5a36');                                   // дерев'яна дошка
+            else if (d > 21) cc = dy < -6 ? '#f0b860' : '#d89440';                                                                         // скоринка
+            else if (cut) cc = '#c8802a';
+            else { const hx = Math.floor(x / 8), hy = Math.floor(y / 8), hv = hash(hx, hy + 11), px = (x % 8) - 3.5, py = (y % 8) - 3.5, pd = Math.hypot(px, py);
+              cc = hv > .62 && pd < 3.1 ? (pd > 2.2 ? '#a82420' : px < -.4 && py < -.4 ? '#ff6a4a' : '#d8382c') : hv < .2 && pd < 1.7 ? '#2e9a40' : (hash(x >> 2, y >> 2) > .8 ? '#ffc040' : '#ffd866'); }
+            R(c, x, y, 1, 1, cc); } });
+        ++id; for (const dx of [-16, 16]) X.tube(L, [cx + dx, T0, zm + 15], [cx + dx, T0 - 37, zm + 13], 2, () => ramp(PAL.CHROME, .6, 0, 0), { id }); box(L, id, cx - 22, cx + 22, T0 - 4, T0, zm - 15, zm - 12, { all: mFlat(PAL.CHROME, .7) });
+        ++id; X.face(L, [[cx - 27, T0 - 37, zm + 12], [cx + 27, T0 - 37, zm + 12], [cx + 27, T0 - 3, zm - 12], [cx - 27, T0 - 3, zm - 12]], [cx - 27, T0 - 37, zm + 12], [54, 0, 0], [0, 34, -24], (u, v) => t(u, v), { id, n: [0, -.58, -.82] }); }
+      // 2. ВЕЖА З КЕКСАМИ: три тарілки на хромованій ніжці (5 + 3 + 1), у кожного кекса паперова формочка, крем свого кольору, вишенька; зірка зверху
+      spr(C.x0 + 62, 52, 64, zm, (c) => { const cup = (x, y, cr) => { R(c, x + 1, y - 5, 6, 5, '#9a5a3a'); R(c, x, y - 5, 8, 1, '#c88a5a'); for (const k of [2, 4, 6]) R(c, x + k, y - 4, 1, 4, '#6a3622'); R(c, x + 1, y - 1, 6, 1, '#5a2c1c');
+          EL(c, x + 4, y - 7, 5, 3, cr); EL(c, x + 4, y - 10, 3, 2, cr); R(c, x + 2, y - 9, 2, 1, '#ffffff'); R(c, x + 3, y - 14, 2, 2, '#e8243c'); R(c, x + 3, y - 14, 1, 1, '#ff8a9a'); };
+        const FR = ['#ff84d4', '#7ae8ff', '#ffd86a', '#c8a0ff', '#8af0b0'];
+        R(c, 25, 5, 2, 57, '#bcc5e6'); R(c, 25, 5, 1, 57, '#eef2ff'); for (const [k, pts] of [[0, [[26, 0], [24, 2], [28, 2], [25, 3], [27, 3]]]]) pts.forEach(([x, y]) => R(c, x - 1, y, 2, 2, '#ffe27a'));   // ніжка й зірка
+        for (const [y, rx, xs] of [[20, 13, [22]], [39, 20, [9, 22, 35]], [58, 25, [3, 12, 22, 31, 41]]]) { EL(c, 26, y + 1, rx, 3, '#5a4c94'); EL(c, 26, y, rx, 3, '#8e84c2'); EL(c, 26, y - 1, rx, 2, '#d4ceee'); xs.forEach((x, k) => cup(x, y - 1, FR[(k + rx) % 5])); }
+        R(c, 19, 61, 14, 3, '#848db4'); R(c, 19, 61, 14, 1, '#bcc5e6'); });
+      // 3. ВАЗА З ФРУКТАМИ: керамічна чаша на ніжці; скибка кавуна, апельсин, яблуко, банан, гроно винограду через край
+      spr(C.x0 + 115, 50, 42, zm, (c) => { EL(c, 17, 25, 13, 13, '#2a9a4a', -1); EL(c, 17, 25, 11, 11, '#f4fff0', -1); EL(c, 17, 25, 10, 10, '#ff4a5e', -1); for (const [x, y] of [[12, 19], [17, 17], [22, 20], [15, 22], [20, 23]]) R(c, x, y, 1, 2, '#3a1020');   // кавун
+        for (let y = 2; y < 16; y++) for (let x = 18; x < 46; x++) { const a = ((x - 32) / 14) ** 2 + ((y - 13) / 9) ** 2, b = ((x - 32) / 12) ** 2 + ((y - 20) / 9) ** 2; if (a <= 1 && b > 1) R(c, x, y, 1, 1, y < 6 ? '#fff08a' : '#ffd83a'); } R(c, 18, 11, 2, 2, '#7a5a20'); R(c, 44, 11, 2, 2, '#7a5a20');   // банан
+        EL(c, 31, 19, 7, 7, '#ff9a2a'); EL(c, 30, 18, 5, 5, '#ffb44a'); R(c, 27, 15, 2, 2, '#ffe0a0');                                                    // апельсин
+        EL(c, 41, 21, 6, 6, '#6ac83a'); EL(c, 40, 20, 4, 4, '#8ae050'); R(c, 38, 17, 2, 2, '#d8ffb0'); R(c, 41, 13, 1, 3, '#5a3a20');                     // яблуко
+        EL(c, 25, 26, 24, 13, '#b0a8dc', 1); EL(c, 25, 26, 24, 11, '#e8e2ff', 1); EL(c, 22, 26, 17, 7, '#ffffff', 1); R(c, 1, 25, 48, 2, '#ffffff'); R(c, 1, 27, 48, 1, '#c8c0ec');   // чаша
+        R(c, 21, 38, 8, 2, '#b0a8dc'); R(c, 17, 40, 16, 2, '#d4ceee');                                                                                    // ніжка
+        for (const [x, y] of [[42, 26], [46, 27], [40, 29], [44, 30], [47, 31], [42, 33], [45, 34], [44, 37]]) { EL(c, x, y, 2, 2, '#7a3ac8'); R(c, x - 1, y - 1, 1, 1, '#c89aff'); } });   // виноград
+      // 4. ВЕЖА СЕНДВІЧІВ на дошці: чотири сендвічі зі зсувом (хліб, салат, сир, томат, хліб), шпажка з прапорцем і оливкою
+      spr(C.x0 + 168, 40, 50, zm, (c) => { R(c, 0, 47, 40, 3, '#8e5a36'); R(c, 0, 47, 40, 1, '#b07a4a');
+        for (let k = 0; k < 4; k++) { const x = 4 + (k % 2) * 3, y = 38 - k * 9; R(c, x, y + 7, 30, 2, '#e8c890'); R(c, x, y + 8, 30, 1, '#c09858'); R(c, x - 1, y + 5, 32, 2, '#e8443a'); R(c, x, y + 4, 30, 1, '#ffd040');
+          for (let i = -1; i < 31; i += 2) R(c, x + i, y + 2 + (i % 4 === 1 ? 1 : 0), 2, 2, '#4ac050'); R(c, x, y, 30, 2, '#f4dcae'); R(c, x + 1, y - 1, 28, 1, '#fff0cc'); R(c, x, y + 1, 30, 1, '#d8b070'); }
+        R(c, 20, 0, 1, 12, '#e8e8f8'); R(c, 21, 0, 6, 4, '#ff4fd8'); R(c, 21, 0, 6, 1, '#ff9ae8'); EL(c, 20, 9, 2, 2, '#5a8a2a'); R(c, 20, 8, 1, 1, '#c83030'); });
+      // 5. ДИСПЕНСЕР ІЗ СОКОМ: скляний циліндр на хромованій основі з краником, усередині сік зі скибками апельсина й льодом (світиться)
+      spr(C.x0 + 212, 34, 58, zm, (c) => { R(c, 14, 0, 6, 3, '#eef2ff'); R(c, 5, 3, 24, 5, '#bcc5e6'); R(c, 5, 3, 24, 1, '#eef2ff'); R(c, 5, 7, 24, 1, '#848db4');     // кришка
+        R(c, 4, 8, 26, 36, '#3a2a5a'); R(c, 5, 8, 24, 5, '#5a4a80'); R(c, 5, 13, 24, 31, '#ff9a30'); R(c, 5, 13, 24, 2, '#ffd070');                                // скло, порожній верх, сік, поверхня
+        for (const [x, y] of [[9, 20], [20, 26], [12, 34]]) { EL(c, x + 3, y + 3, 4, 4, '#ffe08a'); EL(c, x + 3, y + 3, 2, 2, '#ffb040'); }                       // скибки апельсина
+        for (const [x, y] of [[20, 16], [8, 28], [22, 36]]) { R(c, x, y, 4, 4, '#ffe6c0'); R(c, x, y, 4, 1, '#ffffff'); }                                         // лід
+        R(c, 6, 9, 2, 34, '#ffffff'); R(c, 9, 9, 1, 34, '#ffd8a0'); R(c, 27, 9, 1, 34, '#c86a20');                                                                // відблиск скла
+        R(c, 2, 44, 30, 9, '#bcc5e6'); R(c, 2, 44, 30, 1, '#eef2ff'); R(c, 2, 51, 30, 2, '#555f8c'); R(c, 14, 47, 6, 3, '#353b6a'); R(c, 15, 49, 4, 5, '#eef2ff'); R(c, 13, 45, 8, 2, '#ff4fd8');   // основа, краник, ручка
+        R(c, 4, 53, 4, 5, '#848db4'); R(c, 26, 53, 4, 5, '#848db4'); }, (x, y) => x > 9 && x < 27 && y > 14 && y < 44);
+      // 6. ВІДРО ПОПКОРНУ: смугасте відро, шапка попкорну, кілька зерен на скатертині
+      spr(C.x0 + 249, 30, 40, zm, (c) => { for (let y = 14; y < 40; y++) { const k = (y - 14) / 26, x0 = Math.round(2 + k * 4), w = 26 - Math.round(k * 8); for (let x = 0; x < w; x++) R(c, x0 + x, y, 1, 1, Math.floor((x / w) * 7) % 2 ? '#f4f0ff' : (x < w * .3 ? '#ff5a5a' : '#d8303c')); }
+        R(c, 1, 13, 28, 2, '#ffffff'); R(c, 6, 39, 18, 1, '#8a1a28');
+        for (const [x, y, r] of [[6, 11, 4], [13, 9, 5], [21, 10, 4], [25, 12, 3], [9, 6, 4], [17, 5, 4], [22, 6, 3], [13, 2, 3]]) { EL(c, x, y, r, r - 1, '#f0d890'); EL(c, x - 1, y - 1, r - 1, r - 2, '#fff6d0'); } });
+      ++id; for (const [x, z] of [[C.x0 + 244, zm - 14], [C.x0 + 272, zm - 18], [C.x0 + 256, zm - 22]]) X.disc(L, [x, T0 - 2, z], 2.5, () => rgb(255, 244, 208), { id });
       [C.x0 + 50, C.x0 + 146, C.x0 + 242].forEach(x => { const z = C.z0 - 10; ++id; X.tube(L, [x, CEIL, z], [x, CEIL + 70, z], 1.5, () => ramp(PAL.STEEL, .5, 0, 0), { id }); X.face(L, [[x - 16, CEIL + 88, z], [x + 16, CEIL + 88, z], [x + 4, CEIL + 70, z], [x - 4, CEIL + 70, z]], [x - 16, CEIL + 88, z], [32, 0, 0], [0, -18, 0], (u, v, i2, j2) => ramp(PAL.PINK, .4 + (u < .5 ? .2 : -.1) * (1 - v), i2, j2), { id, n: [0, 0, -1] }); X.disc(L, [x, CEIL + 90, z - .5], 4, (u, v) => { X.SH.fl = F_EMIT; return Math.hypot(u - .5, v - .5) < .25 ? NEONC.white : NEONC.pink; }, { id }); });   // лампи над фуршетом
     }
     // афіша колекції на задній стіні (рамка; портрети — живий шар party.js: drawPoster)
