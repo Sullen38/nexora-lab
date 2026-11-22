@@ -214,53 +214,76 @@
 
   // ---------- ВИХОР ----------
   // Отвір — восьмикутний: угорі зрізи (темний метал з бузковим кантом), знизу — майданчик. Нерухоме — темна безодня (видно,
-  // поки живе ще не оновилось); живе — тунель кілець, що «пливуть» углиб, спіральні рукави, іскри, яскраве серце.
+  // поки живе ще не оновилось); живе — тунель кілець, що «пливуть» углиб, спіральні рукави, іскри, яскраве серце (22.11 — у перспективі, див. нижче).
   const CUT = .13;                                                                                      // зріз кутів (частка ширини)
   const octo = (c, fw, fh) => { const k = fw * CUT; c.beginPath(); c.moveTo(0, fh); c.lineTo(0, k); c.lineTo(k, 0); c.lineTo(fw - k, 0); c.lineTo(fw, k); c.lineTo(fw, fh); c.closePath(); };
   PAINT.pt_back = (c, fw, fh) => {
-    const g = c.createRadialGradient(fw / 2, fh * .52, 1, fw / 2, fh * .52, fh * .6); g.addColorStop(0, '#5a2ad0'); g.addColorStop(.5, '#220a66'); g.addColorStop(1, '#0a0424');
+    const g = c.createRadialGradient(fw / 2, fh * .52, 1, fw / 2, fh * .52, fh * .6); g.addColorStop(0, '#4a5cf0'); g.addColorStop(.25, '#2a0c78'); g.addColorStop(1, '#080220');
     octo(c, fw, fh); c.fillStyle = g; c.fill();
     const k = fw * CUT; [[0, 0, k, 0, 0, k], [fw, 0, fw - k, 0, fw, k]].forEach(([x0, y0, x1, y1, x2, y2]) => {   // зрізи кутів — метал
       c.fillStyle = '#1a0a3e'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.lineTo(x2, y2); c.closePath(); c.fill(); A.neon(c, x1, y1, x2, y2, LI, .6); });
   };
-  /** Тунель: кільце n з глибиною d (0 — край, 1 — серце): радіус і зсув центру (тунель трохи «дивиться» вгору-праворуч). */
-  function ringAt(fw, fh, d) { const R = fw * .58, r = R * Math.pow(1 - d, 1.7) + fw * .02, cx = fw / 2 + d * fw * .05, cy = fh * .52 - d * fh * .06; return [cx, cy, r, r * Math.max(1.3, fh / fw * .8)]; }   // кільця — овали під висоту отвору (крок 13.2: брама висока)
-  const BG = {};                                                                                        // тло вихору (перелив) — одне полотно під розмір, а не градієнт щоразу
-  function bg(fw, fh, k) {
-    const key = Math.round(fw * k) + 'x' + Math.round(fh * k); if (BG[key]) return BG[key];
+  /* (22.11, власник зі знімком: «заповни пусту область порталу порталом, щоб не було видно стінки; покращи ефект усередині,
+   * зроби більш глибоким») ТУНЕЛЬ У ПЕРСПЕКТИВІ. Отвір тепер сягає балки (розкладка: pt_back Y 82, було 100). Глибина:
+   *   — кільця стоять рівно в глибину, а на екрані стискаються як 1 / (1 + z): біля серця густішають — видно, що далеко;
+   *   — стінки тунелю — смуги між кільцями: біля глядача темні, далі фіолетові, сині, біля серця блакитні (ребра через одну);
+   *   — тунель вигинається: дальній кінець повільно гойдається, тож серце «ходить» за краями ближніх кілець;
+   *   — спіральні ребра по стінках, іскри летять углиб зі шлейфом, серце — мала яскрава точка з променями;
+   *   — тінь від рами по краях отвору: вихор сидить у глибині, а не намальований на стіні.
+   * ringAt(d): d 0 — край отвору, 1 — серце; повертає [cx, cy, rx, ry, s] (s — стиск перспективи 1 … SMIN). */
+  const ZD = 5, SMIN = 1 / (1 + ZD);
+  function ringAt(fw, fh, d, t) {
+    const s = 1 / (1 + d * ZD), w = Math.pow((1 - s) / (1 - SMIN), 1.6), rx = fw * .8 * s, asp = fh / fw * .8 + (1.2 - fh / fw * .8) * w;
+    return [fw / 2 + fw * (.045 + .05 * Math.sin(t * .31)) * w, fh * .52 - fh * (.04 + .018 * Math.cos(t * .27)) * w, rx, rx * asp, s];
+  }
+  const STOPS = [[0, 12, 3, 36], [.3, 40, 12, 112], [.55, 74, 34, 198], [.78, 58, 104, 250], [1, 112, 196, 255]];   // колір стінки: від краю до серця
+  function wallCol(q, k) { let a = STOPS[0], b = STOPS[STOPS.length - 1]; for (let i = 1; i < STOPS.length; i++) if (q <= STOPS[i][0]) { a = STOPS[i - 1]; b = STOPS[i]; break; }
+    const u = Math.min(1, Math.max(0, (q - a[0]) / (b[0] - a[0] || 1))); return `rgb(${Math.round((a[1] + (b[1] - a[1]) * u) * k)},${Math.round((a[2] + (b[2] - a[2]) * u) * k)},${Math.round((a[3] + (b[3] - a[3]) * u) * k)})`; }
+  const LIP = {};                                                                                       // тінь від рами по краях отвору — одне полотно під розмір
+  function lip(fw, fh, k) {
+    const key = Math.round(fw * k) + 'x' + Math.round(fh * k); if (LIP[key]) return LIP[key];
     const cv = document.createElement('canvas'); cv.width = Math.round(fw * k); cv.height = Math.round(fh * k); const x = cv.getContext('2d'); x.scale(k, k);
-    const cx0 = fw / 2, cy0 = fh * .52, g = x.createRadialGradient(cx0 + fw * .04, cy0 - fh * .05, 0, cx0, cy0, fh * .62); g.addColorStop(0, '#ffffff'); g.addColorStop(.06, '#bfe8ff'); g.addColorStop(.18, '#4a8aff');
-    g.addColorStop(.36, '#5a2ad8'); g.addColorStop(.62, '#2a0c78'); g.addColorStop(1, '#0c0428'); x.fillStyle = g; x.fillRect(0, 0, fw, fh); return BG[key] = cv;
+    const band = (x0, y0, x1, y1, a) => { const g = x.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, `rgba(5,1,20,${a})`); g.addColorStop(1, 'rgba(5,1,20,0)'); x.fillStyle = g; x.fillRect(0, 0, fw, fh); };
+    band(0, 0, 0, fh * .16, .85); band(0, 0, fw * .2, 0, .7); band(fw, 0, fw * .8, 0, .7); band(0, fh, 0, fh * .9, .45); return LIP[key] = cv;
   }
   LIVE.pt_back = { every: 3, step: 3, draw(c, fw, fh, t) {
-    const act = PT().active, sp = act ? .55 : .2, k = c.getTransform().a;
+    const act = PT().active, sp = act ? .55 : .2, k = c.getTransform().a, rot = act ? 2.4 : 1;
     c.save(); octo(c, fw, fh); c.clip();
-    c.drawImage(bg(fw, fh, k), 0, 0, fw, fh); let g;
-    // кільця тунелю (як на концепті) пливуть углиб, до серця: ближні — рожево-фіолетові й товсті, середні — сині, дальні —
-    // блакитні й тонкі; кожне — суцільне тьмяне коло й яскраві дуги, що кружляють (сусідні — в різні боки)
-    const NR = 9, col = d => d < .3 ? [255, Math.round(80 + d * 250), 235] : d < .62 ? [Math.round(180 - (d - .3) * 330), Math.round(110 + (d - .3) * 260), 255] : [110, 235, 255];
-    for (let n = 0; n < NR; n++) {
-      const d = ((n + t * sp * 2.2) % NR) / NR, [cx, cy, rx, ry] = ringAt(fw, fh, d), a = Math.min(1, d * 7) * (1 - d * .5), C = col(d).join(','), lw = Math.max(.4, 3 * (1 - d));
-      if (d < .6) { c.strokeStyle = `rgba(${C},${a * .35})`; c.lineWidth = lw * 1.8; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.stroke(); }
-      const a0 = t * (act ? 2.4 : 1) * (n % 2 ? 1 : -1.25) + n * 1.9;
-      c.strokeStyle = `rgba(${C},${a * .95})`; c.lineWidth = lw;
-      for (let s = 0; s < 2; s++) { c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, a0 + s * 3.1416, a0 + s * 3.1416 + 1.8); c.stroke(); }
-    }
-    // спіральні рукави (тонкі, закручуються до серця)
-    for (let arm = 0; arm < 2; arm++) { c.strokeStyle = arm % 2 ? 'rgba(255,150,240,.32)' : 'rgba(150,240,255,.32)'; c.lineWidth = .7; c.beginPath();
-      for (let s = 0; s <= 24; s++) { const q = s / 24, d = q * .92, [cx, cy, rx, ry] = ringAt(fw, fh, d), a = arm * 3.1416 + q * 4.6 - t * (act ? 2.6 : 1.1); const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry; s ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.fillStyle = '#080220'; c.fillRect(0, 0, fw, fh);
+    // стінки тунелю: смуги між кільцями, від ближньої (велика, темна) до дальньої (мала, світла); пливуть углиб
+    const NR = 14, R = []; for (let n = 0; n < NR; n++) R.push([((n + t * sp * 2.2) % NR) / NR, n]); R.sort((a, b) => a[0] - b[0]);
+    for (const [d, n] of R) { const [cx, cy, rx, ry, s] = ringAt(fw, fh, d, t), q = (1 - s) / (1 - SMIN);
+      c.fillStyle = wallCol(q, n % 2 ? 1 : .78); c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.fill(); }
+    // спіральні ребра по стінках (закручуються до серця, повільно обертаються)
+    for (let arm = 0; arm < 6; arm++) { c.strokeStyle = arm % 2 ? 'rgba(255,150,240,.26)' : 'rgba(150,240,255,.26)'; c.lineWidth = .6; c.beginPath();
+      for (let i = 0; i <= 22; i++) { const d = Math.pow(i / 22, 1.8) * .96, [cx, cy, rx, ry] = ringAt(fw, fh, d, t), a = arm * 1.0472 + Math.sqrt(d) * 5.2 - t * rot * .45; const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry; i ? c.lineTo(x, y) : c.moveTo(x, y); }
       c.stroke(); }
-    // іскри, що летять у серце
-    for (let k = 0; k < 32; k++) { const ph = (t * (.16 + hash(k, 4) * .22) * (act ? 2 : 1) + hash(k, 1)) % 1, a0 = hash(k, 2) * 6.283 - t * (.8 + hash(k, 3)), [cx, cy, rx, ry] = ringAt(fw, fh, ph * .95);
-      c.fillStyle = k % 3 ? `rgba(240,225,255,${1 - ph * .5})` : `rgba(140,245,255,${1 - ph * .5})`; const s = 1.1 * (1 - ph * .6); c.fillRect(cx + Math.cos(a0) * rx - s / 2, cy + Math.sin(a0) * ry - s / 2, s, s); }
-    // цифровий «дощ» (техно, крок 18): біти 0/1 пливуть углиб тунелю разом з іскрами
-    c.font = `${fw * .05}px monospace`; c.textBaseline = 'middle'; c.textAlign = 'center';
-    for (let k = 0; k < 14; k++) { const ph = (t * (.14 + hash(k, 11) * .16) * (act ? 2 : 1) + hash(k, 12)) % 1, a0 = hash(k, 13) * 6.283 + t * .3, [cx, cy, rx, ry] = ringAt(fw, fh, ph * .9);
-      c.fillStyle = k % 2 ? `rgba(140,245,255,${(1 - ph) * .8})` : `rgba(255,170,240,${(1 - ph) * .8})`; c.fillText(hash(k + Math.floor(t * 2), 14) > .5 ? '1' : '0', cx + Math.cos(a0) * rx, cy + Math.sin(a0) * ry); }
+    // неонові кромки кілець: тьмяне суцільне коло й яскраві дуги, що кружляють (сусідні — в різні боки); далі — тонші
+    const col = q => q < .45 ? [255, Math.round(90 + q * 260), 235] : q < .8 ? [Math.round(200 - (q - .45) * 300), Math.round(150 + (q - .45) * 240), 255] : [130, 238, 255];
+    for (const [d, n] of R) { const [cx, cy, rx, ry, s] = ringAt(fw, fh, d, t), q = (1 - s) / (1 - SMIN), a = Math.min(1, d * 9) * Math.min(1, (1 - d) * 6), C = col(q).join(','), lw = Math.max(.35, 2.6 * s);
+      c.strokeStyle = `rgba(${C},${a * .3})`; c.lineWidth = lw * .9; c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, 7); c.stroke();
+      const a0 = t * rot * (n % 2 ? 1 : -1.25) + n * 1.9; c.strokeStyle = `rgba(${C},${a * .95})`; c.lineWidth = lw;
+      for (let i = 0; i < 2; i++) { c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, a0 + i * 3.1416, a0 + i * 3.1416 + 1.7); c.stroke(); } }
+    // іскри летять у серце зі шлейфом (що далі — то дрібніші й коротші)
+    c.lineCap = 'round';
+    for (let i = 0; i < 30; i++) { const ph = (t * (.1 + hash(i, 4) * .14) * (act ? 2 : 1) + hash(i, 1)) % 1, a0 = hash(i, 2) * 6.283 - t * (.25 + hash(i, 3) * .3), d0 = ph * ph * .97, d1 = Math.max(0, d0 - .01 - .028 * (1 - ph));
+      const A = ringAt(fw, fh, d0, t), B = ringAt(fw, fh, d1, t), al = Math.min(1, ph * 6) * (1 - ph * .35);
+      c.strokeStyle = i % 3 ? `rgba(240,225,255,${al})` : `rgba(140,245,255,${al})`; c.lineWidth = Math.max(.3, .9 * A[4]);
+      c.beginPath(); c.moveTo(B[0] + Math.cos(a0) * B[2] * .92, B[1] + Math.sin(a0) * B[3] * .92); c.lineTo(A[0] + Math.cos(a0) * A[2] * .92, A[1] + Math.sin(a0) * A[3] * .92); c.stroke(); }
+    c.lineCap = 'butt';
+    // цифровий «дощ» (техно, крок 18): біти 0/1 пливуть углиб тунелю й меншають
+    c.textBaseline = 'middle'; c.textAlign = 'center';
+    for (let i = 0; i < 12; i++) { const ph = (t * (.07 + hash(i, 11) * .08) * (act ? 2 : 1) + hash(i, 12)) % 1, a0 = hash(i, 13) * 6.283 + t * .3, [cx, cy, rx, ry, s] = ringAt(fw, fh, ph * ph * .8, t);
+      c.font = `${Math.max(2.2, fw * .075 * s)}px monospace`; c.fillStyle = i % 2 ? `rgba(140,245,255,${Math.min(1, ph * 5) * (1 - ph) * .85})` : `rgba(255,170,240,${Math.min(1, ph * 5) * (1 - ph) * .85})`;
+      c.fillText(hash(i + Math.floor(t * 2), 14) > .5 ? '1' : '0', cx + Math.cos(a0) * rx * .86, cy + Math.sin(a0) * ry * .86); }
     c.textAlign = 'left';
-    // серце пульсує
-    const [hx, hy] = ringAt(fw, fh, 1), pr = fw * (.07 + .015 * Math.sin(t * 3.1)); g = c.createRadialGradient(hx, hy, 0, hx, hy, pr * 2.4); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.4, 'rgba(200,240,255,.7)'); g.addColorStop(1, 'rgba(120,180,255,0)');
-    c.fillStyle = g; c.fillRect(hx - pr * 2.4, hy - pr * 2.4, pr * 4.8, pr * 4.8);
+    // серце: мала яскрава точка далеко в тунелі — сяйво, промені хрестом, пульс
+    { const [hx, hy] = ringAt(fw, fh, 1, t), pu = .5 + .5 * Math.sin(t * 3.1), pr = fw * (.034 + .008 * pu); c.globalCompositeOperation = 'lighter';
+      let g = c.createRadialGradient(hx, hy, 0, hx, hy, fw * .36); g.addColorStop(0, 'rgba(150,200,255,.42)'); g.addColorStop(.4, 'rgba(110,90,255,.16)'); g.addColorStop(1, 'rgba(90,40,220,0)'); c.fillStyle = g; c.fillRect(hx - fw * .36, hy - fw * .36, fw * .72, fw * .72);
+      g = c.createRadialGradient(hx, hy, 0, hx, hy, pr * 2.6); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(210,240,255,.8)'); g.addColorStop(1, 'rgba(120,180,255,0)'); c.fillStyle = g; c.fillRect(hx - pr * 2.6, hy - pr * 2.6, pr * 5.2, pr * 5.2);
+      c.fillStyle = `rgba(235,248,255,${.5 + .3 * pu})`; const L = fw * (.09 + .03 * pu); c.fillRect(hx - L, hy - .25, L * 2, .5); c.fillRect(hx - .25, hy - L * 1.5, .5, L * 3);
+      c.globalCompositeOperation = 'source-over'; }
+    c.drawImage(lip(fw, fh, k), 0, 0, fw, fh);                                                        // тінь від рами: вихор — у глибині
     c.restore();
     // кільце рун по краю отвору (як печатка-заклинання): обертається, руни по черзі спалахують золотом
     { const NR = 12, rx = fw * .4, ry = fh * .43, cx = fw / 2, cy = fh * .53, a0 = t * (act ? .5 : .12);

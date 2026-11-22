@@ -14,7 +14,7 @@
   const P = NX.px, proj = NX.px3d.proj, hash = NX.art.hash;
   let Z = null; const zone = () => Z || (Z = NX.arc.zone && NX.arc.zone('portal'));
   /** Отвір арки на екрані: середина, півширина й піввисота (з розкладки — px картинки зони, як у pt_back: gen_room.py portal()). */
-  const BACK = { X: [42, 158], Y: [100, 316], v: 57 };
+  const BACK = { X: [42, 158], Y: [82, 316], v: 57 };   // 22.11: отвір сягає балки (було 100 — над вихором було видно стінку)
   let HOLE = null;
   function hole() {
     if (HOLE) return HOLE; const z = zone(); if (!z) return null;

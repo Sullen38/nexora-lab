@@ -317,7 +317,7 @@ def portal():
     Z.add('pt_beam', -2, 202, 28, 84, 2, 56, 'pframe', ch=(12, 12), **FS)             # масивна балка (вивіска 150 px — на ній)
     Z.add('pt_crest', 64, 136, 12, 28, 6, 44, 'pframe', ch=(10, 10), on='pt_beam', **FS)   # замковий камінь: кристал-емблема
     sign(Z, 'pt_sign', 30, 170, 38, 74, 2 - 2.4, 2.4, 'nav.portal', '#d98aff')       # вивіска на балці
-    Z.add('pt_back', 42, 158, 100, 316, 57, 3, 'dark')                               # вихор у глибині арки, за колонами (живий)
+    Z.add('pt_back', 42, 158, 82, 316, 57, 3, 'dark')                                # вихор у глибині арки, за колонами (живий); 22.11 — верх за балкою (було 100: над вихором було видно стінку)
     Z.anchor('ptCore', 100, 208, 57); Z.anchor('ptPad', 100, 316, 30); Z.anchor('ptFront', 100, 352, -22)
     return Z
 BUILDERS = {'workshop': workshop, 'tools': tools, 'portal': portal, 'marketing': marketing, 'analytics': analytics, 'aicenter': aicenter}
