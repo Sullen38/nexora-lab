@@ -75,7 +75,7 @@ NX.partyShow = (() => {
       at: { 1: ({ g }) => say(g, 0), 3: ({ p }) => say(p[0], 3), 6: ({ g }) => { look(g); say(g, 1); }, 10: ({ g }) => say(g, 2) } },
   ];
 
-  const busy = g => g.sc || g.trip || g.up || g.conga || g.photo || g.hockey || g.sing || g.fan || g.y != null;
+  const busy = g => g.sc || g.trip || g.up || g.conga || g.photo || g.y != null;
   /** Початок вечірки (party.js roster). full — зібрано всіх 20: це глава «ПАТІ» — заставка, далі сценки; інакше — звичайна вечірка без сценок. */
   function start(P_, full) { Pp = P_ || Pp; SH.on = true; SH.full = !!full; SH.t0 = NX.time; SH.act = []; SH.queue = []; SH.next = NX.time + TITLE_T + 3 + rnd() * 3; if (full && NX.nexi) NX.nexi.emote('love', 2); }
   function stop() { SH.act.slice().forEach(end); SH.on = false; }

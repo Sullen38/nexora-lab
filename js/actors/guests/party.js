@@ -24,7 +24,7 @@
  *     трусить шейкер і наливає); гості час від часу йдуть до стійки по напій або до столу із закусками (піца, кекс), чекають,
  *     беруть і повертаються на танцпол з річчю в руці (напій — ще кілька секунд танцюють із келихом). Стійка закриває бармена
  *     знизу: після нього поверх перемальовуються грані стійки з растра (clip по їх многокутниках).
- *   ТРИ ПЛАНИ (крок 3): спереду — огорожа лаунжу (растр), посередині — танцпол і гості, позаду — НАТОВП-ТЛО: темні силуети
+ *   ТРИ ПЛАНИ (крок 3): спереду — вільна підлога, посередині — танцпол і гості, позаду — НАТОВП-ТЛО: темні силуети
  *     обабіч пульта, що хитаються в такт і підіймають руки (GEO.crowd), — кімната не порожня навіть із трьома гостями.
  *   МУЗИКА (party_music.js): 8-bit трек синтезом (Web Audio), кнопка «♪ ЗВУК» у шапці, за замовчуванням вимкнено, вибір
  *     запам'ятовується; увімкнення скидає такт (S.t0) — плитки й танець у такт музиці.
@@ -47,16 +47,15 @@ NX.party = (() => {
   function prepare() { if (!S.bg) S.bg = NX.partyRoom.build(); }
 
   // ============================ МАРШРУТИ Й ГЛИБИНА (13.11, власник: «герої ходять поверх чогось», «багато багів») ============================
-  // Раніше гість ішов до цілі прямою — крізь стійку, пуфи, колонки, а спрайт завжди малювався поверх растра меблів.
+  // Раніше гість ішов до цілі прямою — крізь стійку, колонки, а спрайт завжди малювався поверх растра меблів.
   // МАРШРУТИ: перешкоди — прямокутники на підлозі (x, z) з полем; якщо пряма їх перетинає — шлях ламаною через кути
-  // перешкод (граф видимості + найкоротший шлях). Перешкоду, всередині якої старт або ціль (сцена караоке), не враховуємо.
+  // перешкод (граф видимості + найкоротший шлях). Перешкоду, всередині якої старт або ціль, не враховуємо.
   // ГЛИБИНА: після спрайта гостя домальовуємо з растра пікселі меблів, що ближчі до глядача, ніж він (occlude).
   let OBS = null;
   function obstacles() {
     if (OBS) return OBS; const g = G(), r = (x0, x1, z0, z1, m = 10) => ({ x0: x0 - m, x1: x1 + m, z0: z0 - m, z1: z1 + m }); OBS = [
       r(g.bar.x0, g.bar.x1, g.bar.z0 - 26, g.ZB), r(g.snack.x0, g.snack.x1, g.snack.z0, g.ZB), r(774 - 232, 774 + 232, 180, g.ZB),          // бар зі стільцями, фуршет, пульт із колонками й натовпом
-      r(g.hockey.x0, g.hockey.x1, g.hockey.z0, g.hockey.z1, 6), r(g.karaoke.x0, g.karaoke.x1, g.karaoke.z0, g.karaoke.z1, 6),
-      ...g.stairs.map(st => r(st.x0, st.x1, st.z0, g.ZB))];   // кулі-світильники в кутах — не перешкода (малі; інакше закривають вхід на праві сходи)
+      ...g.stairs.map(st => r(st.x0, st.x1, st.z0, g.ZB))];
     return OBS;
   }
   /** Чи перетинає відрізок A→B нутро прямокутника o (дотик до краю — не перетин). */
@@ -103,12 +102,12 @@ NX.party = (() => {
   // ============ КОМПАНІЇ ДОВКОЛА ТАНЦПОЛУ (14.11, аудит: «натовп стоїть рядами»; власник: «щоб там завжди було цікаво») ============
   // Не всі танцюють: близько 40 % гостей стоять компаніями по 2–3 біля бару, фуршету, аерохокею, по краях і перед танцполом,
   // обличчям один до одного. Раз на кілька секунд хтось переходить: з танцполу в компанію (охочіше туди, де вже хтось є) або
-  // назад танцювати. Місце компанії — «дім» гостя: з бару, сходів, пуфа, сценки він повертається туди.
+  // назад танцювати. Місце компанії — «дім» гостя: з бару, сходів, сценки він повертається туди.
   function hangSpots() {
-    const g = G(), B = g.bar, Sn = g.snack, H = g.hockey, D = g.dance, O = obstacles(), free = (x, z) => !O.some(o => x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1);
+    const g = G(), B = g.bar, Sn = g.snack, D = g.dance, O = obstacles(), free = (x, z) => !O.some(o => x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1);
     return [[[B.x0 + 40, B.z0 - 46, 1], [B.x0 + 76, B.z0 - 40, -1]], [[B.x1 - 96, B.z0 - 44, 1], [B.x1 - 60, B.z0 - 50, -1], [B.x1 - 78, B.z0 - 66, 1]],
       [[Sn.x0 + 70, Sn.z0 - 26, 1], [Sn.x0 + 106, Sn.z0 - 20, -1]], [[Sn.x1 - 84, Sn.z0 - 30, 1], [Sn.x1 - 48, Sn.z0 - 24, -1]],
-      [[H.x0 + 16, H.z0 - 18, 1], [H.x1 - 16, H.z0 - 22, -1]], [[D.x0 - 62, 84, 1], [D.x0 - 28, 92, -1]], [[D.x1 + 22, -34, 1], [D.x1 + 56, -26, -1]],
+      [[D.x0 - 62, 84, 1], [D.x0 - 28, 92, -1]], [[D.x1 + 22, -34, 1], [D.x1 + 56, -26, -1]],
       [[D.x0 + 110, D.z0 - 36, 1], [D.x0 + 146, D.z0 - 30, -1]], [[D.x1 - 180, D.z0 - 42, 1], [D.x1 - 144, D.z0 - 34, -1], [D.x1 - 162, D.z0 - 60, 1]]]
       .map(gr => gr.filter(([x, z]) => free(x, z)).map(([x, z, dir]) => ({ x, z, dir, g: null }))).filter(gr => gr.length >= 2);
   }
@@ -132,10 +131,10 @@ NX.party = (() => {
       if (g.fly) g.alt = 30 + rnd() * 10; g.style = STYLES[(id.length + i) % STYLES.length]; g.styleT = NX.time + 10 + rnd() * 10; S.list.push(g); });
     { const W = S.list.filter(canHang); for (let k = Math.round(W.length * .4); k > 0; k--) { const g = W[rnd() * W.length | 0]; if (!g.hang && joinHang(g)) { g.x = g.tx = g.hang.x; g.z = g.tz = g.hang.z; g.dir = g.hang.dir; } } }   // вечірка відкривається вже з компаніями довкола
     const full = NX.guests && NX.guests.full && NX.guests.full() && n >= NX.guests.IDS.length; if (NX.partyShow) NX.partyShow.start(SHOW_API, full);   // 20/20 — глава «ПАТІ»: заставка й сценки на місцях (party_show.js)
-    S.mixNext = 0; S.pair = null; S.event = null; S.eventT = NX.time + 25; CAT.until = 0; S.upNext = 0; S.hockey = null; S.hockeyNext = 0; S.karaoke = null; S.karaokeNext = 0;
+    S.mixNext = 0; S.pair = null; S.event = null; S.eventT = NX.time + 25; CAT.until = 0; S.upNext = 0;
   }
   const sparks = (x, y, n, cols) => { for (let i = 0; i < n; i++) S.fx.push({ t: 'sp', x: x + (rnd() - .5) * 30, y: y - rnd() * 30, vx: (rnd() - .5) * 40, vy: -20 - rnd() * 40, g: 60, col: cols[i % cols.length], ttl: .6 + rnd() * .5, age: 0 }); };
-  const gxy = g => g.y == null ? fp(g.x, g.z) : pt(g.x, g.y, g.z);                                      // ноги гостя на екрані (g.y — коли не на підлозі: сходи, другий поверх, пуф)
+  const gxy = g => g.y == null ? fp(g.x, g.z) : pt(g.x, g.y, g.z);                                      // ноги гостя на екрані (g.y — коли не на підлозі: сходи, другий поверх)
   function updGuest(g, dt, t) {
     const b = beat() + g.ph, bounce = Math.abs(Math.sin(b * Math.PI)); g.ft += dt; if (g.ft > .13) { g.ft = 0; g.fr++; } g.g.nose = 0;
     if (g.sc) return;   // у сценці — героя веде party_show.js (tick)
@@ -151,8 +150,8 @@ NX.party = (() => {
       if (!C.prev) { const R = E && E.route ? E.route : [[.5, .5]], [x, z] = floorXZ(...R[C.idx % R.length]); g.tx = x; g.tz = z; if (step(52)) C.idx++; }
       else { g.tx = C.prev.x - C.prev.dir * 30; g.tz = C.prev.z; step(56); if (Math.abs(g.tx - g.x) < 4) g.dir = C.prev.dir; } return; }
     if (g.photo) { const Ph = g.photo; g.alt = 0; g.rot = 0; g.sx = 1; g.tx = Ph.x; g.tz = Ph.z; if (!step(48)) { g.pose = 'walk'; return; } g.dir = Ph.dir; g.pose = S.event && t > S.event.flashT - 1.5 ? 'cheer' : 'stand'; g.alt = g.pose === 'cheer' ? bounce * 6 : 0; return; }
-    if (g.up) { const U = g.up, St = U.st, Bc = G().balcony, sx0 = St.side > 0 ? St.x1 - 14 : (St.x0 + St.x1) / 2;   /* праві сходи: край біля стіни — середину підніжжя закриває сцена караоке */ g.alt = 0; g.sx = 1; g.rot = 0;                  // другий поверх: до сходів → нагору → гуляє/танцює/спирається на балюстраду → до сходів → униз
-      if (U.ph === 'toStairs') { g.pose = 'walk'; g.tx = sx0; g.tz = St.z0 - (St.side > 0 ? 12 : 24); if (step(44)) { U.ph = 'climb'; U.k = 0; g.dir = St.side < 0 ? 1 : -1; } return; }
+    if (g.up) { const U = g.up, St = U.st, Bc = G().balcony, sx0 = (St.x0 + St.x1) / 2; g.alt = 0; g.sx = 1; g.rot = 0;                  // другий поверх: до сходів → нагору → гуляє/танцює/спирається на балюстраду → до сходів → униз
+      if (U.ph === 'toStairs') { g.pose = 'walk'; g.tx = sx0; g.tz = St.z0 - 24; if (step(44)) { U.ph = 'climb'; U.k = 0; g.dir = St.side < 0 ? 1 : -1; } return; }
       if (U.ph === 'climb' || U.ph === 'descend') { const up = U.ph === 'climb'; U.k = Math.min(1, U.k + dt / 7); const k = up ? U.k : 1 - U.k; g.pose = 'walk'; g.fr = Math.floor(t * 7) % 4; g.x = sx0; g.z = St.z0 + (Bc.z0 - St.z0) * k; g.y = FL - (FL - Bc.y) * k;
         if (U.k >= 1) { if (up) { U.ph = 'balcony'; g.y = Bc.y; g.z = Bc.z0 + 30; U.until = t + 22 + rnd() * 24; g.next = t + 1; } else { g.y = null; g.z = St.z0 - 24; g.up = null; g.mv = true; [g.tx, g.tz] = home(g); } } return; }
       if (U.ph === 'balcony') { g.y = Bc.y; if (t > U.until) { U.ph = 'toTop'; const Ss = G().stairs; U.st = Ss[rnd() * Ss.length | 0]; g.tx = U.st.side > 0 ? U.st.x1 - 14 : (U.st.x0 + U.st.x1) / 2; g.tz = Bc.z0 + 30; return; }
@@ -163,11 +162,6 @@ NX.party = (() => {
         if (U.lean && t < U.lean) { g.pose = 'stand'; g.dir = g.x < 774 ? 1 : -1; return; }                                                   // спирається на балюстраду, дивиться на танцпол
         const hb2 = Math.floor(b * 2); g.pose = Math.floor(b) % 4 === 3 ? 'cheer' : 'walk'; g.fr = hb2 % 4; g.alt = bounce * 4; return; }
       if (U.ph === 'toTop') { g.pose = 'walk'; g.y = Bc.y; if (step(44)) { U.ph = 'descend'; U.k = 0; g.dir = U.st.side < 0 ? -1 : 1; } return; } }
-    if (g.sing) { const Sg = g.sing, K = G().karaoke; g.alt = 0; g.sx = 1; g.rot = 0; if (Sg.ph === 'go') { g.pose = 'walk'; g.tx = K.mic.x + 8; g.tz = K.mic.z + 10; if (step(44)) { Sg.ph = 'sing'; g.y = K.y0; g.z = K.mic.z + 10; g.dir = -1; } return; }
-      g.y = K.y0; g.pose = Math.floor(b * 2) % 4 === 0 ? 'cheer' : 'stand'; g.rot = Math.sin(b * Math.PI) * .08; g.alt = Math.abs(Math.sin(b * Math.PI)) * 2; if (rnd() < .12) { const [sx, sy] = gxy(g); S.fx.push({ t: 'note', x: sx + (rnd() - .5) * 20, y: sy - 56 * sc(g.z), vx: (rnd() - .5) * 16, vy: -20, g: 0, col: NEON[rnd() * 6 | 0], ttl: 1.6, age: 0 }); } return; }   // співає
-    if (g.fan) { const F = g.fan; g.alt = 0; g.sx = 1; g.rot = 0; if (!F.at) { g.pose = 'walk'; g.tx = F.x; g.tz = F.z; if (step(44)) { F.at = true; g.dir = 1; } return; } g.pose = Math.floor(b) % 2 ? 'cheer' : 'stand'; g.alt = Math.abs(Math.sin(b * Math.PI)) * 4; return; }   // слухає й плескає
-    if (g.hockey) { const Hk = g.hockey; g.alt = 0; g.sx = 1; g.rot = 0; g.tx = Hk.x; g.tz = Hk.z; if (!Hk.at) { g.pose = 'walk'; if (step(44)) Hk.at = true; return; }
-      const Pk = S.hockey && S.hockey.puck; g.dir = Hk.dir; g.pose = Pk && Math.abs(Pk.u - Hk.end) < .18 ? 'cheer' : 'stand';   /* 14.11: гравці на торцях столу, обличчям один до одного */ g.alt = Math.abs(Math.sin(b * Math.PI)) * 2; return; }
     if (g.trip) { const T = g.trip; g.alt = 0;                                                        // похід до бару / закусок
       if (T.ph === 'go') { g.pose = 'walk'; if (step(44)) { T.ph = 'wait'; T.t = t + (T.to === 'bar' ? 3.2 : 2.2) + rnd(); g.dir = g.x < 774 ? 1 : -1; if (T.to === 'bar' && !BM.guest) { BM.guest = g; BM.pose = 'shake'; BM.until = t + 1.7; } } return; }
       if (T.ph === 'wait') { g.pose = Math.floor(b) % 4 === 0 ? 'cheer' : 'stand'; if (T.to === 'snack' && !g.item && t > T.t - 1) g.item = rnd() < .5 ? 'pizza' : 'cake';
@@ -277,17 +271,9 @@ NX.party = (() => {
   function director(t) {
     if (NX.partyLive) NX.partyLive.tick(t, S.dt || .016);   // жива вечірка: дроп, кульки, бульбашки, балачки, хвиля
     if (NX.partyShow) NX.partyShow.tick(t, S.dt || .016);   // сценки героїв на місцях
-    if (!S.mixNext) S.mixNext = t + 6; if (t > S.mixNext && !S.event) { S.mixNext = t + 5 + rnd() * 6; const W = S.list.filter(canHang), hn = W.filter(q => q.hang).length, want = Math.round(W.length * .4), free = S.list.filter(q => canHang(q) && !q.sc && !q.trip && !q.mv && !q.up && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && q.y == null);
+    if (!S.mixNext) S.mixNext = t + 6; if (t > S.mixNext && !S.event) { S.mixNext = t + 5 + rnd() * 6; const W = S.list.filter(canHang), hn = W.filter(q => q.hang).length, want = Math.round(W.length * .4), free = S.list.filter(q => canHang(q) && !q.sc && !q.trip && !q.mv && !q.up && !q.conga && !q.photo && q.y == null);
       if (free.length) { const g = free[rnd() * free.length | 0]; if (g.hang && (hn > want || rnd() < .45)) { leaveHang(g); g.mv = true; [g.tx, g.tz] = home(g); } else if (!g.hang && hn <= want && joinHang(g)) { g.mv = true; [g.tx, g.tz] = home(g); } } }   // хтось переходить: танцпол ↔ компанія
-    const idleNow = () => S.list.filter(g => !g.sc && !g.trip && !g.mv && !g.fly && !g.up && !g.conga && !g.photo && !g.hockey && !g.sing && !g.fan && g.id !== 'kolobok' && g.id !== 'cheshire' && !(g.pairT && t < g.pairT) && t > g.spT);   // 14.11: функція — щоразу свіжий список (один гість потрапляв у дві події за кадр: хокей + караоке)
-    if (S.hockey && t > S.hockey.until) { S.hockey.a.hockey = S.hockey.b.hockey = null; S.hockey.a.next = S.hockey.b.next = t + 3; S.hockey = null; }
-    if (!S.hockey && !S.hockeyNext) S.hockeyNext = t + 20 + rnd() * 20;
-    if (!S.hockey && t > S.hockeyNext && idleNow().length >= 2 && !S.event) { S.hockeyNext = 0; const a = idleNow()[rnd() * idleNow().length | 0], bq = idleNow().filter(g => g !== a), b = bq[rnd() * bq.length | 0], H = G().hockey, cx = (H.x0 + H.x1) / 2;   // аерохокей: двоє йдуть до столу й грають
-      a.hockey = { x: H.x1 + 16, z: (H.z0 + H.z1) / 2 + 4, dir: -1, end: 1 }; b.hockey = { x: H.x0 - 16, z: (H.z0 + H.z1) / 2 + 4, dir: 1, end: 0 };   /* 14.11: обидва на торцях (ворота — на торцях) */ a.mv = b.mv = false; S.hockey = { a, b, until: t + 18, puck: { u: .5, v: .5, vu: .5, vv: .3 }, score: [0, 0] }; }
-    if (S.karaoke && t > S.karaoke.until) { S.karaoke.singer.sing = null; S.karaoke.singer.y = null; S.karaoke.singer.z = G().karaoke.z0 - 20; S.karaoke.singer.next = t + 3; S.karaoke.fans.forEach(f => { f.fan = null; f.next = t + 2; }); S.karaoke = null; }
-    if (!S.karaoke && !S.karaokeNext) S.karaokeNext = t + 30 + rnd() * 30;
-    if (!S.karaoke && t > S.karaokeNext && idleNow().length >= 2 && !S.event) { S.karaokeNext = 0; const K = G().karaoke, singer = idleNow()[rnd() * idleNow().length | 0], fans = idleNow().filter(g => g !== singer).slice(0, 3);   // караоке: співак до мікрофона, 2–3 слухачі перед сценою плескають
-      singer.sing = { ph: 'go' }; singer.mv = false; fans.forEach((f, i) => { f.fan = { x: K.x0 - 18 - (i % 2) * 16, z: K.z0 + 2 + i * 20, at: false };   /* 14.11: на вільній підлозі ліворуч від сцени, обличчям до неї (були в дивані, потім у тісному проході біля столика) */ f.mv = false; }); S.karaoke = { singer, fans, until: t + 18, t0: t }; }
+    const idleNow = () => S.list.filter(g => !g.sc && !g.trip && !g.mv && !g.fly && !g.up && !g.conga && !g.photo && g.id !== 'kolobok' && g.id !== 'cheshire' && !(g.pairT && t < g.pairT) && t > g.spT);   // функція — щоразу свіжий список (щоб один гість не потрапив у дві події за кадр)
     if (!S.upNext) S.upNext = t + 6; if (t > S.upNext && !S.event) { S.upNext = t + 10 + rnd() * 10; const ups = S.list.filter(g => g.up).length;   // час від часу хтось іде на другий поверх
       if (idleNow().length && rnd() < .55 && ups < 5) { const g = idleNow()[rnd() * idleNow().length | 0], Ss = G().stairs; g.up = { ph: 'toStairs', st: Ss[rnd() * Ss.length | 0] }; g.mv = false; g.item = null; } }
     if (S.pair && t > S.pair.until) S.pair = null;
@@ -422,7 +408,7 @@ NX.party = (() => {
       if (rnd() < .15) { const x = g.bar.x0 + 176 + (rnd() * 4 | 0) * 20, [ix, iy] = pt(x - 2 + rnd() * 6, g.bar.y0 - 16, g.bar.z0 + 18); S.fx.push({ t: 'sp', x: ix, y: iy, vx: 0, vy: 0, g: 0, col: '#ffffff', ttl: .3, age: 0 }); }   // блиск льоду в келихах
       const [jx, jy] = pt(Sn.x0 + 256, Sn.y0 - 28, zb - 10); if (rnd() < .12) S.fx.push({ t: 'sp', x: jx + (rnd() - .5) * 6, y: jy, vx: 0, vy: -10, g: 0, col: '#ffe27a', ttl: .8, age: 0 }); }   // іскорки над чашею пуншу
   }
-  /** Поверх гостей — те, що має їх закривати: скляна балюстрада другого поверху (напівпрозоро) і пуфи (ноги тих, хто сидить). */
+  /** Поверх гостей — те, що має їх закривати: скляна балюстрада другого поверху (напівпрозоро). */
   function drawOverlays(c) {
     const g = G(), quad = pts => { const P4 = pts.map(p => pt(...p)); c.moveTo(P4[0][0], P4[0][1]); for (let m = 1; m < 4; m++) c.lineTo(P4[m][0], P4[m][1]); c.closePath(); };
     if (S.list.some(x => x.up && (x.up.ph === 'balcony' || x.up.ph === 'toTop'))) { const Bc = g.balcony; c.save(); c.beginPath(); quad([[g.XL, Bc.y - Bc.rail, Bc.z0 + 1], [g.XR, Bc.y - Bc.rail, Bc.z0 + 1], [g.XR, Bc.y + 12, Bc.z0 + 1], [g.XL, Bc.y + 12, Bc.z0 + 1]]); c.clip(); c.globalAlpha = .62; c.drawImage(S.bg.cv, S.bg.x0, S.bg.y0); c.restore(); }
@@ -435,21 +421,8 @@ NX.party = (() => {
       c.globalAlpha = .18 + .1 * Math.sin(t * 5 + k); c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(p[0], p[1] - s); c.lineTo(p[0] + s * .7, p[1]); c.lineTo(p[0], p[1] + s); c.lineTo(p[0] - s * .7, p[1]); c.fill(); }
     c.restore();
   }
-  /** Аерохокей: шайба бігає по столу, відбивається, гол — спалах і рахунок над столом. */
-  function drawHockey(c, dt, t) {
-    const Hk = S.hockey; if (!Hk) return; const H = G().hockey, Pk = Hk.puck; Pk.u += Pk.vu * dt; Pk.v += Pk.vv * dt;
-    if (Pk.v < .08 || Pk.v > .92) { Pk.vv = -Pk.vv; Pk.v = clamp(Pk.v, .08, .92); } if (Pk.u < .06 || Pk.u > .94) { if (Math.abs(Pk.v - .5) < .25 && rnd() < .35) { Hk.score[Pk.u < .5 ? 1 : 0]++; Hk.flash = t + .4; Pk.u = .5; Pk.v = .5; Pk.vv = (rnd() - .5) * .7; Pk.vu = (rnd() < .5 ? 1 : -1) * (.45 + rnd() * .3); } else { Pk.vu = -Pk.vu; Pk.u = clamp(Pk.u, .06, .94); Pk.vv += (rnd() - .5) * .3; } }   // ворота на торцях; біту відбиває гравець (гол — не щоразу)
-    const [px, py] = pt(H.x0 + (H.x1 - H.x0) * Pk.u, H.y0 - 1, H.z0 + (H.z1 - H.z0) * Pk.v), s = PZ.s(H.z0 + (H.z1 - H.z0) * Pk.v); c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .9; c.fillStyle = '#ff4fd8'; c.beginPath(); c.ellipse(px, py, 4 * s, 2 * s, 0, 0, 7); c.fill(); c.globalAlpha = .35; c.beginPath(); c.ellipse(px, py, 8 * s, 4 * s, 0, 0, 7); c.fill();
-    c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; [[.07, '#ffe27a'], [.93, '#3be8ff']].forEach(([u, cc]) => { const mv = clamp(Pk.v, .25, .75), [mx, my] = pt(H.x0 + (H.x1 - H.x0) * u, H.y0 - 1, H.z0 + (H.z1 - H.z0) * mv), ms = PZ.s(H.z0 + (H.z1 - H.z0) * mv); c.fillStyle = '#1a1030'; c.beginPath(); c.ellipse(mx, my, 6 * ms, 3 * ms, 0, 0, 7); c.fill(); c.fillStyle = cc; c.beginPath(); c.ellipse(mx, my - 1.5 * ms, 5 * ms, 2.5 * ms, 0, 0, 7); c.fill(); R(c, mx - 1.5 * ms, my - 5 * ms, 3 * ms, 3.5 * ms, cc); });   // биті гравців ходять за шайбою
-    c.globalCompositeOperation = 'lighter';
-    if (Hk.flash && t < Hk.flash) { c.globalAlpha = (Hk.flash - t) * 1.5; c.fillStyle = '#ffffff'; poly(c, [pt(H.x0, H.y0, H.z0), pt(H.x1, H.y0, H.z0), pt(H.x1, H.y0, H.z1), pt(H.x0, H.y0, H.z1)]); c.fill(); } c.restore();
-    const [lx, ly] = pt((H.x0 + H.x1) / 2, H.y0 - 60, (H.z0 + H.z1) / 2); c.font = '8px "Press Start 2P", monospace'; const txt = `${Hk.score[0]} : ${Hk.score[1]}`, w = c.measureText(txt).width + 12; R(c, lx - w / 2, ly - 7, w, 14, '#0a0626dd'); c.strokeStyle = '#3be8ff'; c.lineWidth = 1; c.strokeRect(lx - w / 2 + .5, ly - 6.5, w - 1, 13); P.text(c, txt, lx, ly + 3, '#3be8ff', 8, 'center');
-  }
-  /** Екран караоке на правій стіні: біжучі «рядки» пісні й смужка прогресу (без тексту — умовні рядки). Спалах фотобудки нагорі. */
-  function drawKaraoke(c, t) {
-    const K = G().karaoke, g = G(), [ax, ay] = pt(g.XR - 6.5, 174, K.z0 - 6), [bx, by] = pt(g.XR - 6.5, 236, K.z1 + 6), on = !!S.karaoke; c.save();
-    for (let i = 0; i < 4; i++) { const yy = ay + (by - ay) * (.15 + i * .2), w = Math.abs(bx - ax), cur = on && Math.floor((t - S.karaoke.t0) * .5) % 4 === i; c.globalAlpha = cur ? .95 : .35; for (let k = 0; k < 6; k++) { const bw = w * .12, sx = Math.min(ax, bx) + k * w * .15 + 4; R(c, sx, yy - 1.5, bw, 3, cur && (k < ((t * 2) % 6)) ? '#ffe27a' : '#3be8ff'); } }
-    if (on) { c.globalAlpha = .9; const pr = (t - S.karaoke.t0) / 18; R(c, Math.min(ax, bx) + 4, by - 6, Math.abs(bx - ax) * pr - 8, 2, '#ff4fd8'); } c.restore();
+  /** Спалах фотобудки на другому поверсі. */
+  function drawBoothFlash(c, t) { const g = G();
     if (S.boothFlash && t < S.boothFlash) { const Ph = g.photo, Bc = g.balcony, [fx0, fy0] = pt(Ph.x0, Bc.y - 104, Ph.z0 - 1), [fx1, fy1] = pt(Ph.x1, Bc.y, Ph.z0 - 1); c.save(); c.globalAlpha = (S.boothFlash - t) * 2.5; c.fillStyle = '#ffffff'; c.fillRect(fx0, fy0, fx1 - fx0, fy1 - fy0); c.restore(); }
   }
   function drawFog(c) {                                                                               // туман над підлогою: смуга в глибині танцполу
@@ -513,7 +486,7 @@ NX.party = (() => {
     if (S.bub && S.bub.nexi) { const N = nexiPos(); bubble(c, S.bub.text, N.x, N.y - 60, Math.min(1, (S.bub.until - t) * 3), 'Nexi', '#3be8ff'); }
     S.list.slice().sort((a, b) => b.z - a.z).forEach(g => drawGuest(c, g, t)); drawOverlays(c); drawBallSpots(c, t); if (NX.partyLive) NX.partyLive.drawFront(c, t);
     if (S.dbg) { c.save(); c.lineWidth = 1; obstacles().forEach(o => { c.strokeStyle = '#ff3a3a'; poly(c, [fp(o.x0, o.z0), fp(o.x1, o.z0), fp(o.x1, o.z1), fp(o.x0, o.z1)]); c.stroke(); }); c.strokeStyle = '#3bff8a'; S.list.forEach(g => { if (g.nav) { c.beginPath(); c.moveTo(...fp(g.x, g.z)); g.nav.path.forEach(q => c.lineTo(...fp(q[0], q[1]))); c.stroke(); } }); c.restore(); }   // налагодження (NX.party.S.dbg = true): перешкоди й маршрути
-    drawHockey(c, dt, t); drawKaraoke(c, t); drawEvent(c, t); drawFx(c, dt); grade(c); drawHud(c);
+    drawBoothFlash(c, t); drawEvent(c, t); drawFx(c, dt); grade(c); drawHud(c);
   }
   // ============================ ВХІД, ВИХІД, ДОТИКИ ============================
   function layout() { const V = G().VIEW, vw = innerWidth, vh = innerHeight, VW = V.x1 - V.x0, VH = V.y1 - V.y0; S.k = Math.max(vw / VW, vh / VH); S.viewW = vw / S.k; S.viewH = vh / S.k;
@@ -547,9 +520,7 @@ NX.party = (() => {
     const cb = S.catBox; if (cb && x > cb[0] && x < cb[0] + cb[2] && y > cb[1] && y < cb[1] + cb[3]) { CAT.pose = 'meow'; CAT.until = NX.time + 1.6; S.fx.push({ t: 'note', x: cb[0] + cb[2] / 2, y: cb[1] - 4, vx: 0, vy: -18, g: 0, col: '#ffb24a', ttl: 1.2, age: 0 }); return; }   // тап по Рудику
     // ---- ТАПИ ПО РЕЧАХ (14.11, власник: «щоб там завжди було цікаво знаходитись») — кожна зона відгукується на дотик ----
     { const g0 = G(), tn = NX.time, hit = (x0, x1, yt, yb, z) => { const [ax, ay] = pt(x0, yt, z), [bx2, by2] = pt(x1, yb, z); return x > ax && x < bx2 && y > ay && y < by2; }, burst = (wx, wy, wz, cols, n = 10) => { const [px, py] = pt(wx, wy, wz); sparks(px, py, n, cols); },
-        F = S.list.filter(q => !q.sc && !q.trip && !q.mv && !q.up && !q.conga && !q.photo && !q.hockey && !q.sing && !q.fan && !q.fly && q.y == null && q.id !== 'kolobok' && q.id !== 'cheshire'), near = (wx, wz) => F.slice().sort((a, b) => Math.hypot(a.x - wx, a.z - wz) - Math.hypot(b.x - wx, b.z - wz))[0];
-      { const H = g0.hockey; if (hit(H.x0, H.x1, H.y0 - 24, FL, (H.z0 + H.z1) / 2)) { if (S.hockey) { const P = S.hockey.puck; P.vu = (rnd() < .5 ? 1 : -1) * (.6 + rnd() * .4); P.vv = (rnd() - .5); } else S.hockeyNext = tn; burst((H.x0 + H.x1) / 2, H.y0 - 4, (H.z0 + H.z1) / 2, ['#3be8ff', '#ffffff'], 10); return; } }   // аерохокей — почати гру / підбити шайбу
-      { const K = g0.karaoke; if (hit(K.x0, K.x1, K.y0 - 100, FL, (K.z0 + K.z1) / 2)) { if (!S.karaoke) S.karaokeNext = tn; const [px, py] = pt(K.mic.x, K.y0 - 50, K.mic.z); for (let i = 0; i < 4; i++) S.fx.push({ t: 'note', x: px + (rnd() - .5) * 30, y: py, vx: (rnd() - .5) * 20, vy: -22, g: 0, col: NEON[i], ttl: 1.3, age: 0 }); return; } }   // караоке — хтось іде співати
+        F = S.list.filter(q => !q.sc && !q.trip && !q.mv && !q.up && !q.conga && !q.photo && !q.fly && q.y == null && q.id !== 'kolobok' && q.id !== 'cheshire'), near = (wx, wz) => F.slice().sort((a, b) => Math.hypot(a.x - wx, a.z - wz) - Math.hypot(b.x - wx, b.z - wz))[0];
       for (const [Z, to, dz] of [[g0.snack, 'snack', 30], [g0.bar, 'bar', 64]]) if (hit(Z.x0, Z.x1, to === 'bar' ? g0.bar.back.y0 : Z.y0 - 52, FL, Z.z0)) { const wxx = clamp(774 + (x - 774) / PZ.s(Z.z0), Z.x0 + 24, Z.x1 - 24), g = near(wxx, Z.z0 - dz); if (g && !g.item) { g.trip = { to, ph: 'go' }; g.tx = wxx; g.tz = Z.z0 - dz; g.mv = false; } burst(wxx, Z.y0 - 6, Z.z0, ['#ffe27a', '#ffffff'], 6); return; }   // фуршет / бар (стійка й полиці з пляшками) — найближчий гість іде пригоститися саме туди, куди тапнули
       for (const sp of g0.speakers) if (hit(sp.x - 28, sp.x + 28, FL - 150, FL, sp.z)) { burst(sp.x, FL - 90, sp.z - 2, ['#3be8ff', '#ffffff', '#ff4fd8'], 14); S.list.forEach(g => { if (!g.trip && !g.sc && Math.abs(g.x - sp.x) < 300) g.cheerT = tn + 1; }); return; }   // колонка — бас: усі поруч підстрибують
       { const B = g0.ball; if (hit(B.x - B.r, B.x + B.r, B.y - B.r, B.y + B.r, B.z)) { burst(B.x, B.y, B.z, ['#ffffff', '#3be8ff', '#ff4fd8', '#ffe27a'], 28); S.list.forEach(g => { if (!g.trip && !g.sc) g.cheerT = tn + 1.6; }); S.flashT = tn + .15; return; } } }   // дзеркальна куля — іскри й усі «ура»
