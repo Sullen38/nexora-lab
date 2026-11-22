@@ -20,7 +20,10 @@
  *   • ВЗАЄМОДІЇ: реліквія лишає свій слід під час швидкого руху Nexi й сплеск на фініші (trail); м'ячик відлітає від удару
  *     молота / меча / хвилі тризуба, котиться до магніту, примерзає від посоха (ballPush); Рудик тікає від грому й хвилі,
  *     б'є лапою кульку й пелюстки, мружиться від палички, гріється біля факела (actors/cat/cat.js: react);
- *     за роботою реліквія висить за спиною (sprite.js, блок 9).
+ *     за роботою реліквія висить за спиною (sprite.js, блок 9);
+ *     зоряна паличка шле зірку до найближчої рослини на стіні — та цвіте (NX.decorGrow.water); тризуб збурює риб і медуз
+ *     (NX.decorAqua.stir); удар молота двічі освітлює всю кімнату спалахом;
+ *   • УТРИМАННЯ ПАЛЬЦЯ на Nexi заряджає реліквію — відпустив після 0,55 с: посилена здібність (charge / release; ui/input.js).
  * Здібності (D — тривалість, с):
  *   hammer    ГРОМОВИЙ МОЛОТ — замах за плече й удар об підлогу: у місце удару б'є блискавка з неба, підлогою біжать світні тріщини
  *   blade     ЛАЗЕРНИЙ МЕЧ — два повні оберти леза: неонові відбитки леза й слід вістря по колу
@@ -69,10 +72,11 @@ NX.objects.relics = (() => {
   const pose = (id, k, t) => relicPose(id, k, t);
 
   /** Почати здібність реліквії id (why: 'tap' | 'idle'). Повертає false, якщо Nexi зайнятий або здібність уже триває. */
-  function show(id, why, light) {
+  function show(id, why, light, force) {
     if (S.act || !POSE[id]) return false; if (!light && !free()) return false;
     const N = n(), t = NX.time, D = DUR[id];
-    S.act = { id, t0: t, D, why, done: {}, light: !!light, pow: skinPair(N.look, id) }; S.flash = 0; S.bits = []; S.fxT = {}; S.cut2 = null;
+    S.seed = null; S.room = -9;
+    S.act = { id, t0: t, D, why, done: {}, light: !!light, pow: !!force || skinPair(N.look, id) }; S.flash = 0; S.bits = []; S.fxT = {}; S.cut2 = null;
     if (S.act.pow) { const th = THEMES[N.look.theme] || THEMES.standard; S.act.col = th.acc; NX.fx.emit('ring', N.x, N.y, { col: th.acc, gr: 130, ttl: .6 }); NX.fx.emit('ring', N.x, N.y, { col: '#ffd45a', gr: 80, ttl: .5 }); }   // ПАРА «скін + реліквія»: посилена здібність
     N.lastCmd = t; N.emote(MOOD[id], D + .4);
     if (!light) { N.back = false; N.temp = POSE[id]; N.tempT = t + D; N.hiT = 0; }
@@ -80,6 +84,12 @@ NX.objects.relics = (() => {
     if (id === 'balloon') N.hops = 0;
     return true;
   }
+  /** УТРИМАННЯ ПАЛЬЦЯ НА NEXI (ui/input.js): charge(true) — реліквія заряджається (енергія злітається до Nexi, сяйво росте; через
+   *  0,55 с — готово: кільце й золотий блиск); charge(false) — скасовано. release(tap) — палець відпущено: заряд готовий ->
+   *  посилена здібність (pow) і true; не встиг зарядитися -> false (тоді спрацює звичайний тап). */
+  const CHG = .55;
+  function charge(on) { S.chg = on && !S.act ? { t0: NX.time } : null; }
+  function release(tap) { const C = S.chg; S.chg = null; if (!C || NX.time - C.t0 < CHG) return false; const N = n(), busy = !!(N.cur || N.queue.length); N.lastCmd = NX.time; return show(N.look.hand, 'tap', busy || !free(), true) || true; }
   /** Подвійний тап по Nexi з реліквією в руці (nexi.js: hi); busy — Nexi зайнятий: лише ефект, без пози. */
   const tap = (id, busy) => show(id, 'tap', busy);
 
@@ -105,6 +115,9 @@ NX.objects.relics = (() => {
   function update(dt, t) {
     const N = n(), hd = N.look.hand;
     trail(dt, t);
+    if (S.chg) { const G = geo(), a = t - S.chg.t0, th = THEMES[N.look.theme] || THEMES.standard;                              // заряджання: енергія злітається до Nexi
+      if (a > .15 && r() < .7) { const an = r() * TAU, R = (50 - Math.min(30, a * 40)) * G.s; NX.fx.emit('bit', G.X + Math.cos(an) * R, G.Y - G.top * .5 + Math.sin(an) * R * .7, { col: r() < .5 ? th.acc : '#ffd45a', vx: -Math.cos(an) * R * 2.2, vy: -Math.sin(an) * R * 1.5, ttl: .4 }); }
+      if (a >= CHG && !S.chg.ready) { S.chg.ready = 1; NX.nexiPhys.kick(1.4); NX.fx.emit('ring', G.X, G.Y, { col: '#ffd45a', gr: 60, ttl: .4 }); N.emote('cool', 1.2); } }
     if (S.flash > 0) S.flash -= dt;
     // іноді сам — раз на 30–70 с, лише вільний на підлозі
     if (!S.act) { if (!S.next) S.next = t + 20 + r() * 30; if (hd && t > S.next && !N.talking && t - N.lastCmd > 6) { S.next = t + 30 + r() * 40; show(hd, 'idle'); } return; }
@@ -115,7 +128,7 @@ NX.objects.relics = (() => {
     const once = (key, at, f) => { if (k >= at && !A.done[key]) { A.done[key] = 1; S.fxT[key] = t; f(); } }, kick = v => NX.nexiPhys.kick(v);
     switch (A.id) {
       case 'hammer': {                                                               // .54 — удар об підлогу: блискавка з неба в місце удару, тріщини, грім; .72 і .86 — відлуння
-        once('hit', .54, () => { S.imp = [tip[0], G.Y]; S.flash = .35; kick(2.6); F.emit('ring', tip[0], G.Y, { col: '#9af6ff', gr: 150, ttl: .6 });
+        once('hit', .54, () => { S.imp = [tip[0], G.Y]; S.flash = .35; S.room = t; kick(2.6); F.emit('ring', tip[0], G.Y, { col: '#9af6ff', gr: 150, ttl: .6 });
           S.cracks = [...Array(7)].map((_, i) => ({ a: -Math.PI * (i + .5) / 7 * 2 + r() * .3, L: 26 + r() * 30, sd: i * 11 + (r() * 90 | 0) }));
           ballPush(tip[0], G.Y, 240, 260); cat('boom');
           for (let i = 0; i < 18; i++) F.emit('spark', tip[0] + (r() - .5) * 12, G.Y - 2, { col: r() < .6 ? '#9af6ff' : '#ffffff', vx: (r() - .5) * 200, vy: -40 - r() * 130 }); for (let i = 0; i < 6; i++) F.emit('dust', tip[0] + (r() - .5) * 30, G.Y); });
@@ -156,12 +169,16 @@ NX.objects.relics = (() => {
         if (r() < .3) F.emit('spark', tip[0] + (r() - .5) * 8, tip[1] - 4, { col: '#cfefff', vy: -20 });
         break; }
       case 'trident': {                                                              // .42 — випад: хвиля вперед і бризки
-        once('wave', .42, () => { kick(1.4); ballPush(G.X + G.d * 70, G.Y, 180, 280, G.d); cat('boom'); S.wave = { x: tip[0], y: G.Y, d: G.d, s: G.s }; F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 });
+        once('wave', .42, () => { kick(1.4); if (NX.decorAqua && NX.decorAqua.stir) NX.decorAqua.stir(t);   /* риби й медузи в акваріумах метушаться */ ballPush(G.X + G.d * 70, G.Y, 180, 280, G.d); cat('boom'); S.wave = { x: tip[0], y: G.Y, d: G.d, s: G.s }; F.emit('ring', G.X + G.d * 18, G.Y, { col: '#4ac0ff', gr: 120, ttl: .7 });
           for (let i = 0; i < 16; i++) F.emit('bubble', tip[0] + G.d * r() * 30, G.Y - r() * 20, { vx: G.d * (20 + r() * 70), vy: -10 - r() * 30 }); });
         if (k > .42 && r() < .5) F.emit('bubble', tip[0] + G.d * (10 + r() * 70), G.Y - r() * 12, { vx: G.d * 30, vy: -20 });
         break; }
       case 'wand': {                                                                 // зорі з кінчика, .5 — кільце зірок, наприкінці — сердечка
         if (k > .12 && k < .9 && r() < .8) F.emit('spark', tip[0] + (r() - .5) * 4, tip[1] + (r() - .5) * 4, { col: ['#ffe27a', '#ff7af0', '#ffffff'][r() * 3 | 0], vx: (r() - .5) * 16, vy: -6 - r() * 16, g: 14, ttl: .9 });
+        once('plant', .3, () => { const DL = NX.decorLive, L = DL && DL.LP && DL.LP.filter(q => q.x0 != null).sort((p, q) => Math.abs((p.x0 + p.x1) / 2 - G.X) - Math.abs((q.x0 + q.x1) / 2 - G.X))[0];   // найближча жива рослина на стіні: до неї летить зірка — і вона цвіте
+          if (L && Math.abs((L.x0 + L.x1) / 2 - G.X) < 520) S.seed = { L, x0: tip[0], y0: tip[1], x1: (L.x0 + L.x1) / 2, y1: (L.y0 + L.y1) / 2, t0: t }; });
+        if (S.seed) { const q = (t - S.seed.t0) / .8, E = S.seed; if (q >= 1) { E.L.shake = t; if (NX.decorGrow) NX.decorGrow.water(E.L.key, t); for (let i = 0; i < 14; i++) F.emit('spark', E.x1 + (r() - .5) * 14, E.y1 + (r() - .5) * 10, { col: ['#ffe27a', '#ff7af0', '#b6ff8a'][i % 3], vx: (r() - .5) * 50, vy: -10 - r() * 40, g: 40, ttl: .9 }); S.seed = null; }
+          else if (r() < .8) { const e = q * q * (3 - 2 * q); F.emit('spark', E.x0 + (E.x1 - E.x0) * e, E.y0 + (E.y1 - E.y0) * e - Math.sin(q * Math.PI) * 30, { col: r() < .5 ? '#ffe27a' : '#ffffff', vx: 0, vy: 6, g: 20, ttl: .5 }); } }
         once('ring', .5, () => { cat('love'); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; F.emit('spark', G.X + Math.cos(a) * 26 * G.s, G.Y - G.top * .5 + Math.sin(a) * 18 * G.s, { col: '#ffe27a', vx: Math.cos(a) * 34, vy: Math.sin(a) * 34 - 10, g: 0, ttl: .8 }); } });
         if (k > .6 && r() < .25) F.emit('heart', G.X + (r() - .5) * 30 * G.s, G.Y - G.top);
         break; }
@@ -189,13 +206,17 @@ NX.objects.relics = (() => {
 
   /** Шар поверх Nexi: сам предмет (цілим, з обертанням) і піксельні ефекти здібності. */
   function layers(t) {
-    const A = S.act; if (!A && S.flash <= 0) return [];
+    const A = S.act; if (!A && S.flash <= 0 && !S.chg) return [];
     const N = n(), G = geo(), Pg = NX.px;
     return [{ y: N.depthY() + 1, draw: c => {
       const u = Math.max(.75, G.s), blk = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(Math.round(x / u) * u, Math.round(y / u) * u, w * u, h * u); };
       c.save(); c.imageSmoothingEnabled = false;
       if (S.flash > 0) { c.globalCompositeOperation = 'lighter'; Pg.glow(c, G.X, G.Y - G.top * .5, G.top * 1.4, 'rgba(255,255,255,.9)', Math.min(1, S.flash * 3)); c.globalCompositeOperation = 'source-over'; }
+      if (S.chg && t - S.chg.t0 > .15) { const a = t - S.chg.t0, q = Math.min(1, a / CHG), R = (46 - 26 * q) * G.s, cy = G.Y - G.top * .5; c.globalCompositeOperation = 'lighter';              // заряджання: кільце з блоків стискається довкола Nexi, сяйво росте
+        for (let i = 0; i < 20; i++) { const an = i / 20 * TAU + t * 3; blk(G.X + Math.cos(an) * R, cy + Math.sin(an) * R * .8, q >= 1 ? 2 : 1, q >= 1 ? 2 : 1, q >= 1 ? (i % 2 ? '#ffffff' : '#ffd45a') : `rgba(255,212,90,${.4 + .5 * q})`); }
+        Pg.glow(c, G.X, cy, G.top * (.5 + .5 * q), 'rgba(255,212,90,.6)', .2 + .3 * q + (q >= 1 ? .15 * Math.sin(t * 14) : 0)); c.globalCompositeOperation = 'source-over'; }
       if (!A) { c.restore(); return; }
+      if (t - S.room < .32) { const a = t - S.room, al = a < .08 ? .22 : a < .14 ? .04 : a < .2 ? .14 : .14 * (1 - (a - .2) / .12); c.fillStyle = `rgba(190,230,255,${al})`; c.fillRect(G.X - 3000, G.Y - 2000, 6000, 4000); }   // грім: кімнату двічі освітлює спалах
       const k = Math.min(1, (t - A.t0) / A.D), P = relicPose(A.id, k, t), H = hand(G, P), tip = H.tip(LEN[A.id] || 0), age = key => t - (S.fxT[key] ?? 1e9), fr = Math.floor(t * 20);
       const drawItem = (ang, alpha) => { const pv = PV[H.L ? 'l' : 'r']; c.save(); c.globalAlpha = alpha * N.alpha; c.translate(H.x, H.y); c.scale(G.d * H.fx, H.sq); c.rotate(ang); c.drawImage(item(A.id, t), -pv[0] * G.s, -pv[1] * G.s, IW * G.s, IH * G.s); c.restore(); };
       const star = (x, y, R, col) => { blk(x - R * u, y, 2 * R + 1, 1, col); blk(x, y - R * u, 1, 2 * R + 1, col); blk(x - u, y - u, 3, 3, col); };   // чотирипроменева піксельна зірка
@@ -336,5 +357,5 @@ NX.objects.relics = (() => {
   }
   /** Вікно здібності в циклі картки (u 0..1): [.5, .92] -> k 0..1, інакше -1. Поза Nexi в цьому вікні — pose(id, k, t). */
   const cardK = u => u > .5 && u < .92 ? (u - .5) / .42 : -1;
-  return { S, show, tap, update, layers, POSE, DUR, busy: () => !!S.act, cur, pose, cardFx, cardK };
+  return { S, show, tap, charge, release, update, layers, POSE, DUR, busy: () => !!S.act, cur, pose, cardFx, cardK };
 })();

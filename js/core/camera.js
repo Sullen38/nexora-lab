@@ -113,13 +113,14 @@ NX.cam = {
     const pts = new Map(); let pinch = null;   // активні пальці; щипок: { d0, z0 }
     const mid = () => { const a = [...pts.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y)]; };
     canvas.addEventListener('pointerdown', e => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); canvas.setPointerCapture(e.pointerId);
-      if (pts.size === 2) { const [, , d] = mid(); pinch = { d0: d, z0: this.z }; down = null; } else if (pts.size === 1) down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false }; });
+      if (pts.size === 2) { const [, , d] = mid(); pinch = { d0: d, z0: this.z }; down = null; } else if (pts.size === 1) { down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false }; if (NX.input && NX.input.onDown && !(NX.cards && NX.cards.on)) NX.input.onDown(...this.toRoom(e.clientX, e.clientY)); }   // (23.11, чат «Nexi», слово власника) палець торкнувся — для утримання на Nexi (ui/input.js: onDown / onCancel / onUp)
+      if (pts.size === 2 && NX.input && NX.input.onCancel) NX.input.onCancel(); });
     canvas.addEventListener('pointermove', e => {
       if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch && pts.size >= 2) { const [mx, my, d] = mid(); this.setZoom(pinch.z0 * d / Math.max(1, pinch.d0), mx, my); this.free = true; return; }
       if (down) {
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
-        if (Math.abs(dx) > 6 || (this.z > 1 && Math.abs(dy) > 6)) down.moved = true;
+        if (Math.abs(dx) > 6 || (this.z > 1 && Math.abs(dy) > 6)) { down.moved = true; if (NX.input && NX.input.onCancel) NX.input.onCancel(); }
         // (13.11, власник: «коли приближаю, погано пальцем водиться, особливо вгору») рух — за приростом від попереднього положення
         // пальця, а не від точки дотику: упершись у край кімнати й повівши назад, вид рушає одразу, без «мертвого ходу»
         if (down.moved) { const C = NX.cfg, max = Math.max(C.ROOM_X0, C.ROOM_X1 - this.viewW); this.x = NX.px.clamp(this.x - (e.clientX - down.lx) / this.k, C.ROOM_X0, max); this.free = true;
@@ -129,7 +130,8 @@ NX.cam = {
     });
     const up = e => { pts.delete(e.pointerId); const wasPinch = !!pinch; if (pts.size < 2) pinch = null;
       if (wasPinch && pts.size === 1) { const q = [...pts.values()][0]; down = { x: q.x, y: q.y, lx: q.x, ly: q.y, moved: true }; return; }   // після щипка палець, що лишився, одразу гортає (без повторного дотику)
-      if (down && !down.moved && e.type === 'pointerup') { if (NX.cards && NX.cards.on) NX.cards.tap(e.clientX, e.clientY); else NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); } down = null; arm(); };
+      const held = NX.input && NX.input.onUp ? NX.input.onUp(!!(down && !down.moved && e.type === 'pointerup')) : false;   // утримання на Nexi спрацювало — звичайний тап не потрібен
+      if (!held && down && !down.moved && e.type === 'pointerup') { if (NX.cards && NX.cards.on) NX.cards.tap(e.clientX, e.clientY); else NX.input.onTap(...this.toRoom(e.clientX, e.clientY)); } down = null; arm(); };
     canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
     // рух пальця по канвасу — завжди наш (гортання / зум): вбудовані браузери (Telegram, Instagram) інакше забирають рух униз собі
     // («потягни, щоб закрити / оновити») і гортання вгору обривається

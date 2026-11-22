@@ -7,9 +7,15 @@
  * Тап по Nexi, коту, зоні чи предмету й по підлозі — команда Nexi: камера телефона знову йде за ним, навіть якщо людина
  * гортала кімнату (core/camera.js: toNexi; власник 03.11); тапи по гостях і декору — ні, камера стоїть, де її лишили.
  * Наведення мишею підсвічує об'єкт і показує його назву.
+ * УТРИМАННЯ ПАЛЬЦЯ НА NEXI (23.11, чат «Nexi», слово власника): якщо в руці реліквія — вона заряджається (actors/nexi/relics.js:
+ * charge), і коли палець відпустити після ≥ 0,55 с — посилена здібність замість звичайного тапу (release). Повів пальцем чи
+ * другий палець — скасовано. Викликає core/camera.js (pointerdown / move / up).
  * ========================================================================== */
 NX.input = {
-  hover: null, ripples: [],
+  hover: null, ripples: [], hold: false,
+  onDown(x, y) { const N = NX.nexi, R = NX.objects.relics; this.hold = !!(R && R.charge && N.look.hand && N.loc !== 'sofaLie' && !NX.ui.skinlab.open && N.hitTest(x, y)); if (this.hold) R.charge(true); },
+  onCancel() { if (this.hold) { this.hold = false; NX.objects.relics.charge(false); } },
+  onUp(tap) { if (!this.hold) return false; this.hold = false; const ok = NX.objects.relics.release(tap); if (ok) { NX.ui.hud.firstTouch(); NX.cam.toNexi(); } return ok; },
   objectAt(x, y) {
     let best = null, area = 1e9;
     Object.values(NX.objects).forEach(o => { const h = o.hit; if (!h || !o.act) return; if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h && h.w * h.h < area) { best = o; area = h.w * h.h; } });

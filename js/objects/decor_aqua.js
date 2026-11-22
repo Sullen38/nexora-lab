@@ -242,7 +242,7 @@
   // ---------- (Декор стін · 6) ГОДУВАННЯ: Nexi тисне кнопку годівнички (actors/nexi/activities.js feedFish) ----------
   /** Годівничка на кришці: риф — над лівим краєм скла (на екрані); x — у координатах малюнка скла. (· 12: праворуч акваріума вже немає.) */
   const FEEDER = { reef: MR && { M: MR, x: MR.T - 12 } };
-  const FEED = {};
+  const FEED = {}; let STIR = -99;                                                    // STIR — коли тризуб Nexi востаннє збурив воду
   /** Почати годування акваріума aq у час t: пластівці сиплються з годівнички 1.6 с; медузарій — хмара планктону. */
   function feed(aq, t) {
     if (aq === 'jelly') { FEED.jelly = { t0: t }; return; }
@@ -318,8 +318,12 @@
     /** Особлива поведінка мешканця (objects/decor.js where): рибка-клоун — в анемоні. */
     where(aq, A, m, t) { return aq === 'reef' && m[0] === 'clown' ? clownAt(A, t) : aq === 'reef' && m[0] === 'wrasse' ? wrasseAt(A, m, t) : null; },   // (· 29) чистильник
     adjust, feed, drawFeeders,
+    /** (23.11, чат «Nexi», слово власника) ТРИЗУБ NEXI збурює воду: риби 3 с метушаться, медузи підстрибують і світяться яскравіше
+     *  (actors/nexi/relics.js -> stir; objects/decor.js where бере силу stirK 0..1). */
+    stir(t) { STIR = t; },
+    stirK(t) { const a = t - STIR; return a < 0 || a > 3.2 ? 0 : Math.min(1, a * 4) * (1 - a / 3.2); },
     /** Медузи після годування світяться яскравіше (множник сяйва). */
-    glow(aq, t) { const E = FEED.jelly; if (aq !== 'jelly' || !E) return 1; const a = t - E.t0; return a < 0 || a > 10 ? 1 : 1 + 1.4 * Math.min(1, a * 1.5) * (1 - a / 10); },
+    glow(aq, t) { if (aq !== 'jelly') return 1; const sk = 1 + 1.2 * this.stirK(t), E = FEED.jelly; if (!E) return sk; const a = t - E.t0; return a < 0 || a > 10 ? sk : sk + 1.4 * Math.min(1, a * 1.5) * (1 - a / 10); },
     /** Біля якого краю акваріума Nexi зависає й тисне кнопку годівнички: точка краю на екрані (на середині висоти), глибина z
      *  (масштаб Nexi) і з якого боку від краю він (side: −1 — ліворуч, +1 — праворуч). Риф — лівий край (годівничка там),
      *  медузарій — праворуч від колони. */

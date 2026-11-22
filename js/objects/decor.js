@@ -210,16 +210,17 @@
   function where(aq, A, m, k, t) {
     const own = NX.decorAqua && NX.decorAqua.where(aq, A, m, t); if (own) return own;             // (· 5) особлива поведінка: рибка-клоун — в анемоні
     const [kind, , sp, sd] = m, h = q => hash(sd * 7 + q, 3), w = .045 * sp * (.8 + .4 * h(1)), ph = h(2) * 6.28;
+    const sk = NX.decorAqua && NX.decorAqua.stirK ? NX.decorAqua.stirK(t) : 0;                    // (23.11) тризуб Nexi збурив воду (decor_aqua.js stir): 0..1
     if (aq === 'jelly') {
       const yT = A.top + 9, yB = A.bot - 14, yy = yT + (yB - yT) * (.5 + .45 * Math.sin(t * (.018 + .01 * h(3)) + ph)) - 1.4 * Math.max(0, Math.sin(t * (1.3 + .4 * h(4)) * 6.28 / 6.28 * 3.14));
       const th = h(5) * 6.28 + t * .05 * (h(6) - .5), rr = (A.r - 8) * (.2 + .6 * h(7));
-      return { p: [A.cx + Math.cos(th) * rr, yy, A.cz + Math.sin(th) * rr], dir: 1 };
+      return { p: [A.cx + Math.cos(th) * rr, yy - sk * 5 * Math.abs(Math.sin(t * 5 + ph)), A.cz + Math.sin(th) * rr], dir: 1 };
     }
     const span = A.a1 - A.a0, u = .5 + .42 * Math.sin(t * w + ph) + .06 * Math.sin(t * w * 2.7 + ph * 2), a = A.a0 + 1.2 + (span - 2.4) * u;
     const da = Math.cos(t * w + ph) + .16 * 2.7 * Math.cos(t * w * 2.7 + ph * 2), dir = da * A.sgn;
     const low = kind === 'mandarin' ? .9 : kind === 'seahorse' ? .35 + .25 * Math.sin(t * .3 + ph) : .15 + .6 * h(8);   // риф (і запас для хижаків без decor_aqua)
     const y = A.top + 6 + (A.bot - A.top - 10) * Math.max(0, Math.min(1, low + .12 * Math.sin(t * w * 1.7 + ph * 3))), d = 2 + (A.P - 4) * (.5 + .45 * Math.sin(t * w * .8 + ph * 5));
-    return { p: arcPt(A, a, d, y), dir };
+    return { p: arcPt(A, a + sk * 1.4 * Math.sin(t * 8 + ph * 3), d, y + sk * 2.5 * Math.sin(t * 11 + ph * 5)), dir: sk > .3 ? Math.cos(t * 8 + ph * 3) * A.sgn : dir };   // збурені — метушаться туди-сюди й повертаються за рухом
   }
   /** Бульбашки: струмені від розпилювачів (світ). */
   const STREAMS = {
