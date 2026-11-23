@@ -414,10 +414,11 @@ NX.nexi = {
     const s0 = NX.room.scaleAt(Math.max(this.depthY(), 352)) * this.zoom * SPRITE_K, hw = SW * s0 / 2 + 24, tp = FOOT * s0;   // межі малюнка (кімната) — для віддзеркалення (core/loop.js)
     return { y: this.depthY(), refl: this.dy == null, box: [this.x - hw, this.y - tp - 36, this.x + hw, this.y + SH * s0 - tp + 4], draw: (c, t) => {                // на дивані — без віддзеркалення (як і раніше)
       let pname = this.pose || 'stand';
-      if (!this.cur && !this.queue.length) pname = this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));
+      const RL = NX.objects.relics, rc = !this.cur && !this.queue.length && RL && RL.cur();                                   // (23.11) здібність реліквії триває — поза лише її, навіть коли Nexi говорить:
+      if (!this.cur && !this.queue.length) pname = rc ? RL.POSE[rc.id] : this.talking ? 'talk' : (this.temp && t < this.tempT ? this.temp : (this.loc === 'sofaLie' ? 'sleep' : 'stand'));   // інакше поза «говорить» малювала предмет у руці, а шар реліквій — другий такий самий
       const p = poseFor(pname, t, !!(this.cur && this.cur.walk));
       if (this.back) p.back = 1;
-      if (t < this.hiT && !this.rot) { if (p.back) { p.back = 0; p.la = { x: -3, y: p.sit ? 4 : 6 }; } p.ra = { x: 4, y: -4 + Math.round(Math.sin(t * 9.42478) * 2) }; }   // тап (hi): обличчям до нас і махає — поверх будь-якої пози
+      if (t < this.hiT && !this.rot && !rc) { if (p.back) { p.back = 0; p.la = { x: -3, y: p.sit ? 4 : 6 }; } p.ra = { x: 4, y: -4 + Math.round(Math.sin(t * 9.42478) * 2) }; }   // тап (hi): обличчям до нас і махає — поверх будь-якої пози
       if (this.talking && !p.back && !p.talk) p.talk = 1;
       if (this.mood && t < this.moodT) p.face = this.faceOf(this.mood);
       const ph = NX.nexiPhys; p.antX = ph.ax; p.antY = ph.ay; p.vel = NX.px.clamp(ph.vx / NX.cfg.RUN_SPEED, -1, 1); p.thrust = Math.min(1, Math.abs(ph.vy) / 80);

@@ -221,7 +221,7 @@ NX.objects.relics = (() => {
       const drawItem = (ang, alpha) => { const pv = PV[H.L ? 'l' : 'r']; c.save(); c.globalAlpha = alpha * N.alpha; c.translate(H.x, H.y); c.scale(G.d * H.fx, H.sq); c.rotate(ang); c.drawImage(item(A.id, t), -pv[0] * G.s, -pv[1] * G.s, IW * G.s, IH * G.s); c.restore(); };
       const star = (x, y, R, col) => { blk(x - R * u, y, 2 * R + 1, 1, col); blk(x, y - R * u, 1, 2 * R + 1, col); blk(x - u, y - u, 3, 3, col); };   // чотирипроменева піксельна зірка
       // ---- сам предмет (поки триває постановка; «легкий» показ — Nexi зайнятий, предмет лишається в його руці) ----
-      if (!A.light && P.noItem) {
+      if (!A.light && P.noItem && !N.cur && !N.queue.length) {                                    // лише коли спрайт справді в позі реліквії (nexi.js: layer) — інакше предмет уже є в руці спрайта
         if (A.id === 'blade' && k > .14 && k < .84) { c.globalCompositeOperation = 'lighter'; for (let g = 4; g >= 1; g--) drawItem(relicPose('blade', k - g * .014, t).item.ang, .3 - g * .055); c.globalCompositeOperation = 'source-over'; }
         if (A.id === 'katana' && age('cut') >= 0 && age('cut') < .12) { c.globalCompositeOperation = 'lighter'; for (let g = 1; g <= 4; g++) drawItem(H.ang - g * .42, .34 - g * .06); c.globalCompositeOperation = 'source-over'; }   // віяло розчерку
         drawItem(H.ang, 1);
